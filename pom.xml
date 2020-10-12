@@ -7,23 +7,13 @@
 	</parent>
 	<artifactId>codedriver-knowledge</artifactId>
 	<version>0.1.0.0-SNAPSHOT</version>
-	<build>
+		<build>
 		<resources>
 			<resource>
 				<directory>src/main/java</directory>
 				<includes>
 					<include>**/*.xml</include>
 					<include>META-INF/**</include>
-				</includes>
-			</resource>
-			<resource>
-				<directory>src/main/resources</directory>
-				<includes>
-					<include>**/*.xml</include>
-					<include>**/*.dic</include>
-					<include>**/*.conf</include>
-					<include>**/*.txt</include>
-					<include>dict/**</include>
 				</includes>
 			</resource>
 		</resources>

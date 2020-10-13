@@ -41,7 +41,7 @@ public class KnowledgeTemplateSaveApi extends PrivateApiComponentBase{
 	@Input({
 			@Param( name = "id", type = ApiParamType.LONG, desc = "模版ID"),
 			@Param( name = "name", type = ApiParamType.REGEX, rule = "^[A-Za-z_\\d\\u4e00-\\u9fa5]+$", desc = "模版名称", isRequired = true,xss=true),
-			@Param( name = "content", type = ApiParamType.JSONOBJECT, desc = "目录", isRequired = true)
+			@Param( name = "content", type = ApiParamType.JSONARRAY, desc = "目录", isRequired = true)
 	})
 	@Output({})
 	@Description(desc = "保存知识模版")

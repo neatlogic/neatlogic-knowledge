@@ -1,5 +1,6 @@
 package codedriver.module.knowledge.api.template;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
@@ -10,7 +11,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
+@AuthAction(name = "KNOWLEDGE_TEMPLATE_MODIFY")
 @Service
 @OperationType(type = OperationTypeEnum.DELETE)
 public class KnowledgeTemplateDeleteApi extends PrivateApiComponentBase{

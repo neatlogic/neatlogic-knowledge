@@ -39,7 +39,6 @@
 		SELECT
 		`id`,
 		`name`,
-		`content`,
 		`is_active` as isActive,
 		`fcu`,
 		`lcu`,

@@ -51,10 +51,7 @@ public class LCSTest {
                         oldSegmentRangeList.add(segmentmapping.getOldSegmentRange());
                         newSegmentRangeList.add(segmentmapping.getNewSegmentRange());
                     }
-//                    List<SegmentMapping> segmentMappingList2 =  longestCommonSequence(oldStr, newStr).getSegmentMappingList();
-//                    List<SegmentRange> oldSegmentRangeList = segmentMappingList2.stream().map(SegmentMapping::getOldSegmentRange).collect(Collectors.toList());
                     oldResultList.add("--" + wrapChangePlace(oldStr, oldSegmentRangeList, "<->", "</->"));
-                    //List<SegmentRange> newSegmentRangeList = segmentMappingList2.stream().map(SegmentMapping::getNewSegmentRange).collect(Collectors.toList());
                     newResultList.add("++" + wrapChangePlace(newStr, newSegmentRangeList, "<+>", "</+>"));
                 }
                 if(oldSegmentRange.getSize() > newSegmentRange.getSize()) {
@@ -143,7 +140,7 @@ public class LCSTest {
                         upperLeftNode = lcs[i-1][j-1];
                     }
                     if(upperLeftNode != null) {
-                        currentNode.setTotalMatchLength(upperLeftNode.getTotalMatchLength() + 1).setNext(upperLeftNode);
+                        currentNode.setTotalMatchLength(upperLeftNode.getTotalMatchLength() + 1).setPrevious(upperLeftNode);
                     }
                     lcs[i][j] = currentNode;
                 }else {
@@ -164,10 +161,10 @@ public class LCSTest {
                         top = topNode.getTotalMatchLength();
                     }
                     if(left >= top) {
-                        currentNode.setTotalMatchLength(left).setNext(leftNode);
+                        currentNode.setTotalMatchLength(left).setPrevious(leftNode);
                         lcs[i][j] = currentNode;
                     }else {
-                        currentNode.setTotalMatchLength(top).setNext(topNode);
+                        currentNode.setTotalMatchLength(top).setPrevious(topNode);
                         lcs[i][j] = currentNode;
                     }
                 }
@@ -190,15 +187,13 @@ public class LCSTest {
             for(int j = 0; j < newList.size(); j++) {
                 Node currentNode = new Node(i, j);
                 if(oldList.get(i).equals(newList.get(j))) {
-                    currentNode.setMatch(true);
+                    currentNode.setTotalMatchLength(1).setMatch(true);
                     Node upperLeftNode = null;
                     if(i > 0 && j > 0) {
                         upperLeftNode = lcs[i-1][j-1];
                     }
                     if(upperLeftNode != null) {
-                        currentNode.setTotalMatchLength(upperLeftNode.getTotalMatchLength() + 1).setNext(upperLeftNode);
-                    }else {
-                        currentNode.setTotalMatchLength(1).setNext(lcs[0][0]);
+                        currentNode.setTotalMatchLength(upperLeftNode.getTotalMatchLength() + 1).setPrevious(upperLeftNode);
                     }
                     lcs[i][j] = currentNode;
                 }else {
@@ -219,10 +214,10 @@ public class LCSTest {
                         top = topNode.getTotalMatchLength();
                     }
                     if(left >= top) {
-                        currentNode.setTotalMatchLength(left).setNext(leftNode);
+                        currentNode.setTotalMatchLength(left).setPrevious(leftNode);
                         lcs[i][j] = currentNode;
                     }else {
-                        currentNode.setTotalMatchLength(top).setNext(topNode);
+                        currentNode.setTotalMatchLength(top).setPrevious(topNode);
                         lcs[i][j] = currentNode;
                     }
                 }

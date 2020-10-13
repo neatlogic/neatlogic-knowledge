@@ -9,8 +9,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.PriorityQueue;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class LCSTest {
     private final static String BASE_PATH = "src/main/java/codedriver/module/knowledge/lcstest/";
@@ -19,53 +21,12 @@ public class LCSTest {
         List<String> oldDataList = new ArrayList<>();
         List<String> newDataList = new ArrayList<>();
         readFileData(oldDataList, BASE_PATH + "oldData.txt", newDataList, BASE_PATH + "newData.txt");
-        List<SegmentMapping> segmentMappingList = longestCommonSequence(oldDataList, newDataList).getSegmentMappingList();
         List<String> oldResultList = new ArrayList<>();
         List<String> newResultList = new ArrayList<>();
+//        test(oldDataList, newDataList, oldResultList, newResultList);
+        List<SegmentMapping> segmentMappingList = longestCommonSequence(oldDataList, newDataList).getSegmentMappingList();
         for(SegmentMapping segmentMapping : segmentMappingList) {
-            SegmentRange oldSegmentRange = segmentMapping.getOldSegmentRange();
-            SegmentRange newSegmentRange = segmentMapping.getNewSegmentRange();
-            List<String> oldSubList = new ArrayList<>();
-            List<String> newSubList = new ArrayList<>();
-            if(oldSegmentRange.getSize() > 0) {
-                oldSubList = oldDataList.subList(oldSegmentRange.getBeginIndex(), oldSegmentRange.getEndIndex());
-            }
-            if(newSegmentRange.getSize() > 0) {
-                newSubList = newDataList.subList(newSegmentRange.getBeginIndex(), newSegmentRange.getEndIndex());
-            }
-            if(segmentMapping.isMatch()) {
-                if(CollectionUtils.isNotEmpty(oldSubList)) {
-                    oldResultList.addAll(oldSubList);
-                }
-                if(CollectionUtils.isNotEmpty(newSubList)) {
-                    newResultList.addAll(newSubList);
-                }
-            }else {
-                int minSize = Math.min(oldSegmentRange.getSize(), newSegmentRange.getSize());
-                for(int i = 0; i < minSize; i++) {
-                    String oldStr = oldSubList.get(i);
-                    String newStr = newSubList.get(i);
-                    List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
-                    List<SegmentRange> newSegmentRangeList = new ArrayList<>();
-                    for(SegmentMapping segmentmapping : longestCommonSequence(oldStr, newStr).getSegmentMappingList()) {
-                        oldSegmentRangeList.add(segmentmapping.getOldSegmentRange());
-                        newSegmentRangeList.add(segmentmapping.getNewSegmentRange());
-                    }
-                    oldResultList.add("--" + wrapChangePlace(oldStr, oldSegmentRangeList, "<->", "</->"));
-                    newResultList.add("++" + wrapChangePlace(newStr, newSegmentRangeList, "<+>", "</+>"));
-                }
-                if(oldSegmentRange.getSize() > newSegmentRange.getSize()) {
-                    for(int i = newSegmentRange.getSize(); i < oldSegmentRange.getSize(); i++) {
-                        oldResultList.add("--" + oldSubList.get(i));
-                        newResultList.add("==");
-                    }
-                }else if(oldSegmentRange.getSize() < newSegmentRange.getSize()) {
-                    for(int i = oldSegmentRange.getSize(); i < newSegmentRange.getSize(); i++) {
-                        oldResultList.add("==");
-                        newResultList.add("++" + newSubList.get(i));
-                    }
-                }
-            }
+            test(oldDataList, newDataList, oldResultList, newResultList, segmentMapping);
         }
         writeFileData(oldResultList, BASE_PATH + "oldResult.txt", newResultList, BASE_PATH + "newResult.txt");
     }
@@ -124,7 +85,51 @@ public class LCSTest {
             e.printStackTrace();
         }
     }
-    
+   
+    private static void test(List<String> oldDataList, List<String> newDataList, List<String> oldResultList, List<String> newResultList, SegmentMapping segmentMapping) {
+//      System.out.println(segmentMapping);
+      SegmentRange oldSegmentRange = segmentMapping.getOldSegmentRange();
+      SegmentRange newSegmentRange = segmentMapping.getNewSegmentRange();
+      List<String> oldSubList = oldDataList.subList(oldSegmentRange.getBeginIndex(), oldSegmentRange.getEndIndex());
+      List<String> newSubList = newDataList.subList(newSegmentRange.getBeginIndex(), newSegmentRange.getEndIndex());
+      if(segmentMapping.isMatch()) {
+          oldResultList.addAll(oldSubList);
+          newResultList.addAll(newSubList);
+      }else {
+          if(CollectionUtils.isEmpty(newSubList)) {
+              for(String str : oldSubList) {
+                  oldResultList.add("--" + str);
+                  newResultList.add("==");
+              }
+          }else if(CollectionUtils.isEmpty(oldSubList)) {
+              for(String str :newSubList) {
+                  oldResultList.add("==");
+                  newResultList.add("++" + str);
+              }
+          }else if(oldSubList.size() == 1 && newSubList.size() == 1) {
+              String oldStr = oldSubList.get(0);
+              String newStr = newSubList.get(0);
+              if(oldStr.length() > 0 && newStr.length() > 0) {
+                  List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
+                  List<SegmentRange> newSegmentRangeList = new ArrayList<>();
+                  for(SegmentMapping segmentmapping : longestCommonSequence(oldStr, newStr).getSegmentMappingList()) {
+                      oldSegmentRangeList.add(segmentmapping.getOldSegmentRange());
+                      newSegmentRangeList.add(segmentmapping.getNewSegmentRange());
+                  }
+                  oldResultList.add("--" + wrapChangePlace(oldStr, oldSegmentRangeList, "<->", "</->"));
+                  newResultList.add("++" + wrapChangePlace(newStr, newSegmentRangeList, "<+>", "</+>"));
+              }else {
+                  oldResultList.add("--" + oldStr);
+                  newResultList.add("++" + newStr);
+              }
+          }else {
+              List<SegmentMapping> segmentMappingList = longestCommonSequence2(oldSubList, newSubList);
+              for(SegmentMapping segmentMap : segmentMappingList) {
+                  test(oldSubList, newSubList, oldResultList, newResultList, segmentMap);
+              }
+          }
+      }
+    }
     private static Node longestCommonSequence(String oldStr, String newStr) {
         char[] x = oldStr.toCharArray();
         char[] y = newStr.toCharArray();
@@ -133,6 +138,7 @@ public class LCSTest {
         for(int i = 0; i < x.length; i++) {
             for(int j = 0; j < y.length; j++) {
                 Node currentNode = new Node(i, j);
+                lcs[i][j] = currentNode;
                 if(x[i] == y[j]) {
                     currentNode.setTotalMatchLength(1).setMatch(true);
                     Node upperLeftNode = null;
@@ -142,7 +148,6 @@ public class LCSTest {
                     if(upperLeftNode != null) {
                         currentNode.setTotalMatchLength(upperLeftNode.getTotalMatchLength() + 1).setPrevious(upperLeftNode);
                     }
-                    lcs[i][j] = currentNode;
                 }else {
                     int left = 0;
                     int top = 0;
@@ -160,12 +165,10 @@ public class LCSTest {
                     if(topNode != null) {
                         top = topNode.getTotalMatchLength();
                     }
-                    if(left >= top) {
-                        currentNode.setTotalMatchLength(left).setPrevious(leftNode);
-                        lcs[i][j] = currentNode;
-                    }else {
+                    if(top >= left) {
                         currentNode.setTotalMatchLength(top).setPrevious(topNode);
-                        lcs[i][j] = currentNode;
+                    }else {
+                        currentNode.setTotalMatchLength(left).setPrevious(leftNode);
                     }
                 }
             }
@@ -178,14 +181,17 @@ public class LCSTest {
 //            }
 //            System.out.println();
 //        }
-        
+//        System.out.println(oldStr);
+//        System.out.println(newStr);
         return lcs[x.length-1][y.length-1];
     }
+    
     private static Node longestCommonSequence(List<String> oldList, List<String> newList) {
         Node[][] lcs = new Node[oldList.size()][newList.size()];       
         for(int i = 0; i < oldList.size(); i++) {
             for(int j = 0; j < newList.size(); j++) {
                 Node currentNode = new Node(i, j);
+                lcs[i][j] = currentNode;
                 if(oldList.get(i).equals(newList.get(j))) {
                     currentNode.setTotalMatchLength(1).setMatch(true);
                     Node upperLeftNode = null;
@@ -195,7 +201,6 @@ public class LCSTest {
                     if(upperLeftNode != null) {
                         currentNode.setTotalMatchLength(upperLeftNode.getTotalMatchLength() + 1).setPrevious(upperLeftNode);
                     }
-                    lcs[i][j] = currentNode;
                 }else {
                     int left = 0;
                     int top = 0;
@@ -213,12 +218,10 @@ public class LCSTest {
                     if(topNode != null) {
                         top = topNode.getTotalMatchLength();
                     }
-                    if(left >= top) {
-                        currentNode.setTotalMatchLength(left).setPrevious(leftNode);
-                        lcs[i][j] = currentNode;
-                    }else {
+                    if(top >= left) {
                         currentNode.setTotalMatchLength(top).setPrevious(topNode);
-                        lcs[i][j] = currentNode;
+                    }else {
+                        currentNode.setTotalMatchLength(left).setPrevious(leftNode);
                     }
                 }
             }
@@ -235,6 +238,95 @@ public class LCSTest {
         return lcs[oldList.size()-1][newList.size()-1];
     }
     
+    private static List<SegmentMapping> longestCommonSequence2(List<String> oldList, List<String> newList) {
+        List<SegmentMapping> segmentMappingList = new ArrayList<>();
+        List<Node> resultList = new ArrayList<>();
+        PriorityQueue<Node> priorityQueue = new PriorityQueue<>(oldList.size() * newList.size(), (e1, e2) -> Integer.compare(e2.getTotalMatchLength(), e1.getTotalMatchLength()));
+//        Node[][] lcs = new Node[oldList.size()][newList.size()];
+        for(int i = 0; i < oldList.size(); i++) {
+            for(int j = 0; j < newList.size(); j++) {
+                Node currentNode = new Node(i, j);
+//                lcs[i][j] = currentNode;
+                String oldStr = oldList.get(i);
+                String newStr = newList.get(j);
+                if(StringUtils.isBlank(oldStr) || StringUtils.isBlank(newStr)) {
+                    currentNode.setTotalMatchLength(0);
+                }else {
+                    Node node = longestCommonSequence(oldStr, newStr);
+                    int maxLength = Math.max(StringUtils.length(oldStr), StringUtils.length(newStr));
+                    int matchPercentage = (node.getTotalMatchLength() * 1000) / maxLength;
+                    currentNode.setTotalMatchLength(matchPercentage);
+                }
+                priorityQueue.add(currentNode);
+            }
+        }
+//        System.out.println("===================================================================");
+//        for(int i = 0; i < oldList.size(); i++) {
+//            for(int j = 0; j < newList.size(); j++) {
+//                System.out.print(lcs[i][j]);
+//                System.out.print("\t");
+//            }
+//            System.out.println();
+//        }
+        Node e = null;
+        while((e = priorityQueue.poll()) != null) {          
+//            System.out.println(e);
+            boolean flag = true;
+            for(Node n : resultList) {
+                if(n.getTotalMatchLength() == 0) {
+                    flag = false;
+                    break;
+                }
+                if(e.getOldIndex() >= n.getOldIndex() && e.getNewIndex() <= n.getNewIndex()) {
+                    flag = false;
+                    break;
+                }
+                if(e.getOldIndex() <= n.getOldIndex() && e.getNewIndex() >= n.getNewIndex()) {
+                    flag = false;
+                    break;
+                }
+            }
+            if(flag) {
+                resultList.add(e);           
+            }
+        }
+//        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        resultList.sort((e1, e2) -> Integer.compare(e1.getOldIndex(), e2.getOldIndex()));
+//        resultList.forEach(System.out::println);
+        int oldIndex = 0;
+        int newIndex = 0;
+        for(Node node : resultList) {
+            if(node.getOldIndex() > oldIndex) {
+                SegmentMapping segmentMapping = new SegmentMapping(oldIndex, 0, false);
+                segmentMapping.setEndIndex(node.getOldIndex(), 0);
+                segmentMappingList.add(segmentMapping);
+            }
+            if(node.getNewIndex() > newIndex) {
+                SegmentMapping segmentMapping = new SegmentMapping(0, newIndex, false);
+                segmentMapping.setEndIndex(0, node.getNewIndex());
+                segmentMappingList.add(segmentMapping);
+            }
+            oldIndex = node.getOldIndex() + 1;
+            newIndex = node.getNewIndex() + 1;
+            SegmentMapping segmentMapping = new SegmentMapping(node.getOldIndex(), node.getNewIndex(), false);
+            segmentMapping.setEndIndex(oldIndex, newIndex);
+            segmentMappingList.add(segmentMapping);
+        }
+        if(oldList.size() > oldIndex) {
+            SegmentMapping segmentMapping = new SegmentMapping(oldIndex, 0, false);
+            segmentMapping.setEndIndex(oldList.size(), 0);
+            segmentMappingList.add(segmentMapping);
+        }
+        if(newList.size() > newIndex) {
+            SegmentMapping segmentMapping = new SegmentMapping(0, newIndex, false);
+            segmentMapping.setEndIndex(0, newList.size());
+            segmentMappingList.add(segmentMapping);
+        }
+//        System.out.println("------------------------------------------------------------------------");
+//        segmentMappingList.forEach(System.out::println);
+        return segmentMappingList;
+    }
+    
     private static String wrapChangePlace(String str, List<SegmentRange> segmentList, String startMark, String endMark) {
         int count = 0;
         for(SegmentRange segmentRange : segmentList) {
@@ -244,13 +336,15 @@ public class LCSTest {
         }
         StringBuilder stringBuilder = new StringBuilder(str.length() + count * (startMark.length() + endMark.length()));
         for(SegmentRange segmentRange : segmentList) {
-            if(!segmentRange.isMatch()) {
-                stringBuilder.append(startMark);
-            }
-            stringBuilder.append(str.substring(segmentRange.getBeginIndex(), segmentRange.getEndIndex()));
-            if(!segmentRange.isMatch()) {
-                stringBuilder.append(endMark);
-            }
+            if(segmentRange.getSize() > 0) {
+                if(!segmentRange.isMatch()) {
+                    stringBuilder.append(startMark);
+                }
+                stringBuilder.append(str.substring(segmentRange.getBeginIndex(), segmentRange.getEndIndex()));
+                if(!segmentRange.isMatch()) {
+                    stringBuilder.append(endMark);
+                }
+            }           
         }
         return stringBuilder.toString();
     }

@@ -1,8 +1,17 @@
---我们开始通过多种ssss配置 logback，以及许多示例的配置脚本。logback 依赖的配置框架 - Joran 将会在之后的章节介绍<->1</->
-我们开始通过多种ssss配置 logback，以及许多示例的配置脚本。logback 依赖的配置框架 - Joran 将会在之后的章节介绍2
-我们开始通过多种ssss配置 logback，以及许多示例的配置脚本。logback 依赖的配置框架 - Joran 将会在之后的章节介绍2
---我们开始通过多种ssss配置 logback，以及许多示例的配置脚本。logback 依赖的配置框架 - Joran 将会在之后的章节介绍<->3</->
-我们开始通过多种ssss配置 logback，以及许多示例的配置脚本。logback 依赖的配置框架 - Joran 将会在之后的章节介绍4
+--我们开始通过多种配置 logback，以及许多示例的配置<->ff</->脚本。logback 依赖的配置框架 - Joran 将会在<->ff</->之后的章节介绍
 
---我们开始通过多种ssss配置 logback，以及许多示例的配置脚本。logback 依赖的配置框架 - Joran 将会在之后的章节介绍<->5</->
-==
+配置 logback
+在应用程序当中使用日志语句需要耗费大量的精力。根据调查，大约有百分之四的代码用于打印日志。即使在一个中型应用的代码当中也有成千上万条日志的打印语句。考虑到这种情况，我们需要使用工具来管理这些日志语句。
+
+可以通过编程或者配置 XML 脚本或者 Groovy 格式的方式来配置 logback。对于已经使用 log4j 的用户可以通过这个工具来把 log4j.properties 转换为 logback.xml。
+
+--
+--ddddfdfdfdf
+--dffdfeer3
+--dfdgfefege
+以下是 logback 的初始化步骤：
+
+logback 会在类路径下寻找名为 logback-test.xml 的文件。
+如果没有找到，logback 会继续寻找名为 logback.groovy 的文件。
+如果没有找到，logback 会继续寻找名为 logback.xml 的文件。
+如果没有找到，将会通过 JDK 提供的 ServiceLoader 工具在类路径下寻找文件 META-INFO/services/ch.qos.logback.classic.spi.Configurator，该文件的内容为实现了 Configurator 接口的实现类的全限定类名。

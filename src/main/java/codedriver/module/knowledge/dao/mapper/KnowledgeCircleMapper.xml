@@ -46,6 +46,10 @@
 		</foreach>
 	</insert>
 
+	<delete id="deleteKnowledgeCircleById" parameterType="java.lang.Long">
+		delete from `knowledge_circle` where `id` = #{value}
+	</delete>
+
 	<delete id="deleteKnowledgeCircleUserById" parameterType="java.lang.Long">
 		delete from `knowledge_circle_user` where `knowledge_circle_id` = #{value}
 	</delete>

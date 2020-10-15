@@ -18,5 +18,7 @@ public interface KnowledgeCircleMapper {
 
     public void batchInsertKnowledgeCircleUser(@Param("list") List<KnowledgeCircleUserVo> list);
 
+    public void deleteKnowledgeCircleById(Long id);
+
     public void deleteKnowledgeCircleUserById(Long circleId);
 }

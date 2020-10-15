@@ -4,8 +4,6 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.util.PageUtil;
-import codedriver.framework.dao.mapper.RoleMapper;
-import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
@@ -31,12 +29,6 @@ public class KnowledgeCircleSearchApi extends PrivateApiComponentBase{
 
 	@Autowired
 	private KnowledgeCircleMapper knowledgeCircleMapper;
-
-	@Autowired
-	private TeamMapper teamMapper;
-
-	@Autowired
-	private RoleMapper roleMapper;
 
 	@Autowired
 	private UserMapper userMapper;
@@ -109,14 +101,14 @@ public class KnowledgeCircleSearchApi extends PrivateApiComponentBase{
 								approverUuidSet.add(obj.getUuid());
 							}
 						}else if(GroupSearch.TEAM.getValue().equals(obj.getType())){
-							List<String> uuidList = teamMapper.getUserUuidListByTeamUuid(obj.getUuid());
+							List<String> uuidList = userMapper.getUserUuidListByTeamUuid(obj.getUuid());
 							if(KnowledgeCircleUserVo.AuthType.MEMBER.getValue().equals(obj.getAuthType())){
 								memberUuidSet.addAll(uuidList);
 							}else if(KnowledgeCircleUserVo.AuthType.APPROVER.getValue().equals(obj.getAuthType())){
 								approverUuidSet.addAll(uuidList);
 							}
 						}else if(GroupSearch.ROLE.getValue().equals(obj.getType())){
-							List<String> uuidList = roleMapper.getUserUuidListByRoleUuid(obj.getUuid());
+							List<String> uuidList = userMapper.getUserUuidListByRoleUuid(obj.getUuid());
 							if(KnowledgeCircleUserVo.AuthType.MEMBER.getValue().equals(obj.getAuthType())){
 								memberUuidSet.addAll(uuidList);
 							}else if(KnowledgeCircleUserVo.AuthType.APPROVER.getValue().equals(obj.getAuthType())){

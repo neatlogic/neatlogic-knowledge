@@ -48,9 +48,7 @@ public class KnowledgeCircleGetApi extends PrivateApiComponentBase{
 		return null;
 	}
 
-	@Input({
-			@Param( name = "id", type = ApiParamType.LONG, desc = "知识圈ID",isRequired = true)
-	})
+	@Input({@Param( name = "id", type = ApiParamType.LONG, desc = "知识圈ID",isRequired = true)})
 	@Output({@Param(name = "knowledgeCircle",type = ApiParamType.JSONOBJECT,explode = KnowledgeCircleVo.class,desc = "知识圈")})
 	@Description(desc = "获取单个知识圈")
 	@Override

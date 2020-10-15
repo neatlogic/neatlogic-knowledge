@@ -40,9 +40,7 @@ public class KnowledgeCircleDeleteApi extends PrivateApiComponentBase{
 		return null;
 	}
 
-	@Input({
-			@Param( name = "id", type = ApiParamType.LONG, desc = "知识圈ID",isRequired = true)
-	})
+	@Input({@Param( name = "id", type = ApiParamType.LONG, desc = "知识圈ID",isRequired = true)})
 	@Output({})
 	@Description(desc = "删除知识圈")
 	@Override

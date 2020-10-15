@@ -12,6 +12,12 @@ public interface KnowledgeCircleMapper {
 
     public int checkNameIsRepeat(KnowledgeCircleVo knowledgeCircleVo);
 
+    public int searchKnowledgeCircleCount(KnowledgeCircleVo knowledgeCircleVo);
+
+    public List<KnowledgeCircleVo> searchKnowledgeCircle(KnowledgeCircleVo knowledgeCircleVo);
+
+    public List<KnowledgeCircleUserVo> getKnowledgeCircleUserList(Long knowledgeCircleId);
+
     public void updateKnowledgeCircle(KnowledgeCircleVo knowledgeCircleVo);
 
     public void insertKnowledgeCircle(KnowledgeCircleVo knowledgeCircleVo);

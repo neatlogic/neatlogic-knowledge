@@ -11,6 +11,41 @@
 		SELECT COUNT(1) FROM `knowledge_circle` WHERE `name` = #{name} AND `id` != #{id}
 	</select>
 
+	<select id="searchKnowledgeCircleCount" parameterType="codedriver.module.knowledge.dto.KnowledgeCircleVo" resultType="int">
+		SELECT
+		COUNT(1)
+		FROM
+		`knowledge_circle`
+		WHERE
+		1=1
+		<if test="keyword != null and keyword != ''">
+			and `name` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+	</select>
+
+	<select id="searchKnowledgeCircle" parameterType="codedriver.module.knowledge.dto.KnowledgeCircleVo" resultType="codedriver.module.knowledge.dto.KnowledgeCircleVo">
+		SELECT
+		`id`,
+		`name`
+		FROM `knowledge_circle`
+		where 1=1
+		<if test="keyword != null and keyword != ''">
+			and `name` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="needPage == true">
+			LIMIT #{startNum}, #{pageSize}
+		</if>
+	</select>
+
+	<select id="getKnowledgeCircleUserList" resultType="codedriver.module.knowledge.dto.KnowledgeCircleUserVo">
+		select
+		`uuid`,
+		`type`,
+		`auth_type` as authType
+		from `knowledge_circle_user`
+		 where `knowledge_circle_id` = #{value}
+	</select>
+
 	<update id="updateKnowledgeCircle" parameterType="codedriver.module.knowledge.dto.KnowledgeCircleVo">
 		UPDATE `knowledge_circle` SET
 		 `name` = #{name}

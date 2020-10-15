@@ -5,12 +5,20 @@ import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 
+import java.util.List;
+
 public class KnowledgeCircleVo extends BasePageVo {
 
 	@EntityField(name = "知识圈ID", type = ApiParamType.LONG)
 	private Long id;
 	@EntityField(name = "知识圈名称", type = ApiParamType.STRING)
 	private String name;
+	@EntityField(name = "知识数", type = ApiParamType.INTEGER)
+	private Integer knowledgeCount;
+	@EntityField(name = "成员数", type = ApiParamType.INTEGER)
+	private Integer memberCount;
+	@EntityField(name = "审批人用户名列表", type = ApiParamType.JSONARRAY)
+	private List approverNameList;
 
 	public KnowledgeCircleVo() {}
 
@@ -33,4 +41,27 @@ public class KnowledgeCircleVo extends BasePageVo {
 		this.name = name;
 	}
 
+	public Integer getKnowledgeCount() {
+		return knowledgeCount;
+	}
+
+	public void setKnowledgeCount(Integer knowledgeCount) {
+		this.knowledgeCount = knowledgeCount;
+	}
+
+	public Integer getMemberCount() {
+		return memberCount;
+	}
+
+	public void setMemberCount(Integer memberCount) {
+		this.memberCount = memberCount;
+	}
+
+	public List getApproverNameList() {
+		return approverNameList;
+	}
+
+	public void setApproverNameList(List approverNameList) {
+		this.approverNameList = approverNameList;
+	}
 }

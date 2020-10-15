@@ -10,6 +10,8 @@ public interface KnowledgeTypeMapper {
 
     public List<KnowledgeTypeVo> getKnowledgeTypeByParentId(Long parentId);
 
+    public List<KnowledgeTypeVo> getKnowledgeTypeForTree(@Param("lft") Integer lft, @Param("rht") Integer rht);
+
     public void updateKnowledgeTypeLeftRightCode(@Param("id") Long id, @Param("lft") Integer lft, @Param("rht") Integer rht);
 
     public void batchInsertKnowledgeType(@Param("list") List<KnowledgeTypeVo> list);

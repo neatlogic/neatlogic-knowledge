@@ -16,6 +16,8 @@ public interface KnowledgeCircleMapper {
 
     public List<KnowledgeCircleVo> searchKnowledgeCircle(KnowledgeCircleVo knowledgeCircleVo);
 
+    public KnowledgeCircleVo getKnowledgeCircleById(Long id);
+
     public List<KnowledgeCircleUserVo> getKnowledgeCircleUserList(Long knowledgeCircleId);
 
     public void updateKnowledgeCircle(KnowledgeCircleVo knowledgeCircleVo);

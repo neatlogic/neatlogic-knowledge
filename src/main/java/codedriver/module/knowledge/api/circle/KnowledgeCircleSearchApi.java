@@ -134,9 +134,6 @@ public class KnowledgeCircleSearchApi extends PrivateApiComponentBase{
 						vo.setApproverNameList(approverNameList);
 					}
 				}
-
-				//TODO 计算知识数
-
 			}
 		}
 

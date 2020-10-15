@@ -4,6 +4,9 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import com.alibaba.fastjson.annotation.JSONField;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class KnowledgeTypeVo{
 
 	public static final Long ROOT_PARENTID = -1L;
@@ -28,6 +31,12 @@ public class KnowledgeTypeVo{
 	private transient Integer sort;
 	@EntityField(name = "子节点数量", type = ApiParamType.INTEGER)
 	private Integer childCount;
+	@EntityField(name = "关联的知识数", type = ApiParamType.INTEGER)
+	private Integer knowledgeCount;
+
+	private transient KnowledgeTypeVo parent;
+
+	private List<KnowledgeTypeVo> children = new ArrayList<>();
 
 	public KnowledgeTypeVo() {}
 
@@ -93,5 +102,30 @@ public class KnowledgeTypeVo{
 
 	public void setChildCount(Integer childCount) {
 		this.childCount = childCount;
+	}
+
+	public Integer getKnowledgeCount() {
+		return knowledgeCount;
+	}
+
+	public void setKnowledgeCount(Integer knowledgeCount) {
+		this.knowledgeCount = knowledgeCount;
+	}
+
+	public KnowledgeTypeVo getParent() {
+		return parent;
+	}
+
+	public void setParent(KnowledgeTypeVo parent) {
+		this.parent = parent;
+		parent.getChildren().add(this);
+	}
+
+	public List<KnowledgeTypeVo> getChildren() {
+		return children;
+	}
+
+	public void setChildren(List<KnowledgeTypeVo> children) {
+		this.children = children;
 	}
 }

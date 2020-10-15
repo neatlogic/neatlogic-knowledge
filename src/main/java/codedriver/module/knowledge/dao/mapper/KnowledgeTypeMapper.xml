@@ -28,6 +28,21 @@
 		ORDER BY `sort` ASC
 	</select>
 
+	<select id="getKnowledgeTypeForTree" resultType="codedriver.module.knowledge.dto.KnowledgeTypeVo" useCache="false">
+		SELECT
+		a.`id`,
+		a.`name`,
+		a.`parent_id` AS parentId,
+		a.`lft`,
+		a.`rht`,
+		(SELECT COUNT(1) FROM `knowledge_type` WHERE `parent_id` = a.`id`) as `childCount`,
+		(SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_type_id` = a.`id`) as `knowledgeCount`
+		FROM `knowledge_type` a
+		WHERE a.`lft` &gt;= #{lft}
+		AND a.`rht` &lt;= #{rht}
+		ORDER BY a.`lft`
+	</select>
+
 	<update id="updateKnowledgeTypeLeftRightCode">
 	UPDATE `knowledge_type` SET `lft` = #{lft}, `rht` = #{rht} WHERE `id` = #{id}
 	</update>

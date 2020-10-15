@@ -1,10 +1,13 @@
 package codedriver.module.knowledge.dto;
 
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
+import org.apache.commons.collections4.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class KnowledgeCircleVo extends BasePageVo {
@@ -18,7 +21,16 @@ public class KnowledgeCircleVo extends BasePageVo {
 	@EntityField(name = "成员数", type = ApiParamType.INTEGER)
 	private Integer memberCount;
 	@EntityField(name = "审批人用户名列表", type = ApiParamType.JSONARRAY)
-	private List approverNameList;
+	private List<String> approverNameList;
+	@EntityField(name = "审批人列表", type = ApiParamType.JSONARRAY)
+	private List<String> approverList;
+	@EntityField(name = "成员列表", type = ApiParamType.JSONARRAY)
+	private List<String> memberList;
+	@EntityField(name = "知识类型列表", type = ApiParamType.JSONARRAY)
+	private List<KnowledgeTypeVo> knowledgeTypeList;
+
+	/** 知识圈关联的所有对象，包括用户、组、角色 */
+	private transient List<KnowledgeCircleUserVo> authList;
 
 	public KnowledgeCircleVo() {}
 
@@ -57,11 +69,61 @@ public class KnowledgeCircleVo extends BasePageVo {
 		this.memberCount = memberCount;
 	}
 
-	public List getApproverNameList() {
+	public List<String> getApproverNameList() {
 		return approverNameList;
 	}
 
-	public void setApproverNameList(List approverNameList) {
+	public void setApproverNameList(List<String> approverNameList) {
 		this.approverNameList = approverNameList;
+	}
+
+	public List<String> getApproverList() {
+		if(CollectionUtils.isEmpty(approverList) && CollectionUtils.isNotEmpty(authList)){
+			approverList = new ArrayList<>();
+			for(KnowledgeCircleUserVo vo : authList) {
+				GroupSearch groupSearch = GroupSearch.getGroupSearch(vo.getType());
+				if(groupSearch != null && KnowledgeCircleUserVo.AuthType.APPROVER.getValue().equals(vo.getAuthType())) {
+					approverList.add(groupSearch.getValuePlugin() + vo.getUuid());
+				}
+			}
+		}
+		return approverList;
+	}
+
+	public void setApproverList(List<String> approverList) {
+		this.approverList = approverList;
+	}
+
+	public List<String> getMemberList() {
+		if(CollectionUtils.isEmpty(memberList) && CollectionUtils.isNotEmpty(authList)){
+			memberList = new ArrayList<>();
+			for(KnowledgeCircleUserVo vo : authList) {
+				GroupSearch groupSearch = GroupSearch.getGroupSearch(vo.getType());
+				if(groupSearch != null && KnowledgeCircleUserVo.AuthType.MEMBER.getValue().equals(vo.getAuthType())) {
+					memberList.add(groupSearch.getValuePlugin() + vo.getUuid());
+				}
+			}
+		}
+		return memberList;
+	}
+
+	public void setMemberList(List<String> memberList) {
+		this.memberList = memberList;
+	}
+
+	public List<KnowledgeCircleUserVo> getAuthList() {
+		return authList;
+	}
+
+	public void setAuthList(List<KnowledgeCircleUserVo> authList) {
+		this.authList = authList;
+	}
+
+	public List<KnowledgeTypeVo> getKnowledgeTypeList() {
+		return knowledgeTypeList;
+	}
+
+	public void setKnowledgeTypeList(List<KnowledgeTypeVo> knowledgeTypeList) {
+		this.knowledgeTypeList = knowledgeTypeList;
 	}
 }

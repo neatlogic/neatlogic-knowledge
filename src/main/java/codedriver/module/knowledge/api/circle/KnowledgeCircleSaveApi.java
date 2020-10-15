@@ -110,7 +110,7 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 		parseKnowledgeTypeJson(knowledgeType,typeList,knowledgeCircleVo.getId());
 		/** 解析知识圈用户，包括审批人与成员 */
 		List<KnowledgeCircleUserVo> circleUserList = getKnowledgeCircleUserList(approver, member, knowledgeCircleVo.getId());
-
+		/** 插入知识类型与用户 */
 		if(CollectionUtils.isNotEmpty(typeList)){
 			knowledgeTypeMapper.batchInsertKnowledgeType(typeList);
 			/** knowledgeType中并不包含左右编码，故需要根据parentId与sort重建左右编码 */

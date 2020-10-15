@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper">
+
+	<select id="checkKnowledgeCircleExistsById" parameterType="java.lang.Long" resultType="int">
+		SELECT COUNT(1) FROM `knowledge_circle` WHERE `id` = #{id}
+	</select>
+
+	<select id="checkNameIsRepeat" parameterType="codedriver.module.knowledge.dto.KnowledgeCircleVo" resultType="int">
+		SELECT COUNT(1) FROM `knowledge_circle` WHERE `name` = #{name} AND `id` != #{id}
+	</select>
+
+	<select id="searchKnowledgeCircleCount" parameterType="codedriver.module.knowledge.dto.KnowledgeCircleVo" resultType="int">
+		SELECT
+		COUNT(1)
+		FROM
+		`knowledge_circle`
+		WHERE
+		1=1
+		<if test="keyword != null and keyword != ''">
+			and `name` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+	</select>
+
+	<select id="searchKnowledgeCircle" parameterType="codedriver.module.knowledge.dto.KnowledgeCircleVo" resultType="codedriver.module.knowledge.dto.KnowledgeCircleVo">
+		SELECT
+		a.`id`,
+		a.`name`,
+		(SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_circle_id` = a.`id`) as `knowledgeCount`
+		FROM `knowledge_circle` a
+		where 1=1
+		<if test="keyword != null and keyword != ''">
+			and a.`name` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="needPage == true">
+			LIMIT #{startNum}, #{pageSize}
+		</if>
+	</select>
+
+	<select id="getKnowledgeCircleById" parameterType="java.lang.Long" resultType="codedriver.module.knowledge.dto.KnowledgeCircleVo">
+		select
+		`id`,
+		`name`
+		from
+		`knowledge_circle`
+		where `id` = #{value}
+	</select>
+
+	<select id="getKnowledgeCircleUserList" resultType="codedriver.module.knowledge.dto.KnowledgeCircleUserVo">
+		select
+		`uuid`,
+		`type`,
+		`auth_type` as authType
+		from `knowledge_circle_user`
+		where `knowledge_circle_id` = #{value}
+	</select>
+
+	<update id="updateKnowledgeCircle" parameterType="codedriver.module.knowledge.dto.KnowledgeCircleVo">
+		UPDATE `knowledge_circle` SET
+		 `name` = #{name}
+		 WHERE `id` = #{id}
+	</update>
+
+    <insert id="insertKnowledgeCircle" parameterType="codedriver.module.knowledge.dto.KnowledgeCircleVo">
+		insert into `knowledge_circle`(
+		`id`,
+		`name`
+		)
+		values(
+		#{id},
+		#{name}
+		)
+    </insert>
+
+	<insert id="batchInsertKnowledgeCircleUser" parameterType="java.util.List">
+		INSERT INTO `knowledge_circle_user`(
+		`knowledge_circle_id`,
+		`uuid`,
+		`type`,
+		`auth_type`
+		)
+		VALUES
+		<foreach collection="list" index="index" item="item" separator=",">
+			(
+			#{item.knowledgeCircleId},
+			#{item.uuid},
+			#{item.type},
+			#{item.authType}
+			)
+		</foreach>
+	</insert>
+
+	<delete id="deleteKnowledgeCircleById" parameterType="java.lang.Long">
+		delete from `knowledge_circle` where `id` = #{value}
+	</delete>
+
+	<delete id="deleteKnowledgeCircleUserById" parameterType="java.lang.Long">
+		delete from `knowledge_circle_user` where `knowledge_circle_id` = #{value}
+	</delete>
+
+</mapper>

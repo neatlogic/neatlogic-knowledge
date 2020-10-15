@@ -10,11 +10,12 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.function.BiPredicate;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-public class LCSTest {
+public class LCSTest2 {
     private final static String BASE_PATH = "src/main/java/codedriver/module/knowledge/lcstest/";
     
     public static void main(String[] args) {
@@ -22,7 +23,7 @@ public class LCSTest {
         List<String> newDataList = readFileData(BASE_PATH + "newData.txt");
         List<String> oldResultList = new ArrayList<>();
         List<String> newResultList = new ArrayList<>();
-        List<SegmentMapping> segmentMappingList = longestCommonSequence(oldDataList, newDataList).getSegmentMappingList();
+        List<SegmentMapping> segmentMappingList = longestCommonSequence(oldDataList, newDataList, (str1, str2) -> str1.equals(str2)).getSegmentMappingList();
         for(SegmentMapping segmentMapping : segmentMappingList) {
             test(oldDataList, newDataList, oldResultList, newResultList, segmentMapping);
         }
@@ -87,7 +88,15 @@ public class LCSTest {
               if(oldStr.length() > 0 && newStr.length() > 0) {
                   List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
                   List<SegmentRange> newSegmentRangeList = new ArrayList<>();
-                  for(SegmentMapping segmentmapping : longestCommonSequence(oldStr, newStr).getSegmentMappingList()) {
+                  List<Character> oldCharList = new ArrayList<>();
+                  for(char c : oldStr.toCharArray()) {
+                      oldCharList.add(c);
+                  }
+                  List<Character> newCharList = new ArrayList<>();
+                  for(char c : newStr.toCharArray()) {
+                      newCharList.add(c);
+                  }
+                  for(SegmentMapping segmentmapping : longestCommonSequence(oldCharList, newCharList, (c1, c2) -> c1.equals(c2)).getSegmentMappingList()) {
                       oldSegmentRangeList.add(segmentmapping.getOldSegmentRange());
                       newSegmentRangeList.add(segmentmapping.getNewSegmentRange());
                   }
@@ -105,69 +114,14 @@ public class LCSTest {
           }
       }
     }
-    private static Node longestCommonSequence(String oldStr, String newStr) {
-        char[] x = oldStr.toCharArray();
-        char[] y = newStr.toCharArray();
-        Node[][] lcs = new Node[x.length][y.length];
-        
-        for(int i = 0; i < x.length; i++) {
-            for(int j = 0; j < y.length; j++) {
-                Node currentNode = new Node(i, j);
-                lcs[i][j] = currentNode;
-                if(x[i] == y[j]) {
-                    currentNode.setTotalMatchLength(1).setMatch(true);
-                    Node upperLeftNode = null;
-                    if(i > 0 && j > 0) {
-                        upperLeftNode = lcs[i-1][j-1];
-                    }
-                    if(upperLeftNode != null) {
-                        currentNode.setTotalMatchLength(upperLeftNode.getTotalMatchLength() + 1).setPrevious(upperLeftNode);
-                    }
-                }else {
-                    int left = 0;
-                    int top = 0;
-                    Node leftNode = null;
-                    if(j > 0) {
-                        leftNode = lcs[i][j-1];
-                    }
-                    if(leftNode != null) {
-                        left = leftNode.getTotalMatchLength();
-                    }
-                    Node topNode = null;
-                    if(i > 0) {
-                        topNode = lcs[i-1][j];
-                    }
-                    if(topNode != null) {
-                        top = topNode.getTotalMatchLength();
-                    }
-                    if(top >= left) {
-                        currentNode.setTotalMatchLength(top).setPrevious(topNode);
-                    }else {
-                        currentNode.setTotalMatchLength(left).setPrevious(leftNode);
-                    }
-                }
-            }
-        }
-        
-//        for(int i = 0; i < x.length; i++) {
-//            for(int j = 0; j < y.length; j++) {
-//                System.out.print(lcs[i][j]);
-//                System.out.print("\t");
-//            }
-//            System.out.println();
-//        }
-//        System.out.println(oldStr);
-//        System.out.println(newStr);
-        return lcs[x.length-1][y.length-1];
-    }
     
-    private static Node longestCommonSequence(List<String> oldList, List<String> newList) {
+    private static <T> Node longestCommonSequence(List<T> oldList, List<T> newList, BiPredicate<T, T> biPredicate) {
         Node[][] lcs = new Node[oldList.size()][newList.size()];       
         for(int i = 0; i < oldList.size(); i++) {
             for(int j = 0; j < newList.size(); j++) {
                 Node currentNode = new Node(i, j);
                 lcs[i][j] = currentNode;
-                if(oldList.get(i).equals(newList.get(j))) {
+                if(biPredicate.test(oldList.get(i), newList.get(j))) {
                     currentNode.setTotalMatchLength(1).setMatch(true);
                     Node upperLeftNode = null;
                     if(i > 0 && j > 0) {
@@ -217,17 +171,23 @@ public class LCSTest {
         List<SegmentMapping> segmentMappingList = new ArrayList<>();
         List<Node> resultList = new ArrayList<>();
         PriorityQueue<Node> priorityQueue = new PriorityQueue<>(oldList.size() * newList.size(), (e1, e2) -> Integer.compare(e2.getTotalMatchLength(), e1.getTotalMatchLength()));
-//        Node[][] lcs = new Node[oldList.size()][newList.size()];
         for(int i = 0; i < oldList.size(); i++) {
             for(int j = 0; j < newList.size(); j++) {
                 Node currentNode = new Node(i, j);
-//                lcs[i][j] = currentNode;
                 String oldStr = oldList.get(i);
                 String newStr = newList.get(j);
                 if(StringUtils.isBlank(oldStr) || StringUtils.isBlank(newStr)) {
                     currentNode.setTotalMatchLength(0);
                 }else {
-                    Node node = longestCommonSequence(oldStr, newStr);
+                    List<Character> oldCharList = new ArrayList<>();
+                    for(char c : oldStr.toCharArray()) {
+                        oldCharList.add(c);
+                    }
+                    List<Character> newCharList = new ArrayList<>();
+                    for(char c : newStr.toCharArray()) {
+                        newCharList.add(c);
+                    }
+                    Node node = longestCommonSequence(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
                     int maxLength = Math.max(StringUtils.length(oldStr), StringUtils.length(newStr));
                     int matchPercentage = (node.getTotalMatchLength() * 1000) / maxLength;
                     currentNode.setTotalMatchLength(matchPercentage);

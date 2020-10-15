@@ -26,6 +26,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * 关于知识圈中的知识类型说明：
+ * 1、知识类型会在每一次保存知识圈时全部删除，再重新插入
+ * 2、前端传入包含所有知识类型的JSON(knowledgeType)，此JSON保持树形结构，结构形如：
+ * {"children":[{"children":[],"name":"test2","parentId":0,"id":1},{"children":[{"children":[{"children":[],"name":"aaa","parentId":3,"id":5},{"children":[],"name":"bbb","parentId":3,"id":4}],"name":"wqeqw","parentId":2,"id":3}],"name":"test1","parentId":0,"id":2}]}
+ * 后端需要据此解析出每一个知识类型，并根据顺序构建左右编码
+ *
+ */
+
 @AuthAction(name = "KNOWLEDGE_CIRCLE_MODIFY")
 @Service
 @Transactional
@@ -56,7 +65,6 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 		return null;
 	}
 
-
 	@Input({
 			@Param( name = "id", type = ApiParamType.LONG, desc = "知识圈ID"),
 			@Param( name = "name", type = ApiParamType.REGEX, rule = "^[A-Za-z_\\d\\u4e00-\\u9fa5]+$", desc = "名称", isRequired = true,xss=true),
@@ -79,14 +87,6 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 		knowledgeCircleVo.setId(id);
 		knowledgeCircleVo.setName(name);
 
-		/** 解析知识类型JSON*/
-		List<KnowledgeTypeVo> typeList = new ArrayList<>();
-		parseKnowledgeTypeJson(knowledgeType,typeList,knowledgeCircleVo.getId());
-
-		/** 解析知识圈用户，包括审批人与成员 */
-		List<KnowledgeCircleUserVo> circleUserList = getKnowledgeCircleUserList(approver, member, knowledgeCircleVo.getId());
-
-
 		if(id != null){
 			if(knowledgeCircleMapper.checkKnowledgeCircleExistsById(id) == 0){
 				throw new KnowledgeCircleNotFoundException(id);
@@ -95,6 +95,7 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 				throw new KnowledgeCircleNameRepeatException(name);
 			}
 			knowledgeCircleMapper.updateKnowledgeCircle(knowledgeCircleVo);
+			/** 先删除知识圈用户与知识圈中的知识类型，最后重新插入 */
 			knowledgeTypeMapper.deleteKnowledgeTypeByCircleId(knowledgeCircleVo.getId());
 			knowledgeCircleMapper.deleteKnowledgeCircleUserById(id);
 		}else{
@@ -103,8 +104,16 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 			}
 			knowledgeCircleMapper.insertKnowledgeCircle(knowledgeCircleVo);
 		}
+
+		/** 解析知识类型JSON*/
+		List<KnowledgeTypeVo> typeList = new ArrayList<>();
+		parseKnowledgeTypeJson(knowledgeType,typeList,knowledgeCircleVo.getId());
+		/** 解析知识圈用户，包括审批人与成员 */
+		List<KnowledgeCircleUserVo> circleUserList = getKnowledgeCircleUserList(approver, member, knowledgeCircleVo.getId());
+
 		if(CollectionUtils.isNotEmpty(typeList)){
 			knowledgeTypeMapper.batchInsertKnowledgeType(typeList);
+			/** knowledgeType中并不包含左右编码，故需要根据parentId与sort重建左右编码 */
 			knowledgeTypeService.rebuildLeftRightCode();
 		}
 		if(CollectionUtils.isNotEmpty(circleUserList)){
@@ -156,6 +165,11 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 		return circleUserList;
 	}
 
+	/**
+	 * 转换授权列表
+	 * @param authList
+	 * @return
+	 */
 	private List<AuthorityVo> getAuthList(List<String> authList){
 		List<AuthorityVo> list = new ArrayList<>();
 		if(CollectionUtils.isNotEmpty(authList)) {
@@ -189,6 +203,7 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 				knowledgeTypeVo.setParentId(obj.getLong("parentId"));
 				knowledgeTypeVo.setName(obj.getString("name"));
 				knowledgeTypeVo.setKnowledgeCircleId(knowledgeCircleId);
+				/** sort的用处在于重建左右编码 */
 				knowledgeTypeVo.setSort(i);
 				list.add(knowledgeTypeVo);
 				parseKnowledgeTypeJson(objArray.get(i),list,knowledgeCircleId);

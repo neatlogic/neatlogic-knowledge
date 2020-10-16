@@ -18,10 +18,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -85,52 +82,52 @@ public class KnowledgeCircleSearchApi extends PrivateApiComponentBase{
 		List<KnowledgeCircleVo> circleList = knowledgeCircleMapper.searchKnowledgeCircle(knowledgeCircleVo);
 		if(CollectionUtils.isNotEmpty(circleList)){
 			for(KnowledgeCircleVo vo : circleList){
-				/** 计算成员数与查询审批人
-				 * 先根据知识圈ID查询所有关联的对象
-				 * 然后通过authType分别统计成员数和审批人
+				/**
+				 * 计算成员数与查询审批人
 				 */
-				List<KnowledgeCircleUserVo> authObjList = knowledgeCircleMapper.getKnowledgeCircleUserList(vo.getId());
-				if(CollectionUtils.isNotEmpty(authObjList)){
-					Set<String> memberUuidSet = new TreeSet<>();
-					Set<String> approverUuidSet = new TreeSet<>();
-					for(KnowledgeCircleUserVo obj : authObjList){
-						if(GroupSearch.USER.getValue().equals(obj.getType())){
-							if(KnowledgeCircleUserVo.AuthType.MEMBER.getValue().equals(obj.getAuthType())){
-								memberUuidSet.add(obj.getUuid());
-							}else if(KnowledgeCircleUserVo.AuthType.APPROVER.getValue().equals(obj.getAuthType())){
-								approverUuidSet.add(obj.getUuid());
-							}
-						}else if(GroupSearch.TEAM.getValue().equals(obj.getType())){
-							List<String> uuidList = userMapper.getUserUuidListByTeamUuid(obj.getUuid());
-							if(KnowledgeCircleUserVo.AuthType.MEMBER.getValue().equals(obj.getAuthType())){
-								memberUuidSet.addAll(uuidList);
-							}else if(KnowledgeCircleUserVo.AuthType.APPROVER.getValue().equals(obj.getAuthType())){
-								approverUuidSet.addAll(uuidList);
-							}
-						}else if(GroupSearch.ROLE.getValue().equals(obj.getType())){
-							List<String> uuidList = userMapper.getUserUuidListByRoleUuid(obj.getUuid());
-							if(KnowledgeCircleUserVo.AuthType.MEMBER.getValue().equals(obj.getAuthType())){
-								memberUuidSet.addAll(uuidList);
-							}else if(KnowledgeCircleUserVo.AuthType.APPROVER.getValue().equals(obj.getAuthType())){
-								approverUuidSet.addAll(uuidList);
-							}
-						}
-					}
-					vo.setMemberCount(memberUuidSet.size());
-					/** 根据筛选到的审批人UUID查询用户名 */
-					if(CollectionUtils.isNotEmpty(approverUuidSet)){
-						List<String> approverNameList = new ArrayList<>();
-						for(String uuid : approverUuidSet){
-							approverNameList.add(userMapper.getUserBaseInfoByUuid(uuid).getUserName());
-						}
-						vo.setApproverNameList(approverNameList);
-					}
+				List<KnowledgeCircleUserVo> approverList = knowledgeCircleMapper.getKnowledgeCircleUserListByIdAndAuthType(vo.getId(), KnowledgeCircleUserVo.AuthType.APPROVER.getValue());
+				List<KnowledgeCircleUserVo> memberList = knowledgeCircleMapper.getKnowledgeCircleUserListByIdAndAuthType(vo.getId(), KnowledgeCircleUserVo.AuthType.MEMBER.getValue());
+				Set<String> memberUuidSet = new TreeSet<>();
+				Set<String> approverUuidSet = new TreeSet<>();
+				/** 统计审批人用户UUID */
+				getAuthUserUuidSet(approverList, approverUuidSet);
+				/** 统计成员用户UUID */
+				getAuthUserUuidSet(memberList, memberUuidSet);
+
+				vo.setMemberCount(memberUuidSet.size());
+
+				/** 根据筛选到的审批人UUID查询用户名 */
+				if(CollectionUtils.isNotEmpty(approverUuidSet)){
+					List<String> approverNameList = userMapper.getUserNameListByUuidList(new ArrayList<>(approverUuidSet));
+					vo.setApproverNameList(approverNameList);
 				}
 			}
 		}
 
 		returnObj.put("circleList", circleList);
 		return returnObj;
+	}
+
+	private void getAuthUserUuidSet(List<KnowledgeCircleUserVo> authList, Set<String> uuidSet) {
+		if(CollectionUtils.isNotEmpty(authList)){
+			List<String> teamUuidList = new ArrayList<>();
+			List<String> roleUuidList = new ArrayList<>();
+			for (KnowledgeCircleUserVo obj : authList) {
+				if (GroupSearch.USER.getValue().equals(obj.getType())) {
+					uuidSet.add(obj.getUuid());
+				} else if (GroupSearch.TEAM.getValue().equals(obj.getType())) {
+					teamUuidList.add(obj.getUuid());
+				} else if (GroupSearch.ROLE.getValue().equals(obj.getType())) {
+					roleUuidList.add(obj.getUuid());
+				}
+			}
+			if(CollectionUtils.isNotEmpty(teamUuidList)){
+				uuidSet.addAll(userMapper.getUserUuidListByTeamUuidList(teamUuidList));
+			}
+			if(CollectionUtils.isNotEmpty(roleUuidList)){
+				uuidSet.addAll(userMapper.getUserUuidListByRoleUuidList(roleUuidList));
+			}
+		}
 	}
 
 }

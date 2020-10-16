@@ -7,6 +7,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeTypeMapper;
+import codedriver.module.knowledge.exception.KnowledgeCircleHasKnowledgeException;
 import codedriver.module.knowledge.exception.KnowledgeCircleNotFoundException;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,9 +51,13 @@ public class KnowledgeCircleDeleteApi extends PrivateApiComponentBase{
 		if(knowledgeCircleMapper.checkKnowledgeCircleExistsById(id) == 0){
 			throw new KnowledgeCircleNotFoundException(id);
 		}
-		knowledgeCircleMapper.deleteKnowledgeCircleById(id);
+		if(knowledgeCircleMapper.checkCircleHasKnowledge(id) > 0){
+			throw new KnowledgeCircleHasKnowledgeException(id);
+		}
+		/** 删除知识圈用户、知识类型 */
 		knowledgeCircleMapper.deleteKnowledgeCircleUserById(id);
 		knowledgeTypeMapper.deleteKnowledgeTypeByCircleId(id);
+		knowledgeCircleMapper.deleteKnowledgeCircleById(id);
 		return null;
 	}
 

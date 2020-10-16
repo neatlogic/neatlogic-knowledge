@@ -37,19 +37,19 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class KnowledgeDocumentSaveApi extends PrivateApiComponentBase {
+public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
 
     @Override
     public String getToken() {
-        return "knowledge/document/save";
+        return "knowledge/document/draft/save";
     }
 
     @Override
     public String getName() {
-        return "保存文档";
+        return "保存文档草稿";
     }
 
     @Override
@@ -69,7 +69,7 @@ public class KnowledgeDocumentSaveApi extends PrivateApiComponentBase {
     @Output({
         @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id")
     })
-    @Description(desc = "保存文档")
+    @Description(desc = "保存文档草稿")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");

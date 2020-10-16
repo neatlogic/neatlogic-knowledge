@@ -26,6 +26,12 @@ public interface KnowledgeDocumentMapper {
 
     public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionList(KnowledgeDocumentVersionVo oldKnowledgeDocumentVersionVo);
 
+    public List<KnowledgeDocumentLineVo> getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
+
+    public List<Long> getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId(KnowledgeDocumentFileVo knowledgeDocumentFileVo);
+
+    public List<Long> getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(KnowledgeDocumentTagVo knowledgeDocumentTagVo);
+
     public int insertKnowledgeDocument(KnowledgeDocumentVo documentVo);
 
     public int insertKnowledgeDocumentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
@@ -45,6 +51,8 @@ public interface KnowledgeDocumentMapper {
     public int updateKnowledgeDocumentVersionSizeById(@Param("id") Long id, @Param("size") int size);
 
     public int updateKnowledgeDocumentVersionById(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+
+    public int updateKnowledgeDocumentVersionStatusById(@Param("id") Long id, @Param("status") String status);
 
     public int deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
 

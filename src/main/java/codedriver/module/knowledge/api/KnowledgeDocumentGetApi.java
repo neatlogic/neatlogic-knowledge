@@ -1,9 +1,18 @@
 package codedriver.module.knowledge.api;
 
+import java.util.List;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
+import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.dao.mapper.TagMapper;
+import codedriver.framework.dto.TagVo;
+import codedriver.framework.file.dao.mapper.FileMapper;
+import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -11,10 +20,24 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
+
+    @Autowired
+    private KnowledgeDocumentMapper knowledgeDocumentMapper;
+    @Autowired
+    private FileMapper fileMapper;
+    @Autowired
+    private TagMapper tagMapper;
 
     @Override
     public String getToken() {
@@ -31,15 +54,44 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         return null;
     }
     
-    @Input({})
-    @Output({
-        @Param(explode = KnowledgeDocumentVo[].class, desc = "两个版本文档内容")
+    @Input({
+        @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, isRequired = true, desc = "文档id"),
+        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
     })
-    @Description(desc = "比较两个版本文档内容差异")
+    @Output({
+        @Param(explode = KnowledgeDocumentVo.class, desc = "文档内容")
+    })
+    @Description(desc = "查询文档内容")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        // TODO Auto-generated method stub
-        return null;
+        Long knowledgeDocumentId = jsonObj.getLong("knowledgeDocumentId");
+        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId);
+        if(knowledgeDocumentVo == null) {
+            throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
+        }
+        Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
+        if(knowledgeDocumentVersionId == null) {
+            knowledgeDocumentVersionId = knowledgeDocumentVo.getKnowledgeDocumentVersionId();
+        }
+        KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
+        if(knowledgeDocumentVersionVo == null) {
+            throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
+        }
+        List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+        knowledgeDocumentVo.setLineList(lineList);
+        List<Long> fileIdList = knowledgeDocumentMapper.getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentId, knowledgeDocumentVersionId));
+        if(CollectionUtils.isNotEmpty(fileIdList)) {
+            List<FileVo> fileList = fileMapper.getFileListByIdList(fileIdList);
+            knowledgeDocumentVo.setFileIdList(fileIdList);
+            knowledgeDocumentVo.setFileList(fileList);
+        }
+        List<Long> tagIdList = knowledgeDocumentMapper.getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(knowledgeDocumentId, knowledgeDocumentVersionId));
+        if(CollectionUtils.isNotEmpty(tagIdList)) {
+            List<TagVo> tagList = tagMapper.getTagListByIdList(tagIdList);
+            knowledgeDocumentVo.setTagIdList(tagIdList);
+            knowledgeDocumentVo.setTagList(tagList);
+        }
+        return knowledgeDocumentVo;
     }
 
 }

@@ -129,6 +129,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
                 knowledgeDocumentVersionVo.setId(drafrVersionId);
                 knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
+                knowledgeDocumentVersionVo.setStatus(KnowledgeDocumentVersionStatus.DRAFT.getValue());
                 knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
                 knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(knowledgeDocumentVersionVo);
                 knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(drafrVersionId);

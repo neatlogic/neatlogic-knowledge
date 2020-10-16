@@ -66,6 +66,39 @@
 	</if>
 	</select>
 	
+	<select id="getKnowledgeDocumentLineListByKnowledgeDocumentVersionId" parameterType="java.lang.Long">
+	SELECT 
+	  a.`uuid`,
+	  a.`handler`,
+	  a.`knowledge_document_id` AS knowledgeDocumentId,
+	  a.`knowledge_document_version_id` AS knowledgeDocumentVersionId,
+	  a.`content_hash` AS contentHash,
+	  b.`content`,
+	  a.`config_hash` AS configHash,
+  	  c.`config`,
+	  a.`line_number` AS lineNumber 
+	FROM `knowledge_document_line` a
+	LEFT JOIN `knowledge_document_line_content` b ON b.`hash` = a.`content_hash`
+	LEFT JOIN `knowledge_document_line_config` c ON c.`hash` = a.`config_hash`
+	WHERE a.`knowledge_document_version_id` = #{value}
+	</select>
+	
+	<select id="getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentFileVo" resultType="java.lang.Long">
+	SELECT 
+	  `file_id`
+	FROM `knowledge_document_file` 
+	WHERE `knowledge_document_id` = #{knowledgeDocumentId}
+	AND `knowledge_document_version_id` = #{knowledgeDocumentVersionId}
+	</select>
+	
+	<select id="getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentTagVo" resultType="java.lang.Long">
+	SELECT 
+	  `tag_id`
+	FROM `knowledge_document_tag` 
+	WHERE `knowledge_document_id` = #{knowledgeDocumentId}
+	AND `knowledge_document_version_id` = #{knowledgeDocumentVersionId}
+	</select>
+	
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	INSERT INTO `knowledge_document` (
 	  `id`,
@@ -177,9 +210,14 @@
 	UPDATE `knowledge_document_version` 
 	SET 
 		`title` = #{size}, 
+		`status` = #{status}, 
 		`lcu` = #{lcu},
 		`lcd` = NOW()
 	WHERE `id` = #{id}
+	</update>
+	
+	<update id="updateKnowledgeDocumentVersionStatusById">
+	UPDATE `knowledge_document_version` SET `status` = #{status} WHERE `id` = #{id}
 	</update>
 	
 	<delete id="deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId" parameterType="java.lang.Long">

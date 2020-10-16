@@ -1,5 +1,8 @@
 package codedriver.module.knowledge.dto;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -18,6 +21,7 @@ public class KnowledgeDocumentLineVo {
     private transient Long knowledgeDocumentVersionId;
     private transient String contentHash;
     private transient String configHash;
+    private transient String configStr;
     public KnowledgeDocumentLineVo() {
     }
     public KnowledgeDocumentLineVo(Integer lineNumber, String handler, String content) {
@@ -52,8 +56,8 @@ public class KnowledgeDocumentLineVo {
     public JSONObject getConfig() {
         return config;
     }
-    public void setConfig(JSONObject config) {
-        this.config = config;
+    public void setConfig(String config) {
+        this.config = JSON.parseObject(config);
     }
     public Integer getLineNumber() {
         return lineNumber;
@@ -84,6 +88,12 @@ public class KnowledgeDocumentLineVo {
     }
     public void setConfigHash(String configHash) {
         this.configHash = configHash;
+    }
+    public String getConfigStr() {
+        if(StringUtils.isBlank(configStr) && config != null) {
+            configStr = JSON.toJSONString(config);
+        }
+        return configStr;
     }
     
 //    @Override

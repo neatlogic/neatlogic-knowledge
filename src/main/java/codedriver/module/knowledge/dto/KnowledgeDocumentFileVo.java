@@ -8,10 +8,9 @@ public class KnowledgeDocumentFileVo {
     public KnowledgeDocumentFileVo() {
         
     }
-    public KnowledgeDocumentFileVo(Long knowledgeDocumentId, Long knowledgeDocumentVersionId, Long fileId) {
+    public KnowledgeDocumentFileVo(Long knowledgeDocumentId, Long knowledgeDocumentVersionId) {
         this.knowledgeDocumentId = knowledgeDocumentId;
         this.knowledgeDocumentVersionId = knowledgeDocumentVersionId;
-        this.fileId = fileId;
     }
     public Long getKnowledgeDocumentId() {
         return knowledgeDocumentId;

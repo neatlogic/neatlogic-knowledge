@@ -13,7 +13,188 @@
 	WHERE `id` = #{value}
 	</select>
 	
+	<select id="getKnowledgeDocumentVersionById" parameterType="java.lang.Long" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
+	SELECT 
+	  `id`,
+	  `title`,
+	  `knowledge_document_id` AS knowledgeDocumentId,
+	  `version`,
+	  `status`,
+	  `lcu`,
+	  `lcd`,
+	  `size`,
+	  `reviewer`,
+	  `reviewer_time` AS reviewerTime 
+	FROM `knowledge_document_version` 
+	WHERE `id` = #{value}
+	</select>
+	
+	<select id="checkKnowledgeDocumentLineConfigHashIsExists" parameterType="java.lang.String" resultType="int">
+	SELECT COUNT(`hash`) FROM `knowledge_document_line_config` WHERE `hash` = #{value}
+	</select>
+	
+	<select id="checkKnowledgeDocumentLineContentHashIsExists" parameterType="java.lang.String" resultType="int">
+	SELECT COUNT(`hash`) FROM `knowledge_document_line_content` WHERE `hash` = #{value}
+	</select>
+	
+	<select id="getKnowledgeDocumentLockById" parameterType="java.lang.Long" resultType="java.lang.Long">
+	SELECT `id` FROM `knowledge_document` WHERE `id` = #{value} FOR UPDATE
+	</select>
+	
+	<select id="getKnowledgeDocumentVersionList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
+	SELECT 
+	  `id`,
+	  `title`,
+	  `knowledge_document_id` AS knowledgeDocumentId,
+	  `version`,
+	  `status`,
+	  `lcu`,
+	  `lcd`,
+	  `size`,
+	  `reviewer`,
+	  `reviewer_time` AS reviewerTime 
+	FROM `knowledge_document_version`
+	WHERE `knowledge_document_id` = #{knowledgeDocumentId}
+	<if test="version != null">
+	AND `version` = #{version}
+	</if>
+	<if test="lcu != null and lcu != ''">
+	AND `lcu` = #{lcu}
+	</if>
+	<if test="lcu != null and lcu != ''">
+	AND	`status` = #{status}
+	</if>
+	</select>
+	
+	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
+	INSERT INTO `knowledge_document` (
+	  `id`,
+	  `knowledge_document_version_id`,
+	  `knowledge_type_id`,
+	  `knowledge_circle_id`,
+	  `fcu`,
+	  `fcd`,
+	) 
+	VALUES
+	  (
+	    #{id},
+	    #{knowledgeDocumentVersionId},
+	    #{knowledgeTypeId},
+	    #{knowledgeCircleId},
+	    #{fcu},
+	    NOW()
+	  )
+	</insert>
+	
+	<insert id="insertKnowledgeDocumentVersion" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
+	INSERT INTO `knowledge_document_version` (
+	  `id`,
+	  `title`,
+	  `knowledge_document_id`,
+	  `version`,
+	  `status`,
+	  `lcu`,
+	  `lcd`
+	) 
+	VALUES
+	  (
+	    #{id},
+	    #{title},
+	    #{knowledgeDocumentId},
+	    #{version},
+	    #{status},
+	    #{lcu},
+	    NOW()
+	  )
+	</insert>
+	
+	<insert id="insertKnowledgeDocumentFile" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentFileVo">
+	INSERT INTO `knowledge_document_file` (
+	  `knowledge_document_id`,
+	  `knowledge_document_version_id`,
+	  `file_id`
+	) 
+	VALUES
+	  (
+	    #{knowledgeDocumentId},
+	    #{knowledgeDocumentVersionId},
+	    #{fileId}
+	  )
+	</insert>
+	
+	<insert id="insertKnowledgeDocumentTag" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentTagVo">
+	INSERT INTO `knowledge_document_file` (
+	  `knowledge_document_id`,
+	  `knowledge_document_version_id`,
+	  `tag_id`
+	) 
+	VALUES
+	  (
+	    #{knowledgeDocumentId},
+	    #{knowledgeDocumentVersionId},
+	    #{tagId}
+	  )
+	</insert>
+	
+	<insert id="insertKnowledgeDocumentLineConfig" paramterType="codedriver.module.knowledge.dto.KnowledgeDocumentLineConfigVo">
+	INSERT INTO `knowledge_document_line_config` (`hash`, `config`) VALUES (#{hash}, #{config})
+	</insert>
+	
+	<insert id="insertKnowledgeDocumentLineContent" paramterType="codedriver.module.knowledge.dto.KnowledgeDocumentLineContentVo">
+	INSERT INTO `knowledge_document_line_content` (`hash`, `content`) VALUES (#{hash}, #{content})
+	</insert>
+	
+	<insert id="insertKnowledgeDocumentLine" paramterType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
+	INSERT INTO `knowledge_document_line` (
+	  `uuid`,
+	  `handler`,
+	  `knowledge_document_id`,
+	  `knowledge_document_version_id`,
+	  `content_hash`,
+	  `config_hash`,
+	  `line_number`
+	) 
+	VALUES
+	  (
+	    #{uuid},
+	    #{handler},
+	    #{knowledgeDocumentId},
+	    #{knowledgeDocumentVersionId},
+	    #{contentHash},
+	    #{configHash},
+	    #{lineNumber}
+	  )
+	</insert>
+	
 	<update id="updateKnowledgeDocumentToDeleteById" parameterType="java.lang.Long">
 	UPDATE `knowledge_document` SET `is_delete` = 0  WHERE `id` = #{value}
 	</update>
+	
+	<update id="updateKnowledgeDocumentVersionSizeById">
+	UPDATE `knowledge_document_version` SET `size` = #{size} WHERE `id` = #{id}
+	</update>
+	<update id="updateKnowledgeDocumentVersionById" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
+	UPDATE `knowledge_document_version` 
+	SET 
+		`title` = #{size}, 
+		`lcu` = #{lcu},
+		`lcd` = NOW()
+	WHERE `id` = #{id}
+	</update>
+	
+	<delete id="deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId" parameterType="java.lang.Long">
+	DELETE FROM `knowledge_document_line` WHERE `knowledge_document_version_id` = #{value}
+	</delete>
+	
+	<delete id="deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentFileVo">
+	DELETE FROM `knowledge_document_file` 
+	WHERE `knowledge_document_id` = #{knowledgeDocumentId} 
+	AND `knowledge_document_version_id` = #{knowledgeDocumentVersionId}
+	</delete>
+	
+	<delete id="deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentTagVo">
+	DELETE FROM `knowledge_document_tag` 
+	WHERE `knowledge_document_id` = #{knowledgeDocumentId} 
+	AND `knowledge_document_version_id` = #{knowledgeDocumentVersionId}
+	</delete>
 </mapper>

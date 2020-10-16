@@ -1,5 +1,6 @@
 package codedriver.module.knowledge.dto;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -39,15 +40,15 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     @EntityField(name = "审核时间", type = ApiParamType.LONG)
     private Date reviewerTime;
     @EntityField(name = "行数据列表", type = ApiParamType.JSONARRAY)
-    private List<KnowledgeDocumentLineVo> lineList;
+    private List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
     @EntityField(name = "附件列表", type = ApiParamType.JSONARRAY)
-    private List<FileVo> fileList;
+    private List<FileVo> fileList = new ArrayList<>();
     @EntityField(name = "标签列表", type = ApiParamType.JSONARRAY)
-    private List<TagVo> tagList;
+    private List<TagVo> tagList = new ArrayList<>();
     @JSONField(serialize=false)
-    private transient List<Long> fileIdList;
+    private transient List<Long> fileIdList = new ArrayList<>();
     @JSONField(serialize=false)
-    private transient List<Long> tagIdList;
+    private transient List<Long> tagIdList = new ArrayList<>();
     private transient Integer isDelete;
     @JSONField(serialize=false)
     private transient boolean isAutoGenerateId = true;

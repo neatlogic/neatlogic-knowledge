@@ -1,4 +1,4 @@
-package codedriver.module.knowledge.dao;
+package codedriver.module.knowledge.dao.mapper;
 
 import java.util.List;
 

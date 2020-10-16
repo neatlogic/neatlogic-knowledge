@@ -21,7 +21,7 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
-import codedriver.module.knowledge.dao.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineConfigVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineContentVo;

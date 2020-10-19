@@ -20,6 +20,10 @@ public interface KnowledgeCircleMapper {
 
     public List<KnowledgeCircleUserVo> getKnowledgeCircleUserList(Long knowledgeCircleId);
 
+    public List<KnowledgeCircleUserVo> getKnowledgeCircleUserListByIdAndAuthType(@Param("circleId") Long circleId,@Param("authType") String authType);
+
+    public int checkCircleHasKnowledge(Long id);
+
     public void updateKnowledgeCircle(KnowledgeCircleVo knowledgeCircleVo);
 
     public void insertKnowledgeCircle(KnowledgeCircleVo knowledgeCircleVo);

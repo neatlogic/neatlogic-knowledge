@@ -55,6 +55,20 @@
 		where `knowledge_circle_id` = #{value}
 	</select>
 
+	<select id="getKnowledgeCircleUserListByIdAndAuthType" resultType="codedriver.module.knowledge.dto.KnowledgeCircleUserVo">
+		select
+		`uuid`,
+		`type`,
+		`auth_type` as authType
+		from `knowledge_circle_user`
+		where `knowledge_circle_id` = #{circleId}
+		and `auth_type` = #{authType}
+	</select>
+
+	<select id="checkCircleHasKnowledge" parameterType="java.lang.Long" resultType="int">
+		select count(1) from (select `id` from `knowledge_document` where `knowledge_circle_id` = #{value} limit 1) a
+	</select>
+
 	<update id="updateKnowledgeCircle" parameterType="codedriver.module.knowledge.dto.KnowledgeCircleVo">
 		UPDATE `knowledge_circle` SET
 		 `name` = #{name}

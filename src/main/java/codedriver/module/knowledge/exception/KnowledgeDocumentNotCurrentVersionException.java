@@ -6,7 +6,7 @@ public class KnowledgeDocumentNotCurrentVersionException extends ApiRuntimeExcep
 
     private static final long serialVersionUID = -8423316707875372218L;
 
-    public KnowledgeDocumentNotCurrentVersionException(Long id) {
-        super("文档版本：'" + id + "'不是文档的当前版本，不能在此版本上修改后保存草稿");
+    public KnowledgeDocumentNotCurrentVersionException(Integer version) {
+        super("版本：'" + version + "'不是文档的当前版本，不能在此版本上修改后保存草稿");
     }
 }

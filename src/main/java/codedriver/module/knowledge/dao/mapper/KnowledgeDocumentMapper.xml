@@ -101,6 +101,10 @@
 	AND `knowledge_document_version_id` = #{knowledgeDocumentVersionId}
 	</select>
 	
+	<select id="getKnowledgeDocumentVersionMaxVerionByKnowledgeDocumentId" parameterType="java.lang.Long" resultType="java.lang.Integer">
+	SELECT MAX(`version`) FROM `knowledge_document_version` WHERE `knowledge_document_id` = #{value}
+	</select>
+	
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	INSERT INTO `knowledge_document` (
 	  `id`,
@@ -229,8 +233,19 @@
 		<if test="reviewer != null and reviewer != ''">
 		`reviewer` = #{reviewer},
 		</if>
+		<if test="version != null">
+		`version` = #{version},
+		</if>
 		`id` = #{id}
 	WHERE `id` = #{id}
+	</update>
+	
+	<update id="updateKnowledgeDocumentVersionStatusByKnowledgeDocumentIdAndVersionAndStatus">
+	UPDATE `knowledge_document_version` 
+	SET `status` = #{newStatus}
+	WHERE `knowledge_document_id` = #{knowledgeDocumentId}
+	AND `version` = #{version}
+	AND `status` = #{oldStatus}
 	</update>
 	
 	<delete id="deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId" parameterType="java.lang.Long">

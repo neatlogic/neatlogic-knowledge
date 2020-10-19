@@ -61,7 +61,10 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         }else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.REJECTED, "不能再提交审核，请修改后再提交");
         }
-        knowledgeDocumentMapper.updateKnowledgeDocumentVersionStatusById(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.SUBMITED.getValue());
+        KnowledgeDocumentVersionVo updateStatusVo = new KnowledgeDocumentVersionVo();
+        updateStatusVo.setId(knowledgeDocumentVersionId);
+        updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.SUBMITED.getValue());
+        knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
         return null;
     }
 

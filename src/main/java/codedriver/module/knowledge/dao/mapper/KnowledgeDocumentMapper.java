@@ -2,8 +2,6 @@ package codedriver.module.knowledge.dao.mapper;
 
 import java.util.List;
 
-import org.apache.ibatis.annotations.Param;
-
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineConfigVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineContentVo;
@@ -48,11 +46,7 @@ public interface KnowledgeDocumentMapper {
 
     public int updateKnowledgeDocumentToDeleteById(Long knowledgeDocumentId);
 
-    public int updateKnowledgeDocumentVersionSizeById(@Param("id") Long id, @Param("size") int size);
-
     public int updateKnowledgeDocumentVersionById(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
-
-    public int updateKnowledgeDocumentVersionStatusById(@Param("id") Long id, @Param("status") String status);
 
     public int deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
 
@@ -61,5 +55,7 @@ public interface KnowledgeDocumentMapper {
     public int deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(KnowledgeDocumentTagVo knowledgeDocumentTagVo);
 
     public int deleteKnowledgeDocumentVersionById(Long id);
+
+    public int deleteKnowledgeDocumentById(Long id);
 
 }

@@ -178,7 +178,10 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             knowledgeDocumentMapper.insertKnowledgeDocumentLine(knowledgeDocumentLineVo);
         }
         /** 更新文档大小 **/
-        knowledgeDocumentMapper.updateKnowledgeDocumentVersionSizeById(drafrVersionId, size);
+        KnowledgeDocumentVersionVo updateSizeVo = new KnowledgeDocumentVersionVo();
+        updateSizeVo.setId(drafrVersionId);
+        updateSizeVo.setSize(size);
+        knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateSizeVo);
         return drafrVersionId;
     }
 

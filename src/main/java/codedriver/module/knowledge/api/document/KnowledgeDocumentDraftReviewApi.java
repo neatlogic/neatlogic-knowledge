@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
@@ -62,6 +63,12 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.EXPIRED, "不能审核");
         }
+        String action = jsonObj.getString("action");
+        KnowledgeDocumentVersionVo updateStatusVo = new KnowledgeDocumentVersionVo();
+        updateStatusVo.setId(knowledgeDocumentVersionId);
+        updateStatusVo.setStatus(action);
+        updateStatusVo.setReviewer(UserContext.get().getUserUuid(true));
+        knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
         return null;
     }
 

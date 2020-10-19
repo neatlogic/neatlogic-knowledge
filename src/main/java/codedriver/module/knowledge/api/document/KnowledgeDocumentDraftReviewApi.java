@@ -1,5 +1,7 @@
 package codedriver.module.knowledge.api.document;
 
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +19,9 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftStatusException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -56,6 +60,11 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         }
         knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
+        KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        KnowledgeDocumentVersionVo documentCurrentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(documentVo.getKnowledgeDocumentVersionId());
+        if(!Objects.equals(documentCurrentVersionVo.getVersion(), knowledgeDocumentVersionVo.getVersion())) {
+            throw new KnowledgeDocumentNotCurrentVersionException(knowledgeDocumentVersionVo.getVersion());
+        }
         if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.PASSED, "不能再审核");
         }else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
@@ -70,7 +79,19 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         updateStatusVo.setId(knowledgeDocumentVersionId);
         updateStatusVo.setStatus(action);
         updateStatusVo.setReviewer(UserContext.get().getUserUuid(true));
+        if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(action)) {
+            Integer maxVersion = knowledgeDocumentMapper.getKnowledgeDocumentVersionMaxVerionByKnowledgeDocumentId(documentVo.getId());
+            if(maxVersion == null) {
+                maxVersion = 0;
+            }
+            updateStatusVo.setVersion(maxVersion + 1);
+        }
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
+        
+        if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(action)) {
+            knowledgeDocumentMapper.updateKnowledgeDocumentVersionStatusByKnowledgeDocumentIdAndVersionAndStatus(documentVo.getId(), knowledgeDocumentVersionVo.getVersion(), KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
+        }
+        
         return null;
     }
 

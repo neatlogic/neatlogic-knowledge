@@ -66,6 +66,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, desc = "标签id列表")
     })
     @Output({
+        @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, desc = "文档id"),
         @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id")
     })
     @Description(desc = "保存文档草稿")
@@ -103,9 +104,13 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
                 drafrVersionId = knowledgeDocumentVersionVo.getId();
             }else {
+                KnowledgeDocumentVersionVo documentCurrentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(oldDocumentVo.getKnowledgeDocumentVersionId());
+                if(!Objects.equals(documentCurrentVersionVo.getVersion(), oldKnowledgeDocumentVersionVo.getVersion())) {
+                    throw new KnowledgeDocumentNotCurrentVersionException(oldKnowledgeDocumentVersionVo.getVersion());
+                }
                 /** 如果入参版本id不是文档当前版本id，说明该操作是在已有草稿上再次保存 **/
                 if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
-                    throw new KnowledgeDocumentNotCurrentVersionException(knowledgeDocumentVersionId);
+                    throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.PASSED, "不能再修改");
                 }else if(KnowledgeDocumentVersionStatus.SUBMITED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
                     throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.SUBMITED, "不能再修改");
                 }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
@@ -186,7 +191,10 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         updateSizeVo.setId(drafrVersionId);
         updateSizeVo.setSize(size);
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateSizeVo);
-        return drafrVersionId;
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("knowledgeDocumentId", documentId);
+        resultObj.put("knowledgeDocumentVersionId", drafrVersionId);
+        return resultObj;
     }
 
 }

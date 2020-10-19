@@ -18,7 +18,6 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.util.UuidUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
@@ -28,8 +27,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftExpiredException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmitedException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentDraftStatusException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentHasBeenDeletedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
@@ -107,9 +105,9 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
                     throw new KnowledgeDocumentNotCurrentVersionException(knowledgeDocumentVersionId);
                 }else if(KnowledgeDocumentVersionStatus.SUBMITED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
-                    throw new KnowledgeDocumentDraftSubmitedException(knowledgeDocumentVersionId);
+                    throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.SUBMITED, "不能再修改");
                 }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
-                    throw new KnowledgeDocumentDraftExpiredException(knowledgeDocumentVersionId);
+                    throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.SUBMITED, "不能再修改");
                 }
                 drafrVersionId = knowledgeDocumentVersionId;
                 /** 覆盖旧草稿时，更新标题、修改用户、修改时间，删除行数据、附件、标签数据，后面再重新插入 **/
@@ -176,9 +174,9 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                     knowledgeDocumentMapper.insertKnowledgeDocumentLineContent(knowledgeDocumentLineContentVo);
                 }
             }
-            if(StringUtils.isBlank(knowledgeDocumentLineVo.getUuid())) {
-                knowledgeDocumentLineVo.setUuid(UuidUtil.randomUuid());
-            }
+//            if(StringUtils.isBlank(knowledgeDocumentLineVo.getUuid())) {
+//                knowledgeDocumentLineVo.setUuid(UuidUtil.randomUuid());
+//            }
             knowledgeDocumentMapper.insertKnowledgeDocumentLine(knowledgeDocumentLineVo);
         }
         /** 更新文档大小 **/

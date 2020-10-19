@@ -35,7 +35,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
     @Output({
         @Param(explode = KnowledgeDocumentVo[].class, desc = "两个版本文档内容")
     })
-    @Description(desc = "比较两个版本文档内容差异")
+    @Description(desc = "查询文档列表")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         // TODO Auto-generated method stub

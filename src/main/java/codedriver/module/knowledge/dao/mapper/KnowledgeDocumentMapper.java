@@ -32,7 +32,7 @@ public interface KnowledgeDocumentMapper {
 
     public List<Long> getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(KnowledgeDocumentTagVo knowledgeDocumentTagVo);
 
-    public int insertKnowledgeDocument(KnowledgeDocumentVo documentVo);
+    public int insertKnowledgeDocument(KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int insertKnowledgeDocumentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 

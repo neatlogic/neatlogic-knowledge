@@ -1,9 +1,7 @@
 package codedriver.module.knowledge.api.document;
 
-import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -92,27 +90,17 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 throw new KnowledgeDocumentHasBeenDeletedException(oldDocumentVo.getId());
             }
             documentId = oldDocumentVo.getId();
-            boolean isNewDraft = false;
             oldKnowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
             if(knowledgeDocumentVersionId.equals(oldDocumentVo.getKnowledgeDocumentVersionId())) {
                 /** 如果入参版本id是文档当前版本id，说明该操作是当前版本上修改首次存草稿 **/
-                /** 如果当前用户在该文档当前版本上有旧草稿，则覆盖旧草稿；如果没有，则新建草稿 **/
-                oldKnowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
-                oldKnowledgeDocumentVersionVo.setStatus(KnowledgeDocumentVersionStatus.DRAFT.getValue());
-                List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionDraftList = knowledgeDocumentMapper.getKnowledgeDocumentVersionList(oldKnowledgeDocumentVersionVo);
-                if(CollectionUtils.isNotEmpty(knowledgeDocumentVersionDraftList)) {
-                    drafrVersionId = knowledgeDocumentVersionDraftList.get(0).getId();
-                }else {
-                    KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
-                    knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
-                    knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentId);
-                    knowledgeDocumentVersionVo.setVersion(oldKnowledgeDocumentVersionVo.getVersion());
-                    knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
-                    knowledgeDocumentVersionVo.setStatus(KnowledgeDocumentVersionStatus.DRAFT.getValue());
-                    knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
-                    drafrVersionId = knowledgeDocumentVersionVo.getId();
-                    isNewDraft = true;
-                }
+                KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
+                knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
+                knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentId);
+                knowledgeDocumentVersionVo.setVersion(oldKnowledgeDocumentVersionVo.getVersion());
+                knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
+                knowledgeDocumentVersionVo.setStatus(KnowledgeDocumentVersionStatus.DRAFT.getValue());
+                knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
+                drafrVersionId = knowledgeDocumentVersionVo.getId();
             }else {
                 /** 如果入参版本id不是文档当前版本id，说明该操作是在已有草稿上再次保存 **/
                 if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
@@ -123,8 +111,6 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                     throw new KnowledgeDocumentDraftExpiredException(knowledgeDocumentVersionId);
                 }
                 drafrVersionId = knowledgeDocumentVersionId;
-            }
-            if(!isNewDraft) {
                 /** 覆盖旧草稿时，更新标题、修改用户、修改时间，删除行数据、附件、标签数据，后面再重新插入 **/
                 KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
                 knowledgeDocumentVersionVo.setId(drafrVersionId);

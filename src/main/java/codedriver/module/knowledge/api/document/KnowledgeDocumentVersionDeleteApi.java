@@ -2,6 +2,7 @@ package codedriver.module.knowledge.api.document;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -20,6 +21,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
+@Transactional
 public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
 
     @Autowired

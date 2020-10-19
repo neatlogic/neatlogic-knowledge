@@ -2,6 +2,7 @@ package codedriver.module.knowledge.api.document;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -15,6 +16,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 @Service
 @OperationType(type = OperationTypeEnum.DELETE)
+@Transactional
 public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
 
     @Autowired

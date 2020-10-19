@@ -2,6 +2,7 @@ package codedriver.module.knowledge.api.document;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -19,6 +20,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentDraftStatusExcepti
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
+@Transactional
 public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
 
     @Autowired

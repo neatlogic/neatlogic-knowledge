@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.knowledge.dao.mapper.KnowledgeTypeMapper">
+
+	<select id="getMaxRhtCode" resultType="java.lang.Integer" useCache="false">
+		SELECT MAX(`rht`) FROM `knowledge_type`
+	</select>
+
+	<resultMap id="childrenKnowledgeTypeMap" type="codedriver.module.knowledge.dto.KnowledgeTypeVo">
+		<id property="id" column="id"/>
+		<result property="name" column="name"/>
+		<result property="parentId" column="parentId"/>
+		<result property="lft" column="lft"/>
+		<result property="rht" column="rht"/>
+		<result property="childCount" column="childCount"/>
+	</resultMap>
+
+	<select id="getKnowledgeTypeByParentId" parameterType="java.lang.Long" resultMap="childrenKnowledgeTypeMap">
+		SELECT
+		a.`id`,
+		a.`name`,
+		a.`parent_id` AS parentId,
+		a.`lft`,
+		a.`rht`,
+		(SELECT COUNT(1) FROM `knowledge_type` WHERE `parent_id` = a.`id`) as `childCount`
+		FROM `knowledge_type` a
+		WHERE a.`parent_id` = #{value}
+		ORDER BY `sort` ASC
+	</select>
+
+	<select id="getKnowledgeTypeForTree" resultType="codedriver.module.knowledge.dto.KnowledgeTypeVo" useCache="false">
+		SELECT
+		a.`id`,
+		a.`name`,
+		a.`parent_id` AS parentId,
+		a.`lft`,
+		a.`rht`,
+		(SELECT COUNT(1) FROM `knowledge_type` WHERE `parent_id` = a.`id`) as `childCount`,
+		(SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_type_id` = a.`id`) as `knowledgeCount`
+		FROM `knowledge_type` a
+		WHERE a.`lft` &gt;= #{lft}
+		AND a.`rht` &lt;= #{rht}
+		ORDER BY a.`lft`
+	</select>
+
+	<update id="updateKnowledgeTypeLeftRightCode">
+	UPDATE `knowledge_type` SET `lft` = #{lft}, `rht` = #{rht} WHERE `id` = #{id}
+	</update>
+
+	<insert id="batchInsertKnowledgeType" parameterType="java.util.List">
+		INSERT INTO `knowledge_type`(
+		`id`,
+		`name`,
+		`knowledge_circle_id`,
+		`parent_id`,
+		`lft`,
+		`rht`,
+		`sort`
+		)
+		VALUES
+		<foreach collection="list" index="index" item="item" separator=",">
+			(
+			#{item.id},
+			#{item.name},
+			#{item.knowledgeCircleId},
+			#{item.parentId},
+			#{item.lft},
+			#{item.rht},
+			#{item.sort}
+			)
+		</foreach>
+	</insert>
+
+	<delete id="deleteKnowledgeTypeByCircleId" parameterType="java.lang.Long">
+		delete from `knowledge_type` where `knowledge_circle_id` = #{value}
+	</delete>
+
+</mapper>

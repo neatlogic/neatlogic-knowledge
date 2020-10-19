@@ -235,4 +235,8 @@
 	WHERE `knowledge_document_id` = #{knowledgeDocumentId} 
 	AND `knowledge_document_version_id` = #{knowledgeDocumentVersionId}
 	</delete>
+	
+	<delete id="deleteKnowledgeDocumentVersionById" parameterType="java.lang.Long">
+	DELETE FROM `knowledge_document_version` WHERE `id` = #{value}
+	</delete>
 </mapper>

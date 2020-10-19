@@ -1,4 +1,4 @@
-package codedriver.module.knowledge.api;
+package codedriver.module.knowledge.api.document;
 
 import org.springframework.stereotype.Service;
 
@@ -14,16 +14,16 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
+public class KnowledgeDocumentVersionGetApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "knowledge/document/list";
+        return "knowledge/document/get";
     }
 
     @Override
     public String getName() {
-        return "查询文档列表";
+        return "查询文档内容";
     }
 
     @Override

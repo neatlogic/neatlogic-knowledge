@@ -60,4 +60,6 @@ public interface KnowledgeDocumentMapper {
 
     public int deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(KnowledgeDocumentTagVo knowledgeDocumentTagVo);
 
+    public int deleteKnowledgeDocumentVersionById(Long id);
+
 }

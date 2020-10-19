@@ -1,4 +1,4 @@
-package codedriver.module.knowledge.api;
+package codedriver.module.knowledge.api.document;
 
 import java.util.List;
 

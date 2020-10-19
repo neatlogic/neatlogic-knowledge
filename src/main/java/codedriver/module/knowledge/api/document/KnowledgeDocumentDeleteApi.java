@@ -1,4 +1,4 @@
-package codedriver.module.knowledge.api;
+package codedriver.module.knowledge.api.document;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

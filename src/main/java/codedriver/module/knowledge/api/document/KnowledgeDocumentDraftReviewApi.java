@@ -1,4 +1,4 @@
-package codedriver.module.knowledge.api;
+package codedriver.module.knowledge.api.document;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,30 +19,31 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentDraftStatusExcepti
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
+public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
 
     @Override
     public String getToken() {
-        return "knowledge/document/draft/submit";
+        return "knowledge/document/draft/review";
     }
 
     @Override
     public String getName() {
-        return "提交审核文档草稿";
+        return "审核文档草稿";
     }
 
     @Override
     public String getConfig() {
         return null;
     }
-
     @Input({
-        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id")
+        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id"),
+        @Param(name = "action", type = ApiParamType.ENUM, rule = "passed,rejected", isRequired = true, desc = "通过，退回"),
+        @Param(name = "content", type = ApiParamType.STRING, desc = "描述")
     })
-    @Description(desc = "提交审核文档草稿")
+    @Description(desc = "审核文档草稿")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
@@ -53,15 +54,14 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.PASSED, "不能再提交审核");
-        }else if(KnowledgeDocumentVersionStatus.SUBMITED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.SUBMITED, "不能再提交审核");
-        }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.EXPIRED, "不能再提交审核，请在新版本上修改再提交");
+            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.PASSED, "不能再审核");
         }else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.REJECTED, "不能再提交审核，请修改后再提交");
+            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.REJECTED, "不能再审核");
+        }else if(KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.DRAFT, "不能审核");
+        }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.EXPIRED, "不能审核");
         }
-        knowledgeDocumentMapper.updateKnowledgeDocumentVersionStatusById(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.SUBMITED.getValue());
         return null;
     }
 

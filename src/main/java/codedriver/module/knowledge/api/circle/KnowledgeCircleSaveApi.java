@@ -30,7 +30,7 @@ import java.util.List;
  * 关于知识圈中的知识类型说明：
  * 1、知识类型会在每一次保存知识圈时全部删除，再重新插入
  * 2、前端传入包含所有知识类型的JSON(knowledgeType)，此JSON保持树形结构，结构形如：
- * {"children":[{"children":[],"name":"test2","parentId":0,"id":1},{"children":[{"children":[{"children":[],"name":"aaa","parentId":3,"id":5},{"children":[],"name":"bbb","parentId":3,"id":4}],"name":"wqeqw","parentId":2,"id":3}],"name":"test1","parentId":0,"id":2}]}
+ * {"children":[{"children":[],"name":"test2","parentUuid":"0","uuid":"b1"},{"children":[{"children":[{"children":[],"name":"aaa","parentUuid":"b3","uuid":"b5"},{"children":[],"name":"bbb","parentUuid":"b3","uuid":"b4"}],"name":"wqeqw","parentUuid":"b2","uuid":"b3"}],"name":"test1","parentUuid":"0","uuid":"b2"}]}
  * 后端需要据此解析出每一个知识类型，并根据顺序构建左右编码
  *
  */
@@ -114,7 +114,7 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 		if(CollectionUtils.isNotEmpty(typeList)){
 			knowledgeTypeMapper.batchInsertKnowledgeType(typeList);
 			/** knowledgeType中并不包含左右编码，故需要根据parentId与sort重建左右编码 */
-			knowledgeTypeService.rebuildLeftRightCode();
+			knowledgeTypeService.rebuildLeftRightCode(knowledgeCircleVo.getId());
 		}
 		if(CollectionUtils.isNotEmpty(circleUserList)){
 			knowledgeCircleMapper.batchInsertKnowledgeCircleUser(circleUserList);
@@ -199,8 +199,8 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 			for (int i = 0; i < objArray.size(); i++) {
 				JSONObject obj = objArray.getJSONObject(i);
 				KnowledgeTypeVo knowledgeTypeVo = new KnowledgeTypeVo();
-				knowledgeTypeVo.setId(obj.getLong("id"));
-				knowledgeTypeVo.setParentId(obj.getLong("parentId"));
+				knowledgeTypeVo.setUuid(obj.getString("uuid"));
+				knowledgeTypeVo.setParentUuid(obj.getString("parentUuid"));
 				knowledgeTypeVo.setName(obj.getString("name"));
 				knowledgeTypeVo.setKnowledgeCircleId(knowledgeCircleId);
 				/** sort的用处在于重建左右编码 */

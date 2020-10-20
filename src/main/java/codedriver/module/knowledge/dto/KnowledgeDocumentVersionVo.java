@@ -1,7 +1,11 @@
 package codedriver.module.knowledge.dto;
 
 import java.util.Date;
+import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -33,9 +37,11 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     @EntityField(name = "修改者头像", type = ApiParamType.STRING)
     private String reviewerAvatar;
     @EntityField(name = "审核时间", type = ApiParamType.LONG)
-    private Date reviewerTime;
+    private Date reviewTime;
     @JSONField(serialize=false)
     private transient boolean isAutoGenerateId = true;
+    @JSONField(serialize=false)
+    private transient List<String> statusList;
     public boolean isAutoGenerateId() {
         return isAutoGenerateId;
     }
@@ -87,11 +93,11 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     public void setReviewer(String reviewer) {
         this.reviewer = reviewer;
     }
-    public Date getReviewerTime() {
-        return reviewerTime;
+    public Date getReviewTime() {
+        return reviewTime;
     }
-    public void setReviewerTime(Date reviewerTime) {
-        this.reviewerTime = reviewerTime;
+    public void setReviewTime(Date reviewerTime) {
+        this.reviewTime = reviewerTime;
     }
     public Integer getSizeDesc() {
         return sizeDesc;
@@ -112,9 +118,19 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
         this.reviewerInfo = reviewerInfo;
     }
     public String getReviewerAvatar() {
+        if (StringUtils.isBlank(reviewerAvatar) && StringUtils.isNotBlank(reviewerInfo)) {
+            JSONObject jsonObject = JSONObject.parseObject(reviewerInfo);
+            reviewerAvatar = jsonObject.getString("avatar");
+        }
         return reviewerAvatar;
     }
     public void setReviewerAvatar(String reviewerAvatar) {
         this.reviewerAvatar = reviewerAvatar;
+    }
+    public List<String> getStatusList() {
+        return statusList;
+    }
+    public void setStatusList(List<String> statusList) {
+        this.statusList = statusList;
     }
 }

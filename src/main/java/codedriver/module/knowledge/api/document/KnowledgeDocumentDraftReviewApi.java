@@ -61,9 +61,11 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-        KnowledgeDocumentVersionVo documentCurrentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(documentVo.getKnowledgeDocumentVersionId());
-        if(!Objects.equals(documentCurrentVersionVo.getVersion(), knowledgeDocumentVersionVo.getVersion())) {
-            throw new KnowledgeDocumentNotCurrentVersionException(knowledgeDocumentVersionVo.getVersion());
+        if(documentVo.getKnowledgeDocumentVersionId() != null) {
+            KnowledgeDocumentVersionVo documentCurrentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(documentVo.getKnowledgeDocumentVersionId());
+            if(!Objects.equals(documentCurrentVersionVo.getVersion(), knowledgeDocumentVersionVo.getVersion())) {
+                throw new KnowledgeDocumentNotCurrentVersionException(knowledgeDocumentVersionVo.getVersion());
+            }           
         }
         if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.PASSED, "不能再审核");
@@ -90,6 +92,8 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         
         if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(action)) {
             knowledgeDocumentMapper.updateKnowledgeDocumentVersionStatusByKnowledgeDocumentIdAndVersionAndStatus(documentVo.getId(), knowledgeDocumentVersionVo.getVersion(), KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
+            documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+            knowledgeDocumentMapper.updateKnowledgeDocumentById(documentVo);
         }
         
         return null;

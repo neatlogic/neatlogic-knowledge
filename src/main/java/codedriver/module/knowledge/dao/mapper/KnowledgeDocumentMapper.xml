@@ -26,7 +26,7 @@
 	  `lcd`,
 	  `size`,
 	  `reviewer`,
-	  `reviewer_time` AS reviewerTime 
+	  `review_time` AS reviewTime 
 	FROM `knowledge_document_version` 
 	WHERE `id` = #{value}
 	</select>
@@ -43,7 +43,7 @@
 	SELECT `id` FROM `knowledge_document` WHERE `id` = #{value} FOR UPDATE
 	</select>
 	
-	<select id="getKnowledgeDocumentVersionList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
+	<select id="getKnowledgeDocumentVersionMyVersionList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 	SELECT 
 	  `id`,
 	  `title`,
@@ -54,17 +54,37 @@
 	  `lcd`,
 	  `size`,
 	  `reviewer`,
-	  `reviewer_time` AS reviewerTime 
+	  `review_time` AS reviewTime 
+	FROM `knowledge_document_version` 
+	WHERE `lcu` = #{lcu}
+	<if test="keyword != null and keyword != ''">
+	AND	`title` LIKE CONCAT('%', #{keyword}, '%')
+	</if>
+	<if test="statusList != null and statusList.size() > 0">
+	AND	`status` IN
+		<foreach collection="statusList" item="status" open="(" separator="," close=")">
+	 	#{status}
+	 	</foreach>
+	</if>
+	ORDER BY `lcd` DESC
+	<if test="needPage">
+	limit #{startNum}, #{pageSize}
+	</if>
+	</select>
+	
+	<select id="getKnowledgeDocumentVersionMyVersionCount" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="int">
+	SELECT 
+	  COUNT(1)
 	FROM `knowledge_document_version`
-	WHERE `knowledge_document_id` = #{knowledgeDocumentId}
-	<if test="version != null">
-	AND `version` = #{version}
+	WHERE `lcu` = #{lcu}
+	<if test="keyword != null and keyword != ''">
+	AND	`title` LIKE CONCAT('%', #{keyword}, '%')
 	</if>
-	<if test="lcu != null and lcu != ''">
-	AND `lcu` = #{lcu}
-	</if>
-	<if test="lcu != null and lcu != ''">
-	AND	`status` = #{status}
+	<if test="statusList != null and statusList.size() > 0">
+	AND	`status` IN
+		<foreach collection="statusList" item="status" open="(" separator="," close=")">
+	 	#{status}
+	 	</foreach>
 	</if>
 	</select>
 	
@@ -83,6 +103,7 @@
 	LEFT JOIN `knowledge_document_line_content` b ON b.`hash` = a.`content_hash`
 	LEFT JOIN `knowledge_document_line_config` c ON c.`hash` = a.`config_hash`
 	WHERE a.`knowledge_document_version_id` = #{value}
+	ORDER BY a.`line_number`
 	</select>
 	
 	<select id="getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentFileVo" resultType="java.lang.Long">
@@ -103,6 +124,46 @@
 	
 	<select id="getKnowledgeDocumentVersionMaxVerionByKnowledgeDocumentId" parameterType="java.lang.Long" resultType="java.lang.Integer">
 	SELECT MAX(`version`) FROM `knowledge_document_version` WHERE `knowledge_document_id` = #{value}
+	</select>
+	
+	<select id="getKnowledgeDocumentWaitingForReviewList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
+	SELECT 
+	  c.`id`,
+	  c.`title`,
+	  c.`knowledge_document_id` AS knowledgeDocumentId,
+	  c.`version`,
+	  c.`status`,
+	  c.`lcu`,
+	  d.`user_name` AS lcuName,
+	  d.`user_info` AS lcuInfo,
+	  c.`lcd`,
+	  c.`size`
+	FROM `knowledge_circle_user` a 
+	JOIN `knowledge_document` b ON b.`knowledge_circle_id` = a.`knowledge_circle_id` AND b.`is_delete` = 0
+	JOIN `knowledge_document_version` c ON c.`knowledge_document_id` = b.`id` AND c.`status` = 'submited'
+	JOIN `user` d ON d.`uuid` = c.`lcu`
+	WHERE a.`auth_type` = 'approver' 
+	AND a.`type`= 'user'
+	AND a.`uuid` = #{reviewer}
+	ORDER BY c.`lcd` DESC
+	<if test="needPage">
+	limit #{startNum}, #{pageSize}
+	</if>
+	</select>
+	
+	<select id="getKnowledgeDocumentWaitingForReviewCount" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="int">
+	SELECT 
+	  COUNT(1)
+	FROM `knowledge_circle_user` a 
+	JOIN `knowledge_document` b ON b.`knowledge_circle_id` = a.`knowledge_circle_id` AND b.`is_delete` = 0
+	JOIN `knowledge_document_version` c ON c.`knowledge_document_id` = b.`id` AND c.`status` = 'submited'
+	WHERE a.`auth_type` = 'approver' 
+	AND a.`type`= 'user'
+	AND a.`uuid` = #{reviewer}
+	ORDER BY c.`lcd` DESC
+	<if test="needPage">
+	limit #{startNum}, #{pageSize}
+	</if>
 	</select>
 	
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
@@ -183,7 +244,7 @@
 	INSERT INTO `knowledge_document_line_content` (`hash`, `content`) VALUES (#{hash}, #{content})
 	</insert>
 	
-	<insert id="insertKnowledgeDocumentLine" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
+	<insert id="insertKnowledgeDocumentLineList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
 	INSERT INTO `knowledge_document_line` (
 	  `uuid`,
 	  `handler`,
@@ -194,15 +255,17 @@
 	  `line_number`
 	) 
 	VALUES
+	<foreach collection="list" item="item" separator=",">
 	  (
-	    #{uuid},
-	    #{handler},
-	    #{knowledgeDocumentId},
-	    #{knowledgeDocumentVersionId},
-	    #{contentHash},
-	    #{configHash},
-	    #{lineNumber}
+	    #{item.uuid},
+	    #{item.handler},
+	    #{item.knowledgeDocumentId},
+	    #{item.knowledgeDocumentVersionId},
+	    #{item.contentHash},
+	    #{item.configHash},
+	    #{item.lineNumber}
 	  )
+	</foreach>
 	</insert>
 	
 	<update id="updateKnowledgeDocumentToDeleteById" parameterType="java.lang.Long">
@@ -246,6 +309,10 @@
 	WHERE `knowledge_document_id` = #{knowledgeDocumentId}
 	AND `version` = #{version}
 	AND `status` = #{oldStatus}
+	</update>
+	
+	<update id="updateKnowledgeDocumentById" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
+	UPDATE `knowledge_document` SET `knowledge_document_version_id` = #{knowledgeDocumentVersionId} where `id` = #{id}
 	</update>
 	
 	<delete id="deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId" parameterType="java.lang.Long">

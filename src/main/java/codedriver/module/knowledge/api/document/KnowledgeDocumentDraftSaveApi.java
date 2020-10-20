@@ -1,7 +1,10 @@
 package codedriver.module.knowledge.api.document;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -132,7 +135,6 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             /** 没有版本id，则是首次创建文档 **/
             KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
             documentVo.setFcu(UserContext.get().getUserUuid(true));
-//            documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionVo.getId());
             knowledgeDocumentMapper.insertKnowledgeDocument(documentVo);          
             knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
             knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentVo.getId());
@@ -162,6 +164,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         /** 保存每行内容，计算文档大小 **/
         int size = 0;
         int lineNumber = 0;
+        List<KnowledgeDocumentLineVo> knowledgeDocumentLineList = new ArrayList<>();
         for(KnowledgeDocumentLineVo knowledgeDocumentLineVo : documentVo.getLineList()) {
             knowledgeDocumentLineVo.setLineNumber(++lineNumber);
             knowledgeDocumentLineVo.setKnowledgeDocumentId(documentId);
@@ -184,7 +187,13 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
 //            if(StringUtils.isBlank(knowledgeDocumentLineVo.getUuid())) {
 //                knowledgeDocumentLineVo.setUuid(UuidUtil.randomUuid());
 //            }
-            knowledgeDocumentMapper.insertKnowledgeDocumentLine(knowledgeDocumentLineVo);
+            knowledgeDocumentLineList.add(knowledgeDocumentLineVo);
+            if(knowledgeDocumentLineList.size() >= 100) {
+                knowledgeDocumentMapper.insertKnowledgeDocumentLineList(knowledgeDocumentLineList);
+            }
+        }
+        if(CollectionUtils.isNotEmpty(knowledgeDocumentLineList)) {
+            knowledgeDocumentMapper.insertKnowledgeDocumentLineList(knowledgeDocumentLineList);
         }
         /** 更新文档大小 **/
         KnowledgeDocumentVersionVo updateSizeVo = new KnowledgeDocumentVersionVo();

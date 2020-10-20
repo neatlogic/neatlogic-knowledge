@@ -24,7 +24,9 @@ public interface KnowledgeDocumentMapper {
 
     public Long getKnowledgeDocumentLockById(Long id);
 
-    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionList(KnowledgeDocumentVersionVo oldKnowledgeDocumentVersionVo);
+    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionMyVersionList(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+
+    public int getKnowledgeDocumentVersionMyVersionCount(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 
     public List<KnowledgeDocumentLineVo> getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
 
@@ -33,6 +35,10 @@ public interface KnowledgeDocumentMapper {
     public List<Long> getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(KnowledgeDocumentTagVo knowledgeDocumentTagVo);
 
     public Integer getKnowledgeDocumentVersionMaxVerionByKnowledgeDocumentId(Long knowledgeDocumentId);
+
+    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentWaitingForReviewList(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+
+    public int getKnowledgeDocumentWaitingForReviewCount(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 
     public int insertKnowledgeDocument(KnowledgeDocumentVo knowledgeDocumentVo);
 
@@ -46,7 +52,7 @@ public interface KnowledgeDocumentMapper {
 
     public int insertKnowledgeDocumentLineContent(KnowledgeDocumentLineContentVo knowledgeDocumentLineContentVo);
 
-    public int insertKnowledgeDocumentLine(KnowledgeDocumentLineVo knowledgeDocumentLineVo);
+    public int insertKnowledgeDocumentLineList(List<KnowledgeDocumentLineVo> knowledgeDocumentLineList);
 
     public int updateKnowledgeDocumentToDeleteById(Long knowledgeDocumentId);
 
@@ -58,6 +64,8 @@ public interface KnowledgeDocumentMapper {
         @Param("oldStatus") String oldStatus, 
         @Param("newStatus") String newStatus
     );
+
+    public int updateKnowledgeDocumentById(KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
 

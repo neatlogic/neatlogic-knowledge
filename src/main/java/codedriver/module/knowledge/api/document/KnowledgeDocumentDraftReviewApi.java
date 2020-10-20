@@ -90,6 +90,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(action)) {
             knowledgeDocumentMapper.updateKnowledgeDocumentVersionStatusByKnowledgeDocumentIdAndVersionAndStatus(documentVo.getId(), knowledgeDocumentVersionVo.getVersion(), KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
             documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+            documentVo.setVersion(updateStatusVo.getVersion());
             knowledgeDocumentMapper.updateKnowledgeDocumentById(documentVo);
         }
         

@@ -61,7 +61,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
     
     @Input({
         @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
-        @Param(name = "knowledgeTypeId", type = ApiParamType.LONG, isRequired = true, desc = "类型id"),
+        @Param(name = "knowledgeTypeUuid", type = ApiParamType.STRING, isRequired = true, desc = "类型id"),
         @Param(name = "knowledgeCircleId", type = ApiParamType.LONG, isRequired = true, desc = "知识圈id"),
         @Param(name = "title", type = ApiParamType.STRING, isRequired = true, desc = "标题"),
         @Param(name = "lineList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "行数据列表"),
@@ -107,10 +107,10 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
                 drafrVersionId = knowledgeDocumentVersionVo.getId();
             }else {
-                if(!Objects.equals(oldDocumentVo.getVersion(), oldKnowledgeDocumentVersionVo.getVersion())) {
+                KnowledgeDocumentVersionVo documentCurrentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(oldDocumentVo.getKnowledgeDocumentVersionId());
+                if(!Objects.equals(documentCurrentVersionVo.getVersion(), oldKnowledgeDocumentVersionVo.getVersion())) {
                     throw new KnowledgeDocumentNotCurrentVersionException(oldKnowledgeDocumentVersionVo.getVersion());
                 }
-                
                 /** 如果入参版本id不是文档当前版本id，说明该操作是在已有草稿上再次保存 **/
                 if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
                     throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.PASSED, "不能再修改");
@@ -135,7 +135,6 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             /** 没有版本id，则是首次创建文档 **/
             KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
             documentVo.setFcu(UserContext.get().getUserUuid(true));
-            documentVo.setVersion(0);
             knowledgeDocumentMapper.insertKnowledgeDocument(documentVo);          
             knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
             knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentVo.getId());

@@ -9,17 +9,17 @@ import java.util.List;
 
 public class KnowledgeTypeVo{
 
-	public static final Long ROOT_PARENTID = -1L;
-	public static final Long ROOT_ID = 0L;
+	public static final String ROOT_PARENTUUID = "-1";
+	public static final String ROOT_UUID = "0";
 
-	@EntityField(name = "知识类型ID", type = ApiParamType.LONG)
-	private Long id;
+	@EntityField(name = "知识类型ID", type = ApiParamType.STRING)
+	private String uuid;
 	@EntityField(name = "知识类型名称", type = ApiParamType.STRING)
 	private String name;
 	@EntityField(name = "知识圈ID", type = ApiParamType.LONG)
 	private Long knowledgeCircleId;
-	@EntityField(name = "父类型ID", type = ApiParamType.LONG)
-	private Long parentId;
+	@EntityField(name = "父类型ID", type = ApiParamType.STRING)
+	private String parentUuid;
 	@JSONField(serialize = false)
 	@EntityField(name = "左编码", type = ApiParamType.INTEGER)
 	private transient Integer lft;
@@ -40,12 +40,12 @@ public class KnowledgeTypeVo{
 
 	public KnowledgeTypeVo() {}
 
-	public Long getId() {
-		return id;
+	public String getUuid() {
+		return uuid;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 
 	public String getName() {
@@ -64,12 +64,12 @@ public class KnowledgeTypeVo{
 		this.knowledgeCircleId = knowledgeCircleId;
 	}
 
-	public Long getParentId() {
-		return parentId;
+	public String getParentUuid() {
+		return parentUuid;
 	}
 
-	public void setParentId(Long parentId) {
-		this.parentId = parentId;
+	public void setParentUuid(String parentUuid) {
+		this.parentUuid = parentUuid;
 	}
 
 	public Integer getLft() {

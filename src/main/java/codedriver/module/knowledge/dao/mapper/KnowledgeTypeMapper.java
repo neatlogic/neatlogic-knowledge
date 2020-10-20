@@ -6,13 +6,17 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface KnowledgeTypeMapper {
-    public Integer getMaxRhtCode();
+    public Integer getMaxRhtCode(Long knowledgeCircleId);
 
-    public List<KnowledgeTypeVo> getKnowledgeTypeByParentId(Long parentId);
+    public int checkTypeIsExists(String uuid);
 
-    public List<KnowledgeTypeVo> getKnowledgeTypeForTree(@Param("lft") Integer lft, @Param("rht") Integer rht);
+    public List<KnowledgeTypeVo> searchKnowledgeType(KnowledgeTypeVo vo);
 
-    public void updateKnowledgeTypeLeftRightCode(@Param("id") Long id, @Param("lft") Integer lft, @Param("rht") Integer rht);
+    public List<KnowledgeTypeVo> getKnowledgeTypeByParentUuid(@Param("parentUuid") String parentUuid,@Param("knowledgeCircleId") Long knowledgeCircleId);
+
+    public List<KnowledgeTypeVo> getKnowledgeTypeForTree(@Param("lft") Integer lft, @Param("rht") Integer rht,@Param("knowledgeCircleId") Long knowledgeCircleId);
+
+    public void updateKnowledgeTypeLeftRightCode(@Param("uuid") String uuid, @Param("lft") Integer lft, @Param("rht") Integer rht);
 
     public void batchInsertKnowledgeType(@Param("list") List<KnowledgeTypeVo> list);
 

@@ -22,6 +22,7 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.util.UuidUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
@@ -185,9 +186,9 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                     knowledgeDocumentMapper.insertKnowledgeDocumentLineContent(knowledgeDocumentLineContentVo);
                 }
             }
-//            if(StringUtils.isBlank(knowledgeDocumentLineVo.getUuid())) {
-//                knowledgeDocumentLineVo.setUuid(UuidUtil.randomUuid());
-//            }
+            if(StringUtils.isBlank(knowledgeDocumentLineVo.getUuid())) {
+                knowledgeDocumentLineVo.setUuid(UuidUtil.randomUuid());
+            }
             knowledgeDocumentLineList.add(knowledgeDocumentLineVo);
             if(knowledgeDocumentLineList.size() >= 100) {
                 knowledgeDocumentMapper.insertKnowledgeDocumentLineList(knowledgeDocumentLineList);

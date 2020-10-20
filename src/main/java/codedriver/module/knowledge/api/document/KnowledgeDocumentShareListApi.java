@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,8 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.util.PageUtil;
+import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.dto.UserVo;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -31,6 +34,9 @@ public class KnowledgeDocumentShareListApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
+    
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     public String getToken() {
@@ -61,13 +67,13 @@ public class KnowledgeDocumentShareListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
         resultObj.put("knowledgeDocumentVersionList", new ArrayList<>());
-        List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
+        List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue(), KnowledgeDocumentVersionStatus.REJECTED.getValue(), KnowledgeDocumentVersionStatus.SUBMITED.getValue());
         KnowledgeDocumentVersionVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
         searchVo.setLcu(UserContext.get().getUserUuid(true));
         searchVo.setStatusList(statusList);
         int pageCount = 0;
         if(searchVo.getNeedPage()) {
-            int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(searchVo);
+            int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionCount(searchVo);
             pageCount = PageUtil.getPageCount(rowNum, searchVo.getPageSize());
             resultObj.put("currentPage", searchVo.getCurrentPage());
             resultObj.put("pageSize", searchVo.getPageSize());
@@ -75,7 +81,17 @@ public class KnowledgeDocumentShareListApi extends PrivateApiComponentBase {
             resultObj.put("rowNum", rowNum);
         }
         if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
-            List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionList(searchVo);
+            UserVo currentUserVo = userMapper.getUserBaseInfoByUuid(UserContext.get().getUserUuid(true));
+            List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionList(searchVo);
+            for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
+                knowledgeDocumentVersionVo.setLcuName(currentUserVo.getUserName());
+                knowledgeDocumentVersionVo.setLcuInfo(currentUserVo.getUserInfo());
+                if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getReviewer())) {
+                    UserVo reviewerUserVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getReviewer());
+                    knowledgeDocumentVersionVo.setReviewerName(reviewerUserVo.getUserName());
+                    knowledgeDocumentVersionVo.setReviewerInfo(reviewerUserVo.getUserInfo());
+                }
+            }
             resultObj.put("knowledgeDocumentVersionList", knowledgeDocumentVersionList);
         }
         return resultObj;

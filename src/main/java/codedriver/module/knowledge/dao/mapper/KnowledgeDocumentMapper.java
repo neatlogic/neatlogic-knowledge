@@ -24,9 +24,9 @@ public interface KnowledgeDocumentMapper {
 
     public Long getKnowledgeDocumentLockById(Long id);
 
-    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionList(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionMyVersionList(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 
-    public int getKnowledgeDocumentVersionCount(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+    public int getKnowledgeDocumentVersionMyVersionCount(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 
     public List<KnowledgeDocumentLineVo> getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
 
@@ -64,6 +64,8 @@ public interface KnowledgeDocumentMapper {
         @Param("oldStatus") String oldStatus, 
         @Param("newStatus") String newStatus
     );
+
+    public int updateKnowledgeDocumentById(KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
 

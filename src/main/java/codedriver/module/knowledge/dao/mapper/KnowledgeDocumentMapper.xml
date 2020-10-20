@@ -6,7 +6,7 @@
 	SELECT 
 	  `id`,
 	  `knowledge_document_version_id` AS knowledgeDocumentVersionId,
-	  `knowledge_type_id` AS knowledgeTypeId,
+	  `knowledge_type_uuid` AS knowledgeTypeUuid,
 	  `knowledge_circle_id` AS knowledgeCircleId,
 	  `is_delete` AS isDelete,
 	  `fcu`,
@@ -170,7 +170,7 @@
 	INSERT INTO `knowledge_document` (
 	  `id`,
 	  `knowledge_document_version_id`,
-	  `knowledge_type_id`,
+	  `knowledge_type_uuid`,
 	  `knowledge_circle_id`,
 	  `fcu`,
 	  `fcd`
@@ -179,7 +179,7 @@
 	  (
 	    #{id},
 	    #{knowledgeDocumentVersionId},
-	    #{knowledgeTypeId},
+	    #{knowledgeTypeUuid},
 	    #{knowledgeCircleId},
 	    #{fcu},
 	    NOW()

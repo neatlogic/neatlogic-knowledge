@@ -1,6 +1,7 @@
 package codedriver.module.knowledge.dto;
 
 import java.util.Date;
+import java.util.List;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
@@ -36,6 +37,8 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     private Date reviewerTime;
     @JSONField(serialize=false)
     private transient boolean isAutoGenerateId = true;
+    @JSONField(serialize=false)
+    private transient List<String> statusList;
     public boolean isAutoGenerateId() {
         return isAutoGenerateId;
     }
@@ -116,5 +119,11 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     }
     public void setReviewerAvatar(String reviewerAvatar) {
         this.reviewerAvatar = reviewerAvatar;
+    }
+    public List<String> getStatusList() {
+        return statusList;
+    }
+    public void setStatusList(List<String> statusList) {
+        this.statusList = statusList;
     }
 }

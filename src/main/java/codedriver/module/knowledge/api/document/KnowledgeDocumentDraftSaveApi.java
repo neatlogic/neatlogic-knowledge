@@ -1,7 +1,10 @@
 package codedriver.module.knowledge.api.document;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -162,6 +165,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         /** 保存每行内容，计算文档大小 **/
         int size = 0;
         int lineNumber = 0;
+        List<KnowledgeDocumentLineVo> knowledgeDocumentLineList = new ArrayList<>();
         for(KnowledgeDocumentLineVo knowledgeDocumentLineVo : documentVo.getLineList()) {
             knowledgeDocumentLineVo.setLineNumber(++lineNumber);
             knowledgeDocumentLineVo.setKnowledgeDocumentId(documentId);
@@ -184,7 +188,13 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
 //            if(StringUtils.isBlank(knowledgeDocumentLineVo.getUuid())) {
 //                knowledgeDocumentLineVo.setUuid(UuidUtil.randomUuid());
 //            }
-            knowledgeDocumentMapper.insertKnowledgeDocumentLine(knowledgeDocumentLineVo);
+            knowledgeDocumentLineList.add(knowledgeDocumentLineVo);
+            if(knowledgeDocumentLineList.size() >= 100) {
+                knowledgeDocumentMapper.insertKnowledgeDocumentLineList(knowledgeDocumentLineList);
+            }
+        }
+        if(CollectionUtils.isNotEmpty(knowledgeDocumentLineList)) {
+            knowledgeDocumentMapper.insertKnowledgeDocumentLineList(knowledgeDocumentLineList);
         }
         /** 更新文档大小 **/
         KnowledgeDocumentVersionVo updateSizeVo = new KnowledgeDocumentVersionVo();

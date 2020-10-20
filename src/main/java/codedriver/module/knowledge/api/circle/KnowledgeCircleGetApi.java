@@ -64,17 +64,17 @@ public class KnowledgeCircleGetApi extends PrivateApiComponentBase{
 		List<KnowledgeCircleUserVo> circleUserList = knowledgeCircleMapper.getKnowledgeCircleUserList(id);
 		circle.setAuthList(circleUserList);
 		/** 查询知识类型 */
-		KnowledgeTypeVo root = knowledgeTypeService.buildRootKnowledgeType();
-		List<KnowledgeTypeVo> typeList = knowledgeTypeMapper.getKnowledgeTypeForTree(root.getLft(), root.getRht());
+		KnowledgeTypeVo root = knowledgeTypeService.buildRootKnowledgeType(id);
+		List<KnowledgeTypeVo> typeList = knowledgeTypeMapper.getKnowledgeTypeForTree(root.getLft(), root.getRht(),id);
 		if(CollectionUtils.isNotEmpty(typeList)){
-			Map<Long,KnowledgeTypeVo> idMap = new HashMap<>();
+			Map<String,KnowledgeTypeVo> idMap = new HashMap<>();
 			typeList.add(root);
 			for(KnowledgeTypeVo vo : typeList){
-				idMap.put(vo.getId(),vo);
+				idMap.put(vo.getUuid(),vo);
 			}
 			for(KnowledgeTypeVo vo : typeList){
-				Long parentId = vo.getParentId();
-				KnowledgeTypeVo parent = idMap.get(parentId);
+				String parentUuid = vo.getParentUuid();
+				KnowledgeTypeVo parent = idMap.get(parentUuid);
 				if(parent != null){
 					vo.setParent(parent);
 				}

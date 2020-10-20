@@ -61,7 +61,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
     
     @Input({
         @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
-        @Param(name = "knowledgeTypeId", type = ApiParamType.LONG, isRequired = true, desc = "类型id"),
+        @Param(name = "knowledgeTypeUuid", type = ApiParamType.STRING, isRequired = true, desc = "类型id"),
         @Param(name = "knowledgeCircleId", type = ApiParamType.LONG, isRequired = true, desc = "知识圈id"),
         @Param(name = "title", type = ApiParamType.STRING, isRequired = true, desc = "标题"),
         @Param(name = "lineList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "行数据列表"),

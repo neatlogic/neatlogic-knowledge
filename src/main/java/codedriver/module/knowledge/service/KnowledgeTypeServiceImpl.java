@@ -14,20 +14,20 @@ public class KnowledgeTypeServiceImpl implements KnowledgeTypeService {
 	private KnowledgeTypeMapper knowledgeTypeMapper;
 
 	@Override
-	public void rebuildLeftRightCode() {
-		rebuildLeftRightCode(KnowledgeTypeVo.ROOT_ID, 1);
+	public void rebuildLeftRightCode(Long knowledgeCircleId) {
+		rebuildLeftRightCode(KnowledgeTypeVo.ROOT_UUID, 1,knowledgeCircleId);
 	}
 	
-	private Integer rebuildLeftRightCode(Long parentId, Integer parentLft) {
-		List<KnowledgeTypeVo> knowledgeTypeVoList = knowledgeTypeMapper.getKnowledgeTypeByParentId(parentId);
+	private Integer rebuildLeftRightCode(String parentUuid, Integer parentLft,Long knowledgeCircleId) {
+		List<KnowledgeTypeVo> knowledgeTypeVoList = knowledgeTypeMapper.getKnowledgeTypeByParentUuid(parentUuid,knowledgeCircleId);
 		for(KnowledgeTypeVo knowledgeType : knowledgeTypeVoList) {
 			if(knowledgeType.getChildCount() == 0) {
-				knowledgeTypeMapper.updateKnowledgeTypeLeftRightCode(knowledgeType.getId(), parentLft + 1, parentLft + 2);
+				knowledgeTypeMapper.updateKnowledgeTypeLeftRightCode(knowledgeType.getUuid(), parentLft + 1, parentLft + 2);
 				parentLft += 2;
 			}else {
 				int lft = parentLft + 1;
-				parentLft = rebuildLeftRightCode(knowledgeType.getId(), lft);
-				knowledgeTypeMapper.updateKnowledgeTypeLeftRightCode(knowledgeType.getId(), lft, parentLft + 1);
+				parentLft = rebuildLeftRightCode(knowledgeType.getUuid(), lft,knowledgeCircleId);
+				knowledgeTypeMapper.updateKnowledgeTypeLeftRightCode(knowledgeType.getUuid(), lft, parentLft + 1);
 				parentLft += 1;
 			}
 		}
@@ -35,14 +35,15 @@ public class KnowledgeTypeServiceImpl implements KnowledgeTypeService {
 	}
 
 	@Override
-	public KnowledgeTypeVo buildRootKnowledgeType() {
-		Integer maxRhtCode = knowledgeTypeMapper.getMaxRhtCode();
+	public KnowledgeTypeVo buildRootKnowledgeType(Long knowledgeCircleId) {
+		Integer maxRhtCode = knowledgeTypeMapper.getMaxRhtCode(knowledgeCircleId);
 		KnowledgeTypeVo rootknowledgeType = new KnowledgeTypeVo();
-		rootknowledgeType.setId(KnowledgeTypeVo.ROOT_ID);
+		rootknowledgeType.setUuid(KnowledgeTypeVo.ROOT_UUID);
 		rootknowledgeType.setName("root");
-		rootknowledgeType.setParentId(KnowledgeTypeVo.ROOT_PARENTID);
+		rootknowledgeType.setParentUuid(KnowledgeTypeVo.ROOT_PARENTUUID);
 		rootknowledgeType.setLft(1);
 		rootknowledgeType.setRht(maxRhtCode == null ? 2 : maxRhtCode + 1);
+		rootknowledgeType.setKnowledgeCircleId(knowledgeCircleId);
 		return rootknowledgeType;
 	}
 }

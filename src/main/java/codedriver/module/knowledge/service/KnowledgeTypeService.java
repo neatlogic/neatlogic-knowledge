@@ -4,8 +4,8 @@ import codedriver.module.knowledge.dto.KnowledgeTypeVo;
 
 public interface KnowledgeTypeService {
 	
-	public void rebuildLeftRightCode();
+	public void rebuildLeftRightCode(Long knowledgeCircleId);
 
-	public KnowledgeTypeVo buildRootKnowledgeType();
+	public KnowledgeTypeVo buildRootKnowledgeType(Long knowledgeCircleId);
 
 }

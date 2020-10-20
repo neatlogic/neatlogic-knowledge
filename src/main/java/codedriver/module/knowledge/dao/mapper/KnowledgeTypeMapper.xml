@@ -2,57 +2,81 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.knowledge.dao.mapper.KnowledgeTypeMapper">
 
-	<select id="getMaxRhtCode" resultType="java.lang.Integer" useCache="false">
-		SELECT MAX(`rht`) FROM `knowledge_type`
+	<select id="getMaxRhtCode" parameterType="java.lang.Long" resultType="java.lang.Integer" useCache="false">
+		SELECT MAX(`rht`) FROM `knowledge_type` where `knowledge_circle_id` = #{value}
+	</select>
+
+	<select id="checkTypeIsExists" parameterType="java.lang.String" resultType="int">
+		select count(`uuid`) from `knowledge_type` where `uuid` = #{value}
 	</select>
 
 	<resultMap id="childrenKnowledgeTypeMap" type="codedriver.module.knowledge.dto.KnowledgeTypeVo">
-		<id property="id" column="id"/>
+		<id property="uuid" column="uuid"/>
 		<result property="name" column="name"/>
-		<result property="parentId" column="parentId"/>
+		<result property="parentUuid" column="parentUuid"/>
 		<result property="lft" column="lft"/>
 		<result property="rht" column="rht"/>
 		<result property="childCount" column="childCount"/>
 	</resultMap>
 
-	<select id="getKnowledgeTypeByParentId" parameterType="java.lang.Long" resultMap="childrenKnowledgeTypeMap">
+	<select id="getKnowledgeTypeByParentUuid" resultMap="childrenKnowledgeTypeMap">
 		SELECT
-		a.`id`,
+		a.`uuid`,
 		a.`name`,
-		a.`parent_id` AS parentId,
+		a.`parent_uuid` AS parentUuid,
 		a.`lft`,
 		a.`rht`,
-		(SELECT COUNT(1) FROM `knowledge_type` WHERE `parent_id` = a.`id`) as `childCount`
+		(SELECT COUNT(1) FROM `knowledge_type` WHERE `parent_uuid` = a.`uuid`) as `childCount`
 		FROM `knowledge_type` a
-		WHERE a.`parent_id` = #{value}
+		WHERE a.`parent_uuid` = #{parentUuid} and a.`knowledge_circle_id` = #{knowledgeCircleId}
 		ORDER BY `sort` ASC
+	</select>
+
+	<select id="searchKnowledgeType" parameterType="codedriver.module.knowledge.dto.KnowledgeTypeVo" resultType="codedriver.module.knowledge.dto.KnowledgeTypeVo">
+		SELECT
+		a.`uuid`,
+		a.`name`,
+		a.`parent_uuid` AS parentUuid,
+		a.`lft`,
+		a.`rht`,
+		(SELECT COUNT(1) FROM `knowledge_type` WHERE `parent_uuid` = a.`uuid`) as `childCount`
+		FROM `knowledge_type` a
+		WHERE 1=1
+		<if test="knowledgeCircleId != null">
+			and `knowledge_circle_id` = #{knowledgeCircleId}
+		</if>
+		<if test="parentUuid != null">
+			and a.`parent_uuid` = #{parentUuid}
+		</if>
+		ORDER BY `lft` ASC
 	</select>
 
 	<select id="getKnowledgeTypeForTree" resultType="codedriver.module.knowledge.dto.KnowledgeTypeVo" useCache="false">
 		SELECT
-		a.`id`,
+		a.`uuid`,
 		a.`name`,
-		a.`parent_id` AS parentId,
+		a.`parent_uuid` AS parentUuid,
 		a.`lft`,
 		a.`rht`,
-		(SELECT COUNT(1) FROM `knowledge_type` WHERE `parent_id` = a.`id`) as `childCount`,
-		(SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_type_id` = a.`id`) as `knowledgeCount`
+		(SELECT COUNT(1) FROM `knowledge_type` WHERE `parent_uuid` = a.`uuid`) as `childCount`,
+		(SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_type_uuid` = a.`uuid`) as `knowledgeCount`
 		FROM `knowledge_type` a
 		WHERE a.`lft` &gt;= #{lft}
 		AND a.`rht` &lt;= #{rht}
+		AND a.`knowledge_circle_id` = #{knowledgeCircleId}
 		ORDER BY a.`lft`
 	</select>
 
 	<update id="updateKnowledgeTypeLeftRightCode">
-	UPDATE `knowledge_type` SET `lft` = #{lft}, `rht` = #{rht} WHERE `id` = #{id}
+	UPDATE `knowledge_type` SET `lft` = #{lft}, `rht` = #{rht} WHERE `uuid` = #{uuid}
 	</update>
 
 	<insert id="batchInsertKnowledgeType" parameterType="java.util.List">
 		INSERT INTO `knowledge_type`(
-		`id`,
+		`uuid`,
 		`name`,
 		`knowledge_circle_id`,
-		`parent_id`,
+		`parent_uuid`,
 		`lft`,
 		`rht`,
 		`sort`
@@ -60,10 +84,10 @@
 		VALUES
 		<foreach collection="list" index="index" item="item" separator=",">
 			(
-			#{item.id},
+			#{item.uuid},
 			#{item.name},
 			#{item.knowledgeCircleId},
-			#{item.parentId},
+			#{item.parentUuid},
 			#{item.lft},
 			#{item.rht},
 			#{item.sort}

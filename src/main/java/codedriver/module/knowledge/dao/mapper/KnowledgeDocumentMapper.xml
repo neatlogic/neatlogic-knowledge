@@ -249,28 +249,6 @@
 	INSERT INTO `knowledge_document_line_content` (`hash`, `content`) VALUES (#{hash}, #{content})
 	</insert>
 	
-	<insert id="insertKnowledgeDocumentLine" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
-	INSERT INTO `knowledge_document_line` (
-	  `uuid`,
-	  `handler`,
-	  `knowledge_document_id`,
-	  `knowledge_document_version_id`,
-	  `content_hash`,
-	  `config_hash`,
-	  `line_number`
-	) 
-	VALUES
-	  (
-	    #{uuid},
-	    #{handler},
-	    #{knowledgeDocumentId},
-	    #{knowledgeDocumentVersionId},
-	    #{contentHash},
-	    #{configHash},
-	    #{lineNumber}
-	  )
-	</insert>
-	
 	<insert id="insertKnowledgeDocumentLineList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
 	INSERT INTO `knowledge_document_line` (
 	  `uuid`,
@@ -282,7 +260,7 @@
 	  `line_number`
 	) 
 	VALUES
-	<foreach collection="list" item="item" open="(" separator="," close=")">
+	<foreach collection="list" item="item" separator=",">
 	  (
 	    #{item.uuid},
 	    #{item.handler},

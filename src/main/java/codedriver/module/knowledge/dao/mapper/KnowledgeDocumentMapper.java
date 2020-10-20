@@ -52,8 +52,6 @@ public interface KnowledgeDocumentMapper {
 
     public int insertKnowledgeDocumentLineContent(KnowledgeDocumentLineContentVo knowledgeDocumentLineContentVo);
 
-    public int insertKnowledgeDocumentLine(KnowledgeDocumentLineVo knowledgeDocumentLineVo);
-
     public int insertKnowledgeDocumentLineList(List<KnowledgeDocumentLineVo> knowledgeDocumentLineList);
 
     public int updateKnowledgeDocumentToDeleteById(Long knowledgeDocumentId);

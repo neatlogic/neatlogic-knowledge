@@ -9,6 +9,7 @@
 	  `knowledge_type_id` AS knowledgeTypeId,
 	  `knowledge_circle_id` AS knowledgeCircleId,
 	  `is_delete` AS isDelete,
+	  `version`,
 	  `fcu`,
 	  `fcd`
 	FROM `knowledge_document` 
@@ -169,7 +170,7 @@
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	INSERT INTO `knowledge_document` (
 	  `id`,
-	  `knowledge_document_version_id`,
+	  `version`,
 	  `knowledge_type_id`,
 	  `knowledge_circle_id`,
 	  `fcu`,
@@ -178,7 +179,7 @@
 	VALUES
 	  (
 	    #{id},
-	    #{knowledgeDocumentVersionId},
+	    #{version},
 	    #{knowledgeTypeId},
 	    #{knowledgeCircleId},
 	    #{fcu},
@@ -312,7 +313,11 @@
 	</update>
 	
 	<update id="updateKnowledgeDocumentById" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
-	UPDATE `knowledge_document` SET `knowledge_document_version_id` = #{knowledgeDocumentVersionId} where `id` = #{id}
+	UPDATE `knowledge_document` 
+	SET 
+	`knowledge_document_version_id` = #{knowledgeDocumentVersionId}, 
+	`version` = #{version}
+	WHERE `id` = #{id}
 	</update>
 	
 	<delete id="deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId" parameterType="java.lang.Long">

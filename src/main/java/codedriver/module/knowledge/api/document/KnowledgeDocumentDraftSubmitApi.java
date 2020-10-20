@@ -56,7 +56,7 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id")
     })
     @Output({
-        @Param(name = "isReviewer", type = ApiParamType.ENUM, rule = "0,1", desc = "返回1代表当前用户有审核权限，0代表当前用户没有审核权限")
+        @Param(name = "isReviewable", type = ApiParamType.ENUM, rule = "0,1", desc = "返回1代表当前用户有审核权限，0代表当前用户没有审核权限")
     })
     @Description(desc = "提交审核文档草稿")
     @Override
@@ -86,15 +86,18 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.SUBMITED.getValue());
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
         
+        int isReviewable = 0;
         List<KnowledgeCircleUserVo> knowledgeCircleUserList = knowledgeCircleMapper.getKnowledgeCircleUserListByIdAndAuthType(knowledgeDocumentVo.getKnowledgeCircleId(), KnowledgeCircleUserVo.AuthType.APPROVER.getValue());
         for(KnowledgeCircleUserVo knowledgeCircleUserVo : knowledgeCircleUserList) {
             if(GroupSearch.USER.getValue().equals(knowledgeCircleUserVo.getType())) {
                if(UserContext.get().getUserUuid(true).equals(knowledgeCircleUserVo.getUuid())) {
-                   return 1;
+                   isReviewable = 1;
                }
             }
         }
-        return 0;
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("isReviewable", isReviewable);
+        return resultObj;
     }
 
 }

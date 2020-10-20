@@ -61,11 +61,8 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-        if(documentVo.getKnowledgeDocumentVersionId() != null) {
-            KnowledgeDocumentVersionVo documentCurrentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(documentVo.getKnowledgeDocumentVersionId());
-            if(!Objects.equals(documentCurrentVersionVo.getVersion(), knowledgeDocumentVersionVo.getVersion())) {
-                throw new KnowledgeDocumentNotCurrentVersionException(knowledgeDocumentVersionVo.getVersion());
-            }           
+        if(!Objects.equals(documentVo.getVersion(), knowledgeDocumentVersionVo.getVersion())) {
+            throw new KnowledgeDocumentNotCurrentVersionException(knowledgeDocumentVersionVo.getVersion());
         }
         if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.PASSED, "不能再审核");

@@ -1,6 +1,7 @@
 package codedriver.module.knowledge.api.document;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,9 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.dao.mapper.TagMapper;
 import codedriver.framework.dto.TagVo;
 import codedriver.framework.file.dao.mapper.FileMapper;
@@ -20,7 +23,10 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
+import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dto.KnowledgeCircleUserVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
@@ -34,6 +40,8 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
+    @Autowired
+    private KnowledgeCircleMapper knowledgeCircleMapper;
     @Autowired
     private FileMapper fileMapper;
     @Autowired
@@ -91,6 +99,36 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
             knowledgeDocumentVo.setTagIdList(tagIdList);
             knowledgeDocumentVo.setTagList(tagList);
         }
+        knowledgeDocumentVo.setIsEditable(0);
+        knowledgeDocumentVo.setIsDeletable(0);
+        knowledgeDocumentVo.setIsReviewable(0);
+        int isReviewable = 0;
+        List<KnowledgeCircleUserVo> knowledgeCircleUserList = knowledgeCircleMapper.getKnowledgeCircleUserListByIdAndAuthType(knowledgeDocumentVo.getKnowledgeCircleId(), KnowledgeCircleUserVo.AuthType.APPROVER.getValue());
+        for(KnowledgeCircleUserVo knowledgeCircleUserVo : knowledgeCircleUserList) {
+            if(GroupSearch.USER.getValue().equals(knowledgeCircleUserVo.getType())) {
+               if(UserContext.get().getUserUuid(true).equals(knowledgeCircleUserVo.getUuid())) {
+                   isReviewable = 1;
+               }
+            }
+        }
+        if(KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+            if(UserContext.get().getUserUuid(true).equals(knowledgeDocumentVersionVo.getLcu())) {
+                knowledgeDocumentVo.setIsEditable(1);
+                knowledgeDocumentVo.setIsDeletable(1);
+            }
+            knowledgeDocumentVo.setIsReviewable(isReviewable);
+        }else if(KnowledgeDocumentVersionStatus.SUBMITED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+            knowledgeDocumentVo.setIsReviewable(isReviewable);
+        }else if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+            knowledgeDocumentVo.setIsEditable(1);
+        }else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+            if(Objects.equals(knowledgeDocumentVo.getVersion(), knowledgeDocumentVersionVo.getVersion())) {
+                knowledgeDocumentVo.setIsEditable(1);
+                knowledgeDocumentVo.setIsDeletable(1);
+                knowledgeDocumentVo.setIsReviewable(isReviewable);
+            }
+        }
+        
         return knowledgeDocumentVo;
     }
 

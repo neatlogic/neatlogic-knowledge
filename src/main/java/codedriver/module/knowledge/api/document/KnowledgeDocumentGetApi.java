@@ -11,7 +11,6 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.dao.mapper.TagMapper;
 import codedriver.framework.dto.TagVo;
 import codedriver.framework.file.dao.mapper.FileMapper;
@@ -24,9 +23,7 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
-import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeCircleUserVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
@@ -40,8 +37,6 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    @Autowired
-    private KnowledgeCircleMapper knowledgeCircleMapper;
     @Autowired
     private FileMapper fileMapper;
     @Autowired
@@ -105,15 +100,8 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         knowledgeDocumentVo.setIsEditable(0);
         knowledgeDocumentVo.setIsDeletable(0);
         knowledgeDocumentVo.setIsReviewable(0);
-        int isReviewable = 0;
-        List<KnowledgeCircleUserVo> knowledgeCircleUserList = knowledgeCircleMapper.getKnowledgeCircleUserListByIdAndAuthType(knowledgeDocumentVo.getKnowledgeCircleId(), KnowledgeCircleUserVo.AuthType.APPROVER.getValue());
-        for(KnowledgeCircleUserVo knowledgeCircleUserVo : knowledgeCircleUserList) {
-            if(GroupSearch.USER.getValue().equals(knowledgeCircleUserVo.getType())) {
-               if(UserContext.get().getUserUuid(true).equals(knowledgeCircleUserVo.getUuid())) {
-                   isReviewable = 1;
-               }
-            }
-        }
+        
+        int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId());
         if(KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             if(UserContext.get().getUserUuid(true).equals(knowledgeDocumentVersionVo.getLcu())) {
                 knowledgeDocumentVo.setIsEditable(1);

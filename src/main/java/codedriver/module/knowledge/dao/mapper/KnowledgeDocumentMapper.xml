@@ -6,7 +6,7 @@
 	SELECT 
 	  `id`,
 	  `knowledge_document_version_id` AS knowledgeDocumentVersionId,
-	  `knowledge_type_uuid` AS knowledgeTypeUuid,
+	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_circle_id` AS knowledgeCircleId,
 	  `is_delete` AS isDelete,
 	  `version`,
@@ -209,11 +209,45 @@
 	</if>
 	</select>
 	
+	<select id="getCurrentUserKnowledgeDocumentCount" resultType="int">
+	SELECT 
+	COUNT(1)
+	FROM `knowledge_circle_user` a
+	JOIN `knowledge_document` b ON b.`knowledge_circle_id` = a.`knowledge_circle_id` AND b.`is_delete` = 0
+	WHERE (a.`type` = 'common' AND a.`uuid` = 'alluser')
+	<if test="userUuid != null and userUuid != ''">
+		OR (a.`type` = 'user' AND a.`uuid` = #{userUuid})
+	</if>
+	<if test="teamUuidList != null and teamUuidList.size() > 0">
+		OR (a.`type` = 'team' AND a.`uuid` IN
+		<foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
+			#{teamUuid}
+		</foreach>
+		)
+	</if>
+	<if test="roleUuidList != null and roleUuidList.size() > 0">
+		OR (a.`type` = 'role' AND a.`uuid` IN
+		<foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
+			#{roleUuid}
+		</foreach>
+		)
+	</if>
+	</select>
+	
+	<select id="checkUserIsApprover" resultType="int">
+	SELECT 
+	  COUNT(1)
+	FROM `knowledge_circle_user` 
+	WHERE `type` = 'approver' AND `uuid` = #{uuid}
+	<if test="knowledgeCircleId != null">
+	AND `knowledge_circle_id` = #{knowledgeCircleId}
+	</if>
+	</select>
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	INSERT INTO `knowledge_document` (
 	  `id`,
 	  `version`,
-	  `knowledge_type_uuid`,
+	  `knowledge_document_type_uuid`,
 	  `knowledge_circle_id`,
 	  `fcu`,
 	  `fcd`
@@ -222,7 +256,7 @@
 	  (
 	    #{id},
 	    #{version},
-	    #{knowledgeTypeUuid},
+	    #{knowledgeDocumentTypeUuid},
 	    #{knowledgeCircleId},
 	    #{fcu},
 	    NOW()

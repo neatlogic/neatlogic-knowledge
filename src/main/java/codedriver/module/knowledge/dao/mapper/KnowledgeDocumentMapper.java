@@ -49,6 +49,14 @@ public interface KnowledgeDocumentMapper {
     
     public int getKnowledgeDocumentCountForInternalLink(BasePageVo basePageVo);
 
+    public int getCurrentUserKnowledgeDocumentCount(
+        @Param("userUuid")String userUuid, 
+        @Param("teamUuidList")List<String> teamUuidList, 
+        @Param("roleUuidList")List<String> roleUuidList
+    );
+
+    public int checkUserIsApprover(@Param("uuid") String userUuid, @Param("knowledgeCircleId") Long knowledgeCircleId);
+
     public int insertKnowledgeDocument(KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int insertKnowledgeDocumentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);

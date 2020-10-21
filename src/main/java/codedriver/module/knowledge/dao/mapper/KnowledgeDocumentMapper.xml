@@ -167,6 +167,21 @@
 	</if>
 	</select>
 	
+	<select id="getKnowledgeDocumentHistorialVersionListByKnowledgeDocumentId" parameterType="java.lang.Long" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentHistoricalVersionVo">
+	SELECT 
+	  `id`,
+	  `title`,
+	  `knowledge_document_id` AS knowledgeDocumentId,
+	  `version`,
+	  `status`,
+	  `lcu`,
+	  `lcd`
+	FROM `knowledge_document_version` 
+	WHERE `knowledge_document_id` = #{value} 
+	AND `status` = 'passed'
+	ORDER BY `version` DESC
+	</select>
+	
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	INSERT INTO `knowledge_document` (
 	  `id`,

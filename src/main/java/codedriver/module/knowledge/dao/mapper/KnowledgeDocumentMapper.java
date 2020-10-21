@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentHistoricalVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineConfigVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineContentVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
@@ -39,6 +40,8 @@ public interface KnowledgeDocumentMapper {
     public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentWaitingForReviewList(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 
     public int getKnowledgeDocumentWaitingForReviewCount(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+
+    public List<KnowledgeDocumentHistoricalVersionVo> getKnowledgeDocumentHistorialVersionListByKnowledgeDocumentId(Long knowledgeDocumentId);
 
     public int insertKnowledgeDocument(KnowledgeDocumentVo knowledgeDocumentVo);
 

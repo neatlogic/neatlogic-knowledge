@@ -66,7 +66,7 @@ public class KnowledgeDocumentShareListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        resultObj.put("knowledgeDocumentVersionList", new ArrayList<>());
+        resultObj.put("tbodyList", new ArrayList<>());
         List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue(), KnowledgeDocumentVersionStatus.REJECTED.getValue(), KnowledgeDocumentVersionStatus.SUBMITED.getValue());
         KnowledgeDocumentVersionVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
         searchVo.setLcu(UserContext.get().getUserUuid(true));
@@ -92,7 +92,7 @@ public class KnowledgeDocumentShareListApi extends PrivateApiComponentBase {
                     knowledgeDocumentVersionVo.setReviewerInfo(reviewerUserVo.getUserInfo());
                 }
             }
-            resultObj.put("knowledgeDocumentVersionList", knowledgeDocumentVersionList);
+            resultObj.put("tbodyList", knowledgeDocumentVersionList);
         }
         return resultObj;
     }

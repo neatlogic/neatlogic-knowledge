@@ -58,7 +58,7 @@ public class KnowledgeDocumentWaitingForReviewListApi extends PrivateApiComponen
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        resultObj.put("knowledgeDocumentVersionList", new ArrayList<>());
+        resultObj.put("tbodyList", new ArrayList<>());
         KnowledgeDocumentVersionVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
         searchVo.setReviewer(UserContext.get().getUserUuid(true));
         int pageCount = 0;
@@ -72,7 +72,7 @@ public class KnowledgeDocumentWaitingForReviewListApi extends PrivateApiComponen
         }
         if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
             List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewList(searchVo);
-            resultObj.put("knowledgeDocumentVersionList", knowledgeDocumentVersionList);
+            resultObj.put("tbodyList", knowledgeDocumentVersionList);
         }
         return resultObj;
     }

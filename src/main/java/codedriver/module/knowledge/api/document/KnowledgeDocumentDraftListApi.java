@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
@@ -60,12 +61,14 @@ public class KnowledgeDocumentDraftListApi extends PrivateApiComponentBase {
     })
     @Output({
         @Param(explode = BasePageVo.class),
+        @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头列表"),
         @Param(name = "tbodyList", explode = KnowledgeDocumentVersionVo[].class, desc = "文档版本列表")
     })
     @Description(desc = "查询草稿列表")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
+        resultObj.put("thead", getTheadList());
         resultObj.put("tbodyList", new ArrayList<>());
         List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
         KnowledgeDocumentVersionVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
@@ -90,6 +93,17 @@ public class KnowledgeDocumentDraftListApi extends PrivateApiComponentBase {
             resultObj.put("tbodyList", knowledgeDocumentVersionList);
         }
         return resultObj;
+    }
+
+    @SuppressWarnings({"serial"})
+    private JSONArray getTheadList() {
+        JSONArray theadList = new JSONArray();
+        theadList.add(new JSONObject() {{this.put("key", "标题"); this.put("title", "title");}});
+        theadList.add(new JSONObject() {{this.put("key", "提交人"); this.put("title", "lcu");}});
+        theadList.add(new JSONObject() {{this.put("key", "修改时间"); this.put("title", "lcd");}});
+        theadList.add(new JSONObject() {{this.put("key", "大小"); this.put("title", "size");}});
+        theadList.add(new JSONObject() {{this.put("key", "action");}});
+        return theadList;
     }
 
 }

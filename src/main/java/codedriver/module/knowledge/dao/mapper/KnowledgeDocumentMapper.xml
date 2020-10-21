@@ -182,6 +182,33 @@
 	ORDER BY `version` DESC
 	</select>
 	
+	<select id="getKnowledgeDocumentListForInternalLink" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="codedriver.framework.common.dto.ValueTextVo">
+	SELECT 
+	b.`title` AS text,
+	b.`knowledge_document_id` AS value
+	FROM `knowledge_document` a
+	JOIN `knowledge_document_version` b ON b.`id` = a.`knowledge_document_version_id`
+	WHERE a.`is_delete` = 0
+	<if test="keyword != null and keyword != ''">
+	AND b.`title` LIKE CONCAT('%', #{keyword}, '%')
+	</if>
+	ORDER BY b.`title`
+	<if test="needPage">
+	limit #{startNum}, #{pageSize}
+	</if>
+	</select>
+	
+	<select id="getKnowledgeDocumentCountForInternalLink" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="int">
+	SELECT 
+	COUNT(1)
+	FROM `knowledge_document` a
+	JOIN `knowledge_document_version` b ON b.`id` = a.`knowledge_document_version_id`
+	WHERE a.`is_delete` = 0
+	<if test="keyword != null and keyword != ''">
+	AND b.`title` LIKE CONCAT('%', #{keyword}, '%')
+	</if>
+	</select>
+	
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	INSERT INTO `knowledge_document` (
 	  `id`,

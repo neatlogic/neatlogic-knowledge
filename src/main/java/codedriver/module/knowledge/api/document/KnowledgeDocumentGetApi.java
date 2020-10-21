@@ -80,11 +80,14 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
         if(knowledgeDocumentVersionId == null) {
             knowledgeDocumentVersionId = knowledgeDocumentVo.getKnowledgeDocumentVersionId();
+        }else {
+            knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         }
         KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         if(knowledgeDocumentVersionVo == null) {
             throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
         }
+        knowledgeDocumentVo.setTitle(knowledgeDocumentVersionVo.getTitle());
         List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentVo.setLineList(lineList);
         List<Long> fileIdList = knowledgeDocumentMapper.getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentId, knowledgeDocumentVersionId));

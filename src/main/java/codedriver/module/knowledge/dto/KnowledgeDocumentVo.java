@@ -52,10 +52,8 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private Integer isDeletable;
     @EntityField(name = "是否可审核", type = ApiParamType.INTEGER)
     private Integer isReviewable;
-    @JSONField(serialize=false)
-    private transient List<Long> fileIdList = new ArrayList<>();
-    @JSONField(serialize=false)
-    private transient List<Long> tagIdList = new ArrayList<>();
+    private List<Long> fileIdList = new ArrayList<>();
+    private List<Long> tagIdList = new ArrayList<>();
     private transient Integer isDelete;
     @JSONField(serialize=false)
     private transient boolean isAutoGenerateId = true;

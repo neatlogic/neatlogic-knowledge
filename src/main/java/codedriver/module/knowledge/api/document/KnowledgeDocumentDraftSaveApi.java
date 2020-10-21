@@ -77,6 +77,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
         KnowledgeDocumentVo documentVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
+        documentVo.setId(null);
         Long documentId = null;
         Long drafrVersionId = null;
         if(knowledgeDocumentVersionId != null) {
@@ -134,6 +135,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             /** 没有版本id，则是首次创建文档 **/
             KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
             documentVo.setFcu(UserContext.get().getUserUuid(true));
+            documentVo.setVersion(0);
             knowledgeDocumentMapper.insertKnowledgeDocument(documentVo);          
             knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
             knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentVo.getId());
@@ -183,9 +185,6 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                     knowledgeDocumentMapper.insertKnowledgeDocumentLineContent(knowledgeDocumentLineContentVo);
                 }
             }
-//            if(StringUtils.isBlank(knowledgeDocumentLineVo.getUuid())) {
-//                knowledgeDocumentLineVo.setUuid(UuidUtil.randomUuid());
-//            }
             knowledgeDocumentLineList.add(knowledgeDocumentLineVo);
             if(knowledgeDocumentLineList.size() >= 100) {
                 knowledgeDocumentMapper.insertKnowledgeDocumentLineList(knowledgeDocumentLineList);

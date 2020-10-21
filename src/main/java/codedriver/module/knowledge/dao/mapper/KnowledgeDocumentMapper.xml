@@ -213,7 +213,7 @@
 	SELECT 
 	COUNT(1)
 	FROM `knowledge_circle_user` a
-	JOIN `knowledge_document` b ON b.`knowledge_circle_id` = a.`knowledge_circle_id` AND b.`is_delete` = 0
+	JOIN `knowledge_document` b ON b.`knowledge_circle_id` = a.`knowledge_circle_id` AND b.`is_delete` = 0 AND b.`version` != 0
 	WHERE (a.`type` = 'common' AND a.`uuid` = 'alluser')
 	<if test="userUuid != null and userUuid != ''">
 		OR (a.`type` = 'user' AND a.`uuid` = #{userUuid})

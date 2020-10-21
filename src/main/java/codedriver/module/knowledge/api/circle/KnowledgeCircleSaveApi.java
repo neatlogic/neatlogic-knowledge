@@ -8,13 +8,13 @@ import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
-import codedriver.module.knowledge.dao.mapper.KnowledgeTypeMapper;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dto.KnowledgeCircleUserVo;
 import codedriver.module.knowledge.dto.KnowledgeCircleVo;
-import codedriver.module.knowledge.dto.KnowledgeTypeVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.exception.KnowledgeCircleNameRepeatException;
 import codedriver.module.knowledge.exception.KnowledgeCircleNotFoundException;
-import codedriver.module.knowledge.service.KnowledgeTypeService;
+import codedriver.module.knowledge.service.KnowledgeDocumentTypeService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -45,10 +45,10 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 	private KnowledgeCircleMapper knowledgeCircleMapper;
 
 	@Autowired
-	private KnowledgeTypeMapper knowledgeTypeMapper;
+	private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
 
 	@Autowired
-	private KnowledgeTypeService knowledgeTypeService;
+	private KnowledgeDocumentTypeService knowledgeDocumentTypeService;
 
 	@Override
 	public String getToken() {
@@ -96,7 +96,7 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 			}
 			knowledgeCircleMapper.updateKnowledgeCircle(knowledgeCircleVo);
 			/** 先删除知识圈用户与知识圈中的知识类型，最后重新插入 */
-			knowledgeTypeMapper.deleteKnowledgeTypeByCircleId(knowledgeCircleVo.getId());
+			knowledgeDocumentTypeMapper.deleteTypeByCircleId(knowledgeCircleVo.getId());
 			knowledgeCircleMapper.deleteKnowledgeCircleUserById(id);
 		}else{
 			if(knowledgeCircleMapper.checkNameIsRepeat(knowledgeCircleVo) > 0){
@@ -106,15 +106,15 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 		}
 
 		/** 解析知识类型JSON*/
-		List<KnowledgeTypeVo> typeList = new ArrayList<>();
+		List<KnowledgeDocumentTypeVo> typeList = new ArrayList<>();
 		parseKnowledgeTypeJson(knowledgeType,typeList,knowledgeCircleVo.getId());
 		/** 解析知识圈用户，包括审批人与成员 */
 		List<KnowledgeCircleUserVo> circleUserList = getKnowledgeCircleUserList(approver, member, knowledgeCircleVo.getId());
 		/** 插入知识类型与用户 */
 		if(CollectionUtils.isNotEmpty(typeList)){
-			knowledgeTypeMapper.batchInsertKnowledgeType(typeList);
+			knowledgeDocumentTypeMapper.batchInsertType(typeList);
 			/** knowledgeType中并不包含左右编码，故需要根据parentId与sort重建左右编码 */
-			knowledgeTypeService.rebuildLeftRightCode(knowledgeCircleVo.getId());
+			knowledgeDocumentTypeService.rebuildLeftRightCode(knowledgeCircleVo.getId());
 		}
 		if(CollectionUtils.isNotEmpty(circleUserList)){
 			knowledgeCircleMapper.batchInsertKnowledgeCircleUser(circleUserList);
@@ -193,19 +193,19 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 	 * @param knowledgeCircleId
 	 * @return
 	 */
-	private List<KnowledgeTypeVo> parseKnowledgeTypeJson(Object objJson, List<KnowledgeTypeVo> list,Long knowledgeCircleId) {
+	private List<KnowledgeDocumentTypeVo> parseKnowledgeTypeJson(Object objJson, List<KnowledgeDocumentTypeVo> list, Long knowledgeCircleId) {
 		if (objJson instanceof JSONArray) {
 			JSONArray objArray = JSONArray.parseArray(objJson.toString());
 			for (int i = 0; i < objArray.size(); i++) {
 				JSONObject obj = objArray.getJSONObject(i);
-				KnowledgeTypeVo knowledgeTypeVo = new KnowledgeTypeVo();
-				knowledgeTypeVo.setUuid(obj.getString("uuid"));
-				knowledgeTypeVo.setParentUuid(obj.getString("parentUuid"));
-				knowledgeTypeVo.setName(obj.getString("name"));
-				knowledgeTypeVo.setKnowledgeCircleId(knowledgeCircleId);
+				KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = new KnowledgeDocumentTypeVo();
+				knowledgeDocumentTypeVo.setUuid(obj.getString("uuid"));
+				knowledgeDocumentTypeVo.setParentUuid(obj.getString("parentUuid"));
+				knowledgeDocumentTypeVo.setName(obj.getString("name"));
+				knowledgeDocumentTypeVo.setKnowledgeCircleId(knowledgeCircleId);
 				/** sort的用处在于重建左右编码 */
-				knowledgeTypeVo.setSort(i);
-				list.add(knowledgeTypeVo);
+				knowledgeDocumentTypeVo.setSort(i);
+				list.add(knowledgeDocumentTypeVo);
 				parseKnowledgeTypeJson(objArray.get(i),list,knowledgeCircleId);
 			}
 		}else if (objJson instanceof JSONObject) {

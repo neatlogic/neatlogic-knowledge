@@ -4,9 +4,9 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.knowledge.dao.mapper.KnowledgeTypeMapper;
-import codedriver.module.knowledge.dto.KnowledgeTypeVo;
-import codedriver.module.knowledge.exception.KnowledgeTypeNotFoundException;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
+import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
+import codedriver.module.knowledge.exception.KnowledgeDocumentTypeNotFoundException;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +16,14 @@ import java.util.List;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class KnowledgeTypeTreeApi extends PrivateApiComponentBase{
+public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 
 	@Autowired
-	private KnowledgeTypeMapper knowledgeTypeMapper;
+	private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
 
 	@Override
 	public String getToken() {
-		return "knowledge/type/tree";
+		return "knowledge/document/type/tree";
 	}
 
 	@Override
@@ -41,25 +41,25 @@ public class KnowledgeTypeTreeApi extends PrivateApiComponentBase{
 			@Param( name = "knowledgeCircleId", desc = "知识圈ID", type = ApiParamType.LONG ,isRequired = true)
 	})
 	@Output({
-			@Param( name = "typeList", explode = KnowledgeTypeVo[].class, desc = "知识类型架构集合")
+			@Param( name = "typeList", explode = KnowledgeDocumentTypeVo[].class, desc = "知识类型架构集合")
 	})
 	@Description(desc = "获取知识圈知识分类树")
 	@Override
 	public Object myDoService(JSONObject jsonObj) throws Exception {
 		JSONObject result = new JSONObject();
-		KnowledgeTypeVo type = new KnowledgeTypeVo();
+		KnowledgeDocumentTypeVo type = new KnowledgeDocumentTypeVo();
 		String parentUuid = jsonObj.getString("parentUuid");
 		Long knowledgeCircleId = jsonObj.getLong("knowledgeCircleId");
 		if (StringUtils.isNotBlank(parentUuid)){
-			if(knowledgeTypeMapper.checkTypeIsExists(parentUuid) == 0) {
-				throw new KnowledgeTypeNotFoundException(parentUuid);
+			if(knowledgeDocumentTypeMapper.checkTypeIsExists(parentUuid) == 0) {
+				throw new KnowledgeDocumentTypeNotFoundException(parentUuid);
 			}
 		}else {
-			parentUuid = KnowledgeTypeVo.ROOT_UUID;
+			parentUuid = KnowledgeDocumentTypeVo.ROOT_UUID;
 		}
 		type.setParentUuid(parentUuid);
 		type.setKnowledgeCircleId(knowledgeCircleId);
-		List<KnowledgeTypeVo> typeList = knowledgeTypeMapper.searchKnowledgeType(type);
+		List<KnowledgeDocumentTypeVo> typeList = knowledgeDocumentTypeMapper.searchType(type);
 		result.put("typeList",typeList);
 		return result;
 	}

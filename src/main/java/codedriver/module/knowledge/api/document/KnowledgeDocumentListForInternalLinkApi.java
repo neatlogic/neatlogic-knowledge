@@ -68,7 +68,7 @@ public class KnowledgeDocumentListForInternalLinkApi extends PrivateApiComponent
             resultObj.put("pageCount", pageCount);
             resultObj.put("rowNum", rowNum);
         }
-        if(searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
+        if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
             List<ValueTextVo> knowledgeDocumentList = knowledgeDocumentMapper.getKnowledgeDocumentListForInternalLink(searchVo);
             resultObj.put("list", knowledgeDocumentList);
         }

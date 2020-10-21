@@ -5,12 +5,12 @@ import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
-import codedriver.module.knowledge.dao.mapper.KnowledgeTypeMapper;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dto.KnowledgeCircleUserVo;
 import codedriver.module.knowledge.dto.KnowledgeCircleVo;
-import codedriver.module.knowledge.dto.KnowledgeTypeVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.exception.KnowledgeCircleNotFoundException;
-import codedriver.module.knowledge.service.KnowledgeTypeService;
+import codedriver.module.knowledge.service.KnowledgeDocumentTypeService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +28,10 @@ public class KnowledgeCircleGetApi extends PrivateApiComponentBase{
 	private KnowledgeCircleMapper knowledgeCircleMapper;
 
 	@Autowired
-	private KnowledgeTypeMapper knowledgeTypeMapper;
+	private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
 
 	@Autowired
-	private KnowledgeTypeService knowledgeTypeService;
+	private KnowledgeDocumentTypeService knowledgeDocumentTypeService;
 
 	@Override
 	public String getToken() {
@@ -64,23 +64,23 @@ public class KnowledgeCircleGetApi extends PrivateApiComponentBase{
 		List<KnowledgeCircleUserVo> circleUserList = knowledgeCircleMapper.getKnowledgeCircleUserList(id);
 		circle.setAuthList(circleUserList);
 		/** 查询知识类型 */
-		KnowledgeTypeVo root = knowledgeTypeService.buildRootKnowledgeType(id);
-		List<KnowledgeTypeVo> typeList = knowledgeTypeMapper.getKnowledgeTypeForTree(root.getLft(), root.getRht(),id);
+		KnowledgeDocumentTypeVo root = knowledgeDocumentTypeService.buildRootType(id);
+		List<KnowledgeDocumentTypeVo> typeList = knowledgeDocumentTypeMapper.getTypeForTree(root.getLft(), root.getRht(),id);
 		if(CollectionUtils.isNotEmpty(typeList)){
-			Map<String,KnowledgeTypeVo> idMap = new HashMap<>();
+			Map<String, KnowledgeDocumentTypeVo> idMap = new HashMap<>();
 			typeList.add(root);
-			for(KnowledgeTypeVo vo : typeList){
+			for(KnowledgeDocumentTypeVo vo : typeList){
 				idMap.put(vo.getUuid(),vo);
 			}
-			for(KnowledgeTypeVo vo : typeList){
+			for(KnowledgeDocumentTypeVo vo : typeList){
 				String parentUuid = vo.getParentUuid();
-				KnowledgeTypeVo parent = idMap.get(parentUuid);
+				KnowledgeDocumentTypeVo parent = idMap.get(parentUuid);
 				if(parent != null){
 					vo.setParent(parent);
 				}
 			}
 		}
-		circle.setKnowledgeTypeList(root.getChildren());
+		circle.setDocumentTypeList(root.getChildren());
 		result.put("knowledgeCircle",circle);
 		return result;
 	}

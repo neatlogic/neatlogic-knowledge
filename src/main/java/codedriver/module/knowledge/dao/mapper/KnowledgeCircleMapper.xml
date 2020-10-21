@@ -26,7 +26,7 @@
 		SELECT
 		a.`id`,
 		a.`name`,
-		(SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_circle_id` = a.`id`) as `knowledgeCount`
+		(SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_circle_id` = a.`id`) as `documentCount`
 		FROM `knowledge_circle` a
 		where 1=1
 		<if test="keyword != null and keyword != ''">

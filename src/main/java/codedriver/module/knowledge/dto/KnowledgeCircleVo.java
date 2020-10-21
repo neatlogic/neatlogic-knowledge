@@ -16,8 +16,8 @@ public class KnowledgeCircleVo extends BasePageVo {
 	private Long id;
 	@EntityField(name = "知识圈名称", type = ApiParamType.STRING)
 	private String name;
-	@EntityField(name = "知识数", type = ApiParamType.INTEGER)
-	private Integer knowledgeCount;
+	@EntityField(name = "知识文档数", type = ApiParamType.INTEGER)
+	private Integer documentCount;
 	@EntityField(name = "成员数", type = ApiParamType.INTEGER)
 	private Integer memberCount;
 	@EntityField(name = "审批人用户名列表", type = ApiParamType.JSONARRAY)
@@ -26,8 +26,8 @@ public class KnowledgeCircleVo extends BasePageVo {
 	private List<String> approverList;
 	@EntityField(name = "成员列表", type = ApiParamType.JSONARRAY)
 	private List<String> memberList;
-	@EntityField(name = "知识类型列表", type = ApiParamType.JSONARRAY)
-	private List<KnowledgeTypeVo> knowledgeTypeList;
+	@EntityField(name = "知识文档类型列表", type = ApiParamType.JSONARRAY)
+	private List<KnowledgeDocumentTypeVo> documentTypeList;
 
 	/** 知识圈关联的所有对象，包括用户、组、角色 */
 	private transient List<KnowledgeCircleUserVo> authList;
@@ -53,12 +53,12 @@ public class KnowledgeCircleVo extends BasePageVo {
 		this.name = name;
 	}
 
-	public Integer getKnowledgeCount() {
-		return knowledgeCount;
+	public Integer getDocumentCount() {
+		return documentCount;
 	}
 
-	public void setKnowledgeCount(Integer knowledgeCount) {
-		this.knowledgeCount = knowledgeCount;
+	public void setDocumentCount(Integer documentCount) {
+		this.documentCount = documentCount;
 	}
 
 	public Integer getMemberCount() {
@@ -119,11 +119,11 @@ public class KnowledgeCircleVo extends BasePageVo {
 		this.authList = authList;
 	}
 
-	public List<KnowledgeTypeVo> getKnowledgeTypeList() {
-		return knowledgeTypeList;
+	public List<KnowledgeDocumentTypeVo> getDocumentTypeList() {
+		return documentTypeList;
 	}
 
-	public void setKnowledgeTypeList(List<KnowledgeTypeVo> knowledgeTypeList) {
-		this.knowledgeTypeList = knowledgeTypeList;
+	public void setDocumentTypeList(List<KnowledgeDocumentTypeVo> documentTypeList) {
+		this.documentTypeList = documentTypeList;
 	}
 }

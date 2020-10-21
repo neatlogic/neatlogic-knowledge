@@ -60,7 +60,7 @@ public class KnowledgeDocumentShareListApi extends PrivateApiComponentBase {
     })
     @Output({
         @Param(explode = BasePageVo.class),
-        @Param(name = "knowledgeDocumentVersionList", explode = KnowledgeDocumentVersionVo[].class, desc = "文档版本列表")
+        @Param(name = "tbodyList", explode = KnowledgeDocumentVersionVo[].class, desc = "文档版本列表")
     })
     @Description(desc = "查询共享列表")
     @Override

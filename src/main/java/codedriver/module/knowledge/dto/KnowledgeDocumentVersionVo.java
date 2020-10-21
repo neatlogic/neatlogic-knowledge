@@ -32,9 +32,9 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     private String reviewer;
     @EntityField(name = "审核人名", type = ApiParamType.STRING)
     private String reviewerName;
-    @EntityField(name = "修改者额外属性", type = ApiParamType.STRING)
+    @EntityField(name = "审核人额外属性", type = ApiParamType.STRING)
     private String reviewerInfo;
-    @EntityField(name = "修改者头像", type = ApiParamType.STRING)
+    @EntityField(name = "审核人头像", type = ApiParamType.STRING)
     private String reviewerAvatar;
     @EntityField(name = "审核时间", type = ApiParamType.LONG)
     private Date reviewTime;

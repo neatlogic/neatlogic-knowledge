@@ -52,7 +52,7 @@ public class KnowledgeDocumentWaitingForReviewListApi extends PrivateApiComponen
     })
     @Output({
         @Param(explode = BasePageVo.class),
-        @Param(name = "knowledgeDocumentVersionList", explode = KnowledgeDocumentVersionVo[].class, desc = "文档版本列表")
+        @Param(name = "tbodyList", explode = KnowledgeDocumentVersionVo[].class, desc = "文档版本列表")
     })
     @Description(desc = "查询待我审批列表")
     @Override

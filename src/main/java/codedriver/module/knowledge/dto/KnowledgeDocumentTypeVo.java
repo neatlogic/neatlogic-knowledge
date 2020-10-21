@@ -7,7 +7,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KnowledgeTypeVo{
+public class KnowledgeDocumentTypeVo {
 
 	public static final String ROOT_PARENTUUID = "-1";
 	public static final String ROOT_UUID = "0";
@@ -31,14 +31,14 @@ public class KnowledgeTypeVo{
 	private transient Integer sort;
 	@EntityField(name = "子节点数量", type = ApiParamType.INTEGER)
 	private Integer childCount;
-	@EntityField(name = "关联的知识数", type = ApiParamType.INTEGER)
-	private Integer knowledgeCount;
+	@EntityField(name = "关联的知识文档数", type = ApiParamType.INTEGER)
+	private Integer documentCount;
 
-	private transient KnowledgeTypeVo parent;
+	private transient KnowledgeDocumentTypeVo parent;
 
-	private List<KnowledgeTypeVo> children = new ArrayList<>();
+	private List<KnowledgeDocumentTypeVo> children = new ArrayList<>();
 
-	public KnowledgeTypeVo() {}
+	public KnowledgeDocumentTypeVo() {}
 
 	public String getUuid() {
 		return uuid;
@@ -104,28 +104,28 @@ public class KnowledgeTypeVo{
 		this.childCount = childCount;
 	}
 
-	public Integer getKnowledgeCount() {
-		return knowledgeCount;
+	public Integer getDocumentCount() {
+		return documentCount;
 	}
 
-	public void setKnowledgeCount(Integer knowledgeCount) {
-		this.knowledgeCount = knowledgeCount;
+	public void setDocumentCount(Integer documentCount) {
+		this.documentCount = documentCount;
 	}
 
-	public KnowledgeTypeVo getParent() {
+	public KnowledgeDocumentTypeVo getParent() {
 		return parent;
 	}
 
-	public void setParent(KnowledgeTypeVo parent) {
+	public void setParent(KnowledgeDocumentTypeVo parent) {
 		this.parent = parent;
 		parent.getChildren().add(this);
 	}
 
-	public List<KnowledgeTypeVo> getChildren() {
+	public List<KnowledgeDocumentTypeVo> getChildren() {
 		return children;
 	}
 
-	public void setChildren(List<KnowledgeTypeVo> children) {
+	public void setChildren(List<KnowledgeDocumentTypeVo> children) {
 		this.children = children;
 	}
 }

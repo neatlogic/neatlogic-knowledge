@@ -49,6 +49,14 @@ public interface KnowledgeDocumentMapper {
     
     public int getKnowledgeDocumentCountForInternalLink(BasePageVo basePageVo);
 
+    public int checkDocumentHasBeenFavored(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+
+    public int getDocumentFavorCount(Long documentId);
+
+    public int checkDocumentHasBeenCollected(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+
+    public int getDocumentCollectCount(Long documentId);
+
     public int insertKnowledgeDocument(KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int insertKnowledgeDocumentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
@@ -62,6 +70,10 @@ public interface KnowledgeDocumentMapper {
     public int insertKnowledgeDocumentLineContent(KnowledgeDocumentLineContentVo knowledgeDocumentLineContentVo);
 
     public int insertKnowledgeDocumentLineList(List<KnowledgeDocumentLineVo> knowledgeDocumentLineList);
+
+    public int insertKnowledgeDocumentFavor(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+
+    public int insertKnowledgeDocumentCollect(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
 
     public int updateKnowledgeDocumentToDeleteById(Long knowledgeDocumentId);
 
@@ -85,5 +97,9 @@ public interface KnowledgeDocumentMapper {
     public int deleteKnowledgeDocumentVersionById(Long id);
 
     public int deleteKnowledgeDocumentById(Long id);
+
+    public int deleteKnowledgeDocumentFavor(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+
+    public int deleteKnowledgeDocumentCollect(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
 
 }

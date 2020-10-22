@@ -6,12 +6,10 @@ public class KnowledgeTypeVo {
 
     private String value;
     private String text;
-    private String route;
     private int count;
     public KnowledgeTypeVo(KnowledgeType type) {
         this.value = type.getValue();
         this.text = type.getText();
-        this.route = type.getRoute();
     }
     public String getValue() {
         return value;
@@ -24,12 +22,6 @@ public class KnowledgeTypeVo {
     }
     public void setText(String text) {
         this.text = text;
-    }
-    public String getRoute() {
-        return route;
-    }
-    public void setRoute(String route) {
-        this.route = route;
     }
     public int getCount() {
         return count;

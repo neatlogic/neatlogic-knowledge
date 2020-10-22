@@ -1,4 +1,4 @@
-package codedriver.module.knowledge.api.document;
+package codedriver.module.knowledge.lcstest;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -11,12 +11,10 @@ import java.util.function.BiPredicate;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
-import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -24,29 +22,23 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.DocumentVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.dto.LineVo;
 import codedriver.module.knowledge.lcstest.Node;
 import codedriver.module.knowledge.lcstest.SegmentMapping;
 import codedriver.module.knowledge.lcstest.SegmentRange;
-@Service
-@OperationType(type = OperationTypeEnum.SEARCH)
-public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase {
-
-    @Autowired
-    private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    
+//@Service
+//@OperationType(type = OperationTypeEnum.SEARCH)
+public class DocumentVersionCompareApi extends PrivateApiComponentBase {
+    private final static String BASE_PATH = "src/main/java/codedriver/module/knowledge/lcstest/";
     @Override
     public String getToken() {
-        return "knowledge/document/version/compare";
+        return "knowledge/VersionCompara";
     }
 
     @Override
     public String getName() {
-        return "比较文档两个版本内容差异";
+        return "比较两个版本文档内容差异";
     }
 
     @Override
@@ -54,25 +46,13 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         return null;
     }
 
-    @Input({
-        @Param(name = "newVersionId", type = ApiParamType.LONG, isRequired = true, desc = "新版本id"),
-        @Param(name = "oldVersionId", type = ApiParamType.LONG, desc = "旧版本id"),
-    })
+    @Input({})
     @Output({
-        @Param(name = "newDocument", explode = KnowledgeDocumentVo.class, desc = "文档新版本内容"),
-        @Param(name = "oldDocument", explode = KnowledgeDocumentVo.class, desc = "文档旧版本内容")
+        @Param(explode = DocumentVo[].class, desc = "两个版本文档内容")
     })
-    @Description(desc = "比较文档两个版本内容差异")
+    @Description(desc = "比较两个版本文档内容差异")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        Long newVersionId = jsonObj.getLong("newVersionId");
-        KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(newVersionId);
-        if(knowledgeDocumentVersionVo == null) {
-            
-        }
-        Long oldVersionId = jsonObj.getLong("oldVersionId");
-        
-        
         List<DocumentVo> documentList = new ArrayList<>();
         DocumentVo oldDocument = new DocumentVo();
         DocumentVo newDocument = new DocumentVo();
@@ -710,5 +690,9 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
             segmentMappingList.add(segmentMapping);
         }
         return segmentMappingList;
+    }
+    
+    public static void main(String[] args) {
+        readFileData(BASE_PATH + "newData2.txt");
     }
 }

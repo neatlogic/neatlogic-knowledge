@@ -43,7 +43,7 @@ public class KnowledgeTemplateSaveApi extends PrivateApiComponentBase{
 			@Param( name = "name", type = ApiParamType.REGEX, rule = "^[A-Za-z_\\d\\u4e00-\\u9fa5]+$", desc = "模版名称", isRequired = true,xss=true),
 			@Param( name = "content", type = ApiParamType.JSONARRAY, desc = "目录", isRequired = true)
 	})
-	@Output({})
+	@Output({@Param(name = "id", type = ApiParamType.INTEGER,desc = "模版ID")})
 	@Description(desc = "保存知识模版")
 	@Override
 	public Object myDoService(JSONObject jsonObj) throws Exception {
@@ -72,7 +72,9 @@ public class KnowledgeTemplateSaveApi extends PrivateApiComponentBase{
 			knowledgeTemplateVo.setFcu(UserContext.get().getUserUuid());
 			knowledgeTemplateMapper.insertKnowledgeTemplate(knowledgeTemplateVo);
 		}
-		return null;
+		JSONObject result = new JSONObject();
+		result.put("id",knowledgeTemplateVo.getId());
+		return result;
 	}
 
 }

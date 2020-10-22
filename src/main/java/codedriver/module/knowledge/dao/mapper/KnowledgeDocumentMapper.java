@@ -49,6 +49,14 @@ public interface KnowledgeDocumentMapper {
     
     public int getKnowledgeDocumentCountForInternalLink(BasePageVo basePageVo);
 
+    public int getCurrentUserKnowledgeDocumentCount(
+        @Param("userUuid")String userUuid,
+        @Param("teamUuidList")List<String> teamUuidList,
+        @Param("roleUuidList")List<String> roleUuidList
+    );
+
+    public int checkUserIsApprover(@Param("uuid") String userUuid, @Param("knowledgeCircleId") Long knowledgeCircleId);
+
     public int checkDocumentHasBeenFavored(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
 
     public int getDocumentFavorCount(Long documentId);

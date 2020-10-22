@@ -11,7 +11,6 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dto.UserVo;
@@ -22,9 +21,7 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeCircleUserVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentHistoricalVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
@@ -34,9 +31,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiComponentBase {
 
     @Autowired
-    private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    @Autowired
-    private KnowledgeCircleMapper knowledgeCircleMapper;   
+    private KnowledgeDocumentMapper knowledgeDocumentMapper;   
     @Autowired
     private UserMapper userMapper;
 
@@ -72,15 +67,8 @@ public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiCompone
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
         }
-        int isReviewable = 0;
-        List<KnowledgeCircleUserVo> knowledgeCircleUserList = knowledgeCircleMapper.getKnowledgeCircleUserListByIdAndAuthType(knowledgeDocumentVo.getKnowledgeCircleId(), KnowledgeCircleUserVo.AuthType.APPROVER.getValue());
-        for(KnowledgeCircleUserVo knowledgeCircleUserVo : knowledgeCircleUserList) {
-            if(GroupSearch.USER.getValue().equals(knowledgeCircleUserVo.getType())) {
-               if(UserContext.get().getUserUuid(true).equals(knowledgeCircleUserVo.getUuid())) {
-                   isReviewable = 1;
-               }
-            }
-        }
+        
+        int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId());
         List<KnowledgeDocumentHistoricalVersionVo> historicalVersionList = knowledgeDocumentMapper.getKnowledgeDocumentHistorialVersionListByKnowledgeDocumentId(knowledgeDocumentId);
         Iterator<KnowledgeDocumentHistoricalVersionVo> iterator = historicalVersionList.iterator();
         while(iterator.hasNext()) {

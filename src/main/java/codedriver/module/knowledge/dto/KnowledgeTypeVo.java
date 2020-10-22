@@ -2,13 +2,13 @@ package codedriver.module.knowledge.dto;
 
 import codedriver.module.knowledge.constvalue.KnowledgeType;
 
-public class KnowledgeTypeVo2 {
+public class KnowledgeTypeVo {
 
     private String value;
     private String text;
     private String route;
     private int count;
-    public KnowledgeTypeVo2(KnowledgeType type) {
+    public KnowledgeTypeVo(KnowledgeType type) {
         this.value = type.getValue();
         this.text = type.getText();
         this.route = type.getRoute();

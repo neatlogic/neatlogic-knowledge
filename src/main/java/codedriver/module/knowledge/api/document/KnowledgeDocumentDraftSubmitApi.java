@@ -1,7 +1,5 @@
 package codedriver.module.knowledge.api.document;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,7 +8,6 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -19,9 +16,7 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
-import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeCircleUserVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftStatusException;
@@ -34,8 +29,6 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    @Autowired
-    private KnowledgeCircleMapper knowledgeCircleMapper;
 
     @Override
     public String getToken() {
@@ -86,15 +79,7 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.SUBMITED.getValue());
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
         
-        int isReviewable = 0;
-        List<KnowledgeCircleUserVo> knowledgeCircleUserList = knowledgeCircleMapper.getKnowledgeCircleUserListByIdAndAuthType(knowledgeDocumentVo.getKnowledgeCircleId(), KnowledgeCircleUserVo.AuthType.APPROVER.getValue());
-        for(KnowledgeCircleUserVo knowledgeCircleUserVo : knowledgeCircleUserList) {
-            if(GroupSearch.USER.getValue().equals(knowledgeCircleUserVo.getType())) {
-               if(UserContext.get().getUserUuid(true).equals(knowledgeCircleUserVo.getUuid())) {
-                   isReviewable = 1;
-               }
-            }
-        }
+        int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId());
         JSONObject resultObj = new JSONObject();
         resultObj.put("isReviewable", isReviewable);
         return resultObj;

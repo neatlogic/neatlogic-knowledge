@@ -54,8 +54,8 @@ public class Node {
     public void setPrevious(Node previous) {
         this.previous = previous;
     }
-    public List<SegmentMapping> getSegmentMappingList(){
-        List<SegmentMapping> resultList = new ArrayList<>();
+    public List<SegmentPair> getSegmentPairList(){
+        List<SegmentPair> resultList = new ArrayList<>();
         Node node = this;
         while(node.previous != null) {
             Node current = node;
@@ -63,7 +63,7 @@ public class Node {
             node.next = current;          
         }
 
-        SegmentMapping segmentMapping = new SegmentMapping(0, 0, node.match);
+        SegmentPair segmentMapping = new SegmentPair(0, 0, node.match);
         int oldPrevMatchIndex = 0;
         int newPrevMatchIndex = 0;
         do {               
@@ -80,7 +80,7 @@ public class Node {
                 }
                 segmentMapping.setEndIndex(oldCurrentIndex, newCurrentIndex);
                 resultList.add(segmentMapping);
-                segmentMapping = new SegmentMapping(oldCurrentIndex, newCurrentIndex, node.match);
+                segmentMapping = new SegmentPair(oldCurrentIndex, newCurrentIndex, node.match);
             }
             node = node.next;
         }while(node != null);

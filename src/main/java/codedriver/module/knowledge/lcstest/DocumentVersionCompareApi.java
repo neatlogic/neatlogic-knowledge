@@ -11,21 +11,18 @@ import java.util.function.BiPredicate;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
-import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dto.DocumentVo;
 import codedriver.module.knowledge.dto.LineVo;
 import codedriver.module.knowledge.lcs.Node;
-import codedriver.module.knowledge.lcs.SegmentMapping;
+import codedriver.module.knowledge.lcs.SegmentPair;
 import codedriver.module.knowledge.lcs.SegmentRange;
 //@Service
 //@OperationType(type = OperationTypeEnum.SEARCH)
@@ -65,8 +62,8 @@ public class DocumentVersionCompareApi extends PrivateApiComponentBase {
         List<LineVo> oldResultList = new ArrayList<>();
         List<LineVo> newResultList = new ArrayList<>();
         Node node = longestCommonSequence(oldLineList, newLineList, (e1, e2) -> e1.getContent().equals(e2.getContent()));
-        for(SegmentMapping segmentMapping : node.getSegmentMappingList()) {
-            test(oldLineList, newLineList, oldResultList, newResultList, segmentMapping);
+        for(SegmentPair segmentPair : node.getSegmentPairList()) {
+            test(oldLineList, newLineList, oldResultList, newResultList, segmentPair);
         }
         oldDocument.setLineList(oldResultList);
         newDocument.setLineList(newResultList);
@@ -521,7 +518,7 @@ public class DocumentVersionCompareApi extends PrivateApiComponentBase {
         return lcs[oldList.size()-1][newList.size()-1];
     }
     
-    private static void test(List<LineVo> oldDataList, List<LineVo> newDataList, List<LineVo> oldResultList, List<LineVo> newResultList, SegmentMapping segmentMapping) {
+    private static void test(List<LineVo> oldDataList, List<LineVo> newDataList, List<LineVo> oldResultList, List<LineVo> newResultList, SegmentPair segmentMapping) {
       SegmentRange oldSegmentRange = segmentMapping.getOldSegmentRange();
       SegmentRange newSegmentRange = segmentMapping.getNewSegmentRange();
       List<LineVo> oldSubList = oldDataList.subList(oldSegmentRange.getBeginIndex(), oldSegmentRange.getEndIndex());
@@ -565,9 +562,9 @@ public class DocumentVersionCompareApi extends PrivateApiComponentBase {
                       newCharList.add(c);
                   }
                   Node node = longestCommonSequence(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
-                  for(SegmentMapping segmentmapping : node.getSegmentMappingList()) {
-                      oldSegmentRangeList.add(segmentmapping.getOldSegmentRange());
-                      newSegmentRangeList.add(segmentmapping.getNewSegmentRange());
+                  for(SegmentPair segmentPair : node.getSegmentPairList()) {
+                      oldSegmentRangeList.add(segmentPair.getOldSegmentRange());
+                      newSegmentRangeList.add(segmentPair.getNewSegmentRange());
                   }
                   oldLine.setContent(wrapChangePlace(oldLine.getContent(), oldSegmentRangeList, "<span class='delete'>", "</span>"));
                   oldResultList.add(oldLine);
@@ -578,8 +575,8 @@ public class DocumentVersionCompareApi extends PrivateApiComponentBase {
                   newResultList.add(newLine);
               }
           }else {
-              List<SegmentMapping> segmentMappingList = longestCommonSequence2(oldSubList, newSubList);
-              for(SegmentMapping segmentMap : segmentMappingList) {
+              List<SegmentPair> segmentMappingList = longestCommonSequence2(oldSubList, newSubList);
+              for(SegmentPair segmentMap : segmentMappingList) {
                   test(oldSubList, newSubList, oldResultList, newResultList, segmentMap);
               }
           }
@@ -608,8 +605,8 @@ public class DocumentVersionCompareApi extends PrivateApiComponentBase {
         return stringBuilder.toString();
     }
     
-    private static List<SegmentMapping> longestCommonSequence2(List<LineVo> oldList, List<LineVo> newList) {
-        List<SegmentMapping> segmentMappingList = new ArrayList<>();
+    private static List<SegmentPair> longestCommonSequence2(List<LineVo> oldList, List<LineVo> newList) {
+        List<SegmentPair> segmentMappingList = new ArrayList<>();
         List<Node> resultList = new ArrayList<>();
         PriorityQueue<Node> priorityQueue = new PriorityQueue<>(oldList.size() * newList.size(), (e1, e2) -> Integer.compare(e2.getTotalMatchLength(), e1.getTotalMatchLength()));
         for(int i = 0; i < oldList.size(); i++) {
@@ -664,28 +661,28 @@ public class DocumentVersionCompareApi extends PrivateApiComponentBase {
         int newIndex = 0;
         for(Node node : resultList) {
             if(node.getOldIndex() > oldIndex) {
-                SegmentMapping segmentMapping = new SegmentMapping(oldIndex, 0, false);
+                SegmentPair segmentMapping = new SegmentPair(oldIndex, 0, false);
                 segmentMapping.setEndIndex(node.getOldIndex(), 0);
                 segmentMappingList.add(segmentMapping);
             }
             if(node.getNewIndex() > newIndex) {
-                SegmentMapping segmentMapping = new SegmentMapping(0, newIndex, false);
+                SegmentPair segmentMapping = new SegmentPair(0, newIndex, false);
                 segmentMapping.setEndIndex(0, node.getNewIndex());
                 segmentMappingList.add(segmentMapping);
             }
             oldIndex = node.getOldIndex() + 1;
             newIndex = node.getNewIndex() + 1;
-            SegmentMapping segmentMapping = new SegmentMapping(node.getOldIndex(), node.getNewIndex(), false);
+            SegmentPair segmentMapping = new SegmentPair(node.getOldIndex(), node.getNewIndex(), false);
             segmentMapping.setEndIndex(oldIndex, newIndex);
             segmentMappingList.add(segmentMapping);
         }
         if(oldList.size() > oldIndex) {
-            SegmentMapping segmentMapping = new SegmentMapping(oldIndex, 0, false);
+            SegmentPair segmentMapping = new SegmentPair(oldIndex, 0, false);
             segmentMapping.setEndIndex(oldList.size(), 0);
             segmentMappingList.add(segmentMapping);
         }
         if(newList.size() > newIndex) {
-            SegmentMapping segmentMapping = new SegmentMapping(0, newIndex, false);
+            SegmentPair segmentMapping = new SegmentPair(0, newIndex, false);
             segmentMapping.setEndIndex(0, newList.size());
             segmentMappingList.add(segmentMapping);
         }

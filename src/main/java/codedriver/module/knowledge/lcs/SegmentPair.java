@@ -1,11 +1,19 @@
 package codedriver.module.knowledge.lcs;
-
-public class SegmentMapping {
+/**
+ * 
+* @Time:2020年10月22日
+* @ClassName: SegmentMapping 
+* @Description: 分段对类，用于保存新旧数据的对应的两段信息
+ */
+public class SegmentPair {
+    /** 旧数据的段 **/
     private final SegmentRange oldSegmentRange;
+    /** 新数据的段 **/
     private final SegmentRange newSegmentRange;
+    /** 这两段是否匹配 **/
     private boolean match;
     
-    public SegmentMapping(int oldBeginIndex, int newBeginIndex, boolean match) {
+    public SegmentPair(int oldBeginIndex, int newBeginIndex, boolean match) {
         this.oldSegmentRange = new SegmentRange(oldBeginIndex, match);
         this.newSegmentRange = new SegmentRange(newBeginIndex, match);
         this.match = match;

@@ -16,7 +16,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import codedriver.module.knowledge.lcs.Node;
-import codedriver.module.knowledge.lcs.SegmentMapping;
+import codedriver.module.knowledge.lcs.SegmentPair;
 import codedriver.module.knowledge.lcs.SegmentRange;
 
 public class LCSTest2 {
@@ -27,9 +27,9 @@ public class LCSTest2 {
         List<String> newDataList = readFileData(BASE_PATH + "newData.txt");
         List<String> oldResultList = new ArrayList<>();
         List<String> newResultList = new ArrayList<>();
-        List<SegmentMapping> segmentMappingList = longestCommonSequence(oldDataList, newDataList, (str1, str2) -> str1.equals(str2)).getSegmentMappingList();
-        for(SegmentMapping segmentMapping : segmentMappingList) {
-            test(oldDataList, newDataList, oldResultList, newResultList, segmentMapping);
+        List<SegmentPair> segmentPairList = longestCommonSequence(oldDataList, newDataList, (str1, str2) -> str1.equals(str2)).getSegmentPairList();
+        for(SegmentPair segmentPair : segmentPairList) {
+            test(oldDataList, newDataList, oldResultList, newResultList, segmentPair);
         }
         writeFileData(oldResultList, BASE_PATH + "oldResult.txt");
         writeFileData(newResultList, BASE_PATH + "newResult.txt");
@@ -66,7 +66,7 @@ public class LCSTest2 {
         }
     }
    
-    private static void test(List<String> oldDataList, List<String> newDataList, List<String> oldResultList, List<String> newResultList, SegmentMapping segmentMapping) {
+    private static void test(List<String> oldDataList, List<String> newDataList, List<String> oldResultList, List<String> newResultList, SegmentPair segmentMapping) {
 //      System.out.println(segmentMapping);
       SegmentRange oldSegmentRange = segmentMapping.getOldSegmentRange();
       SegmentRange newSegmentRange = segmentMapping.getNewSegmentRange();
@@ -100,9 +100,9 @@ public class LCSTest2 {
                   for(char c : newStr.toCharArray()) {
                       newCharList.add(c);
                   }
-                  for(SegmentMapping segmentmapping : longestCommonSequence(oldCharList, newCharList, (c1, c2) -> c1.equals(c2)).getSegmentMappingList()) {
-                      oldSegmentRangeList.add(segmentmapping.getOldSegmentRange());
-                      newSegmentRangeList.add(segmentmapping.getNewSegmentRange());
+                  for(SegmentPair segmentPair : longestCommonSequence(oldCharList, newCharList, (c1, c2) -> c1.equals(c2)).getSegmentPairList()) {
+                      oldSegmentRangeList.add(segmentPair.getOldSegmentRange());
+                      newSegmentRangeList.add(segmentPair.getNewSegmentRange());
                   }
                   oldResultList.add("--" + wrapChangePlace(oldStr, oldSegmentRangeList, "<->", "</->"));
                   newResultList.add("++" + wrapChangePlace(newStr, newSegmentRangeList, "<+>", "</+>"));
@@ -111,8 +111,8 @@ public class LCSTest2 {
                   newResultList.add("++" + newStr);
               }
           }else {
-              List<SegmentMapping> segmentMappingList = longestCommonSequence2(oldSubList, newSubList);
-              for(SegmentMapping segmentMap : segmentMappingList) {
+              List<SegmentPair> segmentMappingList = longestCommonSequence2(oldSubList, newSubList);
+              for(SegmentPair segmentMap : segmentMappingList) {
                   test(oldSubList, newSubList, oldResultList, newResultList, segmentMap);
               }
           }
@@ -171,8 +171,8 @@ public class LCSTest2 {
         return lcs[oldList.size()-1][newList.size()-1];
     }
     
-    private static List<SegmentMapping> longestCommonSequence2(List<String> oldList, List<String> newList) {
-        List<SegmentMapping> segmentMappingList = new ArrayList<>();
+    private static List<SegmentPair> longestCommonSequence2(List<String> oldList, List<String> newList) {
+        List<SegmentPair> segmentMappingList = new ArrayList<>();
         List<Node> resultList = new ArrayList<>();
         PriorityQueue<Node> priorityQueue = new PriorityQueue<>(oldList.size() * newList.size(), (e1, e2) -> Integer.compare(e2.getTotalMatchLength(), e1.getTotalMatchLength()));
         for(int i = 0; i < oldList.size(); i++) {
@@ -236,28 +236,28 @@ public class LCSTest2 {
         int newIndex = 0;
         for(Node node : resultList) {
             if(node.getOldIndex() > oldIndex) {
-                SegmentMapping segmentMapping = new SegmentMapping(oldIndex, 0, false);
+                SegmentPair segmentMapping = new SegmentPair(oldIndex, 0, false);
                 segmentMapping.setEndIndex(node.getOldIndex(), 0);
                 segmentMappingList.add(segmentMapping);
             }
             if(node.getNewIndex() > newIndex) {
-                SegmentMapping segmentMapping = new SegmentMapping(0, newIndex, false);
+                SegmentPair segmentMapping = new SegmentPair(0, newIndex, false);
                 segmentMapping.setEndIndex(0, node.getNewIndex());
                 segmentMappingList.add(segmentMapping);
             }
             oldIndex = node.getOldIndex() + 1;
             newIndex = node.getNewIndex() + 1;
-            SegmentMapping segmentMapping = new SegmentMapping(node.getOldIndex(), node.getNewIndex(), false);
+            SegmentPair segmentMapping = new SegmentPair(node.getOldIndex(), node.getNewIndex(), false);
             segmentMapping.setEndIndex(oldIndex, newIndex);
             segmentMappingList.add(segmentMapping);
         }
         if(oldList.size() > oldIndex) {
-            SegmentMapping segmentMapping = new SegmentMapping(oldIndex, 0, false);
+            SegmentPair segmentMapping = new SegmentPair(oldIndex, 0, false);
             segmentMapping.setEndIndex(oldList.size(), 0);
             segmentMappingList.add(segmentMapping);
         }
         if(newList.size() > newIndex) {
-            SegmentMapping segmentMapping = new SegmentMapping(0, newIndex, false);
+            SegmentPair segmentMapping = new SegmentPair(0, newIndex, false);
             segmentMapping.setEndIndex(0, newList.size());
             segmentMappingList.add(segmentMapping);
         }

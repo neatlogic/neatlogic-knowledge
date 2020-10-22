@@ -37,7 +37,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 import codedriver.module.knowledge.lcs.LCSUtil;
 import codedriver.module.knowledge.lcs.Node;
-import codedriver.module.knowledge.lcs.SegmentMapping;
+import codedriver.module.knowledge.lcs.SegmentPair;
 import codedriver.module.knowledge.lcs.SegmentRange;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -96,9 +96,9 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
             List<KnowledgeDocumentLineVo> newLineList = newDocumentVo.getLineList();
             List<KnowledgeDocumentLineVo> oldResultList = new ArrayList<>();
             List<KnowledgeDocumentLineVo> newResultList = new ArrayList<>();
-            Node node = LCSUtil.longestCommonSequence(oldLineList, newLineList, (e1, e2) -> e1.getContent().equals(e2.getContent()));
-            for(SegmentMapping segmentMapping : node.getSegmentMappingList()) {
-                test(oldLineList, newLineList, oldResultList, newResultList, segmentMapping);
+            Node node = LCSUtil.LCSCompare(oldLineList, newLineList, (e1, e2) -> e1.getContent().equals(e2.getContent()));
+            for(SegmentPair segmentPair : node.getSegmentPairList()) {
+                test(oldLineList, newLineList, oldResultList, newResultList, segmentPair);
             }
             oldDocumentVo.setLineList(oldResultList);
             newDocumentVo.setLineList(newResultList);
@@ -200,13 +200,23 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         }
         return knowledgeDocumentVo;
     }
- 
-    private void test(List<KnowledgeDocumentLineVo> oldDataList, List<KnowledgeDocumentLineVo> newDataList, List<KnowledgeDocumentLineVo> oldResultList, List<KnowledgeDocumentLineVo> newResultList, SegmentMapping segmentMapping) {
-      SegmentRange oldSegmentRange = segmentMapping.getOldSegmentRange();
-      SegmentRange newSegmentRange = segmentMapping.getNewSegmentRange();
+    /**
+     * 
+    * @Time:2020年10月22日
+    * @Description: 根据LCS算法比较结果，进行新旧数据的重组，体现两份数据的差异处 
+    * @param oldDataList 旧数据列表
+    * @param newDataList 新数据列表
+    * @param oldResultList 重组后旧数据列表
+    * @param newResultList 重组后新数据列表
+    * @param  segmentPair 
+    * @return void
+     */
+    private void test(List<KnowledgeDocumentLineVo> oldDataList, List<KnowledgeDocumentLineVo> newDataList, List<KnowledgeDocumentLineVo> oldResultList, List<KnowledgeDocumentLineVo> newResultList, SegmentPair segmentPair) {
+      SegmentRange oldSegmentRange = segmentPair.getOldSegmentRange();
+      SegmentRange newSegmentRange = segmentPair.getNewSegmentRange();
       List<KnowledgeDocumentLineVo> oldSubList = oldDataList.subList(oldSegmentRange.getBeginIndex(), oldSegmentRange.getEndIndex());
       List<KnowledgeDocumentLineVo> newSubList = newDataList.subList(newSegmentRange.getBeginIndex(), newSegmentRange.getEndIndex());
-      if(segmentMapping.isMatch()) {
+      if(segmentPair.isMatch()) {
           oldResultList.addAll(oldSubList);
           newResultList.addAll(newSubList);
       }else {
@@ -244,10 +254,10 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                   for(char c : newLine.getContent().toCharArray()) {
                       newCharList.add(c);
                   }
-                  Node node = LCSUtil.longestCommonSequence(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
-                  for(SegmentMapping segmentmapping : node.getSegmentMappingList()) {
-                      oldSegmentRangeList.add(segmentmapping.getOldSegmentRange());
-                      newSegmentRangeList.add(segmentmapping.getNewSegmentRange());
+                  Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
+                  for(SegmentPair segmentpair : node.getSegmentPairList()) {
+                      oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
+                      newSegmentRangeList.add(segmentpair.getNewSegmentRange());
                   }
                   oldLine.setContent(LCSUtil.wrapChangePlace(oldLine.getContent(), oldSegmentRangeList, "<span class='delete'>", "</span>"));
                   oldResultList.add(oldLine);
@@ -258,16 +268,23 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                   newResultList.add(newLine);
               }
           }else {
-              List<SegmentMapping> segmentMappingList = longestCommonSequence(oldSubList, newSubList);
-              for(SegmentMapping segmentMap : segmentMappingList) {
-                  test(oldSubList, newSubList, oldResultList, newResultList, segmentMap);
+              List<SegmentPair> segmentPairList = differenceBestMatch(oldSubList, newSubList);
+              for(SegmentPair segmentpair : segmentPairList) {
+                  test(oldSubList, newSubList, oldResultList, newResultList, segmentpair);
               }
           }
       }
     }
-    
-    private List<SegmentMapping> longestCommonSequence(List<KnowledgeDocumentLineVo> oldList, List<KnowledgeDocumentLineVo> newList) {
-        List<SegmentMapping> segmentMappingList = new ArrayList<>();
+    /**
+     * 
+    * @Time:2020年10月22日
+    * @Description: 不匹配段的最佳匹配结果 
+    * @param oldList 旧数据列表
+    * @param newList 新数据列表
+    * @return List<SegmentPair>
+     */
+    private List<SegmentPair> differenceBestMatch(List<KnowledgeDocumentLineVo> oldList, List<KnowledgeDocumentLineVo> newList) {
+        List<SegmentPair> segmentMappingList = new ArrayList<>();
         List<Node> resultList = new ArrayList<>();
         PriorityQueue<Node> priorityQueue = new PriorityQueue<>(oldList.size() * newList.size(), (e1, e2) -> Integer.compare(e2.getTotalMatchLength(), e1.getTotalMatchLength()));
         for(int i = 0; i < oldList.size(); i++) {
@@ -288,7 +305,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                     for(char c : newStr.getContent().toCharArray()) {
                         newCharList.add(c);
                     }
-                    Node node = LCSUtil.longestCommonSequence(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
+                    Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
                     int maxLength = Math.max(oldLineContentLength, newLineContentLength);
                     int matchPercentage = (node.getTotalMatchLength() * 1000) / maxLength;
                     currentNode.setTotalMatchLength(matchPercentage);
@@ -322,28 +339,28 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         int newIndex = 0;
         for(Node node : resultList) {
             if(node.getOldIndex() > oldIndex) {
-                SegmentMapping segmentMapping = new SegmentMapping(oldIndex, 0, false);
+                SegmentPair segmentMapping = new SegmentPair(oldIndex, 0, false);
                 segmentMapping.setEndIndex(node.getOldIndex(), 0);
                 segmentMappingList.add(segmentMapping);
             }
             if(node.getNewIndex() > newIndex) {
-                SegmentMapping segmentMapping = new SegmentMapping(0, newIndex, false);
+                SegmentPair segmentMapping = new SegmentPair(0, newIndex, false);
                 segmentMapping.setEndIndex(0, node.getNewIndex());
                 segmentMappingList.add(segmentMapping);
             }
             oldIndex = node.getOldIndex() + 1;
             newIndex = node.getNewIndex() + 1;
-            SegmentMapping segmentMapping = new SegmentMapping(node.getOldIndex(), node.getNewIndex(), false);
+            SegmentPair segmentMapping = new SegmentPair(node.getOldIndex(), node.getNewIndex(), false);
             segmentMapping.setEndIndex(oldIndex, newIndex);
             segmentMappingList.add(segmentMapping);
         }
         if(oldList.size() > oldIndex) {
-            SegmentMapping segmentMapping = new SegmentMapping(oldIndex, 0, false);
+            SegmentPair segmentMapping = new SegmentPair(oldIndex, 0, false);
             segmentMapping.setEndIndex(oldList.size(), 0);
             segmentMappingList.add(segmentMapping);
         }
         if(newList.size() > newIndex) {
-            SegmentMapping segmentMapping = new SegmentMapping(0, newIndex, false);
+            SegmentPair segmentMapping = new SegmentPair(0, newIndex, false);
             segmentMapping.setEndIndex(0, newList.size());
             segmentMappingList.add(segmentMapping);
         }

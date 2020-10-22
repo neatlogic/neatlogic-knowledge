@@ -3,11 +3,14 @@ package codedriver.module.knowledge.lcs;
  * 
 * @Time:2020年10月22日
 * @ClassName: SegmentRange 
-* @Description: TODO
+* @Description: 分段范围类，两份不同的数据对比后，分成相同数量的段，完全匹配的连续单元归为一段，不完全匹配的连续单元归为一段
  */
 public class SegmentRange {
+    /** 开始下标 **/
     private final int beginIndex;
+    /** 结束下标（不包含该下标）**/
     private int endIndex;
+    /** 这段是否匹配 **/
     private boolean match;
 
     public SegmentRange(int beginIndex, boolean match) {

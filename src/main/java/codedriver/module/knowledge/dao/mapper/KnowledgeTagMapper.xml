@@ -6,6 +6,17 @@
 	SELECT `id` FROM `knowledge_tag` WHERE `name` = #{value}
 	</select>
 	
+	<select id="getKnowledgeTagNameListByIdList" parameterType="java.lang.Long" resultType="java.lang.String">
+	SELECT 
+	  `name`
+	FROM `knowledge_tag` 
+	WHERE `id` IN 
+	<foreach collection="list" item="id" open="(" separator="," close=")">
+	#{id}
+	</foreach>
+	ORDER BY `name`
+	</select>
+	
 	<select id="getKnowledgeTagCount" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="int">
 	SELECT 
 	  Count(1)

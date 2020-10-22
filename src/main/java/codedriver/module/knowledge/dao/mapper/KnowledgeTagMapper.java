@@ -10,6 +10,8 @@ public interface KnowledgeTagMapper {
 
     public Long getKnowledgeTagIdByName(String name);
     
+    public List<String> getKnowledgeTagNameListByIdList(List<Long> idList);
+    
     public int getKnowledgeTagCount(BasePageVo basePageVo);
 
     public List<ValueTextVo> getKnowledgeTagList(BasePageVo basePageVo);

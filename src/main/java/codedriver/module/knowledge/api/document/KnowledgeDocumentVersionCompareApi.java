@@ -1,4 +1,4 @@
-package codedriver.module.knowledge.api;
+package codedriver.module.knowledge.api.document;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -29,7 +29,7 @@ import codedriver.module.knowledge.lcstest.SegmentMapping;
 import codedriver.module.knowledge.lcstest.SegmentRange;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class KnowledgeVersionCompareApi extends PrivateApiComponentBase {
+public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase {
     private final static String BASE_PATH = "src/main/java/codedriver/module/knowledge/lcstest/";
     @Override
     public String getToken() {

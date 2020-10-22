@@ -60,7 +60,7 @@ public class KnowledgeDocumentWaitingForReviewListApi extends PrivateApiComponen
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        resultObj.put("thead", getTheadList());
+        resultObj.put("theadList", getTheadList());
         resultObj.put("tbodyList", new ArrayList<>());
         KnowledgeDocumentVersionVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
         searchVo.setReviewer(UserContext.get().getUserUuid(true));

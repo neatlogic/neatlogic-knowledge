@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
@@ -78,31 +79,77 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         JSONObject resultObj = new JSONObject();
         Long newVersionId = jsonObj.getLong("newVersionId");
         KnowledgeDocumentVo newDocumentVo = getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(newVersionId);
+        resultObj.put("newDocumentVo", newDocumentVo);
         Long oldVersionId = jsonObj.getLong("oldVersionId");
         if(oldVersionId == null) {
             KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(newDocumentVo.getId());
             oldVersionId = knowledgeDocumentVo.getKnowledgeDocumentVersionId();
         }
         if(Objects.equals(oldVersionId, newVersionId)) {
-            
-        }
-        KnowledgeDocumentVo oldDocumentVo = getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(oldVersionId);
+            KnowledgeDocumentVo oldDocumentVo = cloneKnowledgeDocumentDetail(newDocumentVo);
+            resultObj.put("oldDocumentVo", oldDocumentVo);
+        }else {
+            KnowledgeDocumentVo oldDocumentVo = getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(oldVersionId);       
+            resultObj.put("oldDocumentVo", oldDocumentVo);
 
-        List<KnowledgeDocumentLineVo> oldLineList = oldDocumentVo.getLineList();
-        List<KnowledgeDocumentLineVo> newLineList = newDocumentVo.getLineList();
-        List<KnowledgeDocumentLineVo> oldResultList = new ArrayList<>();
-        List<KnowledgeDocumentLineVo> newResultList = new ArrayList<>();
-        Node node = longestCommonSequence(oldLineList, newLineList, (e1, e2) -> e1.getContent().equals(e2.getContent()));
-        for(SegmentMapping segmentMapping : node.getSegmentMappingList()) {
-            test(oldLineList, newLineList, oldResultList, newResultList, segmentMapping);
-        }
-        oldDocumentVo.setLineList(oldResultList);
-        newDocumentVo.setLineList(newResultList);
-        resultObj.put("newDocumentVo", newDocumentVo);
-        resultObj.put("oldDocumentVo", oldDocumentVo);
+            List<KnowledgeDocumentLineVo> oldLineList = oldDocumentVo.getLineList();
+            List<KnowledgeDocumentLineVo> newLineList = newDocumentVo.getLineList();
+            List<KnowledgeDocumentLineVo> oldResultList = new ArrayList<>();
+            List<KnowledgeDocumentLineVo> newResultList = new ArrayList<>();
+            Node node = longestCommonSequence(oldLineList, newLineList, (e1, e2) -> e1.getContent().equals(e2.getContent()));
+            for(SegmentMapping segmentMapping : node.getSegmentMappingList()) {
+                test(oldLineList, newLineList, oldResultList, newResultList, segmentMapping);
+            }
+            oldDocumentVo.setLineList(oldResultList);
+            newDocumentVo.setLineList(newResultList);
+        }       
         return resultObj;
     }
     
+    private KnowledgeDocumentVo cloneKnowledgeDocumentDetail(KnowledgeDocumentVo source) {
+        KnowledgeDocumentVo cloneVo = new KnowledgeDocumentVo();
+        cloneVo.setId(source.getId());
+        cloneVo.setKnowledgeDocumentVersionId(source.getKnowledgeDocumentVersionId());
+        cloneVo.setVersion(source.getVersion());
+        cloneVo.setKnowledgeDocumentTypeUuid(source.getKnowledgeDocumentTypeUuid());
+        cloneVo.setKnowledgeCircleId(source.getKnowledgeCircleId());
+        cloneVo.setTitle(source.getTitle());
+        cloneVo.getFileIdList().addAll(source.getFileIdList());
+        cloneVo.getTagIdList().addAll(source.getTagIdList());
+        cloneVo.setIsEditable(source.getIsEditable());
+        cloneVo.setIsDeletable(source.getIsDeletable());
+        cloneVo.setIsReviewable(source.getIsReviewable());
+        for(KnowledgeDocumentLineVo line : source.getLineList()) {
+            KnowledgeDocumentLineVo lineVo = new KnowledgeDocumentLineVo();
+            lineVo.setUuid(line.getUuid());
+            lineVo.setHandler(line.getHandler());
+            lineVo.setChangeType(line.getChangeType());
+            lineVo.setLineNumber(line.getLineNumber());
+            lineVo.setConfig(JSON.toJSONString(line.getConfig()));
+            lineVo.setContent(line.getContent());
+            cloneVo.getLineList().add(lineVo);
+        }
+        for(FileVo file : cloneVo.getFileList()) {
+            FileVo fileVo = new FileVo();
+            fileVo.setId(file.getId());
+            fileVo.setName(file.getName());
+            fileVo.setSize(file.getSize());
+            fileVo.setUserUuid(file.getUserUuid());
+            fileVo.setUploadTime(file.getUploadTime());
+            fileVo.setType(file.getType());
+            fileVo.setPath(file.getPath());
+            fileVo.setContentType(file.getContentType());
+            cloneVo.getFileList().add(fileVo);
+        }
+        for(TagVo tag : cloneVo.getTagList()) {
+            TagVo tagVo = new TagVo();
+            tagVo.setId(tag.getId());
+            tagVo.setName(tag.getName());
+            cloneVo.getTagList().add(tagVo);
+        }
+        return cloneVo;
+    }
+
     private KnowledgeDocumentVo getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId) {
         KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         if(knowledgeDocumentVersionVo == null) {

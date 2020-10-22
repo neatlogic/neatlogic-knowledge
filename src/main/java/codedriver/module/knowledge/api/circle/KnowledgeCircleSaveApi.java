@@ -72,7 +72,7 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 			@Param( name = "member", type = ApiParamType.JSONARRAY, desc = "成员，可多选，格式[\"user#userUuid\",\"team#teamUuid\",\"role#roleUuid\"]"),
 			@Param( name = "knowledgeType", type = ApiParamType.JSONOBJECT, desc = "知识类型",isRequired = true)
 	})
-	@Output({})
+	@Output({@Param(name = "id", type = ApiParamType.INTEGER,desc = "知识圈ID")})
 	@Description(desc = "保存知识圈")
 	@Override
 	public Object myDoService(JSONObject jsonObj) throws Exception {
@@ -119,7 +119,9 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 		if(CollectionUtils.isNotEmpty(circleUserList)){
 			knowledgeCircleMapper.batchInsertKnowledgeCircleUser(circleUserList);
 		}
-		return null;
+		JSONObject result = new JSONObject();
+		result.put("id",knowledgeCircleVo.getId());
+		return result;
 	}
 
 	/**

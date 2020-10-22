@@ -65,6 +65,10 @@ public interface KnowledgeDocumentMapper {
 
     public int getDocumentCollectCount(Long documentId);
 
+    public int checkExistsDocumentViewCount(Long documentId);
+
+    public int getDocumentViewCount(Long documentId);
+
     public int insertKnowledgeDocument(KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int insertKnowledgeDocumentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
@@ -83,6 +87,8 @@ public interface KnowledgeDocumentMapper {
 
     public int insertKnowledgeDocumentCollect(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
 
+    public int insertKnowledgeDocumentViewCount(@Param("documentId") Long documentId,@Param("count") int count);
+
     public int updateKnowledgeDocumentToDeleteById(Long knowledgeDocumentId);
 
     public int updateKnowledgeDocumentVersionById(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
@@ -95,6 +101,8 @@ public interface KnowledgeDocumentMapper {
     );
 
     public int updateKnowledgeDocumentById(KnowledgeDocumentVo knowledgeDocumentVo);
+
+    public int updateDocumentViewCount(@Param("documentId") Long documentId,@Param("count") int count);
 
     public int deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
 

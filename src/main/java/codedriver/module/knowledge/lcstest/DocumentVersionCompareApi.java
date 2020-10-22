@@ -24,9 +24,9 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dto.DocumentVo;
 import codedriver.module.knowledge.dto.LineVo;
-import codedriver.module.knowledge.lcstest.Node;
-import codedriver.module.knowledge.lcstest.SegmentMapping;
-import codedriver.module.knowledge.lcstest.SegmentRange;
+import codedriver.module.knowledge.lcs.Node;
+import codedriver.module.knowledge.lcs.SegmentMapping;
+import codedriver.module.knowledge.lcs.SegmentRange;
 //@Service
 //@OperationType(type = OperationTypeEnum.SEARCH)
 public class DocumentVersionCompareApi extends PrivateApiComponentBase {

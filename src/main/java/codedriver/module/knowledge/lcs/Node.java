@@ -1,4 +1,4 @@
-package codedriver.module.knowledge.lcstest;
+package codedriver.module.knowledge.lcs;
 
 import java.util.ArrayList;
 import java.util.List;

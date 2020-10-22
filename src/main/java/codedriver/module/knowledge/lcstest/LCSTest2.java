@@ -15,6 +15,10 @@ import java.util.function.BiPredicate;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import codedriver.module.knowledge.lcs.Node;
+import codedriver.module.knowledge.lcs.SegmentMapping;
+import codedriver.module.knowledge.lcs.SegmentRange;
+
 public class LCSTest2 {
     private final static String BASE_PATH = "src/main/java/codedriver/module/knowledge/lcstest/";
     

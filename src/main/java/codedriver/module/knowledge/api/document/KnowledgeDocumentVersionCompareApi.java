@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.PriorityQueue;
-import java.util.function.BiPredicate;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,9 +35,10 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
-import codedriver.module.knowledge.lcstest.Node;
-import codedriver.module.knowledge.lcstest.SegmentMapping;
-import codedriver.module.knowledge.lcstest.SegmentRange;
+import codedriver.module.knowledge.lcs.LCSUtil;
+import codedriver.module.knowledge.lcs.Node;
+import codedriver.module.knowledge.lcs.SegmentMapping;
+import codedriver.module.knowledge.lcs.SegmentRange;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase {
@@ -96,7 +96,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
             List<KnowledgeDocumentLineVo> newLineList = newDocumentVo.getLineList();
             List<KnowledgeDocumentLineVo> oldResultList = new ArrayList<>();
             List<KnowledgeDocumentLineVo> newResultList = new ArrayList<>();
-            Node node = longestCommonSequence(oldLineList, newLineList, (e1, e2) -> e1.getContent().equals(e2.getContent()));
+            Node node = LCSUtil.longestCommonSequence(oldLineList, newLineList, (e1, e2) -> e1.getContent().equals(e2.getContent()));
             for(SegmentMapping segmentMapping : node.getSegmentMappingList()) {
                 test(oldLineList, newLineList, oldResultList, newResultList, segmentMapping);
             }
@@ -200,72 +200,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         }
         return knowledgeDocumentVo;
     }
-//    private static List<LineVo> readFileData(String filePath) {
-//        List<LineVo> lineList = new ArrayList<>();
-//        try (
-//            FileInputStream fis = new FileInputStream(filePath); 
-//            InputStreamReader isr = new InputStreamReader(fis);
-//            BufferedReader br = new BufferedReader(isr);
-//            ) {
-//            int lineNumber = 0;
-//            String str = null;
-//            while((str = br.readLine()) != null) {
-//                LineVo lineVo = new LineVo();
-//                lineVo.setContent(str);
-//                lineVo.setLineNumber(++lineNumber);
-//                lineVo.setType("p");
-//                System.out.println(lineVo);
-//                lineList.add(lineVo);
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return lineList;
-//    }
-    
-    private static <T> Node longestCommonSequence(List<T> oldList, List<T> newList, BiPredicate<T, T> biPredicate) {
-        Node[][] lcs = new Node[oldList.size()][newList.size()];       
-        for(int i = 0; i < oldList.size(); i++) {
-            for(int j = 0; j < newList.size(); j++) {
-                Node currentNode = new Node(i, j);
-                lcs[i][j] = currentNode;
-                if(biPredicate.test(oldList.get(i), newList.get(j))) {
-                    currentNode.setTotalMatchLength(1).setMatch(true);
-                    Node upperLeftNode = null;
-                    if(i > 0 && j > 0) {
-                        upperLeftNode = lcs[i-1][j-1];
-                    }
-                    if(upperLeftNode != null) {
-                        currentNode.setTotalMatchLength(upperLeftNode.getTotalMatchLength() + 1).setPrevious(upperLeftNode);
-                    }
-                }else {
-                    int left = 0;
-                    int top = 0;
-                    Node leftNode = null;
-                    if(j > 0) {
-                        leftNode = lcs[i][j-1];
-                    }
-                    if(leftNode != null) {
-                        left = leftNode.getTotalMatchLength();
-                    }
-                    Node topNode = null;
-                    if(i > 0) {
-                        topNode = lcs[i-1][j];
-                    }
-                    if(topNode != null) {
-                        top = topNode.getTotalMatchLength();
-                    }
-                    if(top >= left) {
-                        currentNode.setTotalMatchLength(top).setPrevious(topNode);
-                    }else {
-                        currentNode.setTotalMatchLength(left).setPrevious(leftNode);
-                    }
-                }
-            }
-        }       
-        return lcs[oldList.size()-1][newList.size()-1];
-    }
-    
+ 
     private static void test(List<KnowledgeDocumentLineVo> oldDataList, List<KnowledgeDocumentLineVo> newDataList, List<KnowledgeDocumentLineVo> oldResultList, List<KnowledgeDocumentLineVo> newResultList, SegmentMapping segmentMapping) {
       SegmentRange oldSegmentRange = segmentMapping.getOldSegmentRange();
       SegmentRange newSegmentRange = segmentMapping.getNewSegmentRange();
@@ -309,21 +244,21 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                   for(char c : newLine.getContent().toCharArray()) {
                       newCharList.add(c);
                   }
-                  Node node = longestCommonSequence(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
+                  Node node = LCSUtil.longestCommonSequence(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
                   for(SegmentMapping segmentmapping : node.getSegmentMappingList()) {
                       oldSegmentRangeList.add(segmentmapping.getOldSegmentRange());
                       newSegmentRangeList.add(segmentmapping.getNewSegmentRange());
                   }
-                  oldLine.setContent(wrapChangePlace(oldLine.getContent(), oldSegmentRangeList, "<span class='delete'>", "</span>"));
+                  oldLine.setContent(LCSUtil.wrapChangePlace(oldLine.getContent(), oldSegmentRangeList, "<span class='delete'>", "</span>"));
                   oldResultList.add(oldLine);
-                  newLine.setContent(wrapChangePlace(newLine.getContent(), newSegmentRangeList, "<span class='insert'>", "</span>"));
+                  newLine.setContent(LCSUtil.wrapChangePlace(newLine.getContent(), newSegmentRangeList, "<span class='insert'>", "</span>"));
                   newResultList.add(newLine);
               }else {
                   oldResultList.add(oldLine);
                   newResultList.add(newLine);
               }
           }else {
-              List<SegmentMapping> segmentMappingList = longestCommonSequence2(oldSubList, newSubList);
+              List<SegmentMapping> segmentMappingList = longestCommonSequence(oldSubList, newSubList);
               for(SegmentMapping segmentMap : segmentMappingList) {
                   test(oldSubList, newSubList, oldResultList, newResultList, segmentMap);
               }
@@ -331,29 +266,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
       }
     }
     
-    private static String wrapChangePlace(String str, List<SegmentRange> segmentList, String startMark, String endMark) {
-        int count = 0;
-        for(SegmentRange segmentRange : segmentList) {
-            if(!segmentRange.isMatch()) {
-                count++;
-            }
-        }
-        StringBuilder stringBuilder = new StringBuilder(str.length() + count * (startMark.length() + endMark.length()));
-        for(SegmentRange segmentRange : segmentList) {
-            if(segmentRange.getSize() > 0) {
-                if(!segmentRange.isMatch()) {
-                    stringBuilder.append(startMark);
-                }
-                stringBuilder.append(str.substring(segmentRange.getBeginIndex(), segmentRange.getEndIndex()));
-                if(!segmentRange.isMatch()) {
-                    stringBuilder.append(endMark);
-                }
-            }           
-        }
-        return stringBuilder.toString();
-    }
-    
-    private static List<SegmentMapping> longestCommonSequence2(List<KnowledgeDocumentLineVo> oldList, List<KnowledgeDocumentLineVo> newList) {
+    private static List<SegmentMapping> longestCommonSequence(List<KnowledgeDocumentLineVo> oldList, List<KnowledgeDocumentLineVo> newList) {
         List<SegmentMapping> segmentMappingList = new ArrayList<>();
         List<Node> resultList = new ArrayList<>();
         PriorityQueue<Node> priorityQueue = new PriorityQueue<>(oldList.size() * newList.size(), (e1, e2) -> Integer.compare(e2.getTotalMatchLength(), e1.getTotalMatchLength()));
@@ -375,7 +288,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                     for(char c : newStr.getContent().toCharArray()) {
                         newCharList.add(c);
                     }
-                    Node node = longestCommonSequence(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
+                    Node node = LCSUtil.longestCommonSequence(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
                     int maxLength = Math.max(oldLineContentLength, newLineContentLength);
                     int matchPercentage = (node.getTotalMatchLength() * 1000) / maxLength;
                     currentNode.setTotalMatchLength(matchPercentage);

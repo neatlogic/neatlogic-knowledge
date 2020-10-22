@@ -1,4 +1,4 @@
-package codedriver.module.knowledge.lcstest;
+package codedriver.module.knowledge.lcs;
 
 public class SegmentRange {
     private final int beginIndex;

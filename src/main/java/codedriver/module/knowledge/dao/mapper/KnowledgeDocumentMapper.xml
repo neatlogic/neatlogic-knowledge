@@ -246,34 +246,34 @@
 	
 	<select id="getKnowledgeDocumentListByKnowledgeDocumentTypeUuid" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 	SELECT 
-	  `id`,
-	  `title`,
-	  `knowledge_document_id` AS knowledgeDocumentId,
-	  `version`,
-	  `status`,
-	  `lcu`,
-	  `lcd`,
-	  `size`,
-	  `reviewer`,
-	  `review_time` AS reviewTime
+	  a.`id`,
+	  a.`title`,
+	  a.`knowledge_document_id` AS knowledgeDocumentId,
+	  a.`version`,
+	  a.`status`,
+	  a.`lcu`,
+	  a.`lcd`,
+	  a.`size`,
+	  a.`reviewer`,
+	  a.`review_time` AS reviewTime
 	FROM `knowledge_document_version` a
-	JOIN `knowledge_document` b ON b.`knowledge_document_version_id` = a.`id` AND b.`knowledge_document_type_uuid` = '12345' AND b.`is_delete` = 0
+	JOIN `knowledge_document` b ON b.`knowledge_document_version_id` = a.`id` AND b.`knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid} AND b.`is_delete` = 0
 	<where>
 		<if test="keyword != null and keyword != ''">
 		AND a.`title` LIKE CONCAT('%', #{keyword}, '%')
 		</if>
 	</where>
-	ORDER BY b.`review_time`
+	ORDER BY a.`review_time`
 	<if test="needPage">
 	limit #{startNum}, #{pageSize}
 	</if>
 	</select>
 	
-	<select id="getKnowledgeDocumentListByKnowledgeDocumentTypeUuid" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo" resultType="int">
+	<select id="getKnowledgeDocumentCountByKnowledgeDocumentTypeUuid" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo" resultType="int">
 	SELECT 
 	  COUNT(1)
 	FROM `knowledge_document_version` a
-	JOIN `knowledge_document` b ON b.`knowledge_document_version_id` = a.`id` AND b.`knowledge_document_type_uuid` = '12345' AND b.`is_delete` = 0
+	JOIN `knowledge_document` b ON b.`knowledge_document_version_id` = a.`id` AND b.`knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid} AND b.`is_delete` = 0
 	<where>
 		<if test="keyword != null and keyword != ''">
 		AND a.`title` LIKE CONCAT('%', #{keyword}, '%')

@@ -67,7 +67,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        resultObj.put("thead", getTheadList());
+        resultObj.put("theadList", getTheadList());
         resultObj.put("tbodyList", new ArrayList<>());
         KnowledgeDocumentVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
         int pageCount = 0;

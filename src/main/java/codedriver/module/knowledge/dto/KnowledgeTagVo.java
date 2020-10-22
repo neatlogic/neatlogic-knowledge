@@ -1,11 +1,19 @@
 package codedriver.module.knowledge.dto;
 
+import codedriver.framework.util.SnowflakeUtil;
+
 public class KnowledgeTagVo {
 
     private Long id;
     private String name;
-    
-    public Long getId() {
+    public KnowledgeTagVo() {}
+    public KnowledgeTagVo(String name) {
+        this.name = name;
+    }
+    public synchronized Long getId() {
+        if(id == null) {
+            id = SnowflakeUtil.uniqueLong();
+        }
         return id;
     }
     public void setId(Long id) {

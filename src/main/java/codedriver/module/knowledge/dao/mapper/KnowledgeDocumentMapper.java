@@ -57,6 +57,10 @@ public interface KnowledgeDocumentMapper {
 
     public int checkUserIsApprover(@Param("uuid") String userUuid, @Param("knowledgeCircleId") Long knowledgeCircleId);
 
+    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentListByKnowledgeDocumentTypeUuid(KnowledgeDocumentVo knowledgeDocumentVo);
+
+    public int getKnowledgeDocumentCountByKnowledgeDocumentTypeUuid(KnowledgeDocumentVo knowledgeDocumentVo);
+
     public int insertKnowledgeDocument(KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int insertKnowledgeDocumentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);

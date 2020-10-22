@@ -91,21 +91,46 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         }else {
             KnowledgeDocumentVo oldDocumentVo = getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(oldVersionId);       
             resultObj.put("oldDocumentVo", oldDocumentVo);
-
-            List<KnowledgeDocumentLineVo> oldLineList = oldDocumentVo.getLineList();
-            List<KnowledgeDocumentLineVo> newLineList = newDocumentVo.getLineList();
-            List<KnowledgeDocumentLineVo> oldResultList = new ArrayList<>();
-            List<KnowledgeDocumentLineVo> newResultList = new ArrayList<>();
-            Node node = LCSUtil.LCSCompare(oldLineList, newLineList, (e1, e2) -> e1.getContent().equals(e2.getContent()));
-            for(SegmentPair segmentPair : node.getSegmentPairList()) {
-                test(oldLineList, newLineList, oldResultList, newResultList, segmentPair);
-            }
-            oldDocumentVo.setLineList(oldResultList);
-            newDocumentVo.setLineList(newResultList);
+            compareTitle(oldDocumentVo, newDocumentVo);
+            compareLineList(oldDocumentVo, newDocumentVo);           
         }       
         return resultObj;
     }
     
+    private void compareTitle(KnowledgeDocumentVo oldDocumentVo, KnowledgeDocumentVo newDocumentVo) {
+        String oldTitle = oldDocumentVo.getTitle();
+        String newTitle = newDocumentVo.getTitle();
+        List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
+        List<SegmentRange> newSegmentRangeList = new ArrayList<>();
+        List<Character> oldCharList = new ArrayList<>();
+        for(char c : oldTitle.toCharArray()) {
+            oldCharList.add(c);
+        }
+        List<Character> newCharList = new ArrayList<>();
+        for(char c : newTitle.toCharArray()) {
+            newCharList.add(c);
+        }
+        Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
+        for(SegmentPair segmentpair : node.getSegmentPairList()) {
+            oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
+            newSegmentRangeList.add(segmentpair.getNewSegmentRange());
+        }
+        oldDocumentVo.setTitle(LCSUtil.wrapChangePlace(oldTitle, oldSegmentRangeList, "<span class='delete'>", "</span>"));
+        newDocumentVo.setTitle(LCSUtil.wrapChangePlace(newTitle, newSegmentRangeList, "<span class='insert'>", "</span>"));
+    }
+    
+    private void compareLineList(KnowledgeDocumentVo oldDocumentVo, KnowledgeDocumentVo newDocumentVo) {
+        List<KnowledgeDocumentLineVo> oldLineList = oldDocumentVo.getLineList();
+        List<KnowledgeDocumentLineVo> newLineList = newDocumentVo.getLineList();
+        List<KnowledgeDocumentLineVo> oldResultList = new ArrayList<>();
+        List<KnowledgeDocumentLineVo> newResultList = new ArrayList<>();
+        Node node = LCSUtil.LCSCompare(oldLineList, newLineList, (e1, e2) -> e1.getContent().equals(e2.getContent()));
+        for(SegmentPair segmentPair : node.getSegmentPairList()) {
+            regroupLineList(oldLineList, newLineList, oldResultList, newResultList, segmentPair);
+        }
+        oldDocumentVo.setLineList(oldResultList);
+        newDocumentVo.setLineList(newResultList);
+    }
     private KnowledgeDocumentVo cloneKnowledgeDocumentDetail(KnowledgeDocumentVo source) {
         KnowledgeDocumentVo cloneVo = new KnowledgeDocumentVo();
         cloneVo.setId(source.getId());
@@ -211,7 +236,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
     * @param  segmentPair 
     * @return void
      */
-    private void test(List<KnowledgeDocumentLineVo> oldDataList, List<KnowledgeDocumentLineVo> newDataList, List<KnowledgeDocumentLineVo> oldResultList, List<KnowledgeDocumentLineVo> newResultList, SegmentPair segmentPair) {
+    private void regroupLineList(List<KnowledgeDocumentLineVo> oldDataList, List<KnowledgeDocumentLineVo> newDataList, List<KnowledgeDocumentLineVo> oldResultList, List<KnowledgeDocumentLineVo> newResultList, SegmentPair segmentPair) {
       SegmentRange oldSegmentRange = segmentPair.getOldSegmentRange();
       SegmentRange newSegmentRange = segmentPair.getNewSegmentRange();
       List<KnowledgeDocumentLineVo> oldSubList = oldDataList.subList(oldSegmentRange.getBeginIndex(), oldSegmentRange.getEndIndex());
@@ -270,7 +295,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
           }else {
               List<SegmentPair> segmentPairList = differenceBestMatch(oldSubList, newSubList);
               for(SegmentPair segmentpair : segmentPairList) {
-                  test(oldSubList, newSubList, oldResultList, newResultList, segmentpair);
+                  regroupLineList(oldSubList, newSubList, oldResultList, newResultList, segmentpair);
               }
           }
       }

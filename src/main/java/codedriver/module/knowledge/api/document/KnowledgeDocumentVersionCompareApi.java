@@ -201,7 +201,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         return knowledgeDocumentVo;
     }
  
-    private static void test(List<KnowledgeDocumentLineVo> oldDataList, List<KnowledgeDocumentLineVo> newDataList, List<KnowledgeDocumentLineVo> oldResultList, List<KnowledgeDocumentLineVo> newResultList, SegmentMapping segmentMapping) {
+    private void test(List<KnowledgeDocumentLineVo> oldDataList, List<KnowledgeDocumentLineVo> newDataList, List<KnowledgeDocumentLineVo> oldResultList, List<KnowledgeDocumentLineVo> newResultList, SegmentMapping segmentMapping) {
       SegmentRange oldSegmentRange = segmentMapping.getOldSegmentRange();
       SegmentRange newSegmentRange = segmentMapping.getNewSegmentRange();
       List<KnowledgeDocumentLineVo> oldSubList = oldDataList.subList(oldSegmentRange.getBeginIndex(), oldSegmentRange.getEndIndex());
@@ -266,7 +266,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
       }
     }
     
-    private static List<SegmentMapping> longestCommonSequence(List<KnowledgeDocumentLineVo> oldList, List<KnowledgeDocumentLineVo> newList) {
+    private List<SegmentMapping> longestCommonSequence(List<KnowledgeDocumentLineVo> oldList, List<KnowledgeDocumentLineVo> newList) {
         List<SegmentMapping> segmentMappingList = new ArrayList<>();
         List<Node> resultList = new ArrayList<>();
         PriorityQueue<Node> priorityQueue = new PriorityQueue<>(oldList.size() * newList.size(), (e1, e2) -> Integer.compare(e2.getTotalMatchLength(), e1.getTotalMatchLength()));

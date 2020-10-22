@@ -2,13 +2,24 @@ package codedriver.module.knowledge.lcs;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * 
+* @Time:2020年10月22日
+* @ClassName: Node 
+* @Description: 节点类，两份不同数据（A、B）对比时，会先将数据分隔成不同的单元（字符串、字符等），A数据的每一个单元都会跟B数据的每一个单元比较一次，节点对象就是用来保存某一次比较的结果信息的。
+ */
 public class Node {
+    /** 旧数据的单元下标 **/
     private final int oldIndex;
+    /** 新数据的单元下标 **/
     private final int newIndex;
+    /** 统计最大匹配长度 **/
     private int totalMatchLength;
+    /** 记录这次比较是否匹配 **/
     private boolean match;
+    /** 上一个节点 **/
     private Node previous;
+    /** 下一个节点 **/
     private Node next;
     
     public Node(int oldIndex, int newIndex) {

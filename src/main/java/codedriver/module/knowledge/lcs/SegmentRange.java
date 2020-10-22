@@ -1,5 +1,10 @@
 package codedriver.module.knowledge.lcs;
-
+/**
+ * 
+* @Time:2020年10月22日
+* @ClassName: SegmentRange 
+* @Description: TODO
+ */
 public class SegmentRange {
     private final int beginIndex;
     private int endIndex;

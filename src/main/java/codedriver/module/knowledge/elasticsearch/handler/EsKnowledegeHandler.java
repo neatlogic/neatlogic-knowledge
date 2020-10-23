@@ -77,6 +77,7 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
             JSONObject documentJson = new JSONObject();
             JSONObject highlightData = el.getHighlightData();
             documentJson.put("id", el.getId());
+           // knowledgeDocumentMapper.getKnowledgeDocumentVersionById(id)
             KnowledgeDocumentVo documenmtVo = knowledgeDocumentMapper.getKnowledgeDocumentById(Long.valueOf(el.getId()));
             if(documenmtVo != null) {
                 if(highlightData.containsKey("title.txt")) {

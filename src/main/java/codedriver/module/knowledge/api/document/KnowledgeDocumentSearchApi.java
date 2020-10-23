@@ -46,7 +46,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     @SuppressWarnings("unchecked")
     @Input({
         @Param(name = "keyword", type = ApiParamType.STRING, isRequired = true, desc = "搜索关键字"),
-        @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, isRequired = true, desc = "知识类型uuid"),
+        @Param(name = "knowledgeType", type = ApiParamType.ENUM, rule = "all,waitingforreview,share,favorites,draft",isRequired = true, desc = "知识类型 所有知识all,带我审批的知识waitingforreview,我共享的知识share,favorites,draft"),
         @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页数", isRequired = false),
         @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目", isRequired = false)
     })

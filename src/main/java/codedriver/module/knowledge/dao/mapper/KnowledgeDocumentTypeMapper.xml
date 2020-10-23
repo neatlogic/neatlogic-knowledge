@@ -39,6 +39,7 @@
 		a.`parent_uuid` AS parentUuid,
 		a.`lft`,
 		a.`rht`,
+		a.`knowledge_circle_id` as knowledgeCircleId,
 		(SELECT COUNT(1) FROM `knowledge_document_type` WHERE `parent_uuid` = a.`uuid`) as `childCount`
 		FROM `knowledge_document_type` a
 		WHERE 1=1

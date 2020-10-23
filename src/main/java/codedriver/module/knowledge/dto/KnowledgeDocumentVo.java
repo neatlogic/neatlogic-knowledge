@@ -65,6 +65,8 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private int favoriteCount;
     @EntityField(name = "浏览量", type = ApiParamType.INTEGER)
     private int pageviews;
+    @EntityField(name = "知识内容", type = ApiParamType.STRING)
+    private String content;
 
     @JSONField(serialize=false)
     private transient Integer isDelete;
@@ -201,6 +203,12 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     }
     public void setPageviews(int pageviews) {
         this.pageviews = pageviews;
+    }
+    public String getContent() {
+        return content;
+    }
+    public void setContent(String content) {
+        this.content = content;
     }
     
 }

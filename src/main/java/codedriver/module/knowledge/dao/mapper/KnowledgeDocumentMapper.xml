@@ -470,10 +470,8 @@
 	WHERE `id` = #{id}
 	</update>
 
-	<update id="updateDocumentViewCount">
-		update `knowledge_document_view_count`
-		set `count` = #{count}
-		where `knowledge_document_id` = #{documentId}
+	<update id="updateKnowledgeViewCountIncrementOne" parameterType="java.lang.Long">
+	UPDATE `knowledge_document_view_count` SET `count` = `count` + 1 WHERE `knowledge_document_id` = #{value}
 	</update>
 	
 	<delete id="deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId" parameterType="java.lang.Long">

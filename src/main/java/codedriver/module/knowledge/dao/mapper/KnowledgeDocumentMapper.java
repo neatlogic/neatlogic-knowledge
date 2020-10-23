@@ -106,7 +106,7 @@ public interface KnowledgeDocumentMapper {
 
     public int updateKnowledgeDocumentById(KnowledgeDocumentVo knowledgeDocumentVo);
 
-    public int updateDocumentViewCount(@Param("documentId") Long documentId,@Param("count") int count);
+    public int updateKnowledgeViewCountIncrementOne(Long documentId);
 
     public int deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
 

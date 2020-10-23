@@ -59,6 +59,7 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
     @Input({
         @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, isRequired = true, desc = "文档id"),
         @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
+        @Param(name = "isReadOnly", type = ApiParamType.ENUM, rule = "0,1", desc = "是否增加浏览量")
     })
     @Output({
         @Param(explode = KnowledgeDocumentVo.class, desc = "文档内容")
@@ -124,7 +125,12 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
                 knowledgeDocumentVo.setIsReviewable(isReviewable);
             }
         }
-        
+        Integer isReadOnly = jsonObj.getInteger("isReadOnly");
+        if(Objects.equals(isReadOnly, 1)) {
+            if(Objects.equals(knowledgeDocumentVersionId, knowledgeDocumentVo.getKnowledgeDocumentVersionId())) {
+                knowledgeDocumentMapper.updateKnowledgeViewCountIncrementOne(knowledgeDocumentVo.getId());
+            }
+        }
         return knowledgeDocumentVo;
     }
 

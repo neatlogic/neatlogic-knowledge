@@ -25,6 +25,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.UuidUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineConfigVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineContentVo;
@@ -32,6 +33,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.module.knowledge.dto.KnowledgeTagVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftStatusException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentHasBeenDeletedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
@@ -44,6 +46,8 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
+    @Autowired
+    private KnowledgeTagMapper knowledgeTagMapper;
 
     @Override
     public String getToken() {
@@ -67,7 +71,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         @Param(name = "title", type = ApiParamType.STRING, isRequired = true, minLength = 1, desc = "标题"),
         @Param(name = "lineList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "行数据列表"),
         @Param(name = "fileIdList", type = ApiParamType.JSONARRAY, desc = "附件id列表"),
-        @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, desc = "标签id列表")
+        @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表")
     })
     @Output({
         @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, desc = "文档id"),
@@ -159,7 +163,13 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         KnowledgeDocumentTagVo knowledgeDocumentTagVo = new KnowledgeDocumentTagVo();
         knowledgeDocumentTagVo.setKnowledgeDocumentId(documentId);
         knowledgeDocumentTagVo.setKnowledgeDocumentVersionId(drafrVersionId);
-        for(Long tagId : documentVo.getTagIdList()) {
+        for(String tagName : documentVo.getTagList()) {
+            Long tagId = knowledgeTagMapper.getKnowledgeTagIdByName(tagName);
+            if(tagId == null) {
+                KnowledgeTagVo knowledgeTagVo = new KnowledgeTagVo(tagName);
+                knowledgeTagMapper.insertKnowledgeTag(knowledgeTagVo);
+                tagId = knowledgeTagVo.getId();
+            }
             knowledgeDocumentTagVo.setTagId(tagId);
             knowledgeDocumentMapper.insertKnowledgeDocumentTag(knowledgeDocumentTagVo);
         }

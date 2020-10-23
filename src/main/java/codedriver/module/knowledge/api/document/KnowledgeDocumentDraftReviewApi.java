@@ -20,7 +20,8 @@ import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftStatusException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentDraftReviewedException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentDraftUnsubmittedCannotBeReviewedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 @Service
@@ -65,13 +66,13 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentNotCurrentVersionException(knowledgeDocumentVersionVo.getVersion());
         }
         if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.PASSED, "不能再审核");
+            throw new KnowledgeDocumentDraftReviewedException();
         }else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.REJECTED, "不能再审核");
+            throw new KnowledgeDocumentDraftReviewedException();
         }else if(KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.DRAFT, "不能审核");
+            throw new KnowledgeDocumentDraftUnsubmittedCannotBeReviewedException();
         }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.EXPIRED, "不能审核");
+            throw new KnowledgeDocumentDraftUnsubmittedCannotBeReviewedException();
         }
         String action = jsonObj.getString("action");
         KnowledgeDocumentVersionVo updateStatusVo = new KnowledgeDocumentVersionVo();

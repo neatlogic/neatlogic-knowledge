@@ -2,7 +2,7 @@ package codedriver.module.knowledge.constvalue;
 
 public enum KnowledgeDocumentVersionStatus {
     DRAFT("draft", "草稿"),
-    SUBMITED("submited", "已提交"),
+    SUBMITTED("submitted", "已提交"),
     PASSED("passed", "已通过"),
     EXPIRED("expired", "已过期"),
     REJECTED("rejected", "已拒绝");
@@ -23,5 +23,14 @@ public enum KnowledgeDocumentVersionStatus {
     }
     public void setText(String text) {
         this.text = text;
+    }
+    
+    public static String getText(String _value) {
+        for(KnowledgeDocumentVersionStatus status : values()) {
+            if(status.value.equals(_value)) {
+                return status.text;
+            }
+        }
+        return "";
     }
 }

@@ -34,7 +34,9 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.dto.KnowledgeTagVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftStatusException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentDraftExpiredCannotBeModifiedException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentDraftPublishedCannotBeModifiedException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedCannotBeModifiedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentHasBeenDeletedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
@@ -118,11 +120,11 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 }
                 /** 如果入参版本id不是文档当前版本id，说明该操作是在已有草稿上再次保存 **/
                 if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
-                    throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.PASSED, "不能再修改");
-                }else if(KnowledgeDocumentVersionStatus.SUBMITED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
-                    throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.SUBMITED, "不能再修改");
+                    throw new KnowledgeDocumentDraftPublishedCannotBeModifiedException();
+                }else if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
+                    throw new KnowledgeDocumentDraftSubmittedCannotBeModifiedException();
                 }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
-                    throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.SUBMITED, "不能再修改");
+                    throw new KnowledgeDocumentDraftExpiredCannotBeModifiedException();
                 }
                 drafrVersionId = knowledgeDocumentVersionId;
                 /** 覆盖旧草稿时，更新标题、修改用户、修改时间，删除行数据、附件、标签数据，后面再重新插入 **/

@@ -75,6 +75,8 @@ public interface KnowledgeDocumentMapper {
 
     public int getDocumentViewCount(Long documentId);
 
+    public int checkIFThereIsSubmittedDraftByKnowDocumentIdAndVersion(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("version")Integer version);
+
     @ESSearch
     public int insertKnowledgeDocument(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
 

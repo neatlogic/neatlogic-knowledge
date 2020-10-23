@@ -70,7 +70,7 @@ public class KnowledgeDocumentShareListApi extends PrivateApiComponentBase {
         JSONObject resultObj = new JSONObject();
         resultObj.put("theadList", getTheadList());
         resultObj.put("tbodyList", new ArrayList<>());
-        List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue(), KnowledgeDocumentVersionStatus.REJECTED.getValue(), KnowledgeDocumentVersionStatus.SUBMITED.getValue());
+        List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue(), KnowledgeDocumentVersionStatus.REJECTED.getValue(), KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
         KnowledgeDocumentVersionVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
         searchVo.setLcu(UserContext.get().getUserUuid(true));
         searchVo.setStatusList(statusList);
@@ -94,6 +94,8 @@ public class KnowledgeDocumentShareListApi extends PrivateApiComponentBase {
                     knowledgeDocumentVersionVo.setReviewerName(reviewerUserVo.getUserName());
                     knowledgeDocumentVersionVo.setReviewerInfo(reviewerUserVo.getUserInfo());
                 }
+                knowledgeDocumentVersionVo.setIsDeletable(0);
+                knowledgeDocumentVersionVo.setIsEditable(0);
             }
             resultObj.put("tbodyList", knowledgeDocumentVersionList);
         }
@@ -104,8 +106,11 @@ public class KnowledgeDocumentShareListApi extends PrivateApiComponentBase {
     private JSONArray getTheadList() {
         JSONArray theadList = new JSONArray();
         theadList.add(new JSONObject() {{this.put("title", "标题"); this.put("key", "title");}});
-        theadList.add(new JSONObject() {{this.put("title", "提交人"); this.put("key", "lcu");}});
-        theadList.add(new JSONObject() {{this.put("title", "修改时间"); this.put("key", "lcd");}});
+        theadList.add(new JSONObject() {{this.put("title", "提交人"); this.put("key", "lcuName");}});
+        theadList.add(new JSONObject() {{this.put("title", "提交时间"); this.put("key", "lcd");}});
+        theadList.add(new JSONObject() {{this.put("title", "审核人"); this.put("key", "reviewer");}});
+        theadList.add(new JSONObject() {{this.put("title", "审核时间"); this.put("key", "reviewTime");}});
+        theadList.add(new JSONObject() {{this.put("title", "状态"); this.put("key", "statusVo.text");}});
         theadList.add(new JSONObject() {{this.put("key", "action");}});
         return theadList;
     }

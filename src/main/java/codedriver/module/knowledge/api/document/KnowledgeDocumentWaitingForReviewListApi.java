@@ -84,7 +84,7 @@ public class KnowledgeDocumentWaitingForReviewListApi extends PrivateApiComponen
     private JSONArray getTheadList() {
         JSONArray theadList = new JSONArray();
         theadList.add(new JSONObject() {{this.put("title", "标题"); this.put("key", "title");}});
-        theadList.add(new JSONObject() {{this.put("title", "提交人"); this.put("key", "lcu");}});
+        theadList.add(new JSONObject() {{this.put("title", "提交人"); this.put("key", "lcuName");}});
         theadList.add(new JSONObject() {{this.put("title", "提交时间"); this.put("key", "lcd");}});
         theadList.add(new JSONObject() {{this.put("key", "action");}});
         return theadList;

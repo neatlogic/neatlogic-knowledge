@@ -305,6 +305,13 @@
 	</where>
 	</select>
 	
+	<select id="checkIFThereIsSubmittedDraftByKnowDocumentIdAndVersion" resultType="int">
+	SELECT COUNT(1) FROM `knowledge_document_version` 
+	WHERE `knowledge_document_id` = #{knowledgeDocumentId}
+	AND `version` = #{version}
+	AND `status` = 'submitted'
+	</select>
+	
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	INSERT INTO `knowledge_document` (
 	  `id`,

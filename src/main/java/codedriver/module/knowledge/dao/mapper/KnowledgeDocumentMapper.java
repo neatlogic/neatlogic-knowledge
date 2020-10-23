@@ -73,6 +73,8 @@ public interface KnowledgeDocumentMapper {
 
     public int getDocumentViewCount(Long documentId);
 
+    public int checkIFThereIsSubmittedDraftByKnowDocumentIdAndVersion(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("version")Integer version);
+
     public int insertKnowledgeDocument(KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int insertKnowledgeDocumentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);

@@ -19,7 +19,9 @@ import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftStatusException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentDraftExpiredCannotSubmitException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmitFailedExecption;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 @Service
@@ -64,16 +66,16 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
-        knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-        if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.PASSED, "不能再提交审核");
-        }else if(KnowledgeDocumentVersionStatus.SUBMITED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.SUBMITED, "不能再提交审核");
-        }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.EXPIRED, "不能再提交审核，请在新版本上修改再提交");
-        }else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftStatusException(knowledgeDocumentVersionId, KnowledgeDocumentVersionStatus.REJECTED, "不能再提交审核，请修改后再提交");
+        if(knowledgeDocumentMapper.checkIFThereIsSubmittedDraftByKnowDocumentIdAndVersion(knowledgeDocumentVo.getId(), knowledgeDocumentVo.getVersion()) > 0) {
+            throw new KnowledgeDocumentDraftSubmitFailedExecption();
         }
+        knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
+        if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+            throw new KnowledgeDocumentDraftExpiredCannotSubmitException(knowledgeDocumentVersionId);
+        }else if(!KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+            throw new KnowledgeDocumentDraftSubmittedException();
+        }
+
         KnowledgeDocumentVersionVo updateStatusVo = new KnowledgeDocumentVersionVo();
         updateStatusVo.setId(knowledgeDocumentVersionId);
         updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.SUBMITED.getValue());

@@ -6,6 +6,8 @@ import org.apache.ibatis.annotations.Param;
 
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.dto.ValueTextVo;
+import codedriver.framework.elasticsearch.annotation.ESParam;
+import codedriver.framework.elasticsearch.annotation.ESSearch;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentHistoricalVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineConfigVo;
@@ -75,7 +77,8 @@ public interface KnowledgeDocumentMapper {
 
     public int checkIFThereIsSubmittedDraftByKnowDocumentIdAndVersion(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("version")Integer version);
 
-    public int insertKnowledgeDocument(KnowledgeDocumentVo knowledgeDocumentVo);
+    @ESSearch
+    public int insertKnowledgeDocument(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int insertKnowledgeDocumentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 
@@ -106,7 +109,8 @@ public interface KnowledgeDocumentMapper {
         @Param("newStatus") String newStatus
     );
 
-    public int updateKnowledgeDocumentById(KnowledgeDocumentVo knowledgeDocumentVo);
+    @ESSearch
+    public int updateKnowledgeDocumentById(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int updateKnowledgeViewCountIncrementOne(Long documentId);
 

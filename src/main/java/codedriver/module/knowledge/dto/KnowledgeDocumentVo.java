@@ -7,12 +7,14 @@ import com.alibaba.fastjson.annotation.JSONField;
 
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BaseEditorVo;
+import codedriver.framework.elasticsearch.annotation.ESKey;
+import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 
 public class KnowledgeDocumentVo extends BaseEditorVo {
-
+    @ESKey(type = ESKeyType.PKEY, name = "documentId")
     @EntityField(name = "文档id", type = ApiParamType.LONG)
     private Long id;
     @EntityField(name = "版本id", type = ApiParamType.LONG)
@@ -52,7 +54,7 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     @EntityField(name = "是否可审核", type = ApiParamType.INTEGER)
     private Integer isReviewable;
     private List<Long> fileIdList = new ArrayList<>();
-    
+    private List<Long> tagIdList = new ArrayList<>();
     @EntityField(name = "是否收藏", type = ApiParamType.INTEGER)
     private int isFavorite;
     @EntityField(name = "是否点赞", type = ApiParamType.INTEGER)
@@ -139,6 +141,12 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     }
     public void setFileIdList(List<Long> fileIdList) {
         this.fileIdList = fileIdList;
+    }
+    public List<Long> getTagIdList() {
+        return tagIdList;
+    }
+    public void setTagIdList(List<Long> tagIdList) {
+        this.tagIdList = tagIdList;
     }
     public Integer getIsDelete() {
         return isDelete;

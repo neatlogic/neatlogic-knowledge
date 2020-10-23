@@ -121,7 +121,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 /** 如果入参版本id不是文档当前版本id，说明该操作是在已有草稿上再次保存 **/
                 if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
                     throw new KnowledgeDocumentDraftPublishedCannotBeModifiedException();
-                }else if(KnowledgeDocumentVersionStatus.SUBMITED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
+                }else if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
                     throw new KnowledgeDocumentDraftSubmittedCannotBeModifiedException();
                 }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
                     throw new KnowledgeDocumentDraftExpiredCannotBeModifiedException();

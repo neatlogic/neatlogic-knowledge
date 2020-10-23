@@ -66,9 +66,6 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
-        if(knowledgeDocumentMapper.checkIFThereIsSubmittedDraftByKnowDocumentIdAndVersion(knowledgeDocumentVo.getId(), knowledgeDocumentVo.getVersion()) > 0) {
-            throw new KnowledgeDocumentDraftSubmitFailedExecption();
-        }
         knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftExpiredCannotSubmitException(knowledgeDocumentVersionId);
@@ -76,9 +73,12 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentDraftSubmittedException();
         }
 
+        if(knowledgeDocumentMapper.checkIFThereIsSubmittedDraftByKnowDocumentIdAndVersion(knowledgeDocumentVo.getId(), knowledgeDocumentVo.getVersion()) > 0) {
+            throw new KnowledgeDocumentDraftSubmitFailedExecption();
+        }
         KnowledgeDocumentVersionVo updateStatusVo = new KnowledgeDocumentVersionVo();
         updateStatusVo.setId(knowledgeDocumentVersionId);
-        updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.SUBMITED.getValue());
+        updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
         
         int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId());

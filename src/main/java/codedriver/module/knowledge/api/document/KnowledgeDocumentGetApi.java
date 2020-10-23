@@ -114,7 +114,7 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
                 knowledgeDocumentVo.setIsDeletable(1);
             }
             knowledgeDocumentVo.setIsReviewable(isReviewable);
-        }else if(KnowledgeDocumentVersionStatus.SUBMITED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+        }else if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             knowledgeDocumentVo.setIsReviewable(isReviewable);
         }else if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             knowledgeDocumentVo.setIsEditable(1);

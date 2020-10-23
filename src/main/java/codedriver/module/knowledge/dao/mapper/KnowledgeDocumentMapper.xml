@@ -208,6 +208,30 @@
 	AND b.`title` LIKE CONCAT('%', #{keyword}, '%')
 	</if>
 	</select>
+
+	<select id="checkDocumentHasBeenFavored" resultType="int" useCache="false">
+		select count(1) from `knowledge_document_favor` where `knowledge_document_id` = #{documentId} and `user_uuid` = #{userUuid}
+	</select>
+
+	<select id="getDocumentFavorCount" parameterType="java.lang.Long" resultType="int" useCache="false">
+		select count(1) from `knowledge_document_favor` where `knowledge_document_id` = #{value}
+	</select>
+
+	<select id="checkDocumentHasBeenCollected" resultType="int" useCache="false">
+		select count(1) from `knowledge_document_collect` where `knowledge_document_id` = #{documentId} and `user_uuid` = #{userUuid}
+	</select>
+
+	<select id="getDocumentCollectCount" parameterType="java.lang.Long" resultType="int" useCache="false">
+		select count(1) from `knowledge_document_collect` where `knowledge_document_id` = #{value}
+	</select>
+
+	<select id="checkExistsDocumentViewCount" parameterType="java.lang.Long" resultType="int" useCache="false">
+		select count(1) from `knowledge_document_view_count` where `knowledge_document_id` = #{value}
+	</select>
+
+	<select id="getDocumentViewCount" parameterType="java.lang.Long" resultType="int" useCache="false">
+		select `count` from `knowledge_document_view_count` where `knowledge_document_id` = #{value}
+	</select>
 	
 	<select id="getCurrentUserKnowledgeDocumentCount" resultType="int">
 	SELECT 
@@ -382,6 +406,18 @@
 	  )
 	</foreach>
 	</insert>
+
+	<insert id="insertKnowledgeDocumentFavor">
+	INSERT INTO `knowledge_document_favor` (`knowledge_document_id`, `user_uuid`,`fcd`) VALUES (#{documentId}, #{userUuid}, now())
+	</insert>
+
+	<insert id="insertKnowledgeDocumentCollect">
+	INSERT INTO `knowledge_document_collect` (`knowledge_document_id`, `user_uuid`,`fcd`) VALUES (#{documentId}, #{userUuid}, now())
+	</insert>
+
+	<insert id="insertKnowledgeDocumentViewCount">
+	INSERT INTO `knowledge_document_view_count` (`knowledge_document_id`, `count`) VALUES (#{documentId}, #{count})
+	</insert>
 	
 	<update id="updateKnowledgeDocumentToDeleteById" parameterType="java.lang.Long">
 	UPDATE `knowledge_document` SET `is_delete` = 1  WHERE `id` = #{value}
@@ -433,6 +469,10 @@
 	`version` = #{version} 
 	WHERE `id` = #{id}
 	</update>
+
+	<update id="updateKnowledgeViewCountIncrementOne" parameterType="java.lang.Long">
+	UPDATE `knowledge_document_view_count` SET `count` = `count` + 1 WHERE `knowledge_document_id` = #{value}
+	</update>
 	
 	<delete id="deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId" parameterType="java.lang.Long">
 	DELETE FROM `knowledge_document_line` WHERE `knowledge_document_version_id` = #{value}
@@ -456,5 +496,13 @@
 	
 	<delete id="deleteKnowledgeDocumentById" parameterType="java.lang.Long">
 	DELETE FROM `knowledge_document` WHERE `id` = #{value}
+	</delete>
+
+	<delete id="deleteKnowledgeDocumentFavor">
+	DELETE FROM `knowledge_document_favor` WHERE `knowledge_document_id` = #{documentId} and `user_uuid` = #{userUuid}
+	</delete>
+
+	<delete id="deleteKnowledgeDocumentCollect">
+	DELETE FROM `knowledge_document_collect` WHERE `knowledge_document_id` = #{documentId} and `user_uuid` = #{userUuid}
 	</delete>
 </mapper>

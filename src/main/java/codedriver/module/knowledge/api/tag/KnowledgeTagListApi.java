@@ -1,4 +1,4 @@
-package codedriver.module.knowledge.api.document;
+package codedriver.module.knowledge.api.tag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,44 +7,42 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.reminder.core.OperationTypeEnum;
-import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
+import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class KnowledgeDocumentWaitingForReviewListApi extends PrivateApiComponentBase {
-
+public class KnowledgeTagListApi extends PrivateApiComponentBase {
+    
     @Autowired
-    private KnowledgeDocumentMapper knowledgeDocumentMapper;
+    private KnowledgeTagMapper knowledgeTagMapper;
 
     @Override
     public String getToken() {
-        return "knowledge/document/waitingforreview/list";
+        return "knowledge/tag/list";
     }
 
     @Override
     public String getName() {
-        return "查询待我审批列表";
+        return "查询知识库标签列表";
     }
 
     @Override
     public String getConfig() {
         return null;
     }
+
     @Input({
         @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字，匹配名称"),
         @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true"),
@@ -53,20 +51,16 @@ public class KnowledgeDocumentWaitingForReviewListApi extends PrivateApiComponen
     })
     @Output({
         @Param(explode = BasePageVo.class),
-        @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头列表"),
-        @Param(name = "tbodyList", explode = KnowledgeDocumentVersionVo[].class, desc = "文档版本列表")
+        @Param(name = "list", explode = ValueTextVo[].class, desc = "标签列表")
     })
-    @Description(desc = "查询待我审批列表")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        resultObj.put("theadList", getTheadList());
-        resultObj.put("tbodyList", new ArrayList<>());
-        KnowledgeDocumentVersionVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
-        searchVo.setReviewer(UserContext.get().getUserUuid(true));
+        resultObj.put("list", new ArrayList<>());
+        BasePageVo searchVo = JSON.toJavaObject(jsonObj, BasePageVo.class);         
         int pageCount = 0;
         if(searchVo.getNeedPage()) {
-            int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewCount(searchVo);
+            int rowNum = knowledgeTagMapper.getKnowledgeTagCount(searchVo);
             pageCount = PageUtil.getPageCount(rowNum, searchVo.getPageSize());
             resultObj.put("currentPage", searchVo.getCurrentPage());
             resultObj.put("pageSize", searchVo.getPageSize());
@@ -74,19 +68,10 @@ public class KnowledgeDocumentWaitingForReviewListApi extends PrivateApiComponen
             resultObj.put("rowNum", rowNum);
         }
         if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
-            List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewList(searchVo);
-            resultObj.put("tbodyList", knowledgeDocumentVersionList);
+            List<ValueTextVo> tagList = knowledgeTagMapper.getKnowledgeTagList(searchVo);
+            resultObj.put("list", tagList);
         }
         return resultObj;
     }
 
-    @SuppressWarnings({"serial"})
-    private JSONArray getTheadList() {
-        JSONArray theadList = new JSONArray();
-        theadList.add(new JSONObject() {{this.put("title", "标题"); this.put("key", "title");}});
-        theadList.add(new JSONObject() {{this.put("title", "提交人"); this.put("key", "lcu");}});
-        theadList.add(new JSONObject() {{this.put("title", "提交时间"); this.put("key", "lcd");}});
-        theadList.add(new JSONObject() {{this.put("key", "action");}});
-        return theadList;
-    }
 }

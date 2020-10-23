@@ -7,7 +7,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.techsure.multiattrsearch.MultiAttrsObject;
 import com.techsure.multiattrsearch.query.QueryResult;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
@@ -20,7 +22,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
 
 @Service
-public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocumentVo, QueryResult> {
+public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocumentVo, JSONArray> {
     Logger logger = LoggerFactory.getLogger(EsKnowledegeHandler.class);
 
     @Autowired
@@ -61,16 +63,32 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
     public String buildSql(KnowledgeDocumentVo knowledgeDocumentVo) {
         String titleCondition = String.format(Expression.MATCH.getExpressionEs(), "title",knowledgeDocumentVo.getKeyword());
         String contentCondition = String.format(Expression.MATCH.getExpressionEs(), "content",knowledgeDocumentVo.getKeyword());
-        String sql = String.format("select versionid,typeuuid,circleid,#title#,#content#,fcu,fcd from %s limit %d %d where %s or %s", TenantContext.get().getTenantUuid(),
-           knowledgeDocumentVo.getStartNum(),knowledgeDocumentVo.getPageSize(),titleCondition,contentCondition);
+        String sql = String.format("select versionid,typeuuid,circleid,#title#,#content#,fcu,fcd from %s where %s or %s limit %d,%d ", TenantContext.get().getTenantUuid(),
+           titleCondition,contentCondition,knowledgeDocumentVo.getStartNum(),knowledgeDocumentVo.getPageSize());
         return sql;
        
     }
 
     @Override
-    protected QueryResult makeupQueryResult(KnowledgeDocumentVo t, QueryResult result) {
-        // TODO Auto-generated method stub
-        return null;
+    protected JSONArray makeupQueryResult(KnowledgeDocumentVo t, QueryResult result) {
+        List<MultiAttrsObject> resultData = result.getData();
+        JSONArray dataArray = new JSONArray();
+        for (MultiAttrsObject el : resultData) {
+            JSONObject documentJson = new JSONObject();
+            JSONObject highlightData = el.getHighlightData();
+            documentJson.put("id", el.getId());
+            KnowledgeDocumentVo documenmtVo = knowledgeDocumentMapper.getKnowledgeDocumentById(Long.valueOf(el.getId()));
+            if(documenmtVo != null) {
+                if(highlightData.containsKey("title.txt")) {
+                    documenmtVo.setTitle(highlightData.getString("title.txt"));
+                }
+                if(highlightData.containsKey("content.txt")) {
+                    documenmtVo.setContent( highlightData.getString("content.txt"));
+                }
+                dataArray.add(documenmtVo);
+            }
+        }
+        return dataArray;
     }
     
   

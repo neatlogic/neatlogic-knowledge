@@ -63,6 +63,18 @@ public interface KnowledgeDocumentMapper {
 
     public int getKnowledgeDocumentCountByKnowledgeDocumentTypeUuid(KnowledgeDocumentVo knowledgeDocumentVo);
 
+    public int checkDocumentHasBeenFavored(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+
+    public int getDocumentFavorCount(Long documentId);
+
+    public int checkDocumentHasBeenCollected(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+
+    public int getDocumentCollectCount(Long documentId);
+
+    public int checkExistsDocumentViewCount(Long documentId);
+
+    public int getDocumentViewCount(Long documentId);
+
     @ESSearch
     public int insertKnowledgeDocument(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
 
@@ -78,6 +90,12 @@ public interface KnowledgeDocumentMapper {
 
     public int insertKnowledgeDocumentLineList(List<KnowledgeDocumentLineVo> knowledgeDocumentLineList);
 
+    public int insertKnowledgeDocumentFavor(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+
+    public int insertKnowledgeDocumentCollect(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+
+    public int insertKnowledgeDocumentViewCount(@Param("documentId") Long documentId,@Param("count") int count);
+
     public int updateKnowledgeDocumentToDeleteById(Long knowledgeDocumentId);
 
     public int updateKnowledgeDocumentVersionById(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
@@ -88,9 +106,11 @@ public interface KnowledgeDocumentMapper {
         @Param("oldStatus") String oldStatus, 
         @Param("newStatus") String newStatus
     );
-    
+
     @ESSearch
     public int updateKnowledgeDocumentById(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
+
+    public int updateKnowledgeViewCountIncrementOne(Long documentId);
 
     public int deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
 
@@ -101,5 +121,9 @@ public interface KnowledgeDocumentMapper {
     public int deleteKnowledgeDocumentVersionById(Long id);
 
     public int deleteKnowledgeDocumentById(Long id);
+
+    public int deleteKnowledgeDocumentFavor(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+
+    public int deleteKnowledgeDocumentCollect(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
 
 }

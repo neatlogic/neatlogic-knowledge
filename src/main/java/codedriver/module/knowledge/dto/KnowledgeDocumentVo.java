@@ -7,7 +7,6 @@ import com.alibaba.fastjson.annotation.JSONField;
 
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BaseEditorVo;
-import codedriver.framework.dto.TagVo;
 import codedriver.framework.elasticsearch.annotation.ESKey;
 import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.file.dto.FileVo;
@@ -47,7 +46,7 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     @EntityField(name = "附件列表", type = ApiParamType.JSONARRAY)
     private List<FileVo> fileList = new ArrayList<>();
     @EntityField(name = "标签列表", type = ApiParamType.JSONARRAY)
-    private List<TagVo> tagList = new ArrayList<>();
+    private List<String> tagList = new ArrayList<>();
     @EntityField(name = "是否可编辑", type = ApiParamType.INTEGER)
     private Integer isEditable;
     @EntityField(name = "是否可删除", type = ApiParamType.INTEGER)
@@ -56,6 +55,20 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private Integer isReviewable;
     private List<Long> fileIdList = new ArrayList<>();
     private List<Long> tagIdList = new ArrayList<>();
+    @EntityField(name = "是否收藏", type = ApiParamType.INTEGER)
+    private int isFavorite;
+    @EntityField(name = "是否点赞", type = ApiParamType.INTEGER)
+    private int isAgree;
+    @EntityField(name = "收藏量", type = ApiParamType.INTEGER)
+    private int agreeCount;
+    @EntityField(name = "点赞量", type = ApiParamType.INTEGER)
+    private int favoriteCount;
+    @EntityField(name = "浏览量", type = ApiParamType.INTEGER)
+    private int pageviews;
+    @EntityField(name = "知识内容", type = ApiParamType.STRING)
+    private String content;
+
+    @JSONField(serialize=false)
     private transient Integer isDelete;
     @JSONField(serialize=false)
     private transient boolean isAutoGenerateId = true;
@@ -119,10 +132,10 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     public void setFileList(List<FileVo> fileList) {
         this.fileList = fileList;
     }
-    public List<TagVo> getTagList() {
+    public List<String> getTagList() {
         return tagList;
     }
-    public void setTagList(List<TagVo> tagList) {
+    public void setTagList(List<String> tagList) {
         this.tagList = tagList;
     }
     public List<Long> getFileIdList() {
@@ -160,6 +173,42 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     }
     public void setIsReviewable(Integer isReviewable) {
         this.isReviewable = isReviewable;
+    }
+    public int getIsFavorite() {
+        return isFavorite;
+    }
+    public void setIsFavorite(int isFavorite) {
+        this.isFavorite = isFavorite;
+    }
+    public int getIsAgree() {
+        return isAgree;
+    }
+    public void setIsAgree(int isAgree) {
+        this.isAgree = isAgree;
+    }
+    public int getAgreeCount() {
+        return agreeCount;
+    }
+    public void setAgreeCount(int agreeCount) {
+        this.agreeCount = agreeCount;
+    }
+    public int getFavoriteCount() {
+        return favoriteCount;
+    }
+    public void setFavoriteCount(int favoriteCount) {
+        this.favoriteCount = favoriteCount;
+    }
+    public int getPageviews() {
+        return pageviews;
+    }
+    public void setPageviews(int pageviews) {
+        this.pageviews = pageviews;
+    }
+    public String getContent() {
+        return content;
+    }
+    public void setContent(String content) {
+        this.content = content;
     }
     
 }

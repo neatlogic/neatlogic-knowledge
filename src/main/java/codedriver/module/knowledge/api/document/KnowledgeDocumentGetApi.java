@@ -11,8 +11,6 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.dao.mapper.TagMapper;
-import codedriver.framework.dto.TagVo;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.reminder.core.OperationTypeEnum;
@@ -24,6 +22,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
@@ -38,9 +37,9 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
     @Autowired
-    private FileMapper fileMapper;
+    private KnowledgeTagMapper knowledgeTagMapper;
     @Autowired
-    private TagMapper tagMapper;
+    private FileMapper fileMapper;
 
     @Override
     public String getToken() {
@@ -60,6 +59,7 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
     @Input({
         @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, isRequired = true, desc = "文档id"),
         @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
+        @Param(name = "isReadOnly", type = ApiParamType.ENUM, rule = "0,1", desc = "是否增加浏览量")
     })
     @Output({
         @Param(explode = KnowledgeDocumentVo.class, desc = "文档内容")
@@ -93,10 +93,16 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         }
         List<Long> tagIdList = knowledgeDocumentMapper.getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(knowledgeDocumentId, knowledgeDocumentVersionId));
         if(CollectionUtils.isNotEmpty(tagIdList)) {
-            List<TagVo> tagList = tagMapper.getTagListByIdList(tagIdList);
-            knowledgeDocumentVo.setTagIdList(tagIdList);
-            knowledgeDocumentVo.setTagList(tagList);
+            List<String> tagNameList = knowledgeTagMapper.getKnowledgeTagNameListByIdList(tagIdList);
+            knowledgeDocumentVo.setTagList(tagNameList);
         }
+        
+        knowledgeDocumentVo.setAgreeCount(knowledgeDocumentMapper.getDocumentFavorCount(knowledgeDocumentVo.getId()));
+        knowledgeDocumentVo.setFavoriteCount(knowledgeDocumentMapper.getDocumentCollectCount(knowledgeDocumentVo.getId()));
+        knowledgeDocumentVo.setPageviews(knowledgeDocumentMapper.getDocumentViewCount(knowledgeDocumentVo.getId()));
+        knowledgeDocumentVo.setIsFavorite(knowledgeDocumentMapper.checkDocumentHasBeenCollected(knowledgeDocumentVo.getId(), UserContext.get().getUserUuid(true)));
+        knowledgeDocumentVo.setIsAgree(knowledgeDocumentMapper.checkDocumentHasBeenFavored(knowledgeDocumentVo.getId(), UserContext.get().getUserUuid(true)));
+        
         knowledgeDocumentVo.setIsEditable(0);
         knowledgeDocumentVo.setIsDeletable(0);
         knowledgeDocumentVo.setIsReviewable(0);
@@ -119,7 +125,12 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
                 knowledgeDocumentVo.setIsReviewable(isReviewable);
             }
         }
-        
+        Integer isReadOnly = jsonObj.getInteger("isReadOnly");
+        if(Objects.equals(isReadOnly, 1)) {
+            if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus()) && Objects.equals(knowledgeDocumentVersionId, knowledgeDocumentVo.getKnowledgeDocumentVersionId())) {
+                knowledgeDocumentMapper.updateKnowledgeViewCountIncrementOne(knowledgeDocumentVo.getId());
+            }
+        }
         return knowledgeDocumentVo;
     }
 

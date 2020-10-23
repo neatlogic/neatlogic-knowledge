@@ -93,7 +93,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
         int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), null);
         List<KnowledgeTypeVo> resultList = new ArrayList<>();
         for(KnowledgeType type : KnowledgeType.values()) {
-            if(KnowledgeType.WAITINGFORREVIEW == type && isReviewable == 1) {
+            if(KnowledgeType.WAITINGFORREVIEW == type && isReviewable == 0) {
                 continue;
             }
             KnowledgeTypeVo knowledgeTypeVo = new KnowledgeTypeVo(type);

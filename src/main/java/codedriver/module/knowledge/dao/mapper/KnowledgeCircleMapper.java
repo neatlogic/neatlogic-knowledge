@@ -24,6 +24,8 @@ public interface KnowledgeCircleMapper {
 
     public int checkCircleHasKnowledge(Long id);
 
+    public List<Long> getCircleIdListByMemberUuidList(@Param("list") List<String> uuidList);
+
     public void updateKnowledgeCircle(KnowledgeCircleVo knowledgeCircleVo);
 
     public void insertKnowledgeCircle(KnowledgeCircleVo knowledgeCircleVo);

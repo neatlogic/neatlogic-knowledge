@@ -65,6 +65,17 @@
 		and `auth_type` = #{authType}
 	</select>
 
+	<select id="getCircleIdListByMemberUuidList" parameterType="java.util.List" resultType="java.lang.Long">
+		select
+		`knowledge_circle_id`
+		from `knowledge_circle_user`
+		where `uuid` in
+		<foreach collection="list" item="uuid" separator="," open="(" close=")">
+			#{uuid}
+		</foreach>
+		and `auth_type` = 'member'
+	</select>
+
 	<select id="checkCircleHasKnowledge" parameterType="java.lang.Long" resultType="int">
 		select count(1) from (select `id` from `knowledge_document` where `knowledge_circle_id` = #{value} limit 1) a
 	</select>

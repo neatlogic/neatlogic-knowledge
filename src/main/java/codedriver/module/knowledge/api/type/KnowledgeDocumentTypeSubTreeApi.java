@@ -35,25 +35,18 @@ public class KnowledgeDocumentTypeSubTreeApi extends PrivateApiComponentBase{
 		return null;
 	}
 
-	@Input({
-			@Param( name = "parentUuid", desc = "父级uuid", type = ApiParamType.STRING,isRequired = true),
-			@Param( name = "knowledgeCircleId", desc = "知识圈ID", type = ApiParamType.LONG ,isRequired = true)
-	})
-	@Output({
-			@Param( name = "typeList", explode = KnowledgeDocumentTypeVo[].class, desc = "知识类型架构集合")
-	})
+	@Input({@Param( name = "parentUuid", desc = "父级uuid", type = ApiParamType.STRING,isRequired = true)})
+	@Output({@Param( name = "typeList", explode = KnowledgeDocumentTypeVo[].class, desc = "知识类型架构集合")})
 	@Description(desc = "获取知识圈知识分类树_子树")
 	@Override
 	public Object myDoService(JSONObject jsonObj) throws Exception {
 		JSONObject result = new JSONObject();
 		KnowledgeDocumentTypeVo type = new KnowledgeDocumentTypeVo();
 		String parentUuid = jsonObj.getString("parentUuid");
-		Long knowledgeCircleId = jsonObj.getLong("knowledgeCircleId");
 		if(knowledgeDocumentTypeMapper.checkTypeIsExists(parentUuid) == 0) {
 			throw new KnowledgeDocumentTypeNotFoundException(parentUuid);
 		}
 		type.setParentUuid(parentUuid);
-		type.setKnowledgeCircleId(knowledgeCircleId);
 		List<KnowledgeDocumentTypeVo> typeList = knowledgeDocumentTypeMapper.searchType(type);
 		result.put("typeList",typeList);
 		return result;

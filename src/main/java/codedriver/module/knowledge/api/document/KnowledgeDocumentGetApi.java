@@ -127,7 +127,7 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         }
         Integer isReadOnly = jsonObj.getInteger("isReadOnly");
         if(Objects.equals(isReadOnly, 1)) {
-            if(Objects.equals(knowledgeDocumentVersionId, knowledgeDocumentVo.getKnowledgeDocumentVersionId())) {
+            if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus()) && Objects.equals(knowledgeDocumentVersionId, knowledgeDocumentVo.getKnowledgeDocumentVersionId())) {
                 knowledgeDocumentMapper.updateKnowledgeViewCountIncrementOne(knowledgeDocumentVo.getId());
             }
         }

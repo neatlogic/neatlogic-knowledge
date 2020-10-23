@@ -1,11 +1,27 @@
 package codedriver.module.knowledge.api.circle;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.dto.AuthorityVo;
 import codedriver.framework.reminder.core.OperationTypeEnum;
-import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.annotation.Description;
+import codedriver.framework.restful.annotation.Input;
+import codedriver.framework.restful.annotation.OperationType;
+import codedriver.framework.restful.annotation.Output;
+import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
@@ -15,16 +31,6 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.exception.KnowledgeCircleNameRepeatException;
 import codedriver.module.knowledge.exception.KnowledgeCircleNotFoundException;
 import codedriver.module.knowledge.service.KnowledgeDocumentTypeService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * 关于知识圈中的知识类型说明：
@@ -212,7 +218,7 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 			}
 		}else if (objJson instanceof JSONObject) {
 			JSONObject jsonObject = JSONObject.parseObject(objJson.toString());
-			Iterator it = jsonObject.keySet().iterator();
+			Iterator<String> it = jsonObject.keySet().iterator();
 			while (it.hasNext()) {
 				String key = it.next().toString();
 				Object object = jsonObject.get(key);

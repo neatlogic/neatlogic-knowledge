@@ -262,7 +262,7 @@
 	SELECT 
 	  COUNT(1)
 	FROM `knowledge_circle_user` 
-	WHERE `type` = 'approver' AND `uuid` = #{uuid}
+	WHERE `auth_type` = 'approver' AND `uuid` = #{uuid}
 	<if test="knowledgeCircleId != null">
 	AND `knowledge_circle_id` = #{knowledgeCircleId}
 	</if>

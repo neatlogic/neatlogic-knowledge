@@ -14,8 +14,6 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.dao.mapper.TagMapper;
-import codedriver.framework.dto.TagVo;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.restful.annotation.Description;
@@ -25,6 +23,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
@@ -43,9 +42,9 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
     @Autowired
-    private FileMapper fileMapper;
+    private KnowledgeTagMapper knowledgeTagMapper;
     @Autowired
-    private TagMapper tagMapper;
+    private FileMapper fileMapper;
     
     @Override
     public String getToken() {
@@ -137,7 +136,6 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         cloneVo.setKnowledgeCircleId(source.getKnowledgeCircleId());
         cloneVo.setTitle(source.getTitle());
         cloneVo.getFileIdList().addAll(source.getFileIdList());
-        cloneVo.getTagIdList().addAll(source.getTagIdList());
         cloneVo.setIsEditable(source.getIsEditable());
         cloneVo.setIsDeletable(source.getIsDeletable());
         cloneVo.setIsReviewable(source.getIsReviewable());
@@ -163,11 +161,8 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
             fileVo.setContentType(file.getContentType());
             cloneVo.getFileList().add(fileVo);
         }
-        for(TagVo tag : cloneVo.getTagList()) {
-            TagVo tagVo = new TagVo();
-            tagVo.setId(tag.getId());
-            tagVo.setName(tag.getName());
-            cloneVo.getTagList().add(tagVo);
+        for(String tag : cloneVo.getTagList()) {
+            cloneVo.getTagList().add(tag);
         }
         return cloneVo;
     }
@@ -194,9 +189,8 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         }
         List<Long> tagIdList = knowledgeDocumentMapper.getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(knowledgeDocumentVo.getId(), knowledgeDocumentVersionId));
         if(CollectionUtils.isNotEmpty(tagIdList)) {
-            List<TagVo> tagList = tagMapper.getTagListByIdList(tagIdList);
-            knowledgeDocumentVo.setTagIdList(tagIdList);
-            knowledgeDocumentVo.setTagList(tagList);
+            List<String> tagNameList = knowledgeTagMapper.getKnowledgeTagNameListByIdList(tagIdList);
+            knowledgeDocumentVo.setTagList(tagNameList);
         }
         knowledgeDocumentVo.setIsEditable(0);
         knowledgeDocumentVo.setIsDeletable(0);

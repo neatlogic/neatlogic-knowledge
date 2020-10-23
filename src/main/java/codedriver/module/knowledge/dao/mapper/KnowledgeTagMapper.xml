@@ -28,7 +28,7 @@
 	
 	<select id="getKnowledgeTagList" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="codedriver.framework.common.dto.ValueTextVo">
 	SELECT 
-	  `id` AS `value`,
+	  `name` AS `value`,
 	  `name` AS `text`
 	FROM `knowledge_tag` 
 	<if test="keyword != null and keyword != ''">

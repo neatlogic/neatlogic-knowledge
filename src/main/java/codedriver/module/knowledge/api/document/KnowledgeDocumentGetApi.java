@@ -22,6 +22,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
@@ -45,6 +46,9 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
     @Autowired
     private KnowledgeDocumentService knowledgeDocumentService;
 
+    @Autowired
+    private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMappper;
+    
     @Override
     public String getToken() {
         return "knowledge/document/get";

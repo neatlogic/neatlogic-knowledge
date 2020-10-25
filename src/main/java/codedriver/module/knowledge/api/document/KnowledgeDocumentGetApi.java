@@ -21,12 +21,15 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
+import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
+import codedriver.module.knowledge.dto.KnowledgeCircleVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
@@ -48,6 +51,9 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMappper;
+    
+    @Autowired
+    private KnowledgeCircleMapper knowledgeCircleMapper;
     
     @Override
     public String getToken() {
@@ -103,6 +109,18 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         if(CollectionUtils.isNotEmpty(tagIdList)) {
             List<String> tagNameList = knowledgeTagMapper.getKnowledgeTagNameListByIdList(tagIdList);
             knowledgeDocumentVo.setTagList(tagNameList);
+        }
+        
+        KnowledgeCircleVo knowledgeCircleVo = knowledgeCircleMapper.getKnowledgeCircleById(knowledgeDocumentVo.getKnowledgeCircleId());
+        if(knowledgeCircleVo != null) {
+            knowledgeDocumentVo.getPath().add(knowledgeCircleVo.getName());
+        }
+        KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMappper.getTypeByUuid(knowledgeDocumentVo.getKnowledgeDocumentTypeUuid());
+        if(knowledgeDocumentTypeVo != null) {
+            List<String> typeNameList = knowledgeDocumentTypeMappper.getAncestorsAndSelfNameByLftRht(knowledgeDocumentTypeVo.getLft(), knowledgeDocumentTypeVo.getRht(), knowledgeDocumentTypeVo.getKnowledgeCircleId());
+            if(CollectionUtils.isNotEmpty(typeNameList)) {
+                knowledgeDocumentVo.getPath().addAll(typeNameList);
+            }
         }
         
         knowledgeDocumentVo.setAgreeCount(knowledgeDocumentMapper.getDocumentFavorCount(knowledgeDocumentVo.getId()));

@@ -68,7 +68,7 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     @EntityField(name = "知识内容", type = ApiParamType.STRING)
     private String content;
     @EntityField(name = "路径", type = ApiParamType.JSONARRAY)
-    private List<String> path;
+    private List<String> path = new ArrayList<>();
     
     @JSONField(serialize=false)
     private transient Integer isDelete;

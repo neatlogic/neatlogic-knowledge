@@ -68,6 +68,25 @@
 		ORDER BY a.`lft`
 	</select>
 
+	<select id="getAncestorsAndSelfNameByLftRht" resultType="java.lang.String">
+	SELECT `name` FROM `knowledge_document_type` 
+	WHERE `knowledge_circle_id` = #{knowledgeCircleId} AND `lft` &lt;= #{lft} AND `rht` &gt;= #{rht}
+	ORDER BY `lft` ASC
+	</select>
+	
+	<select id="getTypeByUuid" parameterType="java.lang.String" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo">
+	SELECT 
+	  `uuid`,
+	  `name`,
+	  `knowledge_circle_id` AS knowledgeCircleId,
+	  `parent_uuid` AS parentUuid,
+	  `lft`,
+	  `rht`,
+	  `sort` 
+	FROM `knowledge_document_type` 
+	WHERE `uuid` = #{value}
+	</select>
+	
 	<update id="updateTypeLeftRightCode">
 	UPDATE `knowledge_document_type` SET `lft` = #{lft}, `rht` = #{rht} WHERE `uuid` = #{uuid}
 	</update>

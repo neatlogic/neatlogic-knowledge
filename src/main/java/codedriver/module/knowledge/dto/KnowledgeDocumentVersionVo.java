@@ -18,6 +18,8 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
 
     @EntityField(name = "版本id", type = ApiParamType.LONG)
     private Long id;
+    @EntityField(name = "文档类型Uuid", type = ApiParamType.LONG)
+    private String knowledgeDocumentTypeUuid;
     @EntityField(name = "文档id", type = ApiParamType.LONG)
     private Long knowledgeDocumentId;
     @EntityField(name = "版本号", type = ApiParamType.STRING)
@@ -66,6 +68,12 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     }
     public void setId(Long id) {
         this.id = id;
+    }
+    public String getKnowledgeDocumentTypeUuid() {
+        return knowledgeDocumentTypeUuid;
+    }
+    public void setKnowledgeDocumentTypeUuid(String knowledgeDocumentTypeUuid) {
+        this.knowledgeDocumentTypeUuid = knowledgeDocumentTypeUuid;
     }
     public Long getKnowledgeDocumentId() {
         return knowledgeDocumentId;

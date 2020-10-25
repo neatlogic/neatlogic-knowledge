@@ -97,6 +97,7 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
         }
         knowledgeDocumentVo.setTitle(knowledgeDocumentVersionVo.getTitle());
+        knowledgeDocumentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
         List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentVo.setLineList(lineList);
         List<Long> fileIdList = knowledgeDocumentMapper.getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentId, knowledgeDocumentVersionId));

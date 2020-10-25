@@ -108,6 +108,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 /** 如果入参版本id是文档当前版本id，说明该操作是当前版本上修改首次存草稿 **/
                 KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
                 knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
+                knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
                 knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentId);
                 knowledgeDocumentVersionVo.setVersion(oldKnowledgeDocumentVersionVo.getVersion());
                 knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
@@ -130,6 +131,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 /** 覆盖旧草稿时，更新标题、修改用户、修改时间，删除行数据、附件、标签数据，后面再重新插入 **/
                 KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
                 knowledgeDocumentVersionVo.setId(drafrVersionId);
+                knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
                 knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
                 knowledgeDocumentVersionVo.setStatus(KnowledgeDocumentVersionStatus.DRAFT.getValue());
                 knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
@@ -146,6 +148,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             knowledgeDocumentMapper.insertKnowledgeDocument(documentVo);
             knowledgeDocumentMapper.insertKnowledgeDocumentViewCount(documentVo.getId(), 0);
             knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
+            knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
             knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentVo.getId());
             knowledgeDocumentVersionVo.setVersion(0);
             knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));

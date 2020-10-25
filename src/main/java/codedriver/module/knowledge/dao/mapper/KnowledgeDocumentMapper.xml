@@ -20,6 +20,7 @@
 	SELECT 
 	  `id`,
 	  `title`,
+	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_document_id` AS knowledgeDocumentId,
 	  `version`,
 	  `status`,
@@ -48,6 +49,7 @@
 	SELECT 
 	  `id`,
 	  `title`,
+	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_document_id` AS knowledgeDocumentId,
 	  `version`,
 	  `status`,
@@ -131,6 +133,7 @@
 	SELECT 
 	  c.`id`,
 	  c.`title`,
+	  c.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  c.`knowledge_document_id` AS knowledgeDocumentId,
 	  c.`version`,
 	  c.`status`,
@@ -171,6 +174,7 @@
 	SELECT 
 	  `id`,
 	  `title`,
+	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_document_id` AS knowledgeDocumentId,
 	  `version`,
 	  `status`,
@@ -272,6 +276,7 @@
 	SELECT 
 	  a.`id`,
 	  a.`title`,
+	  a.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  a.`knowledge_document_id` AS knowledgeDocumentId,
 	  a.`version`,
 	  a.`status`,
@@ -320,6 +325,7 @@
 	SELECT 
 	  c.`id`,
 	  c.`title`,
+	  c.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  c.`knowledge_document_id` AS knowledgeDocumentId,
 	  c.`version`,
 	  c.`status`,
@@ -379,6 +385,7 @@
 	INSERT INTO `knowledge_document_version` (
 	  `id`,
 	  `title`,
+	  `knowledge_document_type_uuid`,
 	  `knowledge_document_id`,
 	  `version`,
 	  `status`,
@@ -389,6 +396,7 @@
 	  (
 	    #{id},
 	    #{title},
+	    #{knowledgeDocumentTypeUuid},
 	    #{knowledgeDocumentId},
 	    #{version},
 	    #{status},

@@ -312,6 +312,10 @@
 	AND `status` = 'submitted'
 	</select>
 	
+	<select id="checkIfTheVersionIsTheCurrentVersion" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="int">
+	SELECT COUNT(1) FROM `knowledge_document` WHERE `id` = #{knowledgeDocumentId} AND `knowledge_document_version_id` = #{id}
+	</select>
+	
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	INSERT INTO `knowledge_document` (
 	  `id`,

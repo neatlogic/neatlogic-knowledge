@@ -28,6 +28,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -39,6 +40,9 @@ public class KnowledgeDocumentShareListApi extends PrivateApiComponentBase {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private KnowledgeDocumentService knowledgeDocumentService;
+    
     @Override
     public String getToken() {
         return "knowledge/document/share/list";
@@ -94,8 +98,8 @@ public class KnowledgeDocumentShareListApi extends PrivateApiComponentBase {
                     knowledgeDocumentVersionVo.setReviewerName(reviewerUserVo.getUserName());
                     knowledgeDocumentVersionVo.setReviewerInfo(reviewerUserVo.getUserInfo());
                 }
-                knowledgeDocumentVersionVo.setIsDeletable(0);
-                knowledgeDocumentVersionVo.setIsEditable(0);
+                knowledgeDocumentVersionVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
+                knowledgeDocumentVersionVo.setIsEditable(knowledgeDocumentService.isEditable(knowledgeDocumentVersionVo));
             }
             resultObj.put("tbodyList", knowledgeDocumentVersionList);
         }

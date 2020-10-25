@@ -30,6 +30,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
@@ -40,6 +41,9 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
     private KnowledgeTagMapper knowledgeTagMapper;
     @Autowired
     private FileMapper fileMapper;
+
+    @Autowired
+    private KnowledgeDocumentService knowledgeDocumentService;
 
     @Override
     public String getToken() {
@@ -103,28 +107,10 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         knowledgeDocumentVo.setIsFavorite(knowledgeDocumentMapper.checkDocumentHasBeenCollected(knowledgeDocumentVo.getId(), UserContext.get().getUserUuid(true)));
         knowledgeDocumentVo.setIsAgree(knowledgeDocumentMapper.checkDocumentHasBeenFavored(knowledgeDocumentVo.getId(), UserContext.get().getUserUuid(true)));
         
-        knowledgeDocumentVo.setIsEditable(0);
-        knowledgeDocumentVo.setIsDeletable(0);
-        knowledgeDocumentVo.setIsReviewable(0);
+        knowledgeDocumentVo.setIsEditable(knowledgeDocumentService.isEditable(knowledgeDocumentVersionVo));
+        knowledgeDocumentVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
+        knowledgeDocumentVo.setIsReviewable(knowledgeDocumentService.isReviewable(knowledgeDocumentVersionVo));
         
-        int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId());
-        if(KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            if(UserContext.get().getUserUuid(true).equals(knowledgeDocumentVersionVo.getLcu())) {
-                knowledgeDocumentVo.setIsEditable(1);
-                knowledgeDocumentVo.setIsDeletable(1);
-            }
-            knowledgeDocumentVo.setIsReviewable(isReviewable);
-        }else if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            knowledgeDocumentVo.setIsReviewable(isReviewable);
-        }else if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            knowledgeDocumentVo.setIsEditable(1);
-        }else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            if(Objects.equals(knowledgeDocumentVo.getVersion(), knowledgeDocumentVersionVo.getVersion())) {
-                knowledgeDocumentVo.setIsEditable(1);
-                knowledgeDocumentVo.setIsDeletable(1);
-                knowledgeDocumentVo.setIsReviewable(isReviewable);
-            }
-        }
         Integer isReadOnly = jsonObj.getInteger("isReadOnly");
         if(Objects.equals(isReadOnly, 1)) {
             if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus()) && Objects.equals(knowledgeDocumentVersionId, knowledgeDocumentVo.getKnowledgeDocumentVersionId())) {

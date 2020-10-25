@@ -89,6 +89,8 @@ public class KnowledgeDocumentDraftListApi extends PrivateApiComponentBase {
             for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
                 knowledgeDocumentVersionVo.setLcuName(currentUserVo.getUserName());
                 knowledgeDocumentVersionVo.setLcuInfo(currentUserVo.getUserInfo());
+                knowledgeDocumentVersionVo.setIsDeletable(1);
+                knowledgeDocumentVersionVo.setIsEditable(1);
             }
             resultObj.put("tbodyList", knowledgeDocumentVersionList);
         }

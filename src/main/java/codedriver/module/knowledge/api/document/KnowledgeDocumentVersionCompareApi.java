@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
@@ -21,12 +20,15 @@ import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
+import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
+import codedriver.module.knowledge.dto.KnowledgeCircleVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
@@ -45,6 +47,12 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
     private KnowledgeTagMapper knowledgeTagMapper;
     @Autowired
     private FileMapper fileMapper;
+
+    @Autowired
+    private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMappper;
+    
+    @Autowired
+    private KnowledgeCircleMapper knowledgeCircleMapper;
     
     @Override
     public String getToken() {
@@ -192,26 +200,16 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
             List<String> tagNameList = knowledgeTagMapper.getKnowledgeTagNameListByIdList(tagIdList);
             knowledgeDocumentVo.setTagList(tagNameList);
         }
-        knowledgeDocumentVo.setIsEditable(0);
-        knowledgeDocumentVo.setIsDeletable(0);
-        knowledgeDocumentVo.setIsReviewable(0);
         
-        int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId());
-        if(KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            if(UserContext.get().getUserUuid(true).equals(knowledgeDocumentVersionVo.getLcu())) {
-                knowledgeDocumentVo.setIsEditable(1);
-                knowledgeDocumentVo.setIsDeletable(1);
-            }
-            knowledgeDocumentVo.setIsReviewable(isReviewable);
-        }else if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            knowledgeDocumentVo.setIsReviewable(isReviewable);
-        }else if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            knowledgeDocumentVo.setIsEditable(1);
-        }else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            if(Objects.equals(knowledgeDocumentVo.getVersion(), knowledgeDocumentVersionVo.getVersion())) {
-                knowledgeDocumentVo.setIsEditable(1);
-                knowledgeDocumentVo.setIsDeletable(1);
-                knowledgeDocumentVo.setIsReviewable(isReviewable);
+        KnowledgeCircleVo knowledgeCircleVo = knowledgeCircleMapper.getKnowledgeCircleById(knowledgeDocumentVo.getKnowledgeCircleId());
+        if(knowledgeCircleVo != null) {
+            knowledgeDocumentVo.getPath().add(knowledgeCircleVo.getName());
+        }
+        KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMappper.getTypeByUuid(knowledgeDocumentVo.getKnowledgeDocumentTypeUuid());
+        if(knowledgeDocumentTypeVo != null) {
+            List<String> typeNameList = knowledgeDocumentTypeMappper.getAncestorsAndSelfNameByLftRht(knowledgeDocumentTypeVo.getLft(), knowledgeDocumentTypeVo.getRht(), knowledgeDocumentTypeVo.getKnowledgeCircleId());
+            if(CollectionUtils.isNotEmpty(typeNameList)) {
+                knowledgeDocumentVo.getPath().addAll(typeNameList);
             }
         }
         return knowledgeDocumentVo;

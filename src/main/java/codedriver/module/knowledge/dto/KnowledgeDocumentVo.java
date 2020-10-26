@@ -67,7 +67,9 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private int pageviews;
     @EntityField(name = "知识内容", type = ApiParamType.STRING)
     private String content;
-
+    @EntityField(name = "路径", type = ApiParamType.JSONARRAY)
+    private List<String> path = new ArrayList<>();
+    
     @JSONField(serialize=false)
     private transient Integer isDelete;
     @JSONField(serialize=false)
@@ -209,6 +211,12 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     }
     public void setContent(String content) {
         this.content = content;
+    }
+    public List<String> getPath() {
+        return path;
+    }
+    public void setPath(List<String> path) {
+        this.path = path;
     }
     
 }

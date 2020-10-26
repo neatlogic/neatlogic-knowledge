@@ -76,6 +76,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         }
         String action = jsonObj.getString("action");
         KnowledgeDocumentVersionVo updateStatusVo = new KnowledgeDocumentVersionVo();
+        updateStatusVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
         updateStatusVo.setId(knowledgeDocumentVersionId);
         updateStatusVo.setStatus(action);
         updateStatusVo.setReviewer(UserContext.get().getUserUuid(true));

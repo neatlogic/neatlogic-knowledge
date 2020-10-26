@@ -20,6 +20,7 @@
 	SELECT 
 	  `id`,
 	  `title`,
+	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_document_id` AS knowledgeDocumentId,
 	  `version`,
 	  `status`,
@@ -48,6 +49,7 @@
 	SELECT 
 	  `id`,
 	  `title`,
+	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_document_id` AS knowledgeDocumentId,
 	  `version`,
 	  `status`,
@@ -131,6 +133,7 @@
 	SELECT 
 	  c.`id`,
 	  c.`title`,
+	  c.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  c.`knowledge_document_id` AS knowledgeDocumentId,
 	  c.`version`,
 	  c.`status`,
@@ -171,6 +174,7 @@
 	SELECT 
 	  `id`,
 	  `title`,
+	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_document_id` AS knowledgeDocumentId,
 	  `version`,
 	  `status`,
@@ -272,6 +276,7 @@
 	SELECT 
 	  a.`id`,
 	  a.`title`,
+	  a.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  a.`knowledge_document_id` AS knowledgeDocumentId,
 	  a.`version`,
 	  a.`status`,
@@ -312,6 +317,50 @@
 	AND `status` = 'submitted'
 	</select>
 	
+	<select id="checkIfTheVersionIsTheCurrentVersion" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="int">
+	SELECT COUNT(1) FROM `knowledge_document` WHERE `id` = #{knowledgeDocumentId} AND `knowledge_document_version_id` = #{id}
+	</select>
+	
+	<select id="getKnowledgeDocumentVersionMyFavoritesList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
+	SELECT 
+	  c.`id`,
+	  c.`title`,
+	  c.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
+	  c.`knowledge_document_id` AS knowledgeDocumentId,
+	  c.`version`,
+	  c.`status`,
+	  c.`lcu`,
+	  c.`lcd`,
+	  c.`size`,
+	  c.`reviewer`,
+	  c.`review_time` AS reviewTime,
+	  b.`fcd`,
+	  b.`fcu`  
+	FROM `knowledge_document_collect` a
+	JOIN `knowledge_document` b ON b.`id` = a.`knowledge_document_id` AND b.`is_delete` = 0
+	JOIN `knowledge_document_version` c ON c.`id` = b.`knowledge_document_version_id`
+	WHERE a.`user_uuid` = #{userUuid}
+	<if test="keyword != null and keyword != ''">
+	AND c.`title` LIKE CONCAT('%', #{keyword}, '%')
+	</if>
+	ORDER BY a.`fcd` DESC
+	<if test="needPage">
+	limit #{startNum}, #{pageSize}
+	</if>
+	</select>
+	
+	<select id="getKnowledgeDocumentVersionMyFavoritesCount" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo" resultType="int">
+	SELECT 
+	  COUNT(1)
+	FROM `knowledge_document_collect` a
+	JOIN `knowledge_document` b ON b.`id` = a.`knowledge_document_id` AND b.`is_delete` = 0
+	JOIN `knowledge_document_version` c ON c.`id` = b.`knowledge_document_version_id`
+	WHERE a.`user_uuid` = #{userUuid}
+	<if test="keyword != null and keyword != ''">
+	AND c.`title` LIKE CONCAT('%', #{keyword}, '%')
+	</if>
+	</select>
+	
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	INSERT INTO `knowledge_document` (
 	  `id`,
@@ -336,6 +385,7 @@
 	INSERT INTO `knowledge_document_version` (
 	  `id`,
 	  `title`,
+	  `knowledge_document_type_uuid`,
 	  `knowledge_document_id`,
 	  `version`,
 	  `status`,
@@ -346,6 +396,7 @@
 	  (
 	    #{id},
 	    #{title},
+	    #{knowledgeDocumentTypeUuid},
 	    #{knowledgeDocumentId},
 	    #{version},
 	    #{status},

@@ -56,13 +56,13 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private List<Long> fileIdList = new ArrayList<>();
     private List<Long> tagIdList = new ArrayList<>();
     @EntityField(name = "是否收藏", type = ApiParamType.INTEGER)
-    private int isFavorite;
+    private int isCollect;
     @EntityField(name = "是否点赞", type = ApiParamType.INTEGER)
-    private int isAgree;
-    @EntityField(name = "收藏量", type = ApiParamType.INTEGER)
-    private int agreeCount;
+    private int isFavor;
     @EntityField(name = "点赞量", type = ApiParamType.INTEGER)
-    private int favoriteCount;
+    private int favorCount;
+    @EntityField(name = "收藏量", type = ApiParamType.INTEGER)
+    private int collectCount;
     @EntityField(name = "浏览量", type = ApiParamType.INTEGER)
     private int pageviews;
     @EntityField(name = "知识内容", type = ApiParamType.STRING)
@@ -176,29 +176,29 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     public void setIsReviewable(Integer isReviewable) {
         this.isReviewable = isReviewable;
     }
-    public int getIsFavorite() {
-        return isFavorite;
+    public int getIsCollect() {
+        return isCollect;
     }
-    public void setIsFavorite(int isFavorite) {
-        this.isFavorite = isFavorite;
+    public void setIsCollect(int isCollect) {
+        this.isCollect = isCollect;
     }
-    public int getIsAgree() {
-        return isAgree;
+    public int getIsFavor() {
+        return isFavor;
     }
-    public void setIsAgree(int isAgree) {
-        this.isAgree = isAgree;
+    public void setIsFavor(int isFavor) {
+        this.isFavor = isFavor;
     }
-    public int getAgreeCount() {
-        return agreeCount;
+    public int getFavorCount() {
+        return favorCount;
     }
-    public void setAgreeCount(int agreeCount) {
-        this.agreeCount = agreeCount;
+    public void setFavorCount(int favorCount) {
+        this.favorCount = favorCount;
     }
-    public int getFavoriteCount() {
-        return favoriteCount;
+    public int getCollectCount() {
+        return collectCount;
     }
-    public void setFavoriteCount(int favoriteCount) {
-        this.favoriteCount = favoriteCount;
+    public void setCollectCount(int collectCount) {
+        this.collectCount = collectCount;
     }
     public int getPageviews() {
         return pageviews;

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -29,7 +28,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 
-@Service
+//@Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentFavoritesListApi extends PrivateApiComponentBase {
 

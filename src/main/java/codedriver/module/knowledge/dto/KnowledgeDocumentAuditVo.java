@@ -3,9 +3,10 @@ package codedriver.module.knowledge.dto;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.dto.BaseEditorVo;
 import codedriver.framework.restful.annotation.EntityField;
 
-public class KnowledgeDocumentAuditVo {
+public class KnowledgeDocumentAuditVo extends BaseEditorVo {
     
     @EntityField(name = "文档id", type = ApiParamType.LONG)
     private Long KnowledgeDocumentId;

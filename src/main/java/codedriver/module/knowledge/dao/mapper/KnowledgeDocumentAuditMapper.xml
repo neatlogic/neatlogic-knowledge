@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper">
+
+	<select id="getKnowledgeDocumentAuditByKnowledgeDocumentId" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo">
+	SELECT 
+	  `knowledge_document_id` AS knowledgeDocumentId,
+	  `fcu`,
+	  `operate`,
+	  `fcd`,
+	  `config_hash` AS configHash
+	FROM `knowledge_document_audit` 
+	WHERE `knowledge_document_id` = #{knowledgeDocumentId}
+	ORDER BY `fcd` DESC
+	<if test="needPage">
+	LIMIT #{startNum}, #{pageSize}
+	</if>
+	</select>
+	
+	<insert id="insertKnowledgeDocumentAudit" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo">
+	INSERT INTO `knowledge_document_audit` (
+	  `knowledge_document_id`,
+	  `fcu`,
+	  `operate`,
+	  `fcd`,
+	  `config_hash`
+	) 
+	VALUES
+	  (
+	    #{knowledgeDocumentId},
+	    #{fcu},
+	    #{operate},
+	    #{fcd},
+	    #{configHash}
+	  )
+	</insert>
+	
+	<insert id="insertKnowledgeDocumentAuditConfig" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditConfigVo">
+	INSERT INTO `knowledge_document_audit_config` (`hash`, `config`) VALUES (#{hash}, #{config})
+	</insert>
+	
+</mapper>

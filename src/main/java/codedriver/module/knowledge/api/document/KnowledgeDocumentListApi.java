@@ -73,13 +73,22 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                 resultObj.put("rowNum", rowNum);
             }
             if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
-                
+                List<Long> knowledgeDocumentIdList = new ArrayList<>();               
                 List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentListByKnowledgeDocumentTypeUuid(searchVo);
                 for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
                     UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
                     if(userVo != null) {
                         knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
                         knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
+                    }
+                    knowledgeDocumentVersionVo.setIsEditable(1);
+                    knowledgeDocumentVersionVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
+                    knowledgeDocumentIdList.add(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+                }
+                List<Long> collectedKnowledgeDocumentIdList = knowledgeDocumentMapper.getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(UserContext.get().getUserUuid(true), knowledgeDocumentIdList);
+                for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
+                    if(collectedKnowledgeDocumentIdList.contains(knowledgeDocumentVersionVo.getKnowledgeDocumentId())) {
+                        knowledgeDocumentVersionVo.setIsCollect(1);
                     }
                 }
                 resultObj.put("tbodyList", knowledgeDocumentVersionList);
@@ -199,7 +208,6 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                 resultObj.put("rowNum", rowNum);
             }
             if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
-                List<Long> knowledgeDocumentIdList = new ArrayList<>();
                 UserVo currentUserVo = userMapper.getUserBaseInfoByUuid(UserContext.get().getUserUuid(true));
                 List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionList(searchVo);
                 for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
@@ -207,13 +215,6 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                     knowledgeDocumentVersionVo.setLcuInfo(currentUserVo.getUserInfo());
                     knowledgeDocumentVersionVo.setIsDeletable(1);
                     knowledgeDocumentVersionVo.setIsEditable(1);
-                    knowledgeDocumentIdList.add(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-                }
-                List<Long> collectedKnowledgeDocumentIdList = knowledgeDocumentMapper.getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(UserContext.get().getUserUuid(true), knowledgeDocumentIdList);
-                for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
-                    if(collectedKnowledgeDocumentIdList.contains(knowledgeDocumentVersionVo.getKnowledgeDocumentId())) {
-                        knowledgeDocumentVersionVo.setIsCollect(1);
-                    }
                 }
                 resultObj.put("tbodyList", knowledgeDocumentVersionList);
             }

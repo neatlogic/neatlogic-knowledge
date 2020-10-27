@@ -214,7 +214,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                     knowledgeDocumentVersionVo.setLcuName(currentUserVo.getUserName());
                     knowledgeDocumentVersionVo.setLcuInfo(currentUserVo.getUserInfo());
                     knowledgeDocumentVersionVo.setIsDeletable(1);
-                    knowledgeDocumentVersionVo.setIsEditable(1);
+                    knowledgeDocumentVersionVo.setIsEditable(knowledgeDocumentService.isEditable(knowledgeDocumentVersionVo));
                 }
                 resultObj.put("tbodyList", knowledgeDocumentVersionList);
             }

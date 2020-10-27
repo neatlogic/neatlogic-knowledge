@@ -3,13 +3,13 @@ package codedriver.module.knowledge.api.document;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.util.PageUtil;
@@ -21,6 +21,8 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.util.FreemarkerUtil;
+import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
@@ -83,11 +85,28 @@ public class KnowledgeDocumentAuditListApi extends PrivateApiComponentBase {
             resultObj.put("rowNum", rowNum);
         }
         if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
-            UserVo currentUserVo = userMapper.getUserBaseInfoByUuid(UserContext.get().getUserUuid(true));
             List<KnowledgeDocumentAuditVo> knowledgeDocumentAuditList = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditListByKnowledgeDocumentId(searchVo);
-            for(KnowledgeDocumentAuditVo knowledgeDocumentVersionVo : knowledgeDocumentAuditList) {
-                knowledgeDocumentVersionVo.setLcuName(currentUserVo.getUserName());
-                knowledgeDocumentVersionVo.setLcuInfo(currentUserVo.getUserInfo());
+            for(KnowledgeDocumentAuditVo knowledgeDocumentAuditVo : knowledgeDocumentAuditList) {
+                if(StringUtils.isNotBlank(knowledgeDocumentAuditVo.getFcu())) {
+                    UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentAuditVo.getFcu());
+                    knowledgeDocumentAuditVo.setFcuName(userVo.getUserName());
+                    knowledgeDocumentAuditVo.setFcuInfo(userVo.getUserInfo());                    
+                }
+                String title = KnowledgeDocumentOperate.getTitle(knowledgeDocumentAuditVo.getOperate());
+                if(StringUtils.isNotBlank(knowledgeDocumentAuditVo.getConfigHash())) {
+                    String configStr = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditConfigStringByHash(knowledgeDocumentAuditVo.getConfigHash());
+                    if(StringUtils.isNotBlank(configStr)) {
+                        JSONObject config = JSON.parseObject(configStr);
+                        String content = config.getString("content");
+                        if(StringUtils.isNotBlank(content)) {
+                            knowledgeDocumentAuditVo.setContent(content);
+                        }                       
+                        if(KnowledgeDocumentOperate.isNeedReplaceParam(knowledgeDocumentAuditVo.getOperate())) {
+                            title = FreemarkerUtil.transform(config, title);
+                        }
+                    }
+                }
+                knowledgeDocumentAuditVo.setTitle(title);
             }
             resultObj.put("list", knowledgeDocumentAuditList);
         }

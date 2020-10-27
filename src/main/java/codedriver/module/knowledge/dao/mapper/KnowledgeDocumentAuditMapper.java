@@ -10,6 +10,8 @@ public interface KnowledgeDocumentAuditMapper {
     public List<KnowledgeDocumentAuditVo> getKnowledgeDocumentAuditListByKnowledgeDocumentId(KnowledgeDocumentAuditVo knowledgeDocumentAuditVo);
 
     public int getKnowledgeDocumentAuditCountByKnowledgeDocumentId(KnowledgeDocumentAuditVo searchVo);
+
+    public String getKnowledgeDocumentAuditConfigStringByHash(String hash);
     
     public int insertKnowledgeDocumentAudit(KnowledgeDocumentAuditVo knowledgeDocumentAuditVo);
     

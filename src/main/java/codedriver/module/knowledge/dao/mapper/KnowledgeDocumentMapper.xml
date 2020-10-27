@@ -531,6 +531,7 @@
 	UPDATE `knowledge_document` 
 	SET 
 	`knowledge_document_version_id` = #{knowledgeDocumentVersionId}, 
+	`knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid}, 
 	`version` = #{version} 
 	WHERE `id` = #{id}
 	</update>

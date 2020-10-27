@@ -1,17 +1,19 @@
 package codedriver.module.knowledge.constvalue;
 
 public enum KnowledgeDocumentOperate {
-    SUBMIT("submit", "提交", "提交了审核"),
-    PASS("pass", "通过", "通过了审核"),
-    REJECT("reject", "拒绝", "退回了审核"),
-    SWITCHVERSION("switchversion", "切换版本", "切换【${oldVersion}】至【${newVersion}】");
+    SUBMIT("submit", "提交", "提交了审核", false),
+    PASS("pass", "通过", "通过了审核", false),
+    REJECT("reject", "拒绝", "退回了审核", false),
+    SWITCHVERSION("switchversion", "切换版本", "切换【${DATA.oldVersion}】至【${DATA.newVersion}】", false);
     private String value;
     private String text;
     private String title;
-    private KnowledgeDocumentOperate(String value, String text, String title) {
+    private boolean needReplaceParam;
+    private KnowledgeDocumentOperate(String value, String text, String title, boolean needReplaceParam) {
         this.value = value;
         this.text = text;
         this.title = title;
+        this.needReplaceParam = needReplaceParam;
     }
     public String getValue() {
         return value;
@@ -21,5 +23,26 @@ public enum KnowledgeDocumentOperate {
     }
     public String getTitle() {
         return title;
+    }
+    public boolean isNeedReplaceParam() {
+        return needReplaceParam;
+    }
+    
+    public static boolean isNeedReplaceParam(String _value) {
+        for(KnowledgeDocumentOperate operate : values()) {
+          if(operate.value.equals(_value)) {
+              return operate.needReplaceParam;
+          }
+        }
+        return false;
+    }
+    
+    public static String getTitle(String _value) {
+        for(KnowledgeDocumentOperate operate : values()) {
+          if(operate.value.equals(_value)) {
+              return operate.title;
+          }
+        }
+        return "";
     }
 }

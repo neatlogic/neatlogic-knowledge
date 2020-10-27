@@ -2,6 +2,7 @@ package codedriver.module.knowledge.api.document;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +18,10 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dto.KnowledgeDocumentAuditConfigVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftReviewedException;
@@ -31,6 +35,9 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
+    
+    @Autowired
+    private KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
 
     @Override
     public String getToken() {
@@ -93,9 +100,23 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
             knowledgeDocumentMapper.updateKnowledgeDocumentVersionStatusByKnowledgeDocumentIdAndVersionAndStatus(documentVo.getId(), knowledgeDocumentVersionVo.getVersion(), KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
             documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             documentVo.setVersion(updateStatusVo.getVersion());
+            documentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
             knowledgeDocumentMapper.updateKnowledgeDocumentById(documentVo);
         }
-        
+
+        KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();
+        knowledgeDocumentAuditVo.setKnowledgeDocumentId(documentVo.getId());
+        knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
+        knowledgeDocumentAuditVo.setOperate(action);
+        String content = jsonObj.getString("content");
+        if(StringUtils.isNotEmpty(content)) {
+            JSONObject config = new JSONObject();
+            config.put("content", content);
+            KnowledgeDocumentAuditConfigVo knowledgeDocumentAuditConfigVo = new KnowledgeDocumentAuditConfigVo(config.toJSONString());
+            knowledgeDocumentAuditMapper.insertKnowledgeDocumentAuditConfig(knowledgeDocumentAuditConfigVo);
+            knowledgeDocumentAuditVo.setConfigHash(knowledgeDocumentAuditConfigVo.getHash());
+        }
+        knowledgeDocumentAuditMapper.insertKnowledgeDocumentAudit(knowledgeDocumentAuditVo);
         return null;
     }
 

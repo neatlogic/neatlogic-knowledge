@@ -69,7 +69,8 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private String content;
     @EntityField(name = "路径", type = ApiParamType.JSONARRAY)
     private List<String> path = new ArrayList<>();
-    
+    @EntityField(name = "是否是当前版本", type = ApiParamType.INTEGER)
+    private Integer isCurrentVersion;
     @JSONField(serialize=false)
     private transient Integer isDelete;
     @JSONField(serialize=false)
@@ -225,6 +226,12 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     }
     public void setPath(List<String> path) {
         this.path = path;
+    }
+    public Integer getIsCurrentVersion() {
+        return isCurrentVersion;
+    }
+    public void setIsCurrentVersion(Integer isCurrentVersion) {
+        this.isCurrentVersion = isCurrentVersion;
     }
     
 }

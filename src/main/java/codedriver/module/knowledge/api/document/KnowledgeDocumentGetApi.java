@@ -11,6 +11,8 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.dto.UserVo;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.reminder.core.OperationTypeEnum;
@@ -54,6 +56,9 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
     
     @Autowired
     private KnowledgeCircleMapper knowledgeCircleMapper;
+    
+    @Autowired
+    private UserMapper userMapper;
     
     @Override
     public String getToken() {
@@ -104,6 +109,12 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         }
         knowledgeDocumentVo.setTitle(knowledgeDocumentVersionVo.getTitle());
         knowledgeDocumentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
+        knowledgeDocumentVo.setLcu(knowledgeDocumentVersionVo.getLcu());
+        UserVo lcuUserVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
+        if(lcuUserVo != null) {
+            knowledgeDocumentVo.setLcuName(lcuUserVo.getUserName());
+            knowledgeDocumentVo.setLcuInfo(lcuUserVo.getUserInfo());
+        }
         List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentVo.setLineList(lineList);
         List<Long> fileIdList = knowledgeDocumentMapper.getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentId, knowledgeDocumentVersionId));

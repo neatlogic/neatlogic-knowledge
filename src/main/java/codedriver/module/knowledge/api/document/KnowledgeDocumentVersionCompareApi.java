@@ -166,7 +166,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
             lineVo.setContent(line.getContent());
             cloneVo.getLineList().add(lineVo);
         }
-        for(FileVo file : cloneVo.getFileList()) {
+        for(FileVo file : source.getFileList()) {
             FileVo fileVo = new FileVo();
             fileVo.setId(file.getId());
             fileVo.setName(file.getName());
@@ -178,9 +178,9 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
             fileVo.setContentType(file.getContentType());
             cloneVo.getFileList().add(fileVo);
         }
-        for(String tag : cloneVo.getTagList()) {
-            cloneVo.getTagList().add(tag);
-        }
+
+        cloneVo.getTagList().addAll(source.getTagList());
+        cloneVo.getPath().addAll(source.getPath());
         return cloneVo;
     }
 

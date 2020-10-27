@@ -25,12 +25,14 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.UuidUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineConfigVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineContentVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.dto.KnowledgeTagVo;
@@ -40,6 +42,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedCann
 import codedriver.module.knowledge.exception.KnowledgeDocumentHasBeenDeletedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentTypeNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -48,6 +51,8 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
+    @Autowired
+    private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
     @Autowired
     private KnowledgeTagMapper knowledgeTagMapper;
 
@@ -69,7 +74,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
     @Input({
         @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
         @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, isRequired = true, desc = "类型id"),
-        @Param(name = "knowledgeCircleId", type = ApiParamType.LONG, isRequired = true, desc = "知识圈id"),
+        //@Param(name = "knowledgeCircleId", type = ApiParamType.LONG, isRequired = true, desc = "知识圈id"),
         @Param(name = "title", type = ApiParamType.STRING, isRequired = true, minLength = 1, desc = "标题"),
         @Param(name = "lineList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "行数据列表"),
         @Param(name = "fileIdList", type = ApiParamType.JSONARRAY, desc = "附件id列表"),
@@ -84,6 +89,11 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
         KnowledgeDocumentVo documentVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
+        KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMapper.getTypeByUuid(documentVo.getKnowledgeDocumentTypeUuid());
+        if(knowledgeDocumentTypeVo == null) {
+            throw new KnowledgeDocumentTypeNotFoundException(documentVo.getKnowledgeDocumentTypeUuid());
+        }
+        documentVo.setKnowledgeCircleId(knowledgeDocumentTypeVo.getKnowledgeCircleId());
         documentVo.setId(null);
         Long documentId = null;
         Long drafrVersionId = null;

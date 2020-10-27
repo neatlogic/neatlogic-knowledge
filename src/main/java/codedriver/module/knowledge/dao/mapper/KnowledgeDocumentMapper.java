@@ -80,9 +80,9 @@ public interface KnowledgeDocumentMapper {
 
     public int checkIfTheVersionIsTheCurrentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 
-    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionMyFavoritesList(KnowledgeDocumentCollectVo knowledgeDocumentCollectVo);
+    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionMyCollectList(KnowledgeDocumentCollectVo knowledgeDocumentCollectVo);
 
-    public int getKnowledgeDocumentVersionMyFavoritesCount(KnowledgeDocumentCollectVo knowledgeDocumentCollectVo);
+    public int getKnowledgeDocumentVersionMyCollectCount(KnowledgeDocumentCollectVo knowledgeDocumentCollectVo);
 
     public List<Long> getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(@Param("userUuid") String userUuid, @Param("knowledgeDocumentIdList") List<Long> knowledgeDocumentIdList);
 

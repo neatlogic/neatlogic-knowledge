@@ -162,7 +162,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             searchVo.setUserUuid(UserContext.get().getUserUuid(true));
             int pageCount = 0;
             if(searchVo.getNeedPage()) {
-                int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyFavoritesCount(searchVo);
+                int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyCollectCount(searchVo);
                 pageCount = PageUtil.getPageCount(rowNum, searchVo.getPageSize());
                 resultObj.put("currentPage", searchVo.getCurrentPage());
                 resultObj.put("pageSize", searchVo.getPageSize());
@@ -170,7 +170,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                 resultObj.put("rowNum", rowNum);
             }
             if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
-                List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyFavoritesList(searchVo);
+                List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyCollectList(searchVo);
                 for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
                     if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getFcu())) {
                         UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getFcu());

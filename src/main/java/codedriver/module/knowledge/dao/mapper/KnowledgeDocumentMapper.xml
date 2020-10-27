@@ -317,7 +317,7 @@
 	SELECT COUNT(1) FROM `knowledge_document` WHERE `id` = #{knowledgeDocumentId} AND `knowledge_document_version_id` = #{id}
 	</select>
 	
-	<select id="getKnowledgeDocumentVersionMyFavoritesList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
+	<select id="getKnowledgeDocumentVersionMyCollectList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 	SELECT 
 	  c.`id`,
 	  c.`title`,
@@ -345,7 +345,7 @@
 	</if>
 	</select>
 	
-	<select id="getKnowledgeDocumentVersionMyFavoritesCount" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo" resultType="int">
+	<select id="getKnowledgeDocumentVersionMyCollectCount" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo" resultType="int">
 	SELECT 
 	  COUNT(1)
 	FROM `knowledge_document_collect` a

@@ -243,7 +243,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
         @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页条目"),
         @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
         @Param(name = "knowledgeType", type = ApiParamType.ENUM, rule = "all,waitingforreview,share,favorites,draft",isRequired = true, desc = "知识类型"),
-        @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc = "类型id")// minLength = 32, maxLength = 32,
+        @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, minLength = 32, maxLength = 32, desc = "类型id")
     })
     @Output({
         @Param(explode = BasePageVo.class),

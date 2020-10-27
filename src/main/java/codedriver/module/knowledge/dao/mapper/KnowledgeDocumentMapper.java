@@ -84,6 +84,8 @@ public interface KnowledgeDocumentMapper {
 
     public int getKnowledgeDocumentVersionMyFavoritesCount(KnowledgeDocumentCollectVo knowledgeDocumentCollectVo);
 
+    public List<Long> getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(@Param("userUuid") String userUuid, @Param("knowledgeDocumentIdList") List<Long> knowledgeDocumentIdList);
+
     @ESSearch
     public int insertKnowledgeDocument(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
 

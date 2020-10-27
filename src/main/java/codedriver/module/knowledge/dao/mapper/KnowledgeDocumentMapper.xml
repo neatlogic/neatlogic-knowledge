@@ -357,6 +357,17 @@
 	</if>
 	</select>
 	
+	<select id="getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList" resultType="java.lang.Long">
+	SELECT 
+	  `knowledge_document_id`
+	FROM `knowledge_document_collect` 
+	WHERE `user_uuid` = #{userUuid}
+	AND `knowledge_document_id` IN 
+	<foreach collection="knowledgeDocumentIdList" item="knowledgeDocumentId" open="(" separator="," close=")">
+	#{knowledgeDocumentId}
+	</foreach>
+	</select>
+	
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	INSERT INTO `knowledge_document` (
 	  `id`,

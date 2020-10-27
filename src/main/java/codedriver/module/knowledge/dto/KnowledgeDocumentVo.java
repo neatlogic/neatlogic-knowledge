@@ -74,6 +74,14 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private transient Integer isDelete;
     @JSONField(serialize=false)
     private transient boolean isAutoGenerateId = true;
+    @JSONField(serialize=false)
+    private transient String type;
+    public String getType() {
+        return type;
+    }
+    public void setType(String type) {
+        this.type = type;
+    }
     public boolean isAutoGenerateId() {
         return isAutoGenerateId;
     }

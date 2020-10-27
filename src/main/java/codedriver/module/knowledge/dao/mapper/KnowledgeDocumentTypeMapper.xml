@@ -49,6 +49,9 @@
 		<if test="parentUuid != null">
 			and a.`parent_uuid` = #{parentUuid}
 		</if>
+		<if test="keyword != null and keyword != ''">
+			and a.`name` LIKE CONCAT('%', #{keyword},'%')
+		</if>
 		ORDER BY `lft` ASC
 	</select>
 
@@ -59,6 +62,7 @@
 		a.`parent_uuid` AS parentUuid,
 		a.`lft`,
 		a.`rht`,
+		a.`knowledge_circle_id` as knowledgeCircleId,
 		(SELECT COUNT(1) FROM `knowledge_document_type` WHERE `parent_uuid` = a.`uuid`) as `childCount`,
 		(SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_document_type_uuid` = a.`uuid`) as `documentCount`
 		FROM `knowledge_document_type` a
@@ -85,6 +89,32 @@
 	  `sort` 
 	FROM `knowledge_document_type` 
 	WHERE `uuid` = #{value}
+	</select>
+
+	<select id="getAncestorsAndSelfByLftRht" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo" useCache="false">
+		SELECT
+		a.`uuid`,
+		a.`name`,
+		a.`parent_uuid` AS parentUuid,
+		a.`lft`,
+		a.`rht`,
+		a.`knowledge_circle_id` as knowledgeCircleId
+		FROM `knowledge_document_type` a
+		WHERE a.`lft` &lt;= #{lft} AND a.`rht` &gt;= #{rht} AND a.`knowledge_circle_id` = #{circleId}
+		ORDER BY `lft` ASC
+	</select>
+
+	<select id="getTypeChildCountListByUuidList" parameterType="java.util.List" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo" useCache="false">
+		SELECT
+		a.`uuid`,
+		COUNT(DISTINCT b.`uuid`) AS childCount
+		FROM `knowledge_document_type` a
+		LEFT JOIN `knowledge_document_type` b ON b.`parent_uuid` = a.`uuid`
+		WHERE a.`uuid` IN
+		<foreach collection="list" item="uuid" open="(" close=")" separator=",">
+			#{uuid}
+		</foreach>
+		GROUP BY a.`uuid`
 	</select>
 	
 	<update id="updateTypeLeftRightCode">

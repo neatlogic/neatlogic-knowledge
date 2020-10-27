@@ -21,6 +21,10 @@
 	SELECT COUNT(1) FROM `knowledge_document_audit` WHERE `knowledge_document_id` = #{knowledgeDocumentId}
 	</select>
 	
+	<select id="getKnowledgeDocumentAuditConfigStringByHash" parameterType="java.lang.String" resultType="java.lang.String">
+	SELECT `config` FROM `knowledge_document_audit_config` WHERE `hash` = #{value}
+	</select>
+	
 	<insert id="insertKnowledgeDocumentAudit" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo">
 	INSERT INTO `knowledge_document_audit` (
 	  `knowledge_document_id`,

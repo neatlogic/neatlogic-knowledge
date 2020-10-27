@@ -14,8 +14,12 @@ import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dto.KnowledgeDocumentAuditConfigVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotReviewerException;
@@ -29,6 +33,9 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
+    
+    @Autowired
+    private KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
 
     @Override
     public String getToken() {
@@ -71,14 +78,27 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
+        int oldVersion = knowledgeDocumentVo.getVersion();
         int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId());
         if(isReviewable > 0) {
             knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             knowledgeDocumentVo.setVersion(knowledgeDocumentVersionVo.getVersion());
+            knowledgeDocumentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
             knowledgeDocumentMapper.updateKnowledgeDocumentById(knowledgeDocumentVo);
+            
+            KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();
+            knowledgeDocumentAuditVo.setKnowledgeDocumentId(knowledgeDocumentVo.getId());
+            knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
+            knowledgeDocumentAuditVo.setOperate(KnowledgeDocumentOperate.SWITCHVERSION.getValue());
+            JSONObject config = new JSONObject();
+            config.put("oldVersion", oldVersion);
+            config.put("newVersion", knowledgeDocumentVersionVo.getVersion());
+            KnowledgeDocumentAuditConfigVo knowledgeDocumentAuditConfigVo = new KnowledgeDocumentAuditConfigVo(config.toJSONString());
+            knowledgeDocumentAuditMapper.insertKnowledgeDocumentAuditConfig(knowledgeDocumentAuditConfigVo);
+            knowledgeDocumentAuditVo.setConfigHash(knowledgeDocumentAuditConfigVo.getHash());
+            knowledgeDocumentAuditMapper.insertKnowledgeDocumentAudit(knowledgeDocumentAuditVo);
             return null;
         }
-
         throw new KnowledgeDocumentCurrentUserNotReviewerException();
     }
 

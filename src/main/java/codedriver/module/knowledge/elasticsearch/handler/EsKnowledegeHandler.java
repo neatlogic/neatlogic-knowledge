@@ -1,6 +1,9 @@
 package codedriver.module.knowledge.elasticsearch.handler;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +21,24 @@ import codedriver.framework.elasticsearch.core.ElasticSearchHandlerBase;
 import codedriver.framework.util.HtmlUtil;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
 
 @Service
 public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocumentVo, JSONArray> {
     Logger logger = LoggerFactory.getLogger(EsKnowledegeHandler.class);
+    
+    private Map<String, Function<String, String>> map = new HashMap<>();
 
+    {
+        map.put("waitingforreview", sql -> getMyWaitingForReviewSql());
+        map.put("share", sql -> getMyShareSql());
+        map.put("collect", sql -> getMyCollectSql());
+        map.put("draft", sql -> getMyDraftSql());
+    }
+    
+    
     @Autowired
     KnowledgeDocumentMapper knowledgeDocumentMapper;
    
@@ -46,13 +60,13 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
         
         // TODO 获取附件内容 
         
-        // TODO 获取知识标签
         
+        List<Long> tagIdList = knowledgeDocumentMapper.getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(documentVo.getId(),documentVo.getKnowledgeDocumentVersionId()));
+        esObject.put("taglist", tagIdList);
         esObject.put("versionid", documentVo.getVersion());
         esObject.put("typeuuid", documentVo.getKnowledgeDocumentTypeUuid());
         esObject.put("circleid", documentVo.getKnowledgeCircleId());
         esObject.put("title", documentVo.getTitle());
-        //esObject.put("contentincludehtml", contentsb.toString());
         esObject.put("content", HtmlUtil.removeHtml(contentsb.toString(), null));
         esObject.put("fcu", documentVo.getFcu());
         esObject.put("fcd", documentVo.getFcd());
@@ -92,5 +106,31 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
         return dataArray;
     }
     
-  
+    /**
+     * 
+    * @Author 89770
+    * @Time 2020年10月27日  
+    * @Description: TODO(用一句话描述该文件做什么)  
+    * @Param 
+    * @return
+     */
+    private String getMyDraftSql() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    private String getMyCollectSql() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    private String getMyShareSql() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    private String getMyWaitingForReviewSql() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

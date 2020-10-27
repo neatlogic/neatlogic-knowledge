@@ -51,7 +51,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             searchVo.setStatusList(statusList);
             return knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionCount(searchVo);
         });
-        map.put(KnowledgeType.FAVORITES, () -> {
+        map.put(KnowledgeType.COLLECT, () -> {
             //TODO linbq后面补做
             return 0;
         });

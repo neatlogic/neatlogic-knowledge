@@ -154,7 +154,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             return resultObj;
         });
         
-        map.put(KnowledgeType.FAVORITES.getValue(), (jsonObj) -> {
+        map.put(KnowledgeType.COLLECT.getValue(), (jsonObj) -> {
             JSONObject resultObj = new JSONObject();
             resultObj.put("theadList", getMyFavoritesTheadList());
             resultObj.put("tbodyList", new ArrayList<>());

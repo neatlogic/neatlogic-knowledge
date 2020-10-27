@@ -38,6 +38,9 @@ public class KnowledgeDocumentTypeVo {
 
 	private List<KnowledgeDocumentTypeVo> children = new ArrayList<>();
 
+	@JSONField(serialize = false)
+	private transient String keyword;
+
 	public KnowledgeDocumentTypeVo() {}
 
 	public String getUuid() {
@@ -127,5 +130,13 @@ public class KnowledgeDocumentTypeVo {
 
 	public void setChildren(List<KnowledgeDocumentTypeVo> children) {
 		this.children = children;
+	}
+
+	public String getKeyword() {
+		return keyword;
+	}
+
+	public void setKeyword(String keyword) {
+		this.keyword = keyword;
 	}
 }

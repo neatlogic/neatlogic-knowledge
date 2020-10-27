@@ -50,6 +50,8 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     private Integer isEditable;
     @EntityField(name = "是否可删除", type = ApiParamType.INTEGER)
     private Integer isDeletable;
+    @EntityField(name = "是否收藏", type = ApiParamType.INTEGER)
+    private int isCollect;
     @JSONField(serialize=false)
     private transient boolean isAutoGenerateId = true;
     @JSONField(serialize=false)
@@ -174,5 +176,11 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     }
     public void setIsDeletable(Integer isDeletable) {
         this.isDeletable = isDeletable;
+    }
+    public int getIsCollect() {
+        return isCollect;
+    }
+    public void setIsCollect(int isCollect) {
+        this.isCollect = isCollect;
     }
 }

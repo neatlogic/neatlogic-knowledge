@@ -30,7 +30,7 @@ import codedriver.module.knowledge.service.KnowledgeDocumentService;
 
 //@Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class KnowledgeDocumentFavoritesListApi extends PrivateApiComponentBase {
+public class KnowledgeDocumentCollectListApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
@@ -43,7 +43,7 @@ public class KnowledgeDocumentFavoritesListApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "knowledge/document/favorites/list";
+        return "knowledge/document/collect/list";
     }
 
     @Override
@@ -77,7 +77,7 @@ public class KnowledgeDocumentFavoritesListApi extends PrivateApiComponentBase {
         searchVo.setUserUuid(UserContext.get().getUserUuid(true));
         int pageCount = 0;
         if(searchVo.getNeedPage()) {
-            int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyFavoritesCount(searchVo);
+            int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyCollectCount(searchVo);
             pageCount = PageUtil.getPageCount(rowNum, searchVo.getPageSize());
             resultObj.put("currentPage", searchVo.getCurrentPage());
             resultObj.put("pageSize", searchVo.getPageSize());
@@ -85,7 +85,7 @@ public class KnowledgeDocumentFavoritesListApi extends PrivateApiComponentBase {
             resultObj.put("rowNum", rowNum);
         }
         if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
-            List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyFavoritesList(searchVo);
+            List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyCollectList(searchVo);
             for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
                 if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getFcu())) {
                     UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getFcu());

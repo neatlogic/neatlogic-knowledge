@@ -73,13 +73,22 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                 resultObj.put("rowNum", rowNum);
             }
             if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
-                
+                List<Long> knowledgeDocumentIdList = new ArrayList<>();               
                 List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentListByKnowledgeDocumentTypeUuid(searchVo);
                 for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
                     UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
                     if(userVo != null) {
                         knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
                         knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
+                    }
+                    knowledgeDocumentVersionVo.setIsEditable(1);
+                    knowledgeDocumentVersionVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
+                    knowledgeDocumentIdList.add(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+                }
+                List<Long> collectedKnowledgeDocumentIdList = knowledgeDocumentMapper.getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(UserContext.get().getUserUuid(true), knowledgeDocumentIdList);
+                for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
+                    if(collectedKnowledgeDocumentIdList.contains(knowledgeDocumentVersionVo.getKnowledgeDocumentId())) {
+                        knowledgeDocumentVersionVo.setIsCollect(1);
                     }
                 }
                 resultObj.put("tbodyList", knowledgeDocumentVersionList);
@@ -153,7 +162,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             searchVo.setUserUuid(UserContext.get().getUserUuid(true));
             int pageCount = 0;
             if(searchVo.getNeedPage()) {
-                int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyFavoritesCount(searchVo);
+                int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyCollectCount(searchVo);
                 pageCount = PageUtil.getPageCount(rowNum, searchVo.getPageSize());
                 resultObj.put("currentPage", searchVo.getCurrentPage());
                 resultObj.put("pageSize", searchVo.getPageSize());
@@ -161,7 +170,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                 resultObj.put("rowNum", rowNum);
             }
             if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
-                List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyFavoritesList(searchVo);
+                List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyCollectList(searchVo);
                 for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
                     if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getFcu())) {
                         UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getFcu());
@@ -234,7 +243,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
         @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页条目"),
         @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
         @Param(name = "knowledgeType", type = ApiParamType.ENUM, rule = "all,waitingforreview,share,favorites,draft",isRequired = true, desc = "知识类型"),
-        @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, minLength = 32, maxLength = 32, desc = "类型id")
+        @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc = "类型id")// minLength = 32, maxLength = 32,
     })
     @Output({
         @Param(explode = BasePageVo.class),
@@ -251,6 +260,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
     @SuppressWarnings({"serial"})
     private JSONArray getTheadList() {
         JSONArray theadList = new JSONArray();
+        theadList.add(new JSONObject() {{this.put("title", ""); this.put("key", "isCollect");}});
         theadList.add(new JSONObject() {{this.put("title", "标题"); this.put("key", "title");}});
         theadList.add(new JSONObject() {{this.put("title", "提交人"); this.put("key", "lcuName");}});
         theadList.add(new JSONObject() {{this.put("title", "通过审批时间"); this.put("key", "reviewTime");}});

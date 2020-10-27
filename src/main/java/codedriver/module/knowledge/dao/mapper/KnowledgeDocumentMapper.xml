@@ -317,7 +317,7 @@
 	SELECT COUNT(1) FROM `knowledge_document` WHERE `id` = #{knowledgeDocumentId} AND `knowledge_document_version_id` = #{id}
 	</select>
 	
-	<select id="getKnowledgeDocumentVersionMyFavoritesList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
+	<select id="getKnowledgeDocumentVersionMyCollectList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 	SELECT 
 	  c.`id`,
 	  c.`title`,
@@ -345,7 +345,7 @@
 	</if>
 	</select>
 	
-	<select id="getKnowledgeDocumentVersionMyFavoritesCount" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo" resultType="int">
+	<select id="getKnowledgeDocumentVersionMyCollectCount" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo" resultType="int">
 	SELECT 
 	  COUNT(1)
 	FROM `knowledge_document_collect` a
@@ -355,6 +355,17 @@
 	<if test="keyword != null and keyword != ''">
 	AND c.`title` LIKE CONCAT('%', #{keyword}, '%')
 	</if>
+	</select>
+	
+	<select id="getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList" resultType="java.lang.Long">
+	SELECT 
+	  `knowledge_document_id`
+	FROM `knowledge_document_collect` 
+	WHERE `user_uuid` = #{userUuid}
+	AND `knowledge_document_id` IN 
+	<foreach collection="knowledgeDocumentIdList" item="knowledgeDocumentId" open="(" separator="," close=")">
+	#{knowledgeDocumentId}
+	</foreach>
 	</select>
 	
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">

@@ -1,12 +1,10 @@
 package codedriver.module.knowledge.api.document;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.techsure.multiattrsearch.query.QueryResult;
 
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
@@ -18,16 +16,12 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
 @Service
 @OperationType(type = OperationTypeEnum.DELETE)
 public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
 
-    @Autowired
-    private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    
     @Override
     public String getToken() {
         return "knowledge/document/search";

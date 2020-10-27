@@ -199,6 +199,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                 resultObj.put("rowNum", rowNum);
             }
             if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
+                List<Long> knowledgeDocumentIdList = new ArrayList<>();
                 UserVo currentUserVo = userMapper.getUserBaseInfoByUuid(UserContext.get().getUserUuid(true));
                 List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionList(searchVo);
                 for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
@@ -206,6 +207,13 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                     knowledgeDocumentVersionVo.setLcuInfo(currentUserVo.getUserInfo());
                     knowledgeDocumentVersionVo.setIsDeletable(1);
                     knowledgeDocumentVersionVo.setIsEditable(1);
+                    knowledgeDocumentIdList.add(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+                }
+                List<Long> collectedKnowledgeDocumentIdList = knowledgeDocumentMapper.getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(UserContext.get().getUserUuid(true), knowledgeDocumentIdList);
+                for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
+                    if(collectedKnowledgeDocumentIdList.contains(knowledgeDocumentVersionVo.getKnowledgeDocumentId())) {
+                        knowledgeDocumentVersionVo.setIsCollect(1);
+                    }
                 }
                 resultObj.put("tbodyList", knowledgeDocumentVersionList);
             }
@@ -234,7 +242,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
         @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页条目"),
         @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
         @Param(name = "knowledgeType", type = ApiParamType.ENUM, rule = "all,waitingforreview,share,favorites,draft",isRequired = true, desc = "知识类型"),
-        @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, minLength = 32, maxLength = 32, desc = "类型id")
+        @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc = "类型id")// minLength = 32, maxLength = 32,
     })
     @Output({
         @Param(explode = BasePageVo.class),
@@ -251,6 +259,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
     @SuppressWarnings({"serial"})
     private JSONArray getTheadList() {
         JSONArray theadList = new JSONArray();
+        theadList.add(new JSONObject() {{this.put("title", ""); this.put("key", "isCollect");}});
         theadList.add(new JSONObject() {{this.put("title", "标题"); this.put("key", "title");}});
         theadList.add(new JSONObject() {{this.put("title", "提交人"); this.put("key", "lcuName");}});
         theadList.add(new JSONObject() {{this.put("title", "通过审批时间"); this.put("key", "reviewTime");}});

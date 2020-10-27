@@ -7,7 +7,9 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 
 public interface KnowledgeDocumentAuditMapper {
 
-    public List<KnowledgeDocumentAuditVo> getKnowledgeDocumentAuditByKnowledgeDocumentId(KnowledgeDocumentAuditVo knowledgeDocumentAuditVo);
+    public List<KnowledgeDocumentAuditVo> getKnowledgeDocumentAuditListByKnowledgeDocumentId(KnowledgeDocumentAuditVo knowledgeDocumentAuditVo);
+
+    public int getKnowledgeDocumentAuditCountByKnowledgeDocumentId(KnowledgeDocumentAuditVo searchVo);
     
     public int insertKnowledgeDocumentAudit(KnowledgeDocumentAuditVo knowledgeDocumentAuditVo);
     

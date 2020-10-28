@@ -25,6 +25,8 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private String knowledgeDocumentTypeUuid;
     @EntityField(name = "知识圈id", type = ApiParamType.LONG)
     private Long knowledgeCircleId;
+    @EntityField(name = "知识圈名", type = ApiParamType.LONG)
+    private String knowledgeCircleName;
     @EntityField(name = "标题", type = ApiParamType.STRING)
     private String title;
 //    @EntityField(name = "文档大小，单位是字节", type = ApiParamType.INTEGER)
@@ -45,7 +47,7 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
     @EntityField(name = "附件列表", type = ApiParamType.JSONARRAY)
     private List<FileVo> fileList = new ArrayList<>();
-    @EntityField(name = "标签列表", type = ApiParamType.JSONARRAY)
+    @EntityField(name = "标签名列表", type = ApiParamType.JSONARRAY)
     private List<String> tagList = new ArrayList<>();
     @EntityField(name = "是否可编辑", type = ApiParamType.INTEGER)
     private Integer isEditable;
@@ -55,6 +57,8 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private Integer isReviewable;
     private List<Long> fileIdList = new ArrayList<>();
     private List<Long> tagIdList = new ArrayList<>();
+    @EntityField(name = "标签列表", type = ApiParamType.JSONARRAY)
+    private List<KnowledgeTagVo> tagVoList = new ArrayList<>();
     @EntityField(name = "是否收藏", type = ApiParamType.INTEGER)
     private int isCollect;
     @EntityField(name = "是否点赞", type = ApiParamType.INTEGER)
@@ -64,13 +68,15 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     @EntityField(name = "收藏量", type = ApiParamType.INTEGER)
     private int collectCount;
     @EntityField(name = "浏览量", type = ApiParamType.INTEGER)
-    private int pageviews;
+    private int viewCount;
     @EntityField(name = "知识内容", type = ApiParamType.STRING)
     private String content;
     @EntityField(name = "路径", type = ApiParamType.JSONARRAY)
     private List<String> path = new ArrayList<>();
     @EntityField(name = "是否是当前版本", type = ApiParamType.INTEGER)
     private Integer isCurrentVersion;
+    @EntityField(name = "知识文档类型路径", type = ApiParamType.STRING)
+    private String documentTypePath;
     @JSONField(serialize=false)
     private transient Integer isDelete;
     @JSONField(serialize=false)
@@ -209,11 +215,11 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     public void setCollectCount(int collectCount) {
         this.collectCount = collectCount;
     }
-    public int getPageviews() {
-        return pageviews;
+    public int getViewCount() {
+        return viewCount;
     }
-    public void setPageviews(int pageviews) {
-        this.pageviews = pageviews;
+    public void setViewCount(int viewCount) {
+        this.viewCount = viewCount;
     }
     public String getContent() {
         return content;
@@ -233,5 +239,23 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     public void setIsCurrentVersion(Integer isCurrentVersion) {
         this.isCurrentVersion = isCurrentVersion;
     }
-    
+    public String getKnowledgeCircleName() {
+        return knowledgeCircleName;
+    }
+    public void setKnowledgeCircleName(String knowledgeCircleName) {
+        this.knowledgeCircleName = knowledgeCircleName;
+    }
+    public String getDocumentTypePath() {
+        return documentTypePath;
+    }
+    public void setDocumentTypePath(String documentTypePath) {
+        this.documentTypePath = documentTypePath;
+    }
+    public List<KnowledgeTagVo> getTagVoList() {
+        return tagVoList;
+    }
+    public void setTagVoList(List<KnowledgeTagVo> tagVoList) {
+        this.tagVoList = tagVoList;
+    }
+  
 }

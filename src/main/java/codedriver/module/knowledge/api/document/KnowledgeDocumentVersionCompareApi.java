@@ -211,25 +211,25 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
               newLine.setChangeType("update");
               if(StringUtils.length(oldLine.getContent()) > 0 && StringUtils.length(newLine.getContent()) > 0) {
                   if(KnowledgeDocumentLineHandler.P.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H1.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H2.getValue().equals(oldLine.getHandler())) {
-                  List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
-                  List<SegmentRange> newSegmentRangeList = new ArrayList<>();
-                  List<Character> oldCharList = new ArrayList<>();
-                  for(char c : oldLine.getContent().toCharArray()) {
-                      oldCharList.add(c);
-                  }
-                  List<Character> newCharList = new ArrayList<>();
-                  for(char c : newLine.getContent().toCharArray()) {
-                      newCharList.add(c);
-                  }
-                  Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
-                  for(SegmentPair segmentpair : node.getSegmentPairList()) {
-                      oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
-                      newSegmentRangeList.add(segmentpair.getNewSegmentRange());
-                  }
-                  oldLine.setContent(LCSUtil.wrapChangePlace(oldLine.getContent(), oldSegmentRangeList, "<span class='delete'>", "</span>"));
-                  oldResultList.add(oldLine);
-                  newLine.setContent(LCSUtil.wrapChangePlace(newLine.getContent(), newSegmentRangeList, "<span class='insert'>", "</span>"));
-                  newResultList.add(newLine);
+                      List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
+                      List<SegmentRange> newSegmentRangeList = new ArrayList<>();
+                      List<Character> oldCharList = new ArrayList<>();
+                      for(char c : oldLine.getContent().toCharArray()) {
+                          oldCharList.add(c);
+                      }
+                      List<Character> newCharList = new ArrayList<>();
+                      for(char c : newLine.getContent().toCharArray()) {
+                          newCharList.add(c);
+                      }
+                      Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
+                      for(SegmentPair segmentpair : node.getSegmentPairList()) {
+                          oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
+                          newSegmentRangeList.add(segmentpair.getNewSegmentRange());
+                      }
+                      oldLine.setContent(LCSUtil.wrapChangePlace(oldLine.getContent(), oldSegmentRangeList, "<span class='delete'>", "</span>"));
+                      oldResultList.add(oldLine);
+                      newLine.setContent(LCSUtil.wrapChangePlace(newLine.getContent(), newSegmentRangeList, "<span class='insert'>", "</span>"));
+                      newResultList.add(newLine);
                   }
               }else {
                   oldResultList.add(oldLine);

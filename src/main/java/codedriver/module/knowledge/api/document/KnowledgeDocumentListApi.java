@@ -87,6 +87,8 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                 }
                 List<Long> collectedKnowledgeDocumentIdList = knowledgeDocumentMapper.getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(UserContext.get().getUserUuid(true), knowledgeDocumentIdList);
                 for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
+                    knowledgeDocumentVersionVo.setAutoGenerateId(false);
+                    knowledgeDocumentVersionVo.setId(null);
                     if(collectedKnowledgeDocumentIdList.contains(knowledgeDocumentVersionVo.getKnowledgeDocumentId())) {
                         knowledgeDocumentVersionVo.setIsCollect(1);
                     }
@@ -184,6 +186,8 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                     }
                     knowledgeDocumentVersionVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
                     knowledgeDocumentVersionVo.setIsEditable(1);
+                    knowledgeDocumentVersionVo.setAutoGenerateId(false);
+                    knowledgeDocumentVersionVo.setId(null);
                 }
                 resultObj.put("tbodyList", knowledgeDocumentVersionList);
             }

@@ -22,6 +22,7 @@ import com.techsure.multiattrsearch.query.QueryResult;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.Expression;
+import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerBase;
 import codedriver.framework.util.HtmlUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
@@ -34,7 +35,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
 
 @Service
-public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocumentVo, JSONArray> {
+public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocumentVo, JSONObject> {
     Logger logger = LoggerFactory.getLogger(EsKnowledegeHandler.class);
     
     private Map<String, Function<String, String>> map = new HashMap<>();
@@ -100,7 +101,8 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
     }
 
     @Override
-    protected JSONArray makeupQueryResult(KnowledgeDocumentVo t, QueryResult result) {
+    protected JSONObject makeupQueryResult(KnowledgeDocumentVo t, QueryResult result) {
+        JSONObject resultJson = new JSONObject();
         List<MultiAttrsObject> resultData = result.getData();
         JSONArray dataArray = new JSONArray();
         for (MultiAttrsObject el : resultData) {
@@ -118,7 +120,12 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
                 dataArray.add(documenmtVo);
             }
         }
-        return dataArray;
+        resultJson.put("dataList", dataArray);
+        resultJson.put("rowNum", result.getTotal());
+        resultJson.put("pageSize", t.getPageSize());
+        resultJson.put("currentPage", t.getCurrentPage());
+        resultJson.put("pageCount", PageUtil.getPageCount(result.getTotal(), t.getPageSize()));
+        return resultJson;
     }
     
     private String getSqlByKnowledgeVersionList(List<KnowledgeDocumentVersionVo>  knowledgeVersionList) {

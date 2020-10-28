@@ -3,7 +3,6 @@ package codedriver.module.knowledge.api.document;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -66,10 +65,8 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         KnowledgeDocumentVo documentVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
-        IElasticSearchHandler<KnowledgeDocumentVo, JSONArray> esHandler = ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE.getValue());
-        JSONArray data = JSONArray.parseArray(esHandler.search(documentVo).toString());
-        
+        IElasticSearchHandler<KnowledgeDocumentVo, JSONObject> esHandler = ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE.getValue());
+        JSONObject data = JSONObject.parseObject(esHandler.search(documentVo).toString());
         return data;
-    }
-
+    }  
 }

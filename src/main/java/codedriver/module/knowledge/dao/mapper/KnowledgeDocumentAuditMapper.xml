@@ -38,7 +38,7 @@
 	    #{knowledgeDocumentId},
 	    #{fcu},
 	    #{operate},
-	    #{fcd},
+	    NOW(),
 	    #{configHash}
 	  )
 	</insert>

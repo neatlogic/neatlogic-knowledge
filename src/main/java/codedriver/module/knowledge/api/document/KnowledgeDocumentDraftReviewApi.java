@@ -17,6 +17,7 @@ import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
@@ -81,6 +82,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftUnsubmittedCannotBeReviewedException();
         }
+        String operate = KnowledgeDocumentOperate.REJECT.getValue();
         String action = jsonObj.getString("action");
         KnowledgeDocumentVersionVo updateStatusVo = new KnowledgeDocumentVersionVo();
         updateStatusVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
@@ -88,6 +90,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         updateStatusVo.setStatus(action);
         updateStatusVo.setReviewer(UserContext.get().getUserUuid(true));
         if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(action)) {
+            operate = KnowledgeDocumentOperate.PASS.getValue();
             Integer maxVersion = knowledgeDocumentMapper.getKnowledgeDocumentVersionMaxVerionByKnowledgeDocumentId(documentVo.getId());
             if(maxVersion == null) {
                 maxVersion = 0;
@@ -107,7 +110,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();
         knowledgeDocumentAuditVo.setKnowledgeDocumentId(documentVo.getId());
         knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
-        knowledgeDocumentAuditVo.setOperate(action);
+        knowledgeDocumentAuditVo.setOperate(operate);
         String content = jsonObj.getString("content");
         if(StringUtils.isNotEmpty(content)) {
             JSONObject config = new JSONObject();

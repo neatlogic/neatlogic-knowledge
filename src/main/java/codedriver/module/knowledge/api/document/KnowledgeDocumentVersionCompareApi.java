@@ -8,51 +8,37 @@ import java.util.PriorityQueue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
+import codedriver.framework.restful.annotation.OperationType;
+import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
+import codedriver.module.knowledge.constvalue.KnowledgeDocumentLineHandler;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
-import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
-import codedriver.module.knowledge.dto.KnowledgeCircleVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 import codedriver.module.knowledge.lcs.LCSUtil;
 import codedriver.module.knowledge.lcs.Node;
 import codedriver.module.knowledge.lcs.SegmentPair;
 import codedriver.module.knowledge.lcs.SegmentRange;
-//@Service
-//@OperationType(type = OperationTypeEnum.SEARCH)
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
+@Service
+@OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
     @Autowired
-    private KnowledgeTagMapper knowledgeTagMapper;
-    @Autowired
-    private FileMapper fileMapper;
-
-    @Autowired
-    private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMappper;
-    
-    @Autowired
-    private KnowledgeCircleMapper knowledgeCircleMapper;
+    private KnowledgeDocumentService knowledgeDocumentService;
     
     @Override
     public String getToken() {
@@ -82,7 +68,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
         Long newVersionId = jsonObj.getLong("newVersionId");
-        KnowledgeDocumentVo newDocumentVo = getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(newVersionId);
+        KnowledgeDocumentVo newDocumentVo = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(newVersionId);
         resultObj.put("newDocumentVo", newDocumentVo);
         Long oldVersionId = jsonObj.getLong("oldVersionId");
         if(oldVersionId == null) {
@@ -93,7 +79,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
             KnowledgeDocumentVo oldDocumentVo = cloneKnowledgeDocumentDetail(newDocumentVo);
             resultObj.put("oldDocumentVo", oldDocumentVo);
         }else {
-            KnowledgeDocumentVo oldDocumentVo = getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(oldVersionId);       
+            KnowledgeDocumentVo oldDocumentVo = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(oldVersionId);       
             resultObj.put("oldDocumentVo", oldDocumentVo);
             compareTitle(oldDocumentVo, newDocumentVo);
             compareLineList(oldDocumentVo, newDocumentVo);           
@@ -128,7 +114,12 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         List<KnowledgeDocumentLineVo> newLineList = newDocumentVo.getLineList();
         List<KnowledgeDocumentLineVo> oldResultList = new ArrayList<>();
         List<KnowledgeDocumentLineVo> newResultList = new ArrayList<>();
-        Node node = LCSUtil.LCSCompare(oldLineList, newLineList, (e1, e2) -> e1.getContent().equals(e2.getContent()));
+        Node node = LCSUtil.LCSCompare(oldLineList, newLineList, (e1, e2) -> {
+            if(e1.getHandler().equals(e2.getHandler())) {
+                return Objects.equals(e1.getContentHash(), e2.getContentHash());
+            }
+            return false;
+        });
         for(SegmentPair segmentPair : node.getSegmentPairList()) {
             regroupLineList(oldLineList, newLineList, oldResultList, newResultList, segmentPair);
         }
@@ -157,7 +148,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
             lineVo.setContent(line.getContent());
             cloneVo.getLineList().add(lineVo);
         }
-        for(FileVo file : cloneVo.getFileList()) {
+        for(FileVo file : source.getFileList()) {
             FileVo fileVo = new FileVo();
             fileVo.setId(file.getId());
             fileVo.setName(file.getName());
@@ -169,51 +160,12 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
             fileVo.setContentType(file.getContentType());
             cloneVo.getFileList().add(fileVo);
         }
-        for(String tag : cloneVo.getTagList()) {
-            cloneVo.getTagList().add(tag);
-        }
+
+        cloneVo.getTagList().addAll(source.getTagList());
+        cloneVo.getPath().addAll(source.getPath());
         return cloneVo;
     }
 
-    private KnowledgeDocumentVo getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId) {
-        KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-        if(knowledgeDocumentVersionVo == null) {
-            throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
-        }
-        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-        if(knowledgeDocumentVo == null) {
-            throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-        }else {
-            knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
-        }
-        knowledgeDocumentVo.setTitle(knowledgeDocumentVersionVo.getTitle());
-        List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
-        knowledgeDocumentVo.setLineList(lineList);
-        List<Long> fileIdList = knowledgeDocumentMapper.getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentVo.getId(), knowledgeDocumentVersionId));
-        if(CollectionUtils.isNotEmpty(fileIdList)) {
-            List<FileVo> fileList = fileMapper.getFileListByIdList(fileIdList);
-            knowledgeDocumentVo.setFileIdList(fileIdList);
-            knowledgeDocumentVo.setFileList(fileList);
-        }
-        List<Long> tagIdList = knowledgeDocumentMapper.getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(knowledgeDocumentVo.getId(), knowledgeDocumentVersionId));
-        if(CollectionUtils.isNotEmpty(tagIdList)) {
-            List<String> tagNameList = knowledgeTagMapper.getKnowledgeTagNameListByIdList(tagIdList);
-            knowledgeDocumentVo.setTagList(tagNameList);
-        }
-        
-        KnowledgeCircleVo knowledgeCircleVo = knowledgeCircleMapper.getKnowledgeCircleById(knowledgeDocumentVo.getKnowledgeCircleId());
-        if(knowledgeCircleVo != null) {
-            knowledgeDocumentVo.getPath().add(knowledgeCircleVo.getName());
-        }
-        KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMappper.getTypeByUuid(knowledgeDocumentVo.getKnowledgeDocumentTypeUuid());
-        if(knowledgeDocumentTypeVo != null) {
-            List<String> typeNameList = knowledgeDocumentTypeMappper.getAncestorsAndSelfNameByLftRht(knowledgeDocumentTypeVo.getLft(), knowledgeDocumentTypeVo.getRht(), knowledgeDocumentTypeVo.getKnowledgeCircleId());
-            if(CollectionUtils.isNotEmpty(typeNameList)) {
-                knowledgeDocumentVo.getPath().addAll(typeNameList);
-            }
-        }
-        return knowledgeDocumentVo;
-    }
     /**
      * 
     * @Time:2020年10月22日
@@ -258,6 +210,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
               oldLine.setChangeType("delete");
               newLine.setChangeType("insert");
               if(StringUtils.length(oldLine.getContent()) > 0 && StringUtils.length(newLine.getContent()) > 0) {
+                  if(KnowledgeDocumentLineHandler.P.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H1.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H2.getValue().equals(oldLine.getHandler())) {
                   List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
                   List<SegmentRange> newSegmentRangeList = new ArrayList<>();
                   List<Character> oldCharList = new ArrayList<>();
@@ -277,6 +230,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                   oldResultList.add(oldLine);
                   newLine.setContent(LCSUtil.wrapChangePlace(newLine.getContent(), newSegmentRangeList, "<span class='insert'>", "</span>"));
                   newResultList.add(newLine);
+                  }
               }else {
                   oldResultList.add(oldLine);
                   newResultList.add(newLine);
@@ -306,24 +260,28 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                 Node currentNode = new Node(i, j);
                 KnowledgeDocumentLineVo oldStr = oldList.get(i);
                 KnowledgeDocumentLineVo newStr = newList.get(j);
-                int oldLineContentLength = StringUtils.length(oldStr.getContent());
-                int newLineContentLength = StringUtils.length(newStr.getContent());
-                if(oldLineContentLength == 0 || newLineContentLength == 0) {
-                    currentNode.setTotalMatchLength(0);
-                }else {
-                    List<Character> oldCharList = new ArrayList<>();
-                    for(char c : oldStr.getContent().toCharArray()) {
-                        oldCharList.add(c);
+                int matchPercentage = 0;
+                if(oldStr.getHandler().equals(newStr.getHandler())) {
+                    if(KnowledgeDocumentLineHandler.P.getValue().equals(oldStr.getHandler()) || KnowledgeDocumentLineHandler.H1.getValue().equals(oldStr.getHandler()) || KnowledgeDocumentLineHandler.H2.getValue().equals(oldStr.getHandler())) {
+                        int oldLineContentLength = StringUtils.length(oldStr.getContent());
+                        int newLineContentLength = StringUtils.length(newStr.getContent());
+                        if(oldLineContentLength > 0 && newLineContentLength > 0) {
+                            List<Character> oldCharList = new ArrayList<>();
+                            for(char c : oldStr.getContent().toCharArray()) {
+                                oldCharList.add(c);
+                            }
+                            List<Character> newCharList = new ArrayList<>();
+                            for(char c : newStr.getContent().toCharArray()) {
+                                newCharList.add(c);
+                            }
+                            Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
+                            int maxLength = Math.max(oldLineContentLength, newLineContentLength);
+                            matchPercentage = (node.getTotalMatchLength() * 1000) / maxLength;
+                            currentNode.setTotalMatchLength(matchPercentage);
+                        }
                     }
-                    List<Character> newCharList = new ArrayList<>();
-                    for(char c : newStr.getContent().toCharArray()) {
-                        newCharList.add(c);
-                    }
-                    Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
-                    int maxLength = Math.max(oldLineContentLength, newLineContentLength);
-                    int matchPercentage = (node.getTotalMatchLength() * 1000) / maxLength;
-                    currentNode.setTotalMatchLength(matchPercentage);
                 }
+                currentNode.setTotalMatchLength(matchPercentage);
                 priorityQueue.add(currentNode);
             }
         }

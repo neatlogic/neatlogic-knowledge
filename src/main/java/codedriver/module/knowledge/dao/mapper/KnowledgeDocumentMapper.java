@@ -47,6 +47,10 @@ public interface KnowledgeDocumentMapper {
     public int getKnowledgeDocumentWaitingForReviewCount(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 
     public List<KnowledgeDocumentHistoricalVersionVo> getKnowledgeDocumentHistorialVersionListByKnowledgeDocumentId(Long knowledgeDocumentId);
+    
+    public int getKnowledgeDocumentHistorialVersionCountByKnowledgeDocumentId(Long knowledgeDocumentId);
+    
+    public List<ValueTextVo> getKnowledgeDocumentHistorialVersionListForSelectByKnowledgeDocumentId(Long knowledgeDocumentId);
 
     public List<ValueTextVo> getKnowledgeDocumentListForInternalLink(BasePageVo basePageVo);
     

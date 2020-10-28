@@ -182,6 +182,24 @@
 	ORDER BY `version` DESC
 	</select>
 	
+	<select id="getKnowledgeDocumentHistorialVersionCountByKnowledgeDocumentId" parameterType="java.lang.Long" resultType="int">
+	SELECT 
+	  COUNT(1)
+	FROM `knowledge_document_version` 
+	WHERE `knowledge_document_id` = #{value} 
+	AND `status` = 'passed'
+	</select>
+	
+	<select id="getKnowledgeDocumentHistorialVersionListForSelectByKnowledgeDocumentId" parameterType="java.lang.Long" resultType="codedriver.framework.common.dto.ValueTextVo">
+	SELECT 
+	  `id` AS `value`,
+	  CONCAT('版本', `version`) AS `text`
+	FROM `knowledge_document_version` 
+	WHERE `knowledge_document_id` = #{value} 
+	AND `status` = 'passed'
+	ORDER BY `version` DESC
+	</select>
+	
 	<select id="getKnowledgeDocumentListForInternalLink" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="codedriver.framework.common.dto.ValueTextVo">
 	SELECT 
 	b.`title` AS text,

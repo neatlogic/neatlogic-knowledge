@@ -55,7 +55,7 @@ public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiCompone
     })
     @Output({
         @Param(explode = BasePageVo.class),
-        @Param(name = "currentVersion", explode = KnowledgeDocumentHistoricalVersionVo.class, desc = "文档历史版本列表"),
+        @Param(name = "currentVersion", explode = KnowledgeDocumentHistoricalVersionVo.class, desc = "文档当前版本"),
         @Param(name = "historicalVersionList", explode = KnowledgeDocumentHistoricalVersionVo[].class, desc = "文档历史版本列表")
     })
     @Description(desc = "查询历史版本列表")

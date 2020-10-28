@@ -166,45 +166,6 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         return cloneVo;
     }
 
-//    private KnowledgeDocumentVo getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId) {
-//        KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-//        if(knowledgeDocumentVersionVo == null) {
-//            throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
-//        }
-//        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-//        if(knowledgeDocumentVo == null) {
-//            throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-//        }else {
-//            knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
-//        }
-//        knowledgeDocumentVo.setTitle(knowledgeDocumentVersionVo.getTitle());
-//        List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
-//        knowledgeDocumentVo.setLineList(lineList);
-//        List<Long> fileIdList = knowledgeDocumentMapper.getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentVo.getId(), knowledgeDocumentVersionId));
-//        if(CollectionUtils.isNotEmpty(fileIdList)) {
-//            List<FileVo> fileList = fileMapper.getFileListByIdList(fileIdList);
-//            knowledgeDocumentVo.setFileIdList(fileIdList);
-//            knowledgeDocumentVo.setFileList(fileList);
-//        }
-//        List<Long> tagIdList = knowledgeDocumentMapper.getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(knowledgeDocumentVo.getId(), knowledgeDocumentVersionId));
-//        if(CollectionUtils.isNotEmpty(tagIdList)) {
-//            List<String> tagNameList = knowledgeTagMapper.getKnowledgeTagNameListByIdList(tagIdList);
-//            knowledgeDocumentVo.setTagList(tagNameList);
-//        }
-//        
-//        KnowledgeCircleVo knowledgeCircleVo = knowledgeCircleMapper.getKnowledgeCircleById(knowledgeDocumentVo.getKnowledgeCircleId());
-//        if(knowledgeCircleVo != null) {
-//            knowledgeDocumentVo.getPath().add(knowledgeCircleVo.getName());
-//        }
-//        KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMappper.getTypeByUuid(knowledgeDocumentVo.getKnowledgeDocumentTypeUuid());
-//        if(knowledgeDocumentTypeVo != null) {
-//            List<String> typeNameList = knowledgeDocumentTypeMappper.getAncestorsAndSelfNameByLftRht(knowledgeDocumentTypeVo.getLft(), knowledgeDocumentTypeVo.getRht(), knowledgeDocumentTypeVo.getKnowledgeCircleId());
-//            if(CollectionUtils.isNotEmpty(typeNameList)) {
-//                knowledgeDocumentVo.getPath().addAll(typeNameList);
-//            }
-//        }
-//        return knowledgeDocumentVo;
-//    }
     /**
      * 
     * @Time:2020年10月22日

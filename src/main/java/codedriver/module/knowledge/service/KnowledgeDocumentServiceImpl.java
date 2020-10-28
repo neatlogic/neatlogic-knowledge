@@ -1,6 +1,7 @@
 package codedriver.module.knowledge.service;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,7 +103,12 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }else {
-            knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+            if(Objects.equals(knowledgeDocumentVersionId, knowledgeDocumentVo.getKnowledgeDocumentVersionId())) {
+                knowledgeDocumentVo.setIsCurrentVersion(1);
+            }else {
+                knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+                knowledgeDocumentVo.setIsCurrentVersion(0);
+            }
         }
         knowledgeDocumentVo.setTitle(knowledgeDocumentVersionVo.getTitle());
         knowledgeDocumentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());

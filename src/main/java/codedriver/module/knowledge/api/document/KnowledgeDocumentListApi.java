@@ -286,7 +286,6 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
     private JSONArray getMyShareTheadList() {
         JSONArray theadList = new JSONArray();
         theadList.add(new JSONObject() {{this.put("title", "标题"); this.put("key", "title");}});
-        theadList.add(new JSONObject() {{this.put("title", "提交人"); this.put("key", "lcuName");}});
         theadList.add(new JSONObject() {{this.put("title", "提交时间"); this.put("key", "lcd");}});
         theadList.add(new JSONObject() {{this.put("title", "审核人"); this.put("key", "reviewer");}});
         theadList.add(new JSONObject() {{this.put("title", "审核时间"); this.put("key", "reviewTime");}});

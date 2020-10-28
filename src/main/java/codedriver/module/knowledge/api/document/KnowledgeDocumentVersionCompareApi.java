@@ -207,8 +207,8 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
           }else if(oldSubList.size() == 1 && newSubList.size() == 1) {
               KnowledgeDocumentLineVo oldLine = oldSubList.get(0);
               KnowledgeDocumentLineVo newLine = newSubList.get(0);
-              oldLine.setChangeType("delete");
-              newLine.setChangeType("insert");
+              oldLine.setChangeType("update");
+              newLine.setChangeType("update");
               if(StringUtils.length(oldLine.getContent()) > 0 && StringUtils.length(newLine.getContent()) > 0) {
                   if(KnowledgeDocumentLineHandler.P.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H1.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H2.getValue().equals(oldLine.getHandler())) {
                   List<SegmentRange> oldSegmentRangeList = new ArrayList<>();

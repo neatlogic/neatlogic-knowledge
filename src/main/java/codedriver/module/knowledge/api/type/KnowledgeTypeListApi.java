@@ -25,6 +25,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.constvalue.KnowledgeType;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeTypeVo;
 
@@ -52,8 +53,9 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             return knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionCount(searchVo);
         });
         map.put(KnowledgeType.COLLECT, () -> {
-            //TODO linbq后面补做
-            return 0;
+            KnowledgeDocumentCollectVo searchVo = new KnowledgeDocumentCollectVo(); 
+            searchVo.setUserUuid(UserContext.get().getUserUuid(true));
+            return knowledgeDocumentMapper.getKnowledgeDocumentVersionMyCollectCount(searchVo);
         });
         map.put(KnowledgeType.DRAFT, () -> {
             KnowledgeDocumentVersionVo searchVo = new KnowledgeDocumentVersionVo();

@@ -59,35 +59,35 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentId = jsonObj.getLong("knowledgeDocumentId");
-        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId);
-        if(knowledgeDocumentVo == null) {
+        KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId);
+        if(documentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
         }
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
         if(knowledgeDocumentVersionId == null) {
-            knowledgeDocumentVersionId = knowledgeDocumentVo.getKnowledgeDocumentVersionId();
+            knowledgeDocumentVersionId = documentVo.getKnowledgeDocumentVersionId();
         }
         
-        KnowledgeDocumentVo documentVo = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         
-        documentVo.setFavorCount(knowledgeDocumentMapper.getDocumentFavorCount(documentVo.getId()));
-        documentVo.setCollectCount(knowledgeDocumentMapper.getDocumentCollectCount(documentVo.getId()));
-        documentVo.setPageviews(knowledgeDocumentMapper.getDocumentViewCount(documentVo.getId()));
-        documentVo.setIsCollect(knowledgeDocumentMapper.checkDocumentHasBeenCollected(documentVo.getId(), UserContext.get().getUserUuid(true)));
-        documentVo.setIsFavor(knowledgeDocumentMapper.checkDocumentHasBeenFavored(documentVo.getId(), UserContext.get().getUserUuid(true)));
+        knowledgeDocumentVo.setFavorCount(knowledgeDocumentMapper.getDocumentFavorCount(knowledgeDocumentVo.getId()));
+        knowledgeDocumentVo.setCollectCount(knowledgeDocumentMapper.getDocumentCollectCount(knowledgeDocumentVo.getId()));
+        knowledgeDocumentVo.setPageviews(knowledgeDocumentMapper.getDocumentViewCount(knowledgeDocumentVo.getId()));
+        knowledgeDocumentVo.setIsCollect(knowledgeDocumentMapper.checkDocumentHasBeenCollected(knowledgeDocumentVo.getId(), UserContext.get().getUserUuid(true)));
+        knowledgeDocumentVo.setIsFavor(knowledgeDocumentMapper.checkDocumentHasBeenFavored(knowledgeDocumentVo.getId(), UserContext.get().getUserUuid(true)));
         
-        documentVo.setIsEditable(knowledgeDocumentService.isEditable(knowledgeDocumentVersionVo));
-        documentVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
-        documentVo.setIsReviewable(knowledgeDocumentService.isReviewable(knowledgeDocumentVersionVo));
+        knowledgeDocumentVo.setIsEditable(knowledgeDocumentService.isEditable(knowledgeDocumentVersionVo));
+        knowledgeDocumentVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
+        knowledgeDocumentVo.setIsReviewable(knowledgeDocumentService.isReviewable(knowledgeDocumentVersionVo));
         
         Integer isReadOnly = jsonObj.getInteger("isReadOnly");
         if(Objects.equals(isReadOnly, 1)) {
-            if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus()) && Objects.equals(knowledgeDocumentVersionId, documentVo.getKnowledgeDocumentVersionId())) {
-                knowledgeDocumentMapper.updateKnowledgeViewCountIncrementOne(documentVo.getId());
+            if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus()) && Objects.equals(knowledgeDocumentVersionId, knowledgeDocumentVo.getKnowledgeDocumentVersionId())) {
+                knowledgeDocumentMapper.updateKnowledgeViewCountIncrementOne(knowledgeDocumentVo.getId());
             }
         }
-        return documentVo;
+        return knowledgeDocumentVo;
     }
 
 }

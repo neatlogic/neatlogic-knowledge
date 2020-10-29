@@ -19,10 +19,13 @@
 	<resultMap id="knowledgeDocumentMap" type="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 		<id column="id" property="id" />
 		<result column="version" property="version" />
+		<result column="knowledgeDocumentVersionId" property="knowledgeDocumentVersionId" />
+		<result column="knowledgeDocumentTypeUuid" property="knowledgeDocumentTypeUuid" />
 		<result column="knowledgeCircleName" property="knowledgeCircleName" />
 		<result column="title" property="title" />
 		<result column="lcd" property="lcd" />
 		<result column="lcu" property="lcu" />
+		<result column="status" property="status" />
 		<result column="lcuName" property="lcuName" />
 		<result column="viewCount" property="viewCount" />
 		<result column="favorCount" property="favorCount" />
@@ -38,10 +41,12 @@
 		SELECT 
 		kd.id,
 		kdv.`version`,
+		kdv.`id` AS knowledgeDocumentVersionId,
 		kc.name AS knowledgeCircleName,
 		kdv.`title`,
 		kdv.`lcd`,
 		kdv.`lcu`,
+		kdv.`status`,
 		(SELECT `user_name` FROM `user` WHERE `uuid` = kdv.`lcu`) AS lcuName,
 		ktg.`id` AS tagId,
 		ktg.`name` AS tagName, 
@@ -52,7 +57,8 @@
 		lft &lt; (SELECT a.lft FROM `knowledge_document_type` a WHERE a.uuid = kdv.knowledge_document_type_uuid) 
 		AND 
 		rht > (SELECT a.rht FROM `knowledge_document_type` a WHERE a.uuid = kdv.knowledge_document_type_uuid)
-		) AS documentTypePath
+		) AS documentTypePath,
+		kdv.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid
 		FROM `knowledge_document` kd
 		LEFT JOIN `knowledge_document_version` kdv ON kd.`id` = kdv.`knowledge_document_id` AND kd.`knowledge_document_version_id` = kdv.`id`
 		LEFT JOIN `knowledge_circle` kc ON kd.`knowledge_circle_id` = kc.`id`

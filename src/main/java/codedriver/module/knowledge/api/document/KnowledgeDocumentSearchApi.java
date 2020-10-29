@@ -45,6 +45,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     })
     @Output({
         @Param(name="dataList[].version", type = ApiParamType.INTEGER, desc="版本号"),
+        @Param(name="dataList[].knowledgeDocumentVersionId", type = ApiParamType.INTEGER, desc="版本号id"),
         @Param(name="dataList[].knowledgeCircleName", type = ApiParamType.STRING, desc="知识圈名称"),
         @Param(name="dataList[].title", type = ApiParamType.STRING, desc="知识标题"),
         @Param(name="dataList[].content", type = ApiParamType.STRING, desc="知识内容"),
@@ -53,9 +54,11 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         @Param(name="dataList[].lcd", type = ApiParamType.STRING, desc="知识创建时间"),
         @Param(name="dataList[].tagList", type = ApiParamType.JSONARRAY, desc="知识标签"),
         @Param(name="dataList[].viewCount", type = ApiParamType.LONG, desc="知识浏览量"),
-        @Param(name="dataList[].favorCount", type = ApiParamType.JSONARRAY, desc="知识点赞量"),
-        @Param(name="dataList[].collectCount", type = ApiParamType.JSONARRAY, desc="知识收藏量"),
-        @Param(name="dataList[].documentTypePath", type = ApiParamType.JSONARRAY, desc="知识圈分类路径"),
+        @Param(name="dataList[].favorCount", type = ApiParamType.LONG, desc="知识点赞量"),
+        @Param(name="dataList[].collectCount", type = ApiParamType.LONG, desc="知识收藏量"),
+        @Param(name="dataList[].documentTypePath", type = ApiParamType.STRING, desc="知识圈分类路径"),
+        @Param(name="dataList[].knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc="知识圈分类uuid"),
+        @Param(name="dataList[].status", type = ApiParamType.STRING, desc="知识当前版本状态"),
         @Param(name="rowNum", type = ApiParamType.INTEGER, desc="总数"),
         @Param(name="pageSize", type = ApiParamType.INTEGER, desc="每页数据条目"),
         @Param(name="currentPage", type = ApiParamType.INTEGER, desc="当前页数"),

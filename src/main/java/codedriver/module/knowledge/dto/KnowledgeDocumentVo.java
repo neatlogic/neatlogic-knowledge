@@ -77,6 +77,8 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private Integer isCurrentVersion;
     @EntityField(name = "知识文档类型路径", type = ApiParamType.STRING)
     private String documentTypePath;
+    @EntityField(name = "当前知识文档版本状态", type = ApiParamType.STRING)
+    private String status;
     @JSONField(serialize=false)
     private transient Integer isDelete;
     @JSONField(serialize=false)
@@ -256,6 +258,12 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     }
     public void setTagVoList(List<KnowledgeTagVo> tagVoList) {
         this.tagVoList = tagVoList;
+    }
+    public String getStatus() {
+        return status;
+    }
+    public void setStatus(String status) {
+        this.status = status;
     }
   
 }

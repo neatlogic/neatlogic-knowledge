@@ -16,6 +16,54 @@
 	WHERE `id` = #{value}
 	</select>
 	
+	<resultMap id="knowledgeDocumentMap" type="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
+		<id column="id" property="id" />
+		<result column="version" property="version" />
+		<result column="knowledgeCircleName" property="knowledgeCircleName" />
+		<result column="title" property="title" />
+		<result column="lcd" property="lcd" />
+		<result column="lcu" property="lcu" />
+		<result column="lcuName" property="lcuName" />
+		<result column="viewCount" property="viewCount" />
+		<result column="favorCount" property="favorCount" />
+		<result column="collectCount" property="collectCount" />
+		<result column="documentTypePath" property="documentTypePath" />
+		<association property="tagVoList" javaType="codedriver.module.knowledge.dto.KnowledgeDocumentTagVo">
+			<result column="tagId" property="id" />
+			<result column="tagName" property="name" />
+		</association>
+	</resultMap>
+	
+	<select id="getKnowledgeDocumentByIdList" parameterType="java.util.List" resultMap="knowledgeDocumentMap">
+		SELECT 
+		kd.id,
+		kdv.`version`,
+		kc.name AS knowledgeCircleName,
+		kdv.`title`,
+		kdv.`lcd`,
+		kdv.`lcu`,
+		(SELECT `user_name` FROM USER WHERE `uuid` = kdv.`lcu`) AS lcuName,
+		ktg.`id` AS tagId,
+		ktg.`name` AS tagName, 
+		(SELECT `count` FROM `knowledge_document_view_count` WHERE knowledge_document_id = kd.`id`) AS viewCount,
+		(SELECT COUNT(1) FROM `knowledge_document_favor` WHERE knowledge_document_id = kd.`id`) AS favorCount,
+		(SELECT COUNT(1) FROM `knowledge_document_collect` WHERE knowledge_document_id = kd.`id`) AS collectCount,
+		(SELECT GROUP_CONCAT( `name`  ORDER BY `lft` SEPARATOR '/')  FROM `knowledge_document_type`  WHERE 
+		lft &lt; (SELECT a.lft FROM `knowledge_document_type` a WHERE a.uuid = kdv.knowledge_document_type_uuid) 
+		AND 
+		rht > (SELECT a.rht FROM `knowledge_document_type` a WHERE a.uuid = kdv.knowledge_document_type_uuid)
+		) AS documentTypePath
+		FROM `knowledge_document` kd
+		LEFT JOIN `knowledge_document_version` kdv ON kd.`id` = kdv.`knowledge_document_id` AND kd.`knowledge_document_version_id` = kdv.`id`
+		LEFT JOIN `knowledge_circle` kc ON kd.`knowledge_circle_id` = kc.`id`
+		LEFT JOIN `knowledge_document_tag` kdt ON kdt.`knowledge_document_id` = kdv.`knowledge_document_id` AND kdt.`knowledge_document_version_id` = kdv.`id`
+		LEFT JOIN `knowledge_tag` ktg ON kdt.`tag_id` = ktg.`id`
+	    where kd.`id` in 
+	    <foreach collection="documentIdlist" item="id" open="(" separator="," close=")">
+	 	#{id}
+	 	</foreach>
+	</select>
+	
 	<select id="getKnowledgeDocumentVersionById" parameterType="java.lang.Long" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 	SELECT 
 	  `id`,

@@ -21,6 +21,8 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 public interface KnowledgeDocumentMapper {
 
     public KnowledgeDocumentVo getKnowledgeDocumentById(Long id);
+    
+    public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdList(@Param("documentIdlist") List<Long> documentIdList);
 
     public KnowledgeDocumentVersionVo getKnowledgeDocumentVersionById(Long id);
     

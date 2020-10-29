@@ -8,13 +8,13 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.techsure.multiattrsearch.MultiAttrsObject;
 import com.techsure.multiattrsearch.query.QueryResult;
@@ -22,6 +22,7 @@ import com.techsure.multiattrsearch.query.QueryResult;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.Expression;
+import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerBase;
 import codedriver.framework.util.HtmlUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
@@ -34,7 +35,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
 
 @Service
-public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocumentVo, JSONArray> {
+public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocumentVo, JSONObject> {
     Logger logger = LoggerFactory.getLogger(EsKnowledegeHandler.class);
     
     private Map<String, Function<String, String>> map = new HashMap<>();
@@ -84,41 +85,69 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
 
     @Override
     public String buildSql(KnowledgeDocumentVo knowledgeDocumentVo) {
-        String titleCondition = String.format(Expression.MATCH.getExpressionEs(), "title",knowledgeDocumentVo.getKeyword());
-        String contentCondition = String.format(Expression.MATCH.getExpressionEs(), "content",knowledgeDocumentVo.getKeyword());
+        String sql = StringUtils.EMPTY;
+        String whereSql = StringUtils.EMPTY;
+        if( StringUtils.isNotBlank(knowledgeDocumentVo.getKeyword())) {
+            String titleCondition = String.format(Expression.MATCH.getExpressionEs(), "title",knowledgeDocumentVo.getKeyword());
+            String contentCondition = String.format(Expression.MATCH.getExpressionEs(), "content",knowledgeDocumentVo.getKeyword());
+            whereSql = String.format("(%s or %s)", titleCondition,contentCondition);
+        }
         //根据type 获取对应where sql
-        String typeSql = StringUtils.EMPTY;
         Function<String, String> result = map.get(knowledgeDocumentVo.getType());
         if (result != null) {
-            typeSql = result.apply("");
+            String typeSql = result.apply("");
+            if(StringUtils.isNotBlank(typeSql)&&StringUtils.isNotBlank(whereSql)) {
+                whereSql = whereSql +" and " + typeSql;
+            }
         }
         //拼接查询sql
-        String sql = String.format("select versionid,typeuuid,circleid,#title#,#content#,fcu,fcd from %s where (%s or %s) %s limit %d,%d ", TenantContext.get().getTenantUuid(),
-           titleCondition,contentCondition,typeSql,knowledgeDocumentVo.getStartNum(),knowledgeDocumentVo.getPageSize());
+        if(StringUtils.isNotBlank(whereSql)) {
+            whereSql = " where " + whereSql;
+        }
+        sql = String.format("select versionid,typeuuid,circleid,#title#,#content#,fcu,fcd from %s %s limit %d,%d ", TenantContext.get().getTenantUuid(),
+            whereSql,knowledgeDocumentVo.getStartNum(),knowledgeDocumentVo.getPageSize());
         return sql;
        
     }
 
     @Override
-    protected JSONArray makeupQueryResult(KnowledgeDocumentVo t, QueryResult result) {
+    protected JSONObject makeupQueryResult(KnowledgeDocumentVo t, QueryResult result) {
+        JSONObject resultJson = new JSONObject();
         List<MultiAttrsObject> resultData = result.getData();
-        JSONArray dataArray = new JSONArray();
+        List<Long> documentIdList = new ArrayList<Long>();
+        Map<String,JSONObject> documentHighlightMap = new HashMap<String,JSONObject>();
         for (MultiAttrsObject el : resultData) {
             JSONObject documentJson = new JSONObject();
             JSONObject highlightData = el.getHighlightData();
             documentJson.put("id", el.getId());
-            KnowledgeDocumentVo documenmtVo = knowledgeDocumentMapper.getKnowledgeDocumentById(Long.valueOf(el.getId()));
-            if(documenmtVo != null) {
-                if(highlightData.containsKey("title.txt")) {
-                    documenmtVo.setTitle(highlightData.getString("title.txt"));
+            documentIdList.add(Long.valueOf(el.getId()));
+            documentHighlightMap.put(el.getId(), highlightData);
+           
+        }
+        //替换 highlight 字段
+        List<KnowledgeDocumentVo> documentList = new ArrayList<KnowledgeDocumentVo>();
+        if(CollectionUtils.isNotEmpty(documentIdList)) {
+            documentList = knowledgeDocumentMapper.getKnowledgeDocumentByIdList(documentIdList);
+            for(KnowledgeDocumentVo documentVo : documentList) {
+                if(documentVo != null) {
+                    JSONObject highlightData = documentHighlightMap.get(documentVo.getId().toString());
+                    if(MapUtils.isNotEmpty(highlightData)) {
+                        if(highlightData.containsKey("title.txt")) {
+                            documentVo.setTitle(highlightData.getString("title.txt"));
+                        }
+                        if(highlightData.containsKey("content.txt")) {
+                            documentVo.setContent( highlightData.getString("content.txt"));
+                        }
+                    }
                 }
-                if(highlightData.containsKey("content.txt")) {
-                    documenmtVo.setContent( highlightData.getString("content.txt"));
-                }
-                dataArray.add(documenmtVo);
             }
         }
-        return dataArray;
+        resultJson.put("dataList", documentList);
+        resultJson.put("rowNum", result.getTotal());
+        resultJson.put("pageSize", t.getPageSize());
+        resultJson.put("currentPage", t.getCurrentPage());
+        resultJson.put("pageCount", PageUtil.getPageCount(result.getTotal(), t.getPageSize()));
+        return resultJson;
     }
     
     private String getSqlByKnowledgeVersionList(List<KnowledgeDocumentVersionVo>  knowledgeVersionList) {
@@ -130,7 +159,7 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
             }
         }
         if(CollectionUtils.isNotEmpty(knowledgeDocumentIdList)) {
-            sql = " and " + String.format(Expression.INCLUDE.getExpressionEs(), "id",String.format(" '%s'" ,String.join("','", knowledgeDocumentIdList)));
+            sql = String.format(Expression.INCLUDE.getExpressionEs(), "id",String.format(" '%s'" ,String.join("','", knowledgeDocumentIdList)));
         }
         return sql;
     }

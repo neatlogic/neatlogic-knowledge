@@ -86,7 +86,14 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         }       
         return resultObj;
     }
-    
+    /**
+     * 
+    * @Time:2020年10月28日
+    * @Description: 对比文档标题 
+    * @param oldDocumentVo
+    * @param newDocumentVo 
+    * @return void
+     */
     private void compareTitle(KnowledgeDocumentVo oldDocumentVo, KnowledgeDocumentVo newDocumentVo) {
         String oldTitle = oldDocumentVo.getTitle();
         String newTitle = newDocumentVo.getTitle();
@@ -108,7 +115,14 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         oldDocumentVo.setTitle(LCSUtil.wrapChangePlace(oldTitle, oldSegmentRangeList, "<span class='delete'>", "</span>"));
         newDocumentVo.setTitle(LCSUtil.wrapChangePlace(newTitle, newSegmentRangeList, "<span class='insert'>", "</span>"));
     }
-    
+    /**
+     * 
+    * @Time:2020年10月28日
+    * @Description: 对比文档每行数据
+    * @param oldDocumentVo
+    * @param newDocumentVo 
+    * @return void
+     */
     private void compareLineList(KnowledgeDocumentVo oldDocumentVo, KnowledgeDocumentVo newDocumentVo) {
         List<KnowledgeDocumentLineVo> oldLineList = oldDocumentVo.getLineList();
         List<KnowledgeDocumentLineVo> newLineList = newDocumentVo.getLineList();
@@ -126,6 +140,13 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         oldDocumentVo.setLineList(oldResultList);
         newDocumentVo.setLineList(newResultList);
     }
+    /**
+     * 
+    * @Time:2020年10月28日
+    * @Description: 复制文档详细信息 
+    * @param source
+    * @return KnowledgeDocumentVo
+     */
     private KnowledgeDocumentVo cloneKnowledgeDocumentDetail(KnowledgeDocumentVo source) {
         KnowledgeDocumentVo cloneVo = new KnowledgeDocumentVo();
         cloneVo.setId(source.getId());
@@ -183,65 +204,89 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
       List<KnowledgeDocumentLineVo> oldSubList = oldDataList.subList(oldSegmentRange.getBeginIndex(), oldSegmentRange.getEndIndex());
       List<KnowledgeDocumentLineVo> newSubList = newDataList.subList(newSegmentRange.getBeginIndex(), newSegmentRange.getEndIndex());
       if(segmentPair.isMatch()) {
+          /** 分段对匹配时，行数据不能做标记，直接添加到重组后的数据列表中 **/
           oldResultList.addAll(oldSubList);
           newResultList.addAll(newSubList);
       }else {
+          /** 分段对不匹配时，分成下列四种情况 **/
           if(CollectionUtils.isEmpty(newSubList)) {
+              /** 删除行 **/
               for(KnowledgeDocumentLineVo lineVo : oldSubList) {
                   lineVo.setChangeType("delete");
                   oldResultList.add(lineVo);
-                  KnowledgeDocumentLineVo fillBlankLine = new KnowledgeDocumentLineVo();
-                  fillBlankLine.setChangeType("fillblank");
-                  fillBlankLine.setHandler(lineVo.getHandler());
-                  newResultList.add(fillBlankLine);
+                  newResultList.add(createFillBlankLine(lineVo));
               }
           }else if(CollectionUtils.isEmpty(oldSubList)) {
+              /** 插入行 **/
               for(KnowledgeDocumentLineVo lineVo :newSubList) {
-                  KnowledgeDocumentLineVo fillBlankLine = new KnowledgeDocumentLineVo();
-                  fillBlankLine.setChangeType("fillblank");
-                  fillBlankLine.setHandler(lineVo.getHandler());
-                  oldResultList.add(fillBlankLine);
+                  oldResultList.add(createFillBlankLine(lineVo));
                   lineVo.setChangeType("insert");
                   newResultList.add(lineVo);
               }
           }else if(oldSubList.size() == 1 && newSubList.size() == 1) {
+              /** 修改一行 **/
               KnowledgeDocumentLineVo oldLine = oldSubList.get(0);
               KnowledgeDocumentLineVo newLine = newSubList.get(0);
-              oldLine.setChangeType("update");
-              newLine.setChangeType("update");
-              if(StringUtils.length(oldLine.getContent()) > 0 && StringUtils.length(newLine.getContent()) > 0) {
-                  if(KnowledgeDocumentLineHandler.P.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H1.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H2.getValue().equals(oldLine.getHandler())) {
-                  List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
-                  List<SegmentRange> newSegmentRangeList = new ArrayList<>();
-                  List<Character> oldCharList = new ArrayList<>();
-                  for(char c : oldLine.getContent().toCharArray()) {
-                      oldCharList.add(c);
-                  }
-                  List<Character> newCharList = new ArrayList<>();
-                  for(char c : newLine.getContent().toCharArray()) {
-                      newCharList.add(c);
-                  }
-                  Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
-                  for(SegmentPair segmentpair : node.getSegmentPairList()) {
-                      oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
-                      newSegmentRangeList.add(segmentpair.getNewSegmentRange());
-                  }
-                  oldLine.setContent(LCSUtil.wrapChangePlace(oldLine.getContent(), oldSegmentRangeList, "<span class='delete'>", "</span>"));
-                  oldResultList.add(oldLine);
-                  newLine.setContent(LCSUtil.wrapChangePlace(newLine.getContent(), newSegmentRangeList, "<span class='insert'>", "</span>"));
-                  newResultList.add(newLine);
+              if(oldLine.getHandler().equals(newLine.getHandler())) {
+                  /** 行组件相同，才是修改行数据 **/
+                  oldLine.setChangeType("update");
+                  newLine.setChangeType("update");
+                  if(StringUtils.length(oldLine.getContent()) > 0 && StringUtils.length(newLine.getContent()) > 0) {
+                      if(KnowledgeDocumentLineHandler.P.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H1.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H2.getValue().equals(oldLine.getHandler())) {
+                          List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
+                          List<SegmentRange> newSegmentRangeList = new ArrayList<>();
+                          List<Character> oldCharList = new ArrayList<>();
+                          for(char c : oldLine.getContent().toCharArray()) {
+                              oldCharList.add(c);
+                          }
+                          List<Character> newCharList = new ArrayList<>();
+                          for(char c : newLine.getContent().toCharArray()) {
+                              newCharList.add(c);
+                          }
+                          Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
+                          for(SegmentPair segmentpair : node.getSegmentPairList()) {
+                              oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
+                              newSegmentRangeList.add(segmentpair.getNewSegmentRange());
+                          }
+                          oldLine.setContent(LCSUtil.wrapChangePlace(oldLine.getContent(), oldSegmentRangeList, "<span class='delete'>", "</span>"));
+                          oldResultList.add(oldLine);
+                          newLine.setContent(LCSUtil.wrapChangePlace(newLine.getContent(), newSegmentRangeList, "<span class='insert'>", "</span>"));
+                          newResultList.add(newLine);
+                      }
+                  }else {
+                      oldResultList.add(oldLine);
+                      newResultList.add(newLine);
                   }
               }else {
-                  oldResultList.add(oldLine);
-                  newResultList.add(newLine);
+                  /** 行组件不相同，说明删除一行，再添加一行，根据行号大小判断加入重组后数据列表顺序 **/
+                  if(oldLine.getLineNumber() <= newLine.getLineNumber()) {
+                      oldLine.setChangeType("delete");
+                      oldResultList.add(oldLine);
+                      newResultList.add(createFillBlankLine(oldLine));
+                  }else {                     
+                      oldResultList.add(createFillBlankLine(newLine));
+                      newLine.setChangeType("insert");
+                      newResultList.add(newLine);
+                  }
               }
+              
           }else {
+              /** 修改多行，多行间需要做最优匹配 **/
               List<SegmentPair> segmentPairList = differenceBestMatch(oldSubList, newSubList);
               for(SegmentPair segmentpair : segmentPairList) {
+                  /** 递归 **/
                   regroupLineList(oldSubList, newSubList, oldResultList, newResultList, segmentpair);
               }
           }
       }
+    }
+    
+    private KnowledgeDocumentLineVo createFillBlankLine(KnowledgeDocumentLineVo line) {
+        KnowledgeDocumentLineVo fillBlankLine = new KnowledgeDocumentLineVo();
+        fillBlankLine.setChangeType("fillblank");
+        fillBlankLine.setHandler(line.getHandler());
+        fillBlankLine.setConfig(line.getConfigStr());
+        return fillBlankLine;
     }
     /**
      * 

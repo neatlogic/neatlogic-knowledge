@@ -70,6 +70,7 @@
 	  `title`,
 	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_document_id` AS knowledgeDocumentId,
+	  `from_version` AS fromVersion,
 	  `version`,
 	  `status`,
 	  `lcu`,
@@ -99,6 +100,7 @@
 	  `title`,
 	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_document_id` AS knowledgeDocumentId,
+	  `from_version` AS fromVersion,
 	  `version`,
 	  `status`,
 	  `lcu`,
@@ -183,6 +185,7 @@
 	  c.`title`,
 	  c.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  c.`knowledge_document_id` AS knowledgeDocumentId,
+	  c.`from_version` AS fromVersion,
 	  c.`version`,
 	  c.`status`,
 	  c.`lcu`,
@@ -220,6 +223,7 @@
 	  `title`,
 	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_document_id` AS knowledgeDocumentId,
+	  `from_version` AS fromVersion,
 	  `version`,
 	  `status`,
 	  `lcu`,
@@ -341,6 +345,7 @@
 	  a.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  a.`knowledge_document_id` AS knowledgeDocumentId,
 	  a.`version`,
+	  a.`from_version` AS fromVersion,
 	  a.`status`,
 	  a.`lcu`,
 	  a.`lcd`,
@@ -389,6 +394,7 @@
 	  c.`title`,
 	  c.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  c.`knowledge_document_id` AS knowledgeDocumentId,
+	  c.`from_version` AS fromVersion,
 	  c.`version`,
 	  c.`status`,
 	  c.`lcu`,
@@ -460,7 +466,7 @@
 	  `title`,
 	  `knowledge_document_type_uuid`,
 	  `knowledge_document_id`,
-	  `version`,
+	  `from_version`,
 	  `status`,
 	  `lcu`,
 	  `lcd`
@@ -471,7 +477,7 @@
 	    #{title},
 	    #{knowledgeDocumentTypeUuid},
 	    #{knowledgeDocumentId},
-	    #{version},
+	    #{fromVersion},
 	    #{status},
 	    #{lcu},
 	    NOW()
@@ -589,7 +595,7 @@
 	UPDATE `knowledge_document_version` 
 	SET `status` = #{newStatus}
 	WHERE `knowledge_document_id` = #{knowledgeDocumentId}
-	AND `version` = #{version}
+	AND `from_version` = #{fromVersion}
 	AND `status` = #{oldStatus}
 	</update>
 	

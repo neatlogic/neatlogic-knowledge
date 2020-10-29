@@ -44,7 +44,7 @@
 	</insert>
 	
 	<insert id="insertKnowledgeDocumentAuditConfig" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditConfigVo">
-	INSERT INTO `knowledge_document_audit_config` (`hash`, `config`) VALUES (#{hash}, #{config})
+	INSERT IGNORE INTO `knowledge_document_audit_config` (`hash`, `config`) VALUES (#{hash}, #{config})
 	</insert>
 	
 </mapper>

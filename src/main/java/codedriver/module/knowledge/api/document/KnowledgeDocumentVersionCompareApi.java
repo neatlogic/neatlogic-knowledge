@@ -289,8 +289,8 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         KnowledgeDocumentLineVo fillBlankLine = new KnowledgeDocumentLineVo();
         fillBlankLine.setChangeType("fillblank");
         fillBlankLine.setHandler(line.getHandler());
-        //fillBlankLine.setConfig(line.getConfigStr());
-        fillBlankLine.setConfig("{}");
+        fillBlankLine.setConfig(line.getConfigStr());
+        fillBlankLine.setContent(line.getContent());
         return fillBlankLine;
     }
     /**

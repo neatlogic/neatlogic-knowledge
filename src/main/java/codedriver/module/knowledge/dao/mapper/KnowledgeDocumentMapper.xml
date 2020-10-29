@@ -42,7 +42,7 @@
 		kdv.`title`,
 		kdv.`lcd`,
 		kdv.`lcu`,
-		(SELECT `user_name` FROM USER WHERE `uuid` = kdv.`lcu`) AS lcuName,
+		(SELECT `user_name` FROM `user` WHERE `uuid` = kdv.`lcu`) AS lcuName,
 		ktg.`id` AS tagId,
 		ktg.`name` AS tagName, 
 		(SELECT `count` FROM `knowledge_document_view_count` WHERE knowledge_document_id = kd.`id`) AS viewCount,

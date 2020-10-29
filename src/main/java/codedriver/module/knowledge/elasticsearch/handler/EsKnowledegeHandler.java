@@ -66,7 +66,7 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
         for(KnowledgeDocumentLineVo line : documentLineList) {
             contentsb.append(line.getContent());
         }
-        
+        KnowledgeDocumentVersionVo  documentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(documentVo.getKnowledgeDocumentVersionId());
         // TODO 获取附件内容 
         
         
@@ -75,7 +75,7 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
         esObject.put("versionid", documentVo.getVersion());
         esObject.put("typeuuid", documentVo.getKnowledgeDocumentTypeUuid());
         esObject.put("circleid", documentVo.getKnowledgeCircleId());
-        esObject.put("title", documentVo.getTitle());
+        esObject.put("title", documentVersionVo.getTitle());
         esObject.put("content", HtmlUtil.removeHtml(contentsb.toString(), null));
         esObject.put("fcu", documentVo.getFcu());
         esObject.put("fcd", documentVo.getFcd());
@@ -133,10 +133,10 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
                     JSONObject highlightData = documentHighlightMap.get(documentVo.getId().toString());
                     if(MapUtils.isNotEmpty(highlightData)) {
                         if(highlightData.containsKey("title.txt")) {
-                            documentVo.setTitle(highlightData.getString("title.txt"));
+                            documentVo.setTitle(String.join("\n", JSONObject.parseArray(highlightData.getString("title.txt"),String.class)));
                         }
                         if(highlightData.containsKey("content.txt")) {
-                            documentVo.setContent( highlightData.getString("content.txt"));
+                            documentVo.setContent( String.join("\n", JSONObject.parseArray(highlightData.getString("content.txt"),String.class)));
                         }
                     }
                 }

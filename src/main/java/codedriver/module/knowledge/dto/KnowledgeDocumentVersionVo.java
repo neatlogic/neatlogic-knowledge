@@ -26,6 +26,10 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     private Integer version;
     @EntityField(name = "版本名", type = ApiParamType.STRING)
     private String versionName;
+    @EntityField(name = "原版本号", type = ApiParamType.STRING)
+    private Integer fromVersion;
+    @EntityField(name = "原版本名", type = ApiParamType.STRING)
+    private String fromVersionName;
     @EntityField(name = "状态", type = ApiParamType.STRING)
     private String status;
     @EntityField(name = "状态信息", type = ApiParamType.JSONOBJECT)
@@ -90,10 +94,27 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
         this.version = version;
     }
     public String getVersionName() {
-        if(StringUtils.isBlank(versionName) && version != null) {
-            versionName = "版本" + version;
+        if(StringUtils.isBlank(versionName)) {
+            if(version != null) {
+                versionName = "版本" + version;
+            }else {
+                versionName = "-";
+            }
+            
         }
         return versionName;
+    }
+    public Integer getFromVersion() {
+        return fromVersion;
+    }
+    public void setFromVersion(Integer fromVersion) {
+        this.fromVersion = fromVersion;
+    }
+    public String getFromVersionName() {
+        if(StringUtils.isBlank(fromVersionName) && fromVersion != null) {
+            fromVersionName = "版本" + fromVersion;
+        }
+        return fromVersionName;
     }
     public String getStatus() {
         return status;

@@ -91,7 +91,7 @@ public class KnowledgeDocumentLineVo {
     }
     public String getConfigStr() {
         if(StringUtils.isBlank(configStr) && config != null) {
-            configStr = JSON.toJSONString(config);
+            configStr = config.toJSONString();
         }
         return configStr;
     }

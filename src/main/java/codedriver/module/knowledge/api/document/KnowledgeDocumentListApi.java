@@ -87,6 +87,8 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                 }
                 List<Long> collectedKnowledgeDocumentIdList = knowledgeDocumentMapper.getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(UserContext.get().getUserUuid(true), knowledgeDocumentIdList);
                 for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
+                    knowledgeDocumentVersionVo.setAutoGenerateId(false);
+                    knowledgeDocumentVersionVo.setId(null);
                     if(collectedKnowledgeDocumentIdList.contains(knowledgeDocumentVersionVo.getKnowledgeDocumentId())) {
                         knowledgeDocumentVersionVo.setIsCollect(1);
                     }
@@ -184,6 +186,8 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                     }
                     knowledgeDocumentVersionVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
                     knowledgeDocumentVersionVo.setIsEditable(1);
+                    knowledgeDocumentVersionVo.setAutoGenerateId(false);
+                    knowledgeDocumentVersionVo.setId(null);
                 }
                 resultObj.put("tbodyList", knowledgeDocumentVersionList);
             }
@@ -282,10 +286,11 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
     private JSONArray getMyShareTheadList() {
         JSONArray theadList = new JSONArray();
         theadList.add(new JSONObject() {{this.put("title", "标题"); this.put("key", "title");}});
-        theadList.add(new JSONObject() {{this.put("title", "提交人"); this.put("key", "lcuName");}});
         theadList.add(new JSONObject() {{this.put("title", "提交时间"); this.put("key", "lcd");}});
         theadList.add(new JSONObject() {{this.put("title", "审核人"); this.put("key", "reviewer");}});
         theadList.add(new JSONObject() {{this.put("title", "审核时间"); this.put("key", "reviewTime");}});
+        theadList.add(new JSONObject() {{this.put("title", "原版本"); this.put("key", "fromVersionName");}});
+        theadList.add(new JSONObject() {{this.put("title", "新版本"); this.put("key", "versionName");}});
         theadList.add(new JSONObject() {{this.put("title", "状态"); this.put("key", "statusVo.text");}});
         theadList.add(new JSONObject() {{this.put("key", "action");}});
         return theadList;
@@ -306,7 +311,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
     private JSONArray getMyDraftTheadList() {
         JSONArray theadList = new JSONArray();
         theadList.add(new JSONObject() {{this.put("title", "标题"); this.put("key", "title");}});
-        theadList.add(new JSONObject() {{this.put("title", "基础版本"); this.put("key", "versionName");}});
+        theadList.add(new JSONObject() {{this.put("title", "原版本"); this.put("key", "fromVersionName");}});
         theadList.add(new JSONObject() {{this.put("title", "最后一次修改时间"); this.put("key", "lcd");}});
         theadList.add(new JSONObject() {{this.put("key", "action");}});
         return theadList;

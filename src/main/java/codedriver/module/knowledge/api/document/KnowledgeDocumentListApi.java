@@ -289,6 +289,8 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
         theadList.add(new JSONObject() {{this.put("title", "提交时间"); this.put("key", "lcd");}});
         theadList.add(new JSONObject() {{this.put("title", "审核人"); this.put("key", "reviewer");}});
         theadList.add(new JSONObject() {{this.put("title", "审核时间"); this.put("key", "reviewTime");}});
+        theadList.add(new JSONObject() {{this.put("title", "原版本"); this.put("key", "fromVersion");}});
+        theadList.add(new JSONObject() {{this.put("title", "新版本"); this.put("key", "version");}});
         theadList.add(new JSONObject() {{this.put("title", "状态"); this.put("key", "statusVo.text");}});
         theadList.add(new JSONObject() {{this.put("key", "action");}});
         return theadList;

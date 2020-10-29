@@ -214,18 +214,12 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
               for(KnowledgeDocumentLineVo lineVo : oldSubList) {
                   lineVo.setChangeType("delete");
                   oldResultList.add(lineVo);
-                  KnowledgeDocumentLineVo fillBlankLine = new KnowledgeDocumentLineVo();
-                  fillBlankLine.setChangeType("fillblank");
-                  fillBlankLine.setHandler(lineVo.getHandler());
-                  newResultList.add(fillBlankLine);
+                  newResultList.add(createFillBlankLine(lineVo));
               }
           }else if(CollectionUtils.isEmpty(oldSubList)) {
               /** 插入行 **/
               for(KnowledgeDocumentLineVo lineVo :newSubList) {
-                  KnowledgeDocumentLineVo fillBlankLine = new KnowledgeDocumentLineVo();
-                  fillBlankLine.setChangeType("fillblank");
-                  fillBlankLine.setHandler(lineVo.getHandler());
-                  oldResultList.add(fillBlankLine);
+                  oldResultList.add(createFillBlankLine(lineVo));
                   lineVo.setChangeType("insert");
                   newResultList.add(lineVo);
               }
@@ -268,15 +262,9 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                   if(oldLine.getLineNumber() <= newLine.getLineNumber()) {
                       oldLine.setChangeType("delete");
                       oldResultList.add(oldLine);
-                      KnowledgeDocumentLineVo fillBlankLine = new KnowledgeDocumentLineVo();
-                      fillBlankLine.setChangeType("fillblank");
-                      fillBlankLine.setHandler(oldLine.getHandler());
-                      newResultList.add(fillBlankLine);
-                  }else {
-                      KnowledgeDocumentLineVo fillBlankLine = new KnowledgeDocumentLineVo();
-                      fillBlankLine.setChangeType("fillblank");
-                      fillBlankLine.setHandler(newLine.getHandler());
-                      oldResultList.add(fillBlankLine);
+                      newResultList.add(createFillBlankLine(oldLine));
+                  }else {                     
+                      oldResultList.add(createFillBlankLine(newLine));
                       newLine.setChangeType("insert");
                       newResultList.add(newLine);
                   }
@@ -291,6 +279,14 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
               }
           }
       }
+    }
+    
+    private KnowledgeDocumentLineVo createFillBlankLine(KnowledgeDocumentLineVo line) {
+        KnowledgeDocumentLineVo fillBlankLine = new KnowledgeDocumentLineVo();
+        fillBlankLine.setChangeType("fillblank");
+        fillBlankLine.setHandler(line.getHandler());
+        fillBlankLine.setConfig(line.getConfigStr());
+        return fillBlankLine;
     }
     /**
      * 

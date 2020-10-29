@@ -110,7 +110,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
                 knowledgeDocumentVo.setIsCurrentVersion(0);
             }
         }
-        knowledgeDocumentVo.setVersion(knowledgeDocumentVersionVo.getVersion());
+        knowledgeDocumentVo.setVersion(knowledgeDocumentVersionVo.getVersion() != null ? knowledgeDocumentVersionVo.getVersion() : knowledgeDocumentVersionVo.getFromVersion());
         knowledgeDocumentVo.setTitle(knowledgeDocumentVersionVo.getTitle());
         knowledgeDocumentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
         knowledgeDocumentVo.setLcu(knowledgeDocumentVersionVo.getLcu());

@@ -1,5 +1,6 @@
 package codedriver.module.knowledge.elasticsearch.handler;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,12 +23,17 @@ import com.techsure.multiattrsearch.query.QueryResult;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.Expression;
+import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerBase;
+import codedriver.framework.file.dao.mapper.FileMapper;
+import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.util.HtmlUtil;
+import codedriver.framework.util.TikaUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
@@ -50,6 +56,9 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
     
     @Autowired
     KnowledgeDocumentMapper knowledgeDocumentMapper;
+    
+    @Autowired
+    FileMapper fileMapper;
    
     @Override
     public String getDocument() {
@@ -60,16 +69,28 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
     public JSONObject mySave(Long documentId) {
         JSONObject esObject = new JSONObject();
         KnowledgeDocumentVo documentVo =  knowledgeDocumentMapper.getKnowledgeDocumentById(documentId);
+        KnowledgeDocumentVersionVo  documentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(documentVo.getKnowledgeDocumentVersionId());
         //获取知识内容
         List<KnowledgeDocumentLineVo>  documentLineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(documentVo.getKnowledgeDocumentVersionId());
         StringBuilder contentsb = new StringBuilder();
         for(KnowledgeDocumentLineVo line : documentLineList) {
             contentsb.append(line.getContent());
         }
-        KnowledgeDocumentVersionVo  documentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(documentVo.getKnowledgeDocumentVersionId());
-        // TODO 获取附件内容 
-        
-        
+        //获取附件内容 
+        StringBuilder fileContentsb = new StringBuilder();
+        List<Long> fileIdList = knowledgeDocumentMapper.getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(documentVo.getId(),documentVo.getKnowledgeDocumentVersionId()));
+        List<FileVo> fileVoList = fileMapper.getFileListByIdList(fileIdList);
+        try {
+            for(FileVo fileVo : fileVoList) {
+                InputStream in = FileUtil.getData(fileVo.getPath());
+                JSONObject fileJson = TikaUtil.getFileContentByAutoParser(in, true);
+                fileContentsb.append(fileJson.getString("content"));
+            }
+            esObject.put("fileContent", fileContentsb.toString());
+        } catch ( Exception e) {
+            logger.error(e.getMessage(),e);
+        }
+        //tagList
         List<Long> tagIdList = knowledgeDocumentMapper.getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(documentVo.getId(),documentVo.getKnowledgeDocumentVersionId()));
         esObject.put("taglist", tagIdList);
         esObject.put("versionid", documentVo.getVersion());

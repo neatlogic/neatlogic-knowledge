@@ -232,4 +232,15 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         return resultObj;
     }
 
+//    private boolean checkDocumentIsModify(KnowledgeDocumentVo before, KnowledgeDocumentVo after) {
+//        //knowledgeDocumentTypeUuid
+//        if(!Objects.equals(before.getKnowledgeDocumentTypeUuid(), after.getKnowledgeDocumentTypeUuid())) {
+//            StringUtils.
+//        }
+//        //title
+//        //lineList
+//        //fileIdList
+//        //tagList
+//        return true;
+//    }
 }

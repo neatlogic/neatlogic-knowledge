@@ -1,10 +1,10 @@
 package codedriver.module.knowledge.constvalue;
 
 public enum KnowledgeDocumentVersionStatus {
-    DRAFT("draft", "草稿"),
-    SUBMITTED("submitted", "已提交"),
+    DRAFT("draft", "未提交"),
+    SUBMITTED("submitted", "待审批"),
     PASSED("passed", "已通过"),
-    EXPIRED("expired", "已过期"),
+    EXPIRED("expired", "已失效"),
     REJECTED("rejected", "已拒绝");
     private String value;
     private String text;

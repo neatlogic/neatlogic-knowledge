@@ -231,16 +231,18 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                   /** 行组件相同，才是修改行数据 **/
                   oldLine.setChangeType("update");
                   newLine.setChangeType("update");
-                  if(StringUtils.length(oldLine.getContent()) > 0 && StringUtils.length(newLine.getContent()) > 0) {
-                      if(KnowledgeDocumentLineHandler.P.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H1.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H2.getValue().equals(oldLine.getHandler())) {
+                  String oldMainBody = KnowledgeDocumentLineHandler.getMainBody(oldLine);
+                  String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
+                  if(StringUtils.length(oldMainBody) > 0 && StringUtils.length(newMainBody) > 0) {
+//                      if(KnowledgeDocumentLineHandler.P.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H1.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H2.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.UL.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.OL.getValue().equals(oldLine.getHandler())) {
                           List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
                           List<SegmentRange> newSegmentRangeList = new ArrayList<>();
                           List<Character> oldCharList = new ArrayList<>();
-                          for(char c : oldLine.getContent().toCharArray()) {
+                          for(char c : oldMainBody.toCharArray()) {
                               oldCharList.add(c);
                           }
                           List<Character> newCharList = new ArrayList<>();
-                          for(char c : newLine.getContent().toCharArray()) {
+                          for(char c : newMainBody.toCharArray()) {
                               newCharList.add(c);
                           }
                           Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
@@ -248,11 +250,13 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                               oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
                               newSegmentRangeList.add(segmentpair.getNewSegmentRange());
                           }
-                          oldLine.setContent(LCSUtil.wrapChangePlace(oldLine.getContent(), oldSegmentRangeList, "<span class='delete'>", "</span>"));
+                          KnowledgeDocumentLineHandler.setMainBody(oldLine, LCSUtil.wrapChangePlace(oldMainBody, oldSegmentRangeList, "<span class='delete'>", "</span>"));
+//                          oldLine.setContent(LCSUtil.wrapChangePlace(oldLine.getContent(), oldSegmentRangeList, "<span class='delete'>", "</span>"));
                           oldResultList.add(oldLine);
-                          newLine.setContent(LCSUtil.wrapChangePlace(newLine.getContent(), newSegmentRangeList, "<span class='insert'>", "</span>"));
+                          KnowledgeDocumentLineHandler.setMainBody(newLine, LCSUtil.wrapChangePlace(newMainBody, newSegmentRangeList, "<span class='insert'>", "</span>"));
+//                          newLine.setContent(LCSUtil.wrapChangePlace(newLine.getContent(), newSegmentRangeList, "<span class='insert'>", "</span>"));
                           newResultList.add(newLine);
-                      }
+//                      }
                   }else {
                       oldResultList.add(oldLine);
                       newResultList.add(newLine);
@@ -286,6 +290,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         fillBlankLine.setChangeType("fillblank");
         fillBlankLine.setHandler(line.getHandler());
         //fillBlankLine.setConfig(line.getConfigStr());
+        fillBlankLine.setConfig("{}");
         return fillBlankLine;
     }
     /**
@@ -303,20 +308,22 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         for(int i = 0; i < oldList.size(); i++) {
             for(int j = 0; j < newList.size(); j++) {
                 Node currentNode = new Node(i, j);
-                KnowledgeDocumentLineVo oldStr = oldList.get(i);
-                KnowledgeDocumentLineVo newStr = newList.get(j);
+                KnowledgeDocumentLineVo oldLine = oldList.get(i);
+                KnowledgeDocumentLineVo newLine = newList.get(j);
                 int matchPercentage = 0;
-                if(oldStr.getHandler().equals(newStr.getHandler())) {
-                    if(KnowledgeDocumentLineHandler.P.getValue().equals(oldStr.getHandler()) || KnowledgeDocumentLineHandler.H1.getValue().equals(oldStr.getHandler()) || KnowledgeDocumentLineHandler.H2.getValue().equals(oldStr.getHandler())) {
-                        int oldLineContentLength = StringUtils.length(oldStr.getContent());
-                        int newLineContentLength = StringUtils.length(newStr.getContent());
+                if(oldLine.getHandler().equals(newLine.getHandler())) {
+//                    if(KnowledgeDocumentLineHandler.P.getValue().equals(oldStr.getHandler()) || KnowledgeDocumentLineHandler.H1.getValue().equals(oldStr.getHandler()) || KnowledgeDocumentLineHandler.H2.getValue().equals(oldStr.getHandler()) || KnowledgeDocumentLineHandler.UL.getValue().equals(oldStr.getHandler()) || KnowledgeDocumentLineHandler.OL.getValue().equals(oldStr.getHandler())) {
+                        String oldMainBody = KnowledgeDocumentLineHandler.getMainBody(oldLine);
+                        String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
+                        int oldLineContentLength = StringUtils.length(oldMainBody);
+                        int newLineContentLength = StringUtils.length(newMainBody);
                         if(oldLineContentLength > 0 && newLineContentLength > 0) {
                             List<Character> oldCharList = new ArrayList<>();
-                            for(char c : oldStr.getContent().toCharArray()) {
+                            for(char c : oldMainBody.toCharArray()) {
                                 oldCharList.add(c);
                             }
                             List<Character> newCharList = new ArrayList<>();
-                            for(char c : newStr.getContent().toCharArray()) {
+                            for(char c : newMainBody.toCharArray()) {
                                 newCharList.add(c);
                             }
                             Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
@@ -324,7 +331,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                             matchPercentage = (node.getTotalMatchLength() * 1000) / maxLength;
                             currentNode.setTotalMatchLength(matchPercentage);
                         }
-                    }
+//                    }
                 }
                 currentNode.setTotalMatchLength(matchPercentage);
                 priorityQueue.add(currentNode);

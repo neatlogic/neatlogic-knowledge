@@ -31,7 +31,7 @@
 		<result column="favorCount" property="favorCount" />
 		<result column="collectCount" property="collectCount" />
 		<result column="documentTypePath" property="documentTypePath" />
-		<association property="tagVoList" javaType="codedriver.module.knowledge.dto.KnowledgeDocumentTagVo">
+		<association property="tagVoList" javaType="codedriver.module.knowledge.dto.KnowledgeTagVo">
 			<result column="tagId" property="id" />
 			<result column="tagName" property="name" />
 		</association>

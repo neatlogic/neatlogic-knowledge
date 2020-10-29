@@ -267,10 +267,18 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                       oldLine.setChangeType("delete");
                       oldResultList.add(oldLine);
                       newResultList.add(createFillBlankLine(oldLine));
+                      
+                      oldResultList.add(createFillBlankLine(newLine));
+                      newLine.setChangeType("insert");
+                      newResultList.add(newLine);
                   }else {                     
                       oldResultList.add(createFillBlankLine(newLine));
                       newLine.setChangeType("insert");
                       newResultList.add(newLine);
+                      
+                      oldLine.setChangeType("delete");
+                      oldResultList.add(oldLine);
+                      newResultList.add(createFillBlankLine(oldLine));
                   }
               }
               

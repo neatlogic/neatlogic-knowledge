@@ -117,7 +117,7 @@ public interface KnowledgeDocumentMapper {
 
     public int updateKnowledgeDocumentVersionStatusByKnowledgeDocumentIdAndVersionAndStatus(
         @Param("knowledgeDocumentId") Long knowledgeDocumentId, 
-        @Param("version") Integer version, 
+        @Param("fromVersion") Integer fromVersion, 
         @Param("oldStatus") String oldStatus, 
         @Param("newStatus") String newStatus
     );

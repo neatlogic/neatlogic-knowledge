@@ -120,7 +120,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
                 knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
                 knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentId);
-                knowledgeDocumentVersionVo.setVersion(oldKnowledgeDocumentVersionVo.getVersion());
+                knowledgeDocumentVersionVo.setFromVersion(oldKnowledgeDocumentVersionVo.getVersion());
                 knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
                 knowledgeDocumentVersionVo.setStatus(KnowledgeDocumentVersionStatus.DRAFT.getValue());
                 knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
@@ -160,7 +160,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
             knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
             knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentVo.getId());
-            knowledgeDocumentVersionVo.setVersion(0);
+            knowledgeDocumentVersionVo.setFromVersion(0);
             knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
             knowledgeDocumentVersionVo.setStatus(KnowledgeDocumentVersionStatus.DRAFT.getValue());
             knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);

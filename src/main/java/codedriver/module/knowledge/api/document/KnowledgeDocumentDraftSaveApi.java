@@ -1,10 +1,13 @@
 package codedriver.module.knowledge.api.document;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,7 +46,9 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentHasBeenDeletedExce
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentTypeNotFoundException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentUnmodifiedCannotBeSavedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 @Transactional
@@ -51,6 +56,8 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
+    @Autowired
+    private KnowledgeDocumentService knowledgeDocumentService;
     @Autowired
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
     @Autowired
@@ -95,6 +102,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         }
         documentVo.setKnowledgeCircleId(knowledgeDocumentTypeVo.getKnowledgeCircleId());
         documentVo.setId(null);
+        JSONObject resultObj = new JSONObject();
         Long documentId = null;
         Long drafrVersionId = null;
         if(knowledgeDocumentVersionId != null) {
@@ -115,6 +123,10 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             documentId = oldDocumentVo.getId();
             oldKnowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
             if(knowledgeDocumentVersionId.equals(oldDocumentVo.getKnowledgeDocumentVersionId())) {
+                KnowledgeDocumentVo before = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+                if(!checkDocumentIsModify(before, documentVo)) {
+                    throw new KnowledgeDocumentUnmodifiedCannotBeSavedException();
+                }
                 /** 如果入参版本id是文档当前版本id，说明该操作是当前版本上修改首次存草稿 **/
                 KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
                 knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
@@ -138,6 +150,12 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                     throw new KnowledgeDocumentDraftExpiredCannotBeModifiedException();
                 }
                 drafrVersionId = knowledgeDocumentVersionId;
+                KnowledgeDocumentVo before = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+                if(!checkDocumentIsModify(before, documentVo)) {
+                    resultObj.put("knowledgeDocumentId", documentId);
+                    resultObj.put("knowledgeDocumentVersionId", drafrVersionId);
+                    return resultObj;
+                }
                 /** 覆盖旧草稿时，更新标题、修改用户、修改时间，删除行数据、附件、标签数据，后面再重新插入 **/
                 KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
                 knowledgeDocumentVersionVo.setId(drafrVersionId);
@@ -226,21 +244,56 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         updateSizeVo.setId(drafrVersionId);
         updateSizeVo.setSize(size);
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateSizeVo);
-        JSONObject resultObj = new JSONObject();
         resultObj.put("knowledgeDocumentId", documentId);
         resultObj.put("knowledgeDocumentVersionId", drafrVersionId);
         return resultObj;
     }
 
-//    private boolean checkDocumentIsModify(KnowledgeDocumentVo before, KnowledgeDocumentVo after) {
-//        //knowledgeDocumentTypeUuid
-//        if(!Objects.equals(before.getKnowledgeDocumentTypeUuid(), after.getKnowledgeDocumentTypeUuid())) {
-//            StringUtils.
-//        }
-//        //title
-//        //lineList
-//        //fileIdList
-//        //tagList
-//        return true;
-//    }
+    /**
+     * 
+    * @Time:2020年10月29日
+    * @Description: 检查文档内容信息是否被修改 
+    * @param before
+    * @param after
+    * @return boolean
+     */
+    private boolean checkDocumentIsModify(KnowledgeDocumentVo before, KnowledgeDocumentVo after) {
+        //knowledgeDocumentTypeUuid
+        if(!Objects.equals(before.getKnowledgeDocumentTypeUuid(), after.getKnowledgeDocumentTypeUuid())) {
+            return true;
+        }
+        //title
+        if(!Objects.equals(before.getTitle(), after.getTitle())) {
+            return true;
+        }
+        //fileIdList
+        if(!SetUtils.isEqualSet(new HashSet<>(before.getFileIdList()), new HashSet<>(after.getFileIdList()))) {
+            return true;
+        }
+        //tagList
+        if(!SetUtils.isEqualSet(new HashSet<>(before.getTagList()), new HashSet<>(after.getTagList()))) {
+            return true;
+        }
+        //lineList
+        List<KnowledgeDocumentLineVo> beforeLineList = before.getLineList();
+        List<KnowledgeDocumentLineVo> afterLineList = after.getLineList();
+        if(beforeLineList.size() != afterLineList.size()) {
+            return true;
+        }
+        Iterator<KnowledgeDocumentLineVo> beforeLineIterator = beforeLineList.iterator();
+        Iterator<KnowledgeDocumentLineVo> afterLineIterator = afterLineList.iterator();
+        while(beforeLineIterator.hasNext() && afterLineIterator.hasNext()) {
+            KnowledgeDocumentLineVo beforeLine = beforeLineIterator.next();
+            KnowledgeDocumentLineVo afterLine = afterLineIterator.next();
+            if(!Objects.equals(beforeLine.getHandler(), afterLine.getHandler())) {
+                return true;
+            }
+            if(!Objects.equals(beforeLine.getContent(), afterLine.getContent())) {
+                System.out.println(beforeLine.getContent());
+                System.out.println(afterLine.getContent());
+                return true;
+            }
+        }
+        return false;
+    }
 }

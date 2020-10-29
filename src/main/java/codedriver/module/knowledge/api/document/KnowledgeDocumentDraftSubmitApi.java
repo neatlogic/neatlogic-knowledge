@@ -79,7 +79,7 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentDraftSubmittedException();
         }
 
-        if(knowledgeDocumentMapper.checkIFThereIsSubmittedDraftByKnowDocumentIdAndVersion(knowledgeDocumentVo.getId(), knowledgeDocumentVo.getVersion()) > 0) {
+        if(knowledgeDocumentMapper.checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion(knowledgeDocumentVo.getId(), knowledgeDocumentVo.getVersion()) > 0) {
             throw new KnowledgeDocumentDraftSubmitFailedExecption();
         }
         KnowledgeDocumentVersionVo updateStatusVo = new KnowledgeDocumentVersionVo();

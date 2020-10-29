@@ -126,8 +126,8 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
                 drafrVersionId = knowledgeDocumentVersionVo.getId();
             }else {
-                if(!Objects.equals(oldDocumentVo.getVersion(), oldKnowledgeDocumentVersionVo.getVersion())) {
-                    throw new KnowledgeDocumentNotCurrentVersionException(oldKnowledgeDocumentVersionVo.getVersion());
+                if(!Objects.equals(oldDocumentVo.getVersion(), oldKnowledgeDocumentVersionVo.getFromVersion())) {
+                    throw new KnowledgeDocumentNotCurrentVersionException(oldKnowledgeDocumentVersionVo.getFromVersion());
                 }
                 /** 如果入参版本id不是文档当前版本id，说明该操作是在已有草稿上再次保存 **/
                 if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {

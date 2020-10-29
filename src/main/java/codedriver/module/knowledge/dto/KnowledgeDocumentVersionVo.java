@@ -111,8 +111,12 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
         this.fromVersion = fromVersion;
     }
     public String getFromVersionName() {
-        if(StringUtils.isBlank(fromVersionName) && fromVersion != null) {
-            fromVersionName = "版本" + fromVersion;
+        if(StringUtils.isBlank(fromVersionName)) {
+            if(fromVersion != 0) {
+                fromVersionName = "版本" + fromVersion;
+            }else {
+                fromVersionName = "-";
+            }
         }
         return fromVersionName;
     }

@@ -383,10 +383,10 @@
 	</where>
 	</select>
 	
-	<select id="checkIFThereIsSubmittedDraftByKnowDocumentIdAndVersion" resultType="int">
+	<select id="checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion" resultType="int">
 	SELECT COUNT(1) FROM `knowledge_document_version` 
 	WHERE `knowledge_document_id` = #{knowledgeDocumentId}
-	AND `version` = #{version}
+	AND `from_version` = #{fromVersion}
 	AND `status` = 'submitted'
 	</select>
 	

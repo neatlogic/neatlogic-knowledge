@@ -79,6 +79,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             if(knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
                 throw new KnowledgeDocumentCurrentUserNotMemberException();
             }
+            int isApprover = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentTypeVo.getKnowledgeCircleId());
             JSONObject resultObj = new JSONObject();
             resultObj.put("theadList", getTheadList());
             resultObj.put("tbodyList", new ArrayList<>());
@@ -101,7 +102,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                         knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
                     }
                     knowledgeDocumentVersionVo.setIsEditable(1);
-                    knowledgeDocumentVersionVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
+                    knowledgeDocumentVersionVo.setIsDeletable(isApprover);
                     knowledgeDocumentIdList.add(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
                 }
                 List<Long> collectedKnowledgeDocumentIdList = knowledgeDocumentMapper.getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(UserContext.get().getUserUuid(true), knowledgeDocumentIdList);
@@ -143,7 +144,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             JSONObject resultObj = new JSONObject();
             resultObj.put("theadList", getMyShareTheadList());
             resultObj.put("tbodyList", new ArrayList<>());
-            List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue(), KnowledgeDocumentVersionStatus.REJECTED.getValue(), KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
+            List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue(), KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
             KnowledgeDocumentVersionVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
             searchVo.setLcu(UserContext.get().getUserUuid(true));
             searchVo.setStatusList(statusList);
@@ -217,7 +218,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             JSONObject resultObj = new JSONObject();
             resultObj.put("theadList", getMyDraftTheadList());
             resultObj.put("tbodyList", new ArrayList<>());
-            List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
+            List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.REJECTED.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
             KnowledgeDocumentVersionVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
             searchVo.setLcu(UserContext.get().getUserUuid(true));
             searchVo.setStatusList(statusList);

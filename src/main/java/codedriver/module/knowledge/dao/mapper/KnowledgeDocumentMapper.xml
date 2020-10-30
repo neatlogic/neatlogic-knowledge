@@ -158,7 +158,7 @@
 	  `reviewer`,
 	  `review_time` AS reviewTime 
 	FROM `knowledge_document_version` 
-	WHERE `lcu` = #{lcu}
+	WHERE `lcu` = #{lcu} AND `is_delete` = 0
 	<if test="keyword != null and keyword != ''">
 	AND	`title` LIKE CONCAT('%', #{keyword}, '%')
 	</if>
@@ -178,7 +178,7 @@
 	SELECT 
 	  COUNT(1)
 	FROM `knowledge_document_version`
-	WHERE `lcu` = #{lcu}
+	WHERE `lcu` = #{lcu} AND `is_delete` = 0
 	<if test="keyword != null and keyword != ''">
 	AND	`title` LIKE CONCAT('%', #{keyword}, '%')
 	</if>
@@ -683,6 +683,14 @@
 
 	<update id="updateKnowledgeViewCountIncrementOne" parameterType="java.lang.Long">
 	UPDATE `knowledge_document_view_count` SET `count` = `count` + 1 WHERE `knowledge_document_id` = #{value}
+	</update>
+	
+	<update id="updateKnowledgeDocumentVersionToDeleteByKnowledgeDocumentId" parameterType="java.lang.Long">
+	UPDATE `knowledge_document_version` SET `is_delete` = 1 WHERE `knowledge_document_id` = #{value}
+	</update>
+	
+	<update id="updateKnowledgeDocumentVersionToDeleteById" parameterType="java.lang.Long">
+	UPDATE `knowledge_document_version` SET `is_delete` = 1 WHERE `id` = #{value}
 	</update>
 	
 	<delete id="deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId" parameterType="java.lang.Long">

@@ -58,7 +58,7 @@ public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentCurrentUserNotReviewerException();
         }
         knowledgeDocumentMapper.updateKnowledgeDocumentToDeleteById(knowledgeDocumentId);
-        
+        knowledgeDocumentMapper.updateKnowledgeDocumentVersionToDeleteByKnowledgeDocumentId(knowledgeDocumentId);
         /** 删除es对应知识 **/
         ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE.getValue()).delete(knowledgeDocumentId.toString());
         return null;

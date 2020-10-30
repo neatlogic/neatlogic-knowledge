@@ -54,8 +54,8 @@ public class EsKnowledgeDocumentSyncApi extends PrivateApiComponentBase {
     }
 
     @Input({
-        @Param(name = "fromDate", type = ApiParamType.STRING, desc = "开始时间"),
-        @Param(name = "toDate", type = ApiParamType.STRING, desc = "开始时间"),
+        @Param(name = "fromDate", type = ApiParamType.STRING, desc = "创建时间>fromDate"),
+        @Param(name = "toDate", type = ApiParamType.STRING, desc = "创建时间<toDate"),
         @Param(name = "documentIdList", type = ApiParamType.JSONARRAY, desc = "documentId数组"),
         @Param(name = "action", type = ApiParamType.STRING, desc = "delete,refresh")})
     @Output({
@@ -81,18 +81,18 @@ public class EsKnowledgeDocumentSyncApi extends PrivateApiComponentBase {
         //删除符合条件es数据
         String whereSql = StringUtils.EMPTY;
         if(StringUtils.isNotBlank(fromDate)) {
-            whereSql = String.format(" where fcd greater-than %s",fromDate);
+            whereSql = String.format(" where fcd >= '%s'",fromDate);
         }
-        if(StringUtils.isNotBlank(fromDate)) {
-            if(StringUtils.isNotBlank(whereSql)) {
-                whereSql = String.format(" where fcd greater-than %s",fromDate);
+        if(StringUtils.isNotBlank(toDate)) {
+            if(StringUtils.isBlank(whereSql)) {
+                whereSql = String.format(" where fcd < '%s'",toDate);
             }else {
-                whereSql = whereSql + String.format(" and fcd less-than %s",toDate);
+                whereSql = whereSql + String.format(" and fcd < '%s'",toDate);
             }
         }
         
         if(CollectionUtils.isNotEmpty(documentIdList)) {
-            if(StringUtils.isNotBlank(whereSql)) {
+            if(StringUtils.isBlank(whereSql)) {
                 whereSql = String.format(" where id contains any ( '%s' )", String.join("','", documentIdStrList));
             }else {
                 whereSql = whereSql + String.format(" and id contains any ( '%s' )", String.join("','", documentIdStrList));

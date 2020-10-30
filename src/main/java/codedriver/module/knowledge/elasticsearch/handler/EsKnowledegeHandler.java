@@ -30,6 +30,7 @@ import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.util.HtmlUtil;
 import codedriver.framework.util.TikaUtil;
+import codedriver.framework.util.TimeUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo;
@@ -79,17 +80,19 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
         //获取附件内容 
         StringBuilder fileContentsb = new StringBuilder();
         List<Long> fileIdList = knowledgeDocumentMapper.getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(documentVo.getId(),documentVo.getKnowledgeDocumentVersionId()));
-        List<FileVo> fileVoList = fileMapper.getFileListByIdList(fileIdList);
-        try {
-            for(FileVo fileVo : fileVoList) {
-                InputStream in = FileUtil.getData(fileVo.getPath());
-                JSONObject fileJson = TikaUtil.getFileContentByAutoParser(in, true);
-                fileContentsb.append(fileJson.getString("content"));
+        if(CollectionUtils.isNotEmpty(fileIdList)) {
+            List<FileVo> fileVoList = fileMapper.getFileListByIdList(fileIdList);
+            try {
+                for(FileVo fileVo : fileVoList) {
+                    InputStream in = FileUtil.getData(fileVo.getPath());
+                    JSONObject fileJson = TikaUtil.getFileContentByAutoParser(in, true);
+                    fileContentsb.append(fileJson.getString("content"));
+                }
+            } catch ( Exception e) {
+                logger.error(e.getMessage(),e);
             }
-            esObject.put("fileContent", fileContentsb.toString());
-        } catch ( Exception e) {
-            logger.error(e.getMessage(),e);
         }
+        esObject.put("filecontent", fileContentsb.toString());
         //tagList
         List<Long> tagIdList = knowledgeDocumentMapper.getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(documentVo.getId(),documentVo.getKnowledgeDocumentVersionId()));
         esObject.put("taglist", tagIdList);
@@ -99,7 +102,7 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
         esObject.put("title", documentVersionVo.getTitle());
         esObject.put("content", HtmlUtil.removeHtml(contentsb.toString(), null));
         esObject.put("fcu", documentVo.getFcu());
-        esObject.put("fcd", documentVo.getFcd());
+        esObject.put("fcd", TimeUtil.convertDateToString(documentVo.getFcd(), TimeUtil.YYYY_MM_DD_HH_MM_SS));
         esObject.put("id", documentId);
         return esObject;
     }

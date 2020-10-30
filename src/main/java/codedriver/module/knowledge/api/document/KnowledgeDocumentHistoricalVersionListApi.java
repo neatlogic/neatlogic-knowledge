@@ -76,6 +76,10 @@ public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiCompone
             throw new KnowledgeDocumentCurrentUserNotMemberException();
         }
         int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId());
+        int isSwitchable = isReviewable;
+        if(isSwitchable == 1 && knowledgeDocumentMapper.checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion(knowledgeDocumentVo.getId(), knowledgeDocumentVo.getVersion()) > 0) {
+            isSwitchable = 0;
+        }
         List<KnowledgeDocumentHistoricalVersionVo> historicalVersionList = knowledgeDocumentMapper.getKnowledgeDocumentHistorialVersionListByKnowledgeDocumentId(knowledgeDocumentId);
         Iterator<KnowledgeDocumentHistoricalVersionVo> iterator = historicalVersionList.iterator();
         while(iterator.hasNext()) {
@@ -87,7 +91,7 @@ public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiCompone
                 item.setIsSwitchable(0);
             }else {
                 item.setIsDeletable(isReviewable);
-                item.setIsSwitchable(isReviewable);
+                item.setIsSwitchable(isSwitchable);
             }
             UserVo userVo = userMapper.getUserBaseInfoByUuid(item.getLcu());
             if(userVo != null) {

@@ -14,6 +14,7 @@
 	  `fcd`
 	FROM `knowledge_document` 
 	WHERE `id` = #{value}
+	AND `is_delete` = 0
 	</select>
 	
 	<resultMap id="knowledgeDocumentMap" type="codedriver.module.knowledge.dto.KnowledgeDocumentVo">

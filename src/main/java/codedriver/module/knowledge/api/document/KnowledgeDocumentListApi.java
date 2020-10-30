@@ -143,7 +143,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             JSONObject resultObj = new JSONObject();
             resultObj.put("theadList", getMyShareTheadList());
             resultObj.put("tbodyList", new ArrayList<>());
-            List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue(), KnowledgeDocumentVersionStatus.REJECTED.getValue(), KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
+            List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue(), KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
             KnowledgeDocumentVersionVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
             searchVo.setLcu(UserContext.get().getUserUuid(true));
             searchVo.setStatusList(statusList);
@@ -217,7 +217,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             JSONObject resultObj = new JSONObject();
             resultObj.put("theadList", getMyDraftTheadList());
             resultObj.put("tbodyList", new ArrayList<>());
-            List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
+            List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.REJECTED.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
             KnowledgeDocumentVersionVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
             searchVo.setLcu(UserContext.get().getUserUuid(true));
             searchVo.setStatusList(statusList);

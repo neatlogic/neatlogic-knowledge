@@ -138,6 +138,10 @@ public interface KnowledgeDocumentMapper {
 
     public int updateKnowledgeViewCountIncrementOne(Long documentId);
 
+    public int updateKnowledgeDocumentVersionToDeleteByKnowledgeDocumentId(Long knowledgeDocumentId);
+
+    public int updateKnowledgeDocumentVersionToDeleteById(Long id);
+
     public int deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
 
     public int deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(KnowledgeDocumentFileVo knowledgeDocumentFileVo);

@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.ValueTextVo;
+import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -18,6 +20,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotMemberException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 
 @Service
@@ -26,6 +29,8 @@ public class KnowledgeDocumentHistoricalVersionListForSelectApi extends PrivateA
 
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
+    @Autowired
+    private TeamMapper teamMapper;
 
     @Override
     public String getToken() {
@@ -57,7 +62,10 @@ public class KnowledgeDocumentHistoricalVersionListForSelectApi extends PrivateA
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
         }
-
+        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        if(knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+            throw new KnowledgeDocumentCurrentUserNotMemberException();
+        }
         List<ValueTextVo> list = knowledgeDocumentMapper.getKnowledgeDocumentHistorialVersionListForSelectByKnowledgeDocumentId(knowledgeDocumentId);
         resultObj.put("list", list);        
         return resultObj;

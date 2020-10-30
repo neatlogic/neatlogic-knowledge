@@ -54,7 +54,7 @@ public class EsKnowledgeDocumentSyncApi extends PrivateApiComponentBase {
     }
 
     @Input({
-        @Param(name = "fromDate", type = ApiParamType.STRING, desc = "创建时间>fromDate"),
+        @Param(name = "fromDate", type = ApiParamType.STRING, desc = "创建时间>=fromDate"),
         @Param(name = "toDate", type = ApiParamType.STRING, desc = "创建时间<toDate"),
         @Param(name = "documentIdList", type = ApiParamType.JSONARRAY, desc = "documentId数组"),
         @Param(name = "action", type = ApiParamType.STRING, desc = "delete,refresh")})
@@ -98,8 +98,8 @@ public class EsKnowledgeDocumentSyncApi extends PrivateApiComponentBase {
                 whereSql = whereSql + String.format(" and id contains any ( '%s' )", String.join("','", documentIdStrList));
             }
         }
-        String esSql = String.format("select id from %s %s limit 0,20 ",TenantContext.get().getTenantUuid(),whereSql);
-        MultiAttrsObjectPool  objectPool = ElasticSearchPoolManager.getObjectPool("knowledge");
+        String esSql = String.format("select id from %s %s limit 20 ",TenantContext.get().getTenantUuid(),whereSql);
+        MultiAttrsObjectPool  objectPool = ElasticSearchPoolManager.getObjectPool(ESHandler.KNOWLEDGE.getValue());
         objectPool.checkout(TenantContext.get().getTenantUuid());
         QueryParser parser = objectPool.createQueryParser();
         MultiAttrsQuery query = parser.parse(esSql);

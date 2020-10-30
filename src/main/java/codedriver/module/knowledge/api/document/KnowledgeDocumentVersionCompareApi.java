@@ -130,7 +130,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         List<KnowledgeDocumentLineVo> newResultList = new ArrayList<>();
         Node node = LCSUtil.LCSCompare(oldLineList, newLineList, (e1, e2) -> {
             if(e1.getHandler().equals(e2.getHandler())) {
-                return Objects.equals(e1.getContentHash(), e2.getContentHash());
+                return Objects.equals(KnowledgeDocumentLineHandler.getMainBody(e1), KnowledgeDocumentLineHandler.getMainBody(e2));
             }
             return false;
         });
@@ -233,7 +233,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                   newLine.setChangeType("update");
                   String oldMainBody = KnowledgeDocumentLineHandler.getMainBody(oldLine);
                   String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
-                  if(StringUtils.length(oldMainBody) > 0 && StringUtils.length(newMainBody) > 0) {
+                  if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && StringUtils.length(oldMainBody) > 0 && StringUtils.length(newMainBody) > 0) {
 //                      if(KnowledgeDocumentLineHandler.P.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H1.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H2.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.UL.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.OL.getValue().equals(oldLine.getHandler())) {
                           List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
                           List<SegmentRange> newSegmentRangeList = new ArrayList<>();
@@ -325,7 +325,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                         String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
                         int oldLineContentLength = StringUtils.length(oldMainBody);
                         int newLineContentLength = StringUtils.length(newMainBody);
-                        if(oldLineContentLength > 0 && newLineContentLength > 0) {
+                        if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && oldLineContentLength > 0 && newLineContentLength > 0) {
                             List<Character> oldCharList = new ArrayList<>();
                             for(char c : oldMainBody.toCharArray()) {
                                 oldCharList.add(c);

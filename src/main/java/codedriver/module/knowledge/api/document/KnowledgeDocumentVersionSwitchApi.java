@@ -79,27 +79,27 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
         int oldVersion = knowledgeDocumentVo.getVersion();
-        int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId());
-        if(isReviewable > 0) {
-            knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
-            knowledgeDocumentVo.setVersion(knowledgeDocumentVersionVo.getVersion());
-            knowledgeDocumentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
-            knowledgeDocumentMapper.updateKnowledgeDocumentById(knowledgeDocumentVo);
-            
-            KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();
-            knowledgeDocumentAuditVo.setKnowledgeDocumentId(knowledgeDocumentVo.getId());
-            knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
-            knowledgeDocumentAuditVo.setOperate(KnowledgeDocumentOperate.SWITCHVERSION.getValue());
-            JSONObject config = new JSONObject();
-            config.put("oldVersion", oldVersion);
-            config.put("newVersion", knowledgeDocumentVersionVo.getVersion());
-            KnowledgeDocumentAuditConfigVo knowledgeDocumentAuditConfigVo = new KnowledgeDocumentAuditConfigVo(config.toJSONString());
-            knowledgeDocumentAuditMapper.insertKnowledgeDocumentAuditConfig(knowledgeDocumentAuditConfigVo);
-            knowledgeDocumentAuditVo.setConfigHash(knowledgeDocumentAuditConfigVo.getHash());
-            knowledgeDocumentAuditMapper.insertKnowledgeDocumentAudit(knowledgeDocumentAuditVo);
-            return null;
+        if(knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId()) == 0) {
+            throw new KnowledgeDocumentCurrentUserNotReviewerException();
         }
-        throw new KnowledgeDocumentCurrentUserNotReviewerException();
+
+        knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+        knowledgeDocumentVo.setVersion(knowledgeDocumentVersionVo.getVersion());
+        knowledgeDocumentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
+        knowledgeDocumentMapper.updateKnowledgeDocumentById(knowledgeDocumentVo);
+        
+        KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();
+        knowledgeDocumentAuditVo.setKnowledgeDocumentId(knowledgeDocumentVo.getId());
+        knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
+        knowledgeDocumentAuditVo.setOperate(KnowledgeDocumentOperate.SWITCHVERSION.getValue());
+        JSONObject config = new JSONObject();
+        config.put("oldVersion", oldVersion);
+        config.put("newVersion", knowledgeDocumentVersionVo.getVersion());
+        KnowledgeDocumentAuditConfigVo knowledgeDocumentAuditConfigVo = new KnowledgeDocumentAuditConfigVo(config.toJSONString());
+        knowledgeDocumentAuditMapper.insertKnowledgeDocumentAuditConfig(knowledgeDocumentAuditConfigVo);
+        knowledgeDocumentAuditVo.setConfigHash(knowledgeDocumentAuditConfigVo.getHash());
+        knowledgeDocumentAuditMapper.insertKnowledgeDocumentAudit(knowledgeDocumentAuditVo);
+        return null;
     }
 
 }

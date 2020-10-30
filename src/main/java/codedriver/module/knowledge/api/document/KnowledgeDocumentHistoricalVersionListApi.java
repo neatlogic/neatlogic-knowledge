@@ -12,6 +12,7 @@ import com.alibaba.fastjson.JSONObject;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dto.UserVo;
 import codedriver.framework.reminder.core.OperationTypeEnum;
@@ -24,6 +25,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentHistoricalVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotMemberException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 
 @Service
@@ -34,6 +36,8 @@ public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiCompone
     private KnowledgeDocumentMapper knowledgeDocumentMapper;   
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private TeamMapper teamMapper;
 
     @Override
     public String getToken() {
@@ -67,7 +71,10 @@ public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiCompone
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
         }
-        
+        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        if(knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+            throw new KnowledgeDocumentCurrentUserNotMemberException();
+        }
         int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId());
         List<KnowledgeDocumentHistoricalVersionVo> historicalVersionList = knowledgeDocumentMapper.getKnowledgeDocumentHistorialVersionListByKnowledgeDocumentId(knowledgeDocumentId);
         Iterator<KnowledgeDocumentHistoricalVersionVo> iterator = historicalVersionList.iterator();

@@ -21,6 +21,7 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.util.PageUtil;
+import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dto.UserVo;
 import codedriver.framework.exception.type.ParamNotExistsException;
@@ -34,9 +35,13 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.constvalue.KnowledgeType;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotMemberException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentTypeNotFoundException;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -46,10 +51,16 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
     
     @Autowired
+    private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
+    
+    @Autowired
     private UserMapper userMapper;
 
     @Autowired
     private KnowledgeDocumentService knowledgeDocumentService;
+
+    @Autowired
+    private TeamMapper teamMapper;
 
     private Map<String, Function<JSONObject, JSONObject>> map = new HashMap<>();
     
@@ -59,6 +70,14 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             KnowledgeDocumentVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
             if(searchVo.getKnowledgeDocumentTypeUuid() == null) {
                 throw new ParamNotExistsException("参数：“knowledgeDocumentTypeUuid”不能为空");
+            }
+            KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMapper.getTypeByUuid(searchVo.getKnowledgeDocumentTypeUuid());
+            if(knowledgeDocumentTypeVo == null) {
+                throw new KnowledgeDocumentTypeNotFoundException(searchVo.getKnowledgeDocumentTypeUuid());
+            }
+            List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+            if(knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+                throw new KnowledgeDocumentCurrentUserNotMemberException();
             }
             JSONObject resultObj = new JSONObject();
             resultObj.put("theadList", getTheadList());

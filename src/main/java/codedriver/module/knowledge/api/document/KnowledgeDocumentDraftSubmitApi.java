@@ -23,6 +23,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotOwnerException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftExpiredCannotSubmitException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmitFailedExecption;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
@@ -66,6 +67,9 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         if(knowledgeDocumentVersionVo == null) {
             throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
+        }
+        if(!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
+            throw new KnowledgeDocumentCurrentUserNotOwnerException();
         }
         knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());

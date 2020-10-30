@@ -15,7 +15,9 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
+import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 @Service
 @OperationType(type = OperationTypeEnum.DELETE)
 @Transactional
@@ -47,6 +49,10 @@ public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         //TODO linbq这里要判断当前用户权限
         Long knowledgeDocumentId = jsonObj.getLong("knowledgeDocumentId");
+        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId);
+        if(knowledgeDocumentVo == null) {
+            throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
+        }
         knowledgeDocumentMapper.updateKnowledgeDocumentToDeleteById(knowledgeDocumentId);
         
         /** 删除es对应知识 **/

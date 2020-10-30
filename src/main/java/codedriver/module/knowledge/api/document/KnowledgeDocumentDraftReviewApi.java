@@ -25,6 +25,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentAuditConfigVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotReviewerException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftReviewedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftUnsubmittedCannotBeReviewedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
@@ -70,6 +71,9 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        if(knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), documentVo.getKnowledgeCircleId()) == 0) {
+            throw new KnowledgeDocumentCurrentUserNotReviewerException();
+        }
         if(!Objects.equals(documentVo.getVersion(), knowledgeDocumentVersionVo.getFromVersion())) {
             throw new KnowledgeDocumentNotCurrentVersionException(knowledgeDocumentVersionVo.getFromVersion());
         }

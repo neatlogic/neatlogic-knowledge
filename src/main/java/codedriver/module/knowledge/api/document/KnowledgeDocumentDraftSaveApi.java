@@ -42,6 +42,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.dto.KnowledgeTagVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotMemberException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotOwnerException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftExpiredCannotBeModifiedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftPublishedCannotBeModifiedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedCannotBeModifiedException;
@@ -86,7 +87,6 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
     @Input({
         @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
         @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, isRequired = true, desc = "类型id"),
-        //@Param(name = "knowledgeCircleId", type = ApiParamType.LONG, isRequired = true, desc = "知识圈id"),
         @Param(name = "title", type = ApiParamType.STRING, isRequired = true, minLength = 1, desc = "标题"),
         @Param(name = "lineList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "行数据列表"),
         @Param(name = "fileIdList", type = ApiParamType.JSONARRAY, desc = "附件id列表"),
@@ -160,6 +160,9 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 }
                 drafrVersionId = knowledgeDocumentVersionId;
                 KnowledgeDocumentVo before = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+                if(!before.getLcu().equals(UserContext.get().getUserUuid(true))) {
+                    throw new KnowledgeDocumentCurrentUserNotOwnerException();
+                }
                 if(!checkDocumentIsModify(before, documentVo)) {
                     resultObj.put("knowledgeDocumentId", documentId);
                     resultObj.put("knowledgeDocumentVersionId", drafrVersionId);
@@ -300,8 +303,8 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             String beforeMainBody = KnowledgeDocumentLineHandler.getMainBody(beforeLine);
             String afterMainBody = KnowledgeDocumentLineHandler.getMainBody(afterLine);
             if(!Objects.equals(beforeMainBody, afterMainBody)) {
-                System.out.println(beforeMainBody);
-                System.out.println(afterMainBody);
+//                System.out.println(beforeMainBody);
+//                System.out.println(afterMainBody);
                 return true;
             }
         }

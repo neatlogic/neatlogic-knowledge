@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONObject;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
 import codedriver.framework.reminder.core.OperationTypeEnum;
@@ -17,6 +18,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
+import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotReviewerException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 @Service
 @OperationType(type = OperationTypeEnum.DELETE)
@@ -47,11 +49,13 @@ public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
     @Description(desc = "删除文档")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        //TODO linbq这里要判断当前用户权限
         Long knowledgeDocumentId = jsonObj.getLong("knowledgeDocumentId");
         KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId);
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
+        }
+        if(knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId()) == 0) {
+            throw new KnowledgeDocumentCurrentUserNotReviewerException();
         }
         knowledgeDocumentMapper.updateKnowledgeDocumentToDeleteById(knowledgeDocumentId);
         

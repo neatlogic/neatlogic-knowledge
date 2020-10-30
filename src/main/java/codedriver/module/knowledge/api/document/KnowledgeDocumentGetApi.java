@@ -70,12 +70,12 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         if(documentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
         }
-        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        if(knowledgeDocumentMapper.checkUserIsMember(documentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
-            throw new KnowledgeDocumentCurrentUserNotMemberException();
-        }
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
         if(knowledgeDocumentVersionId == null) {
+            List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+            if(knowledgeDocumentMapper.checkUserIsMember(documentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+                throw new KnowledgeDocumentCurrentUserNotMemberException();
+            }
             knowledgeDocumentVersionId = documentVo.getKnowledgeDocumentVersionId();
         }
         KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);

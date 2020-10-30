@@ -71,6 +71,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        
         if(knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), documentVo.getKnowledgeCircleId()) == 0) {
             throw new KnowledgeDocumentCurrentUserNotReviewerException();
         }

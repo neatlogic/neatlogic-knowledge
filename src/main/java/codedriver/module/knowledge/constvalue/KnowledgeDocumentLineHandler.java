@@ -15,7 +15,7 @@ public enum KnowledgeDocumentLineHandler {
     IMG("img", "图片", (line) -> line.getConfig().getString("url"), null),
     TABLE("table", "表格", (line) -> line.getConfig().getString("tableList"), null),
 //    TABLE("table", "表格", (line) -> null, (line, mainBody) -> line.getConfig().put("tableList", JSON.parseArray(mainBody))),
-    CODE("code", "代码块", (line) -> line.getContent(), null),
+    CODE("code", "代码块", (line) -> line.getConfig().getString("value"), null),
     UL("ul", "无序列表", (line) -> line.getContent(), (line, mainBody) -> line.setContent(mainBody)),
     OL("ol", "有序列表", (line) -> line.getContent(), (line, mainBody) -> line.setContent(mainBody))
     ;

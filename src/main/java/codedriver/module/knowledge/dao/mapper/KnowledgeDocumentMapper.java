@@ -65,6 +65,13 @@ public interface KnowledgeDocumentMapper {
     );
 
     public int checkUserIsApprover(@Param("uuid") String userUuid, @Param("knowledgeCircleId") Long knowledgeCircleId);
+    
+    public int checkUserIsMember(
+        @Param("knowledgeCircleId") Long knowledgeCircleId, 
+        @Param("userUuid") String userUuid, 
+        @Param("teamUuidList") List<String> teamUuidList, 
+        @Param("roleUuidList") List<String> roleUuidList 
+        );
 
     public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentListByKnowledgeDocumentTypeUuid(KnowledgeDocumentVo knowledgeDocumentVo);
 

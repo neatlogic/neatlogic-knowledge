@@ -344,6 +344,30 @@
 	</if>
 	</select>
 	
+	<select id="checkUserIsMember" resultType="int">
+	SELECT 
+	  COUNT(1)
+	FROM `knowledge_circle_user` 
+	WHERE (type = 'common' AND `uuid` = 'alluser')
+	<if test="userUuid != null and userUuid != ''">
+		OR (type = 'user' AND `uuid` = #{userUuid})
+	</if>
+	<if test="teamUuidList != null and teamUuidList.size() > 0">
+		OR (type = 'team' AND `uuid` IN
+		<foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
+			#{teamUuid}
+		</foreach>
+		)
+	</if>
+	<if test="roleUuidList != null and roleUuidList.size() > 0">
+		OR (type = 'role' AND `uuid` IN
+		<foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
+			#{roleUuid}
+		</foreach>
+		)
+	</if>
+	</select>
+	
 	<select id="getKnowledgeDocumentListByKnowledgeDocumentTypeUuid" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 	SELECT 
 	  a.`id`,

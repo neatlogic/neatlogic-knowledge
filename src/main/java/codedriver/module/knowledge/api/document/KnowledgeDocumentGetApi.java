@@ -1,5 +1,6 @@
 package codedriver.module.knowledge.api.document;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -20,6 +22,7 @@ import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotMemberException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 @Service
@@ -31,6 +34,9 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentService knowledgeDocumentService;
+    
+    @Autowired
+    private TeamMapper teamMapper;
     
     @Override
     public String getToken() {
@@ -62,6 +68,10 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId);
         if(documentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
+        }
+        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        if(knowledgeDocumentMapper.checkUserIsMember(documentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+            throw new KnowledgeDocumentCurrentUserNotMemberException();
         }
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
         if(knowledgeDocumentVersionId == null) {

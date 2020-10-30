@@ -12,22 +12,22 @@ public enum KnowledgeDocumentLineHandler {
     P("p", "段落", (line) -> line.getContent(), (line, mainBody) -> line.setContent(mainBody)),
     H1("h1", "一级标题", (line) -> line.getContent(), (line, mainBody) -> line.setContent(mainBody)),
     H2("h2", "二级标题", (line) -> line.getContent(), (line, mainBody) -> line.setContent(mainBody)),
-    IMG("img", "图片", (line) -> null, null),
-//    TABLE("table", "表格", (line) -> JSON.toJSONString(line.getConfig().getJSONArray("tableList")), (line, mainBody) -> line.getConfig().put("tableList", JSON.parseArray(mainBody))),
-    TABLE("table", "表格", (line) -> null, null),
-    CODE("code", "代码块", (line) -> null, null),
+    IMG("img", "图片", (line) -> line.getConfig().getString("url"), null),
+    TABLE("table", "表格", (line) -> line.getConfig().getString("tableList"), null),
+//    TABLE("table", "表格", (line) -> null, (line, mainBody) -> line.getConfig().put("tableList", JSON.parseArray(mainBody))),
+    CODE("code", "代码块", (line) -> line.getContent(), null),
     UL("ul", "无序列表", (line) -> line.getContent(), (line, mainBody) -> line.setContent(mainBody)),
     OL("ol", "有序列表", (line) -> line.getContent(), (line, mainBody) -> line.setContent(mainBody))
     ;
     private String value;
     private String text;
-    private Function<KnowledgeDocumentLineVo, String> getMainBody;
-    private BiConsumer<KnowledgeDocumentLineVo, String> setMainBody;
-    private KnowledgeDocumentLineHandler(String value, String text, Function<KnowledgeDocumentLineVo, String> getMainBody, BiConsumer<KnowledgeDocumentLineVo, String> setMainBody) {
+    private Function<KnowledgeDocumentLineVo, String> mainBodyGet;
+    private BiConsumer<KnowledgeDocumentLineVo, String> mainBodySet;
+    private KnowledgeDocumentLineHandler(String value, String text, Function<KnowledgeDocumentLineVo, String> mainBodyGet, BiConsumer<KnowledgeDocumentLineVo, String> mainBodySet) {
         this.value = value;
         this.text = text;
-        this.getMainBody = getMainBody;
-        this.setMainBody = setMainBody;
+        this.mainBodyGet = mainBodyGet;
+        this.mainBodySet = mainBodySet;
     }
     public String getValue() {
         return value;
@@ -36,11 +36,20 @@ public enum KnowledgeDocumentLineHandler {
     public String getText() {
         return text;
     }
+
+    public static BiConsumer<KnowledgeDocumentLineVo, String> getMainBodySet(String _value){
+        for(KnowledgeDocumentLineHandler handler : values()) {
+            if(handler.value.equals(_value)) {
+                return handler.mainBodySet;
+            }
+        }
+        return null;
+    }
     public static String getMainBody(KnowledgeDocumentLineVo line){
         for(KnowledgeDocumentLineHandler handler : values()) {
             if(handler.value.equals(line.getHandler())) {
-                if(handler.getMainBody != null) {
-                    return handler.getMainBody.apply(line); 
+                if(handler.mainBodyGet != null) {
+                    return handler.mainBodyGet.apply(line); 
                 }
                 return null;
             }
@@ -50,8 +59,8 @@ public enum KnowledgeDocumentLineHandler {
     public static void setMainBody(KnowledgeDocumentLineVo line, String mainBody){
         for(KnowledgeDocumentLineHandler handler : values()) {
             if(handler.value.equals(line.getHandler())) {
-                if(handler.setMainBody != null) {
-                    handler.setMainBody.accept(line, mainBody);
+                if(handler.mainBodySet != null) {
+                    handler.mainBodySet.accept(line, mainBody);
                 }
                 return;
             }

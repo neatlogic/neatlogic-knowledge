@@ -18,6 +18,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -26,6 +27,7 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.UuidUtil;
+import codedriver.module.knowledge.constvalue.KnowledgeDocumentLineHandler;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
@@ -39,6 +41,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.dto.KnowledgeTagVo;
+import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotMemberException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftExpiredCannotBeModifiedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftPublishedCannotBeModifiedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedCannotBeModifiedException;
@@ -62,6 +65,8 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
     @Autowired
     private KnowledgeTagMapper knowledgeTagMapper;
+    @Autowired
+    private TeamMapper teamMapper;
 
     @Override
     public String getToken() {
@@ -99,6 +104,10 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMapper.getTypeByUuid(documentVo.getKnowledgeDocumentTypeUuid());
         if(knowledgeDocumentTypeVo == null) {
             throw new KnowledgeDocumentTypeNotFoundException(documentVo.getKnowledgeDocumentTypeUuid());
+        }
+        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        if(knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+            throw new KnowledgeDocumentCurrentUserNotMemberException();
         }
         documentVo.setKnowledgeCircleId(knowledgeDocumentTypeVo.getKnowledgeCircleId());
         documentVo.setId(null);
@@ -288,9 +297,11 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             if(!Objects.equals(beforeLine.getHandler(), afterLine.getHandler())) {
                 return true;
             }
-            if(!Objects.equals(beforeLine.getContent(), afterLine.getContent())) {
-                System.out.println(beforeLine.getContent());
-                System.out.println(afterLine.getContent());
+            String beforeMainBody = KnowledgeDocumentLineHandler.getMainBody(beforeLine);
+            String afterMainBody = KnowledgeDocumentLineHandler.getMainBody(afterLine);
+            if(!Objects.equals(beforeMainBody, afterMainBody)) {
+                System.out.println(beforeMainBody);
+                System.out.println(afterMainBody);
                 return true;
             }
         }

@@ -233,8 +233,12 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                   newLine.setChangeType("update");
                   String oldMainBody = KnowledgeDocumentLineHandler.getMainBody(oldLine);
                   String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
-                  if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && StringUtils.length(oldMainBody) > 0 && StringUtils.length(newMainBody) > 0) {
-//                      if(KnowledgeDocumentLineHandler.P.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H1.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.H2.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.UL.getValue().equals(oldLine.getHandler()) || KnowledgeDocumentLineHandler.OL.getValue().equals(oldLine.getHandler())) {
+                  if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null) {
+                      if(StringUtils.length(oldMainBody) == 0) {
+                          KnowledgeDocumentLineHandler.setMainBody(newLine, "<span class='insert'>" + newMainBody + "</span>");
+                      }else if(StringUtils.length(newMainBody) == 0) {
+                          KnowledgeDocumentLineHandler.setMainBody(oldLine, "<span class='delete'>" + oldMainBody + "</span>");
+                      }else {
                           List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
                           List<SegmentRange> newSegmentRangeList = new ArrayList<>();
                           List<Character> oldCharList = new ArrayList<>();
@@ -251,16 +255,11 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                               newSegmentRangeList.add(segmentpair.getNewSegmentRange());
                           }
                           KnowledgeDocumentLineHandler.setMainBody(oldLine, LCSUtil.wrapChangePlace(oldMainBody, oldSegmentRangeList, "<span class='delete'>", "</span>"));
-//                          oldLine.setContent(LCSUtil.wrapChangePlace(oldLine.getContent(), oldSegmentRangeList, "<span class='delete'>", "</span>"));
-                          oldResultList.add(oldLine);
                           KnowledgeDocumentLineHandler.setMainBody(newLine, LCSUtil.wrapChangePlace(newMainBody, newSegmentRangeList, "<span class='insert'>", "</span>"));
-//                          newLine.setContent(LCSUtil.wrapChangePlace(newLine.getContent(), newSegmentRangeList, "<span class='insert'>", "</span>"));
-                          newResultList.add(newLine);
-//                      }
-                  }else {
-                      oldResultList.add(oldLine);
-                      newResultList.add(newLine);
+                      }
                   }
+                  oldResultList.add(oldLine);
+                  newResultList.add(newLine);
               }else {
                   /** 行组件不相同，说明删除一行，再添加一行，根据行号大小判断加入重组后数据列表顺序 **/
                   if(oldLine.getLineNumber() <= newLine.getLineNumber()) {

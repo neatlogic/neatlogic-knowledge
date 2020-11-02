@@ -10,13 +10,17 @@ import java.util.Map;
  */
 public class NodePool {
 
-    private Map<Integer, Node> map = new HashMap<>();
+    private Map<String, Node> map = new HashMap<>();
     
     public Node getNode(int i, int j) {
         if(i < 0 || j < 0) {
             return null;
         }
-        return map.computeIfAbsent(i * 10 + j, k -> new Node(i, j));
+        return map.computeIfAbsent(generateKey(i, j), k -> new Node(i, j));
+    }
+    
+    private String generateKey(int i, int j) {
+        return i + "_" + j;
     }
 
 }

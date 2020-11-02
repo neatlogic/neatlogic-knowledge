@@ -99,15 +99,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         String newTitle = newDocumentVo.getTitle();
         List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
         List<SegmentRange> newSegmentRangeList = new ArrayList<>();
-        List<Character> oldCharList = new ArrayList<>();
-        for(char c : oldTitle.toCharArray()) {
-            oldCharList.add(c);
-        }
-        List<Character> newCharList = new ArrayList<>();
-        for(char c : newTitle.toCharArray()) {
-            newCharList.add(c);
-        }
-        Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
+        Node node = LCSUtil.LCSCompare(oldTitle, newTitle);
         for(SegmentPair segmentpair : node.getSegmentPairList()) {
             oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
             newSegmentRangeList.add(segmentpair.getNewSegmentRange());
@@ -241,15 +233,15 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                       }else {
                           List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
                           List<SegmentRange> newSegmentRangeList = new ArrayList<>();
-                          List<Character> oldCharList = new ArrayList<>();
-                          for(char c : oldMainBody.toCharArray()) {
-                              oldCharList.add(c);
-                          }
-                          List<Character> newCharList = new ArrayList<>();
-                          for(char c : newMainBody.toCharArray()) {
-                              newCharList.add(c);
-                          }
-                          Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
+//                          List<Character> oldCharList = new ArrayList<>();
+//                          for(char c : oldMainBody.toCharArray()) {
+//                              oldCharList.add(c);
+//                          }
+//                          List<Character> newCharList = new ArrayList<>();
+//                          for(char c : newMainBody.toCharArray()) {
+//                              newCharList.add(c);
+//                          }
+                          Node node = LCSUtil.LCSCompare(oldMainBody, newMainBody);
                           for(SegmentPair segmentpair : node.getSegmentPairList()) {
                               oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
                               newSegmentRangeList.add(segmentpair.getNewSegmentRange());
@@ -325,15 +317,15 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                         int oldLineContentLength = StringUtils.length(oldMainBody);
                         int newLineContentLength = StringUtils.length(newMainBody);
                         if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && oldLineContentLength > 0 && newLineContentLength > 0) {
-                            List<Character> oldCharList = new ArrayList<>();
-                            for(char c : oldMainBody.toCharArray()) {
-                                oldCharList.add(c);
-                            }
-                            List<Character> newCharList = new ArrayList<>();
-                            for(char c : newMainBody.toCharArray()) {
-                                newCharList.add(c);
-                            }
-                            Node node = LCSUtil.LCSCompare(oldCharList, newCharList, (c1, c2) -> c1.equals(c2));
+//                            List<Character> oldCharList = new ArrayList<>();
+//                            for(char c : oldMainBody.toCharArray()) {
+//                                oldCharList.add(c);
+//                            }
+//                            List<Character> newCharList = new ArrayList<>();
+//                            for(char c : newMainBody.toCharArray()) {
+//                                newCharList.add(c);
+//                            }
+                            Node node = LCSUtil.LCSCompare(oldMainBody, newMainBody);
                             int maxLength = Math.max(oldLineContentLength, newLineContentLength);
                             matchPercentage = (node.getTotalMatchLength() * 1000) / maxLength;
                             currentNode.setTotalMatchLength(matchPercentage);

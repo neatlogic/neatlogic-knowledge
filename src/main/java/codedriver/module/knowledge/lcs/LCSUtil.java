@@ -63,6 +63,56 @@ public class LCSUtil {
     }
     /**
      * 
+    * @Time:2020年11月02日
+    * @Description: LCS算法比较字符串 
+    * @param oldStr 旧字符串
+    * @param newList 新字符串
+    * @return Node 返回最后一次比较结果信息
+     */
+    public static Node LCSCompare(String oldStr, String newStr) {
+        Node[][] lcs = new Node[oldStr.length()][newStr.length()];       
+        for(int i = 0; i < oldStr.length(); i++) {
+            for(int j = 0; j < newStr.length(); j++) {
+                Node currentNode = new Node(i, j);
+                lcs[i][j] = currentNode;
+                if(oldStr.charAt(i) == newStr.charAt(j)) {
+                    currentNode.setTotalMatchLength(1).setMatch(true);
+                    Node upperLeftNode = null;
+                    if(i > 0 && j > 0) {
+                        upperLeftNode = lcs[i-1][j-1];
+                    }
+                    if(upperLeftNode != null) {
+                        currentNode.setTotalMatchLength(upperLeftNode.getTotalMatchLength() + 1).setPrevious(upperLeftNode);
+                    }
+                }else {
+                    int left = 0;
+                    int top = 0;
+                    Node leftNode = null;
+                    if(j > 0) {
+                        leftNode = lcs[i][j-1];
+                    }
+                    if(leftNode != null) {
+                        left = leftNode.getTotalMatchLength();
+                    }
+                    Node topNode = null;
+                    if(i > 0) {
+                        topNode = lcs[i-1][j];
+                    }
+                    if(topNode != null) {
+                        top = topNode.getTotalMatchLength();
+                    }
+                    if(top >= left) {
+                        currentNode.setTotalMatchLength(top).setPrevious(topNode);
+                    }else {
+                        currentNode.setTotalMatchLength(left).setPrevious(leftNode);
+                    }
+                }
+            }
+        }       
+        return lcs[oldStr.length()-1][newStr.length()-1];
+    }
+    /**
+     * 
     * @Time:2020年10月22日
     * @Description: 对字符串不匹配的地方做标记 
     * @param str 字符串数据

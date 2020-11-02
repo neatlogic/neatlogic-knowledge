@@ -20,7 +20,7 @@ public class NodePool {
     }
     
     private String generateKey(int i, int j) {
-        return i + "_" + j;
+        return i + "#" + j;
     }
 
 }

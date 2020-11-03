@@ -88,7 +88,8 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 				JSONObject circle = new JSONObject();
 				circle.put("id",id);
 				circle.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());
-				circle.put("typeList",typeList);
+				circle.put("disabled",true);
+				circle.put("children",typeList);
 				result.add(circle);
 			}
 		}

@@ -74,11 +74,11 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 				type.setParentUuid(KnowledgeDocumentTypeVo.ROOT_UUID);
 				type.setKnowledgeCircleId(id);
 				List<KnowledgeDocumentTypeVo> typeList = knowledgeDocumentTypeMapper.searchType(type);
-				JSONObject circleTypes = new JSONObject();
-				circleTypes.put("id",id);
-				circleTypes.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());
-				circleTypes.put("typeList",typeList);
-				result.add(circleTypes);
+				JSONObject circle = new JSONObject();
+				circle.put("id",id);
+				circle.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());
+				circle.put("typeList",typeList);
+				result.add(circle);
 			}
 		}
 		return result;

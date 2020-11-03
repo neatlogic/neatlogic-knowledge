@@ -121,11 +121,11 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 								vo.setChildCount(childCount.getChildCount());
 							}
 						}
-						JSONObject circleTypes = new JSONObject();
-						circleTypes.put("id",id);
-						circleTypes.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());
-						circleTypes.put("typeList",root.getChildren());
-						result.add(circleTypes);
+						JSONObject circle = new JSONObject();
+						circle.put("id",id);
+						circle.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());
+						circle.put("typeList",root.getChildren());
+						result.add(circle);
 //						docTypeList.addAll(root.getChildren());
 					}
 
@@ -147,11 +147,11 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 							}
 						}
 					}
-					JSONObject circleTypes = new JSONObject();
-					circleTypes.put("id",id);
-					circleTypes.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());
-					circleTypes.put("typeList",root.getChildren());
-					result.add(circleTypes);
+					JSONObject circle = new JSONObject();
+					circle.put("id",id);
+					circle.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());
+					circle.put("typeList",root.getChildren());
+					result.add(circle);
 //					docTypeList.addAll(root.getChildren());
 				}
 			}

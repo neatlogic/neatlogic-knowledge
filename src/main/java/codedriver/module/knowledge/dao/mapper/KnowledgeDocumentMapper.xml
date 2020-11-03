@@ -30,6 +30,7 @@
 	  `fcd`
 	FROM `knowledge_document` 
 	WHERE `title` = #{value}
+	AND `is_delete` = 0
 	</select>
 	
 	<resultMap id="knowledgeDocumentMap" type="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
@@ -537,6 +538,10 @@
 	</foreach>
 	</select>
 	
+	<select id="getKnowledgeDocumentDrafIdtByKnowledgeDocumentIdAndLcu" resultType="java.lang.Long">
+	SELECT `id` FROM `knowledge_document_version` WHERE `knowledge_document_id` = #{knowledgeDocumentId} AND `status` = 'draft' AND `lcu` = #{lcu}
+	</select>
+	
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	INSERT INTO `knowledge_document` (
 	  `id`,
@@ -759,5 +764,9 @@
 
 	<delete id="deleteKnowledgeDocumentCollect">
 	DELETE FROM `knowledge_document_collect` WHERE `knowledge_document_id` = #{documentId} and `user_uuid` = #{userUuid}
+	</delete>
+	
+	<delete id="deleteKnowledgeDocumentDraftByKnowledgeDocumentIdAndLcu">
+	DELETE FROM `knowledge_document_version` WHERE `knowledge_document_id` = #{knowledgeDocumentId} AND `status` = 'draft' AND `lcu` = #{lcu}
 	</delete>
 </mapper>

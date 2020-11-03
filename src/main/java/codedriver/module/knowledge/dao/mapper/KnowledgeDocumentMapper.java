@@ -105,6 +105,8 @@ public interface KnowledgeDocumentMapper {
 
     public List<Long> getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(@Param("userUuid") String userUuid, @Param("knowledgeDocumentIdList") List<Long> knowledgeDocumentIdList);
 
+    public Long getKnowledgeDocumentDrafIdtByKnowledgeDocumentIdAndLcu(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("lcu")String userUuid);
+
     @ESSearch
     public int insertKnowledgeDocument(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
 
@@ -159,5 +161,7 @@ public interface KnowledgeDocumentMapper {
     public int deleteKnowledgeDocumentFavor(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
 
     public int deleteKnowledgeDocumentCollect(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+
+    public int deleteKnowledgeDocumentDraftByKnowledgeDocumentIdAndLcu(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("lcu")String userUuid);
 
 }

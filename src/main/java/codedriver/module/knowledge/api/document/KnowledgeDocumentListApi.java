@@ -206,6 +206,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                     }
                     knowledgeDocumentVersionVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
                     knowledgeDocumentVersionVo.setIsEditable(1);
+                    knowledgeDocumentVersionVo.setIsCollect(1);
                     knowledgeDocumentVersionVo.setAutoGenerateId(false);
                     knowledgeDocumentVersionVo.setId(null);
                 }
@@ -319,10 +320,11 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
     @SuppressWarnings({"serial"})
     private JSONArray getMyFavoritesTheadList() {
         JSONArray theadList = new JSONArray();
+        theadList.add(new JSONObject() {{this.put("title", ""); this.put("key", "isCollect");}});
         theadList.add(new JSONObject() {{this.put("title", "标题"); this.put("key", "title");}});
         theadList.add(new JSONObject() {{this.put("title", "创建人"); this.put("key", "fcuName");}});
         theadList.add(new JSONObject() {{this.put("title", "最后修改人"); this.put("key", "lcuName");}});
-        theadList.add(new JSONObject() {{this.put("title", "最后一次审批时间"); this.put("key", "reviewerTime");}});
+        theadList.add(new JSONObject() {{this.put("title", "最后一次审批时间"); this.put("key", "reviewTime");}});
         theadList.add(new JSONObject() {{this.put("key", "action");}});
         return theadList;
     }

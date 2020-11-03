@@ -233,14 +233,6 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                       }else {
                           List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
                           List<SegmentRange> newSegmentRangeList = new ArrayList<>();
-//                          List<Character> oldCharList = new ArrayList<>();
-//                          for(char c : oldMainBody.toCharArray()) {
-//                              oldCharList.add(c);
-//                          }
-//                          List<Character> newCharList = new ArrayList<>();
-//                          for(char c : newMainBody.toCharArray()) {
-//                              newCharList.add(c);
-//                          }
                           Node node = LCSUtil.LCSCompare(oldMainBody, newMainBody);
                           for(SegmentPair segmentpair : node.getSegmentPairList()) {
                               oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
@@ -311,26 +303,16 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                 KnowledgeDocumentLineVo newLine = newList.get(j);
                 int matchPercentage = 0;
                 if(oldLine.getHandler().equals(newLine.getHandler())) {
-//                    if(KnowledgeDocumentLineHandler.P.getValue().equals(oldStr.getHandler()) || KnowledgeDocumentLineHandler.H1.getValue().equals(oldStr.getHandler()) || KnowledgeDocumentLineHandler.H2.getValue().equals(oldStr.getHandler()) || KnowledgeDocumentLineHandler.UL.getValue().equals(oldStr.getHandler()) || KnowledgeDocumentLineHandler.OL.getValue().equals(oldStr.getHandler())) {
                         String oldMainBody = KnowledgeDocumentLineHandler.getMainBody(oldLine);
                         String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
                         int oldLineContentLength = StringUtils.length(oldMainBody);
                         int newLineContentLength = StringUtils.length(newMainBody);
                         if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && oldLineContentLength > 0 && newLineContentLength > 0) {
-//                            List<Character> oldCharList = new ArrayList<>();
-//                            for(char c : oldMainBody.toCharArray()) {
-//                                oldCharList.add(c);
-//                            }
-//                            List<Character> newCharList = new ArrayList<>();
-//                            for(char c : newMainBody.toCharArray()) {
-//                                newCharList.add(c);
-//                            }
                             Node node = LCSUtil.LCSCompare(oldMainBody, newMainBody);
                             int maxLength = Math.max(oldLineContentLength, newLineContentLength);
                             matchPercentage = (node.getTotalMatchLength() * 1000) / maxLength;
                             currentNode.setTotalMatchLength(matchPercentage);
                         }
-//                    }
                 }
                 currentNode.setTotalMatchLength(matchPercentage);
                 priorityQueue.add(currentNode);

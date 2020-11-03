@@ -62,7 +62,14 @@ public class Node {
             node = node.previous;
             node.next = current;          
         }
-
+    
+        if(node.match) {
+            if(node.oldIndex != 0 || node.newIndex != 0) {
+                SegmentPair segmentMapping = new SegmentPair(0, 0, false);
+                segmentMapping.setEndIndex(node.oldIndex, node.newIndex);
+                resultList.add(segmentMapping);
+            }
+        }
         SegmentPair segmentMapping = new SegmentPair(0, 0, node.match);
         int oldPrevMatchIndex = 0;
         int newPrevMatchIndex = 0;

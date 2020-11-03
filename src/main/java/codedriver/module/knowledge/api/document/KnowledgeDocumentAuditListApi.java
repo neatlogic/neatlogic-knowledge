@@ -100,7 +100,8 @@ public class KnowledgeDocumentAuditListApi extends PrivateApiComponentBase {
                 if(StringUtils.isNotBlank(knowledgeDocumentAuditVo.getFcu())) {
                     UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentAuditVo.getFcu());
                     knowledgeDocumentAuditVo.setFcuName(userVo.getUserName());
-                    knowledgeDocumentAuditVo.setFcuInfo(userVo.getUserInfo());                    
+                    knowledgeDocumentAuditVo.setFcuInfo(userVo.getUserInfo());
+                    knowledgeDocumentAuditVo.setFcuVipLevel(userVo.getVipLevel());
                 }
                 String title = KnowledgeDocumentOperate.getTitle(knowledgeDocumentAuditVo.getOperate());
                 if(StringUtils.isNotBlank(knowledgeDocumentAuditVo.getConfigHash())) {

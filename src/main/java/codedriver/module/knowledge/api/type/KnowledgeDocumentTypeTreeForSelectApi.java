@@ -11,6 +11,7 @@ import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.service.KnowledgeDocumentTypeService;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -59,9 +60,9 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 	@Description(desc = "获取知识圈知识分类树_下拉框")
 	@Override
 	public Object myDoService(JSONObject jsonObj) throws Exception {
-		JSONObject result = new JSONObject();
+		JSONArray result = new JSONArray();
 		String keyword = jsonObj.getString("keyword");
-		List<KnowledgeDocumentTypeVo> docTypeList = null;
+//		List<KnowledgeDocumentTypeVo> docTypeList = null;
 		List uuidList = new ArrayList();
 		/** 获取当前用户所在组和角色 */
 		List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid());
@@ -74,7 +75,7 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 		/** 根据圈子ID查询分类 */
 		if(CollectionUtils.isNotEmpty(circleIdList)){
 			Set<Long> circleIdSet = circleIdList.stream().collect(Collectors.toSet());
-			docTypeList = new ArrayList<>();
+//			docTypeList = new ArrayList<>();
 			for(Long id : circleIdSet){
 				/** 搜索模式下，根据圈子ID与关键词搜索文档类型与其所有父类型 */
 				if(StringUtils.isNotBlank(keyword)){
@@ -120,7 +121,12 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 								vo.setChildCount(childCount.getChildCount());
 							}
 						}
-						docTypeList.addAll(root.getChildren());
+						JSONObject circle = new JSONObject();
+						circle.put("id",id);
+						circle.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());
+						circle.put("typeList",root.getChildren());
+						result.add(circle);
+//						docTypeList.addAll(root.getChildren());
 					}
 
 				}else{
@@ -141,11 +147,15 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 							}
 						}
 					}
-					docTypeList.addAll(root.getChildren());
+					JSONObject circle = new JSONObject();
+					circle.put("id",id);
+					circle.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());
+					circle.put("typeList",root.getChildren());
+					result.add(circle);
+//					docTypeList.addAll(root.getChildren());
 				}
 			}
 		}
-		result.put("typeList",docTypeList);
 		return result;
 	}
 

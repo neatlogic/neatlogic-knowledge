@@ -116,6 +116,22 @@
 		</foreach>
 		GROUP BY a.`uuid`
 	</select>
+
+	<select id="getChildAndSelfByLftRht" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo" useCache="false">
+		SELECT
+		a.`uuid`,
+		a.`name`,
+		a.`parent_uuid` AS parentUuid,
+		a.`lft`,
+		a.`rht`,
+		a.`knowledge_circle_id` as knowledgeCircleId
+		FROM `knowledge_document_type` a
+		WHERE a.`lft` &gt;= #{lft} AND a.`rht` &lt;= #{rht} AND a.`knowledge_circle_id` = #{circleId}
+	</select>
+
+	<select id="getDocumentCountByUuid" parameterType="java.lang.String" resultType="int">
+		SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_document_type_uuid` = #{value}
+	</select>
 	
 	<update id="updateTypeLeftRightCode">
 	UPDATE `knowledge_document_type` SET `lft` = #{lft}, `rht` = #{rht} WHERE `uuid` = #{uuid}

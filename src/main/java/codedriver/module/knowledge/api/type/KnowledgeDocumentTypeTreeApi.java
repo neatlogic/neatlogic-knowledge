@@ -74,6 +74,17 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 				type.setParentUuid(KnowledgeDocumentTypeVo.ROOT_UUID);
 				type.setKnowledgeCircleId(id);
 				List<KnowledgeDocumentTypeVo> typeList = knowledgeDocumentTypeMapper.searchType(type);
+				/** 计算每个分类及其子类的文档数 */
+				if(CollectionUtils.isNotEmpty(typeList)){
+					for(KnowledgeDocumentTypeVo vo : typeList){
+						int count = 0;
+						List<KnowledgeDocumentTypeVo> childAndSelf = knowledgeDocumentTypeMapper.getChildAndSelfByLftRht(vo.getLft(), vo.getRht(), id);
+						for(KnowledgeDocumentTypeVo obj : childAndSelf){
+							count += knowledgeDocumentTypeMapper.getDocumentCountByUuid(obj.getUuid());
+						}
+						vo.setDocumentCount(count);
+					}
+				}
 				JSONObject circle = new JSONObject();
 				circle.put("id",id);
 				circle.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());

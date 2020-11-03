@@ -124,7 +124,8 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 						JSONObject circle = new JSONObject();
 						circle.put("id",id);
 						circle.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());
-						circle.put("typeList",root.getChildren());
+						circle.put("disabled",true);
+						circle.put("children",root.getChildren());
 						result.add(circle);
 //						docTypeList.addAll(root.getChildren());
 					}
@@ -150,7 +151,8 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 					JSONObject circle = new JSONObject();
 					circle.put("id",id);
 					circle.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());
-					circle.put("typeList",root.getChildren());
+					circle.put("disabled",true);
+					circle.put("children",root.getChildren());
 					result.add(circle);
 //					docTypeList.addAll(root.getChildren());
 				}

@@ -79,8 +79,11 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
             knowledgeDocumentVersionId = documentVo.getKnowledgeDocumentVersionId();
         }
         KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
+        int isReviewable = knowledgeDocumentService.isReviewable(knowledgeDocumentVersionVo);
         if(!knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.PASSED.getValue())) {
-            if(!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
+            if(knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.SUBMITTED.getValue()) && isReviewable == 1) {
+                
+            }else if(!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
                 throw new KnowledgeDocumentCurrentUserNotOwnerException();
             }
         }
@@ -94,7 +97,7 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         
         knowledgeDocumentVo.setIsEditable(knowledgeDocumentService.isEditable(knowledgeDocumentVersionVo));
         knowledgeDocumentVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
-        knowledgeDocumentVo.setIsReviewable(knowledgeDocumentService.isReviewable(knowledgeDocumentVersionVo));
+        knowledgeDocumentVo.setIsReviewable(isReviewable);
         
         Integer isReadOnly = jsonObj.getInteger("isReadOnly");
         if(Objects.equals(isReadOnly, 1)) {

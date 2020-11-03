@@ -280,6 +280,7 @@
 	FROM `knowledge_document_version` 
 	WHERE `knowledge_document_id` = #{value} 
 	AND `status` = 'passed'
+	AND `is_delete` = 0
 	ORDER BY `version` DESC
 	</select>
 	
@@ -298,6 +299,7 @@
 	FROM `knowledge_document_version` 
 	WHERE `knowledge_document_id` = #{value} 
 	AND `status` = 'passed'
+	AND `is_delete` = 0
 	ORDER BY `version` DESC
 	</select>
 	

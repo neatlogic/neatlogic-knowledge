@@ -60,7 +60,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
         map.put(KnowledgeType.DRAFT, () -> {
             KnowledgeDocumentVersionVo searchVo = new KnowledgeDocumentVersionVo();
             searchVo.setLcu(UserContext.get().getUserUuid(true));
-            List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
+            List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.DRAFT.getValue());
             searchVo.setStatusList(statusList);
             return knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionCount(searchVo);
         });

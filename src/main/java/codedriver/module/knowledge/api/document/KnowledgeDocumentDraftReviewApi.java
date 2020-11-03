@@ -84,9 +84,10 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentDraftReviewedException();
         }else if(KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftUnsubmittedCannotBeReviewedException();
-        }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftUnsubmittedCannotBeReviewedException();
         }
+//        else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+//            throw new KnowledgeDocumentDraftUnsubmittedCannotBeReviewedException();
+//        }
         String operate = KnowledgeDocumentOperate.REJECT.getValue();
         String action = jsonObj.getString("action");
         KnowledgeDocumentVersionVo updateStatusVo = new KnowledgeDocumentVersionVo();
@@ -105,7 +106,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
         
         if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(action)) {
-            knowledgeDocumentMapper.updateKnowledgeDocumentVersionStatusByKnowledgeDocumentIdAndVersionAndStatus(documentVo.getId(), knowledgeDocumentVersionVo.getFromVersion(), KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
+//            knowledgeDocumentMapper.updateKnowledgeDocumentVersionStatusByKnowledgeDocumentIdAndVersionAndStatus(documentVo.getId(), knowledgeDocumentVersionVo.getFromVersion(), KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
             documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             documentVo.setVersion(updateStatusVo.getVersion());
             documentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());

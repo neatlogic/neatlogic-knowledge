@@ -1,10 +1,10 @@
 package codedriver.module.knowledge.constvalue;
 
 public enum KnowledgeType {
-    ALL("all", "所有知识"),
-    WAITINGFORREVIEW("waitingforreview", "待我审批的知识"),
-    SHARE("share", "我共享的知识"),
-    COLLECT("collect", "我收藏的知识"),
+    ALL("all", "所有"),
+    WAITINGFORREVIEW("waitingforreview", "待我审批"),
+    SHARE("share", "我的提交"),
+    COLLECT("collect", "我的收藏"),
     DRAFT("draft", "草稿");
     private String value;
     private String text;

@@ -43,7 +43,6 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.dto.KnowledgeTagVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotMemberException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotOwnerException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftExpiredCannotBeModifiedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftPublishedCannotBeModifiedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedCannotBeModifiedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentHasBeenDeletedException;
@@ -155,9 +154,10 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                     throw new KnowledgeDocumentDraftPublishedCannotBeModifiedException();
                 }else if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
                     throw new KnowledgeDocumentDraftSubmittedCannotBeModifiedException();
-                }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
-                    throw new KnowledgeDocumentDraftExpiredCannotBeModifiedException();
                 }
+//                else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
+//                    throw new KnowledgeDocumentDraftExpiredCannotBeModifiedException();
+//                }
                 drafrVersionId = knowledgeDocumentVersionId;
                 KnowledgeDocumentVo before = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
                 if(!before.getLcu().equals(UserContext.get().getUserUuid(true))) {

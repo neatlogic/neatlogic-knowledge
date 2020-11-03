@@ -4,7 +4,7 @@ public enum KnowledgeDocumentVersionStatus {
     DRAFT("draft", "未提交"),
     SUBMITTED("submitted", "待审批"),
     PASSED("passed", "已通过"),
-    EXPIRED("expired", "已失效"),
+//    EXPIRED("expired", "已失效"),
     REJECTED("rejected", "已拒绝");
     private String value;
     private String text;

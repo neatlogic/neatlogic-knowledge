@@ -5,6 +5,7 @@
 	<select id="getKnowledgeDocumentById" parameterType="java.lang.Long" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	SELECT 
 	  `id`,
+	  `title`,
 	  `knowledge_document_version_id` AS knowledgeDocumentVersionId,
 	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_circle_id` AS knowledgeCircleId,
@@ -14,6 +15,21 @@
 	  `fcd`
 	FROM `knowledge_document` 
 	WHERE `id` = #{value}
+	</select>
+	
+	<select id="getKnowledgeDocumentByTitle" parameterType="java.lang.String" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
+	SELECT 
+	  `id`,
+	  `title`,
+	  `knowledge_document_version_id` AS knowledgeDocumentVersionId,
+	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
+	  `knowledge_circle_id` AS knowledgeCircleId,
+	  `is_delete` AS isDelete,
+	  `version`,
+	  `fcu`,
+	  `fcd`
+	FROM `knowledge_document` 
+	WHERE `title` = #{value}
 	</select>
 	
 	<resultMap id="knowledgeDocumentMap" type="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
@@ -452,10 +468,16 @@
 	</where>
 	</select>
 	
-	<select id="checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion" resultType="int">
+	<!-- <select id="checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion" resultType="int">
 	SELECT COUNT(1) FROM `knowledge_document_version` 
 	WHERE `knowledge_document_id` = #{knowledgeDocumentId}
 	AND `from_version` = #{fromVersion}
+	AND `status` = 'submitted'
+	</select> -->
+	
+	<select id="checkIFThereIsSubmittedDraftByKnowDocumentId" resultType="int">
+	SELECT COUNT(1) FROM `knowledge_document_version` 
+	WHERE `knowledge_document_id` = #{knowledgeDocumentId}
 	AND `status` = 'submitted'
 	</select>
 	
@@ -518,6 +540,7 @@
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	INSERT INTO `knowledge_document` (
 	  `id`,
+	  `title`,
 	  `version`,
 	  `knowledge_document_type_uuid`,
 	  `knowledge_circle_id`,
@@ -527,6 +550,7 @@
 	VALUES
 	  (
 	    #{id},
+	    #{title},
 	    #{version},
 	    #{knowledgeDocumentTypeUuid},
 	    #{knowledgeCircleId},
@@ -677,9 +701,19 @@
 	<update id="updateKnowledgeDocumentById" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 	UPDATE `knowledge_document` 
 	SET 
+	<if test="knowledgeDocumentVersionId != null">
 	`knowledge_document_version_id` = #{knowledgeDocumentVersionId}, 
+	</if>
+	<if test="knowledgeDocumentTypeUuid != null and knowledgeDocumentTypeUuid != ''">
 	`knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid}, 
-	`version` = #{version} 
+	</if>
+	<if test="version != null">
+	`version` = #{version},
+	</if> 
+	<if test="title != null and title != ''">
+	`title` = #{title}, 
+	</if>
+	`id` = `id`
 	WHERE `id` = #{id}
 	</update>
 

@@ -21,6 +21,8 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 public interface KnowledgeDocumentMapper {
 
     public KnowledgeDocumentVo getKnowledgeDocumentById(Long id);
+
+    public KnowledgeDocumentVo getKnowledgeDocumentByTitle(String title);
     
     public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdList(@Param("documentIdlist") List<Long> documentIdList);
     
@@ -91,7 +93,9 @@ public interface KnowledgeDocumentMapper {
 
     public int getDocumentViewCount(Long documentId);
 
-    public int checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("fromVersion")Integer fromVersion);
+//    public int checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("fromVersion")Integer fromVersion);
+    
+    public int checkIFThereIsSubmittedDraftByKnowDocumentId(Long knowledgeDocumentId);
 
     public int checkIfTheVersionIsTheCurrentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 

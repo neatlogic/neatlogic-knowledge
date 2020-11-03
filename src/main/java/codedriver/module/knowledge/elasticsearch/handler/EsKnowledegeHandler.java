@@ -226,7 +226,7 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
      */
     private String getMyShareSql() {
         KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
-        knowledgeDocumentVersionVo.setStatusList(Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue(),KnowledgeDocumentVersionStatus.SUBMITTED.getValue(),KnowledgeDocumentVersionStatus.REJECTED.getValue(),KnowledgeDocumentVersionStatus.EXPIRED.getValue()));
+        knowledgeDocumentVersionVo.setStatusList(Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue(),KnowledgeDocumentVersionStatus.SUBMITTED.getValue(),KnowledgeDocumentVersionStatus.REJECTED.getValue()));
         knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid());
         knowledgeDocumentVersionVo.setNeedPage(false);
         List<KnowledgeDocumentVersionVo>  knowledgeVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionList(knowledgeDocumentVersionVo);

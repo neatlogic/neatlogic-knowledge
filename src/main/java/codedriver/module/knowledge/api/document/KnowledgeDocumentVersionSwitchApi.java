@@ -26,7 +26,6 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotRevi
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotHistoricalVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentVersionSwitchFailedExecption;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 @Transactional
@@ -70,18 +69,20 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentNotHistoricalVersionException(knowledgeDocumentVersionId);
         }else if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentNotHistoricalVersionException(knowledgeDocumentVersionId);
-        }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentNotHistoricalVersionException(knowledgeDocumentVersionId);
-        }else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+        }
+//        else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+//            throw new KnowledgeDocumentNotHistoricalVersionException(knowledgeDocumentVersionId);
+//        }
+        else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentNotHistoricalVersionException(knowledgeDocumentVersionId);
         }
         KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
-        if(knowledgeDocumentMapper.checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion(knowledgeDocumentVo.getId(), knowledgeDocumentVo.getVersion()) > 0) {
-            throw new KnowledgeDocumentVersionSwitchFailedExecption();
-        }
+//        if(knowledgeDocumentMapper.checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion(knowledgeDocumentVo.getId(), knowledgeDocumentVo.getVersion()) > 0) {
+//            throw new KnowledgeDocumentVersionSwitchFailedExecption();
+//        }
         int oldVersion = knowledgeDocumentVo.getVersion();
         if(knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId()) == 0) {
             throw new KnowledgeDocumentCurrentUserNotReviewerException();

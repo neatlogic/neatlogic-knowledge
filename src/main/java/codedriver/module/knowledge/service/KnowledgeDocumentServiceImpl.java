@@ -109,7 +109,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             }
         }
         knowledgeDocumentVo.setVersion(knowledgeDocumentVersionVo.getVersion() != null ? knowledgeDocumentVersionVo.getVersion() : knowledgeDocumentVersionVo.getFromVersion());
-        knowledgeDocumentVo.setTitle(knowledgeDocumentVersionVo.getTitle());
+//        knowledgeDocumentVo.setTitle(knowledgeDocumentVersionVo.getTitle());
         knowledgeDocumentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
         knowledgeDocumentVo.setLcu(knowledgeDocumentVersionVo.getLcu());
         UserVo lcuUserVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());

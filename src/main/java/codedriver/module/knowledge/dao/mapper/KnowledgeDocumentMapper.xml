@@ -162,30 +162,31 @@
 	
 	<select id="getKnowledgeDocumentVersionMyVersionList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 	SELECT 
-	  `id`,
-	  <!-- `title`, -->
-	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
-	  `knowledge_document_id` AS knowledgeDocumentId,
-	  `from_version` AS fromVersion,
-	  `version`,
-	  `status`,
-	  `lcu`,
-	  `lcd`,
-	  `size`,
-	  `reviewer`,
-	  `review_time` AS reviewTime 
-	FROM `knowledge_document_version` 
-	WHERE `lcu` = #{lcu} AND `is_delete` = 0
+	  a.`id`,
+	  b.`title`,
+	  a.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
+	  a.`knowledge_document_id` AS knowledgeDocumentId,
+	  a.`from_version` AS fromVersion,
+	  a.`version`,
+	  a.`status`,
+	  a.`lcu`,
+	  a.`lcd`,
+	  a.`size`,
+	  a.`reviewer`,
+	  a.`review_time` AS reviewTime 
+	FROM `knowledge_document_version` a
+	JOIN `knowledge_document` b ON b.`id` = a.`knowledge_document_id`
+	WHERE a.`lcu` = #{lcu} AND a.`is_delete` = 0
 	<if test="keyword != null and keyword != ''">
-	AND	`title` LIKE CONCAT('%', #{keyword}, '%')
+	AND	a.`title` LIKE CONCAT('%', #{keyword}, '%')
 	</if>
 	<if test="statusList != null and statusList.size() > 0">
-	AND	`status` IN
+	AND	a.`status` IN
 		<foreach collection="statusList" item="status" open="(" separator="," close=")">
 	 	#{status}
 	 	</foreach>
 	</if>
-	ORDER BY `lcd` DESC
+	ORDER BY a.`lcd` DESC
 	<if test="needPage">
 	limit #{startNum}, #{pageSize}
 	</if>
@@ -556,7 +557,8 @@
 	  `knowledge_document_type_uuid`,
 	  `knowledge_circle_id`,
 	  `fcu`,
-	  `fcd`
+	  `fcd`,
+	  `source`
 	) 
 	VALUES
 	  (
@@ -566,7 +568,8 @@
 	    #{knowledgeDocumentTypeUuid},
 	    #{knowledgeCircleId},
 	    #{fcu},
-	    NOW()
+	    NOW(),
+	    #{source}
 	  )
 	</insert>
 	
@@ -664,6 +667,20 @@
 
 	<insert id="insertKnowledgeDocumentViewCount">
 	INSERT INTO `knowledge_document_view_count` (`knowledge_document_id`, `count`) VALUES (#{documentId}, #{count})
+	</insert>
+	
+	<insert id="insertKnowledgeDocumentInvoke">
+	INSERT INTO `knowledge_document_invoke` (
+	  `knowledge_document_id`,
+	  `invoke_id`,
+	  `source`
+	) 
+	VALUES
+	  (
+	    #{knowledgeDocumentId},
+	    #{invokeId},
+	    #{source}
+	  )
 	</insert>
 	
 	<update id="updateKnowledgeDocumentToDeleteById" parameterType="java.lang.Long">

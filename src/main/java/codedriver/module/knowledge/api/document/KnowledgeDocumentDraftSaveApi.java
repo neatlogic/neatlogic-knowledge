@@ -33,6 +33,7 @@ import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentInvokeVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineConfigVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineContentVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
@@ -90,7 +91,9 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         @Param(name = "title", type = ApiParamType.STRING, isRequired = true, minLength = 1, desc = "标题"),
         @Param(name = "lineList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "行数据列表"),
         @Param(name = "fileIdList", type = ApiParamType.JSONARRAY, desc = "附件id列表"),
-        @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表")
+        @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表"),
+        @Param(name = "invokeId", type = ApiParamType.LONG, desc = "调用者id"),
+        @Param(name = "source", type = ApiParamType.STRING, desc = "来源")
     })
     @Output({
         @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, desc = "文档id"),
@@ -192,6 +195,9 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             documentVo.setFcu(UserContext.get().getUserUuid(true));
             documentVo.setVersion(0);
             knowledgeDocumentMapper.insertKnowledgeDocument(documentVo);
+            if(StringUtils.isNotBlank(documentVo.getSource()) && documentVo.getInvokeId() != null) {
+                knowledgeDocumentMapper.insertKnowledgeDocumentInvoke(new KnowledgeDocumentInvokeVo(documentVo.getId(), documentVo.getInvokeId(), documentVo.getSource()));
+            }
             knowledgeDocumentMapper.insertKnowledgeDocumentViewCount(documentVo.getId(), 0);
             knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
             knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());

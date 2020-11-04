@@ -60,7 +60,7 @@
 		kdv.`version`,
 		kdv.`id` AS knowledgeDocumentVersionId,
 		kc.name AS knowledgeCircleName,
-		kdv.`title`,
+		kd.`title`,
 		kdv.`lcd`,
 		kdv.`lcu`,
 		kdv.`status`,
@@ -93,7 +93,7 @@
 		kdv.`version`,
 		kdv.`id` AS knowledgeDocumentVersionId,
 		kc.name AS knowledgeCircleName,
-		kdv.`title`,
+		kd.`title`,
 		kdv.`lcd`,
 		kdv.`lcu`,
 		kdv.`status`,
@@ -133,7 +133,7 @@
 	<select id="getKnowledgeDocumentVersionById" parameterType="java.lang.Long" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 	SELECT 
 	  `id`,
-	  `title`,
+	  <!-- `title`, -->
 	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_document_id` AS knowledgeDocumentId,
 	  `from_version` AS fromVersion,
@@ -163,7 +163,7 @@
 	<select id="getKnowledgeDocumentVersionMyVersionList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 	SELECT 
 	  `id`,
-	  `title`,
+	  <!-- `title`, -->
 	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_document_id` AS knowledgeDocumentId,
 	  `from_version` AS fromVersion,
@@ -248,7 +248,7 @@
 	<select id="getKnowledgeDocumentWaitingForReviewList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 	SELECT 
 	  c.`id`,
-	  c.`title`,
+	  b.`title`,
 	  c.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  c.`knowledge_document_id` AS knowledgeDocumentId,
 	  c.`from_version` AS fromVersion,
@@ -266,6 +266,9 @@
 	WHERE a.`auth_type` = 'approver' 
 	AND a.`type`= 'user'
 	AND a.`uuid` = #{reviewer}
+	<if test="keyword != null and keyword != ''">
+	AND b.`title` LIKE CONCAT('%', #{keyword}, '%')
+	</if>
 	ORDER BY c.`lcd` DESC
 	<if test="needPage">
 	limit #{startNum}, #{pageSize}
@@ -281,12 +284,15 @@
 	WHERE a.`auth_type` = 'approver' 
 	AND a.`type`= 'user'
 	AND a.`uuid` = #{reviewer}
+	<if test="keyword != null and keyword != ''">
+	AND b.`title` LIKE CONCAT('%', #{keyword}, '%')
+	</if>
 	</select>
 	
 	<select id="getKnowledgeDocumentHistorialVersionListByKnowledgeDocumentId" parameterType="java.lang.Long" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentHistoricalVersionVo">
 	SELECT 
 	  `id`,
-	  `title`,
+	  <!-- `title`, -->
 	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  `knowledge_document_id` AS knowledgeDocumentId,
 	  `from_version` AS fromVersion,
@@ -307,6 +313,7 @@
 	FROM `knowledge_document_version` 
 	WHERE `knowledge_document_id` = #{value} 
 	AND `status` = 'passed'
+	AND `is_delete` = 0
 	</select>
 	
 	<select id="getKnowledgeDocumentHistorialVersionListForSelectByKnowledgeDocumentId" parameterType="java.lang.Long" resultType="codedriver.framework.common.dto.ValueTextVo">
@@ -322,15 +329,14 @@
 	
 	<select id="getKnowledgeDocumentListForInternalLink" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="codedriver.framework.common.dto.ValueTextVo">
 	SELECT 
-	b.`title` AS text,
-	b.`knowledge_document_id` AS value
+	a.`title` AS text,
+	a.`id` AS value
 	FROM `knowledge_document` a
-	JOIN `knowledge_document_version` b ON b.`id` = a.`knowledge_document_version_id`
 	WHERE a.`is_delete` = 0
 	<if test="keyword != null and keyword != ''">
-	AND b.`title` LIKE CONCAT('%', #{keyword}, '%')
+	AND a.`title` LIKE CONCAT('%', #{keyword}, '%')
 	</if>
-	ORDER BY b.`title`
+	ORDER BY a.`title`
 	<if test="needPage">
 	limit #{startNum}, #{pageSize}
 	</if>
@@ -340,10 +346,9 @@
 	SELECT 
 	COUNT(1)
 	FROM `knowledge_document` a
-	JOIN `knowledge_document_version` b ON b.`id` = a.`knowledge_document_version_id`
 	WHERE a.`is_delete` = 0
 	<if test="keyword != null and keyword != ''">
-	AND b.`title` LIKE CONCAT('%', #{keyword}, '%')
+	AND a.`title` LIKE CONCAT('%', #{keyword}, '%')
 	</if>
 	</select>
 
@@ -433,7 +438,7 @@
 	<select id="getKnowledgeDocumentListByKnowledgeDocumentTypeUuid" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 	SELECT 
 	  a.`id`,
-	  a.`title`,
+	  b.`title`,
 	  a.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  a.`knowledge_document_id` AS knowledgeDocumentId,
 	  a.`version`,
@@ -448,7 +453,7 @@
 	JOIN `knowledge_document` b ON b.`knowledge_document_version_id` = a.`id` AND b.`knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid} AND b.`is_delete` = 0
 	<where>
 		<if test="keyword != null and keyword != ''">
-		AND a.`title` LIKE CONCAT('%', #{keyword}, '%')
+		AND b.`title` LIKE CONCAT('%', #{keyword}, '%')
 		</if>
 	</where>
 	ORDER BY a.`review_time`
@@ -460,13 +465,14 @@
 	<select id="getKnowledgeDocumentCountByKnowledgeDocumentTypeUuid" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo" resultType="int">
 	SELECT 
 	  COUNT(1)
-	FROM `knowledge_document_version` a
-	JOIN `knowledge_document` b ON b.`knowledge_document_version_id` = a.`id` AND b.`knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid} AND b.`is_delete` = 0
-	<where>
-		<if test="keyword != null and keyword != ''">
-		AND a.`title` LIKE CONCAT('%', #{keyword}, '%')
-		</if>
-	</where>
+	FROM `knowledge_document`
+	WHERE `is_delete` = 0
+	<if test="knowledgeDocumentTypeUuid != null and knowledgeDocumentTypeUuid != ''">
+	AND `knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid}
+	</if>
+	<if test="keyword != null and keyword != ''">
+	AND `title` LIKE CONCAT('%', #{keyword}, '%')
+	</if>
 	</select>
 	
 	<!-- <select id="checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion" resultType="int">
@@ -489,7 +495,7 @@
 	<select id="getKnowledgeDocumentVersionMyCollectList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 	SELECT 
 	  c.`id`,
-	  c.`title`,
+	  b.`title`,
 	  c.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 	  c.`knowledge_document_id` AS knowledgeDocumentId,
 	  c.`from_version` AS fromVersion,
@@ -507,7 +513,7 @@
 	JOIN `knowledge_document_version` c ON c.`id` = b.`knowledge_document_version_id`
 	WHERE a.`user_uuid` = #{userUuid}
 	<if test="keyword != null and keyword != ''">
-	AND c.`title` LIKE CONCAT('%', #{keyword}, '%')
+	AND b.`title` LIKE CONCAT('%', #{keyword}, '%')
 	</if>
 	ORDER BY a.`fcd` DESC
 	<if test="needPage">
@@ -523,7 +529,7 @@
 	JOIN `knowledge_document_version` c ON c.`id` = b.`knowledge_document_version_id`
 	WHERE a.`user_uuid` = #{userUuid}
 	<if test="keyword != null and keyword != ''">
-	AND c.`title` LIKE CONCAT('%', #{keyword}, '%')
+	AND b.`title` LIKE CONCAT('%', #{keyword}, '%')
 	</if>
 	</select>
 	

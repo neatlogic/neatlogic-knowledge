@@ -3,7 +3,7 @@ package codedriver.module.knowledge.constvalue;
 public enum KnowledgeType {
     ALL("all", "所有"),
     WAITINGFORREVIEW("waitingforreview", "待我审批"),
-    SHARE("share", "我的提交"),
+    SHARE("share", "我提交的"),
     COLLECT("collect", "我的收藏"),
     DRAFT("draft", "草稿");
     private String value;

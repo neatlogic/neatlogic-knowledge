@@ -43,12 +43,12 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.dto.KnowledgeTagVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotMemberException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotOwnerException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftExpiredCannotBeModifiedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftPublishedCannotBeModifiedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedCannotBeModifiedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentHasBeenDeletedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentTitleRepeatException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentTypeNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentUnmodifiedCannotBeSavedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
@@ -136,6 +136,8 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 if(!checkDocumentIsModify(before, documentVo)) {
                     throw new KnowledgeDocumentUnmodifiedCannotBeSavedException();
                 }
+                /** 删除这个文档当前用户的草稿 **/
+                knowledgeDocumentMapper.deleteKnowledgeDocumentDraftByKnowledgeDocumentIdAndLcu(documentId, UserContext.get().getUserUuid(true));
                 /** 如果入参版本id是文档当前版本id，说明该操作是当前版本上修改首次存草稿 **/
                 KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
                 knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
@@ -155,9 +157,10 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                     throw new KnowledgeDocumentDraftPublishedCannotBeModifiedException();
                 }else if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
                     throw new KnowledgeDocumentDraftSubmittedCannotBeModifiedException();
-                }else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
-                    throw new KnowledgeDocumentDraftExpiredCannotBeModifiedException();
                 }
+//                else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
+//                    throw new KnowledgeDocumentDraftExpiredCannotBeModifiedException();
+//                }
                 drafrVersionId = knowledgeDocumentVersionId;
                 KnowledgeDocumentVo before = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
                 if(!before.getLcu().equals(UserContext.get().getUserUuid(true))) {
@@ -182,6 +185,9 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             }
         }else {
             /** 没有版本id，则是首次创建文档 **/
+            if(knowledgeDocumentMapper.getKnowledgeDocumentByTitle(documentVo.getTitle()) != null) {
+                throw new KnowledgeDocumentTitleRepeatException(documentVo.getTitle());
+            }
             KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
             documentVo.setFcu(UserContext.get().getUserUuid(true));
             documentVo.setVersion(0);

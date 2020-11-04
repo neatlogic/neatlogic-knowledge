@@ -24,7 +24,6 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotOwnerException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftExpiredCannotSubmitException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmitFailedExecption;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
@@ -77,13 +76,14 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
         knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-        if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            throw new KnowledgeDocumentDraftExpiredCannotSubmitException(knowledgeDocumentVersionId);
-        }else if(!KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+//        if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+//            throw new KnowledgeDocumentDraftExpiredCannotSubmitException(knowledgeDocumentVersionId);
+//        }else 
+        if(!KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftSubmittedException();
         }
 
-        if(knowledgeDocumentMapper.checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion(knowledgeDocumentVo.getId(), knowledgeDocumentVo.getVersion()) > 0) {
+        if(knowledgeDocumentMapper.checkIFThereIsSubmittedDraftByKnowDocumentId(knowledgeDocumentVo.getId()) > 0) {
             throw new KnowledgeDocumentDraftSubmitFailedExecption();
         }
         KnowledgeDocumentVersionVo updateStatusVo = new KnowledgeDocumentVersionVo();

@@ -21,6 +21,8 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 public interface KnowledgeDocumentMapper {
 
     public KnowledgeDocumentVo getKnowledgeDocumentById(Long id);
+
+    public KnowledgeDocumentVo getKnowledgeDocumentByTitle(String title);
     
     public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdList(@Param("documentIdlist") List<Long> documentIdList);
     
@@ -91,7 +93,9 @@ public interface KnowledgeDocumentMapper {
 
     public int getDocumentViewCount(Long documentId);
 
-    public int checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("fromVersion")Integer fromVersion);
+//    public int checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("fromVersion")Integer fromVersion);
+    
+    public int checkIFThereIsSubmittedDraftByKnowDocumentId(Long knowledgeDocumentId);
 
     public int checkIfTheVersionIsTheCurrentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 
@@ -100,6 +104,8 @@ public interface KnowledgeDocumentMapper {
     public int getKnowledgeDocumentVersionMyCollectCount(KnowledgeDocumentCollectVo knowledgeDocumentCollectVo);
 
     public List<Long> getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(@Param("userUuid") String userUuid, @Param("knowledgeDocumentIdList") List<Long> knowledgeDocumentIdList);
+
+    public Long getKnowledgeDocumentDrafIdtByKnowledgeDocumentIdAndLcu(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("lcu")String userUuid);
 
     @ESSearch
     public int insertKnowledgeDocument(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
@@ -155,5 +161,7 @@ public interface KnowledgeDocumentMapper {
     public int deleteKnowledgeDocumentFavor(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
 
     public int deleteKnowledgeDocumentCollect(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+
+    public int deleteKnowledgeDocumentDraftByKnowledgeDocumentIdAndLcu(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("lcu")String userUuid);
 
 }

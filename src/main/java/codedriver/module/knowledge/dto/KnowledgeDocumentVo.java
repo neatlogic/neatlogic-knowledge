@@ -79,6 +79,8 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private String documentTypePath;
     @EntityField(name = "当前知识文档版本状态", type = ApiParamType.STRING)
     private String status;
+    @EntityField(name = "当前用户草稿id", type = ApiParamType.LONG)
+    private Long currentUserDraftId;
     @JSONField(serialize=false)
     private transient Integer isDelete;
     @JSONField(serialize=false)
@@ -264,6 +266,12 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     }
     public void setStatus(String status) {
         this.status = status;
+    }
+    public Long getCurrentUserDraftId() {
+        return currentUserDraftId;
+    }
+    public void setCurrentUserDraftId(Long currentUserDraftId) {
+        this.currentUserDraftId = currentUserDraftId;
     }
   
 }

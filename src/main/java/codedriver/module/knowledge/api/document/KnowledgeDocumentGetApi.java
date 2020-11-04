@@ -99,6 +99,8 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         knowledgeDocumentVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
         knowledgeDocumentVo.setIsReviewable(isReviewable);
         
+        Long draftId = knowledgeDocumentMapper.getKnowledgeDocumentDrafIdtByKnowledgeDocumentIdAndLcu(knowledgeDocumentVo.getId(), UserContext.get().getUserUuid(true));
+        knowledgeDocumentVo.setCurrentUserDraftId(draftId);
         Integer isReadOnly = jsonObj.getInteger("isReadOnly");
         if(Objects.equals(isReadOnly, 1)) {
             if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus()) && Objects.equals(knowledgeDocumentVersionId, knowledgeDocumentVo.getKnowledgeDocumentVersionId())) {

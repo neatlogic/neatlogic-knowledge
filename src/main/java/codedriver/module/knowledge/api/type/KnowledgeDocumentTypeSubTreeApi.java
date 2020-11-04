@@ -8,6 +8,7 @@ import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentTypeNotFoundException;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,6 +49,17 @@ public class KnowledgeDocumentTypeSubTreeApi extends PrivateApiComponentBase{
 		}
 		type.setParentUuid(parentUuid);
 		List<KnowledgeDocumentTypeVo> typeList = knowledgeDocumentTypeMapper.searchType(type);
+		/** 计算每个分类及其子类的文档数 */
+		if(CollectionUtils.isNotEmpty(typeList)){
+			for(KnowledgeDocumentTypeVo vo : typeList){
+				int count = 0;
+				List<KnowledgeDocumentTypeVo> childAndSelf = knowledgeDocumentTypeMapper.getChildAndSelfByLftRht(vo.getLft(), vo.getRht(), vo.getKnowledgeCircleId());
+				for(KnowledgeDocumentTypeVo obj : childAndSelf){
+					count += knowledgeDocumentTypeMapper.getDocumentCountByUuid(obj.getUuid());
+				}
+				vo.setDocumentCount(count);
+			}
+		}
 		result.put("typeList",typeList);
 		return result;
 	}

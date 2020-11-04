@@ -24,6 +24,10 @@ public interface KnowledgeDocumentTypeMapper {
 
     public List<KnowledgeDocumentTypeVo> getTypeChildCountListByUuidList(List<String> uuidList);
 
+    public List<KnowledgeDocumentTypeVo> getChildAndSelfByLftRht(@Param("lft") Integer lft, @Param("rht") Integer rht, @Param("circleId") Long circleId);
+
+    public int getDocumentCountByUuid(String uuid);
+
     public void updateTypeLeftRightCode(@Param("uuid") String uuid, @Param("lft") Integer lft, @Param("rht") Integer rht);
 
     public void batchInsertType(@Param("list") List<KnowledgeDocumentTypeVo> list);

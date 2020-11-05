@@ -94,11 +94,13 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         @Param(name = "fileIdList", type = ApiParamType.JSONARRAY, desc = "附件id列表"),
         @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表"),
         @Param(name = "invokeId", type = ApiParamType.LONG, desc = "调用者id"),
-        @Param(name = "source", type = ApiParamType.STRING, desc = "来源")
+        @Param(name = "source", type = ApiParamType.STRING, desc = "来源"),
+        @Param(name = "isSubmit", type = ApiParamType.INTEGER, desc ="是否提交")
     })
     @Output({
         @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, desc = "文档id"),
-        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id")
+        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
+        @Param(name = "isReviewable", type = ApiParamType.INTEGER, desc = "是否能审批"),
     })
     @Description(desc = "保存文档草稿")
     @Override
@@ -118,6 +120,14 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         JSONObject resultObj = new JSONObject();
         Long documentId = null;
         Long drafrVersionId = null;
+        Integer isSubmit = jsonObj.getInteger("isSubmit");
+        int isReviewable = 0;
+        String status = KnowledgeDocumentVersionStatus.DRAFT.getValue();
+        if(Objects.equals(isSubmit, 1)) {
+            status = KnowledgeDocumentVersionStatus.SUBMITTED.getValue();
+            isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentTypeVo.getKnowledgeCircleId());           
+        }
+        resultObj.put("isReviewable", isReviewable);
         if(knowledgeDocumentVersionId != null) {
             /** 有版本id，则是在已有文档上修改 **/
             KnowledgeDocumentVersionVo oldKnowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
@@ -149,7 +159,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentId);
                 knowledgeDocumentVersionVo.setFromVersion(oldKnowledgeDocumentVersionVo.getVersion());
                 knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
-                knowledgeDocumentVersionVo.setStatus(KnowledgeDocumentVersionStatus.DRAFT.getValue());
+                knowledgeDocumentVersionVo.setStatus(status);
                 knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
                 drafrVersionId = knowledgeDocumentVersionVo.getId();
             }else {
@@ -180,7 +190,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 knowledgeDocumentVersionVo.setId(drafrVersionId);
                 knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
                 knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
-                knowledgeDocumentVersionVo.setStatus(KnowledgeDocumentVersionStatus.DRAFT.getValue());
+                knowledgeDocumentVersionVo.setStatus(status);
                 knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
                 knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(knowledgeDocumentVersionVo);
                 knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(drafrVersionId);
@@ -208,7 +218,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentVo.getId());
             knowledgeDocumentVersionVo.setFromVersion(0);
             knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
-            knowledgeDocumentVersionVo.setStatus(KnowledgeDocumentVersionStatus.DRAFT.getValue());
+            knowledgeDocumentVersionVo.setStatus(status);
             knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
             documentId = documentVo.getId();
             drafrVersionId = knowledgeDocumentVersionVo.getId();

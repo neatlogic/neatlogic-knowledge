@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSONObject;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dao.mapper.TeamMapper;
+import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -195,7 +196,10 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             documentVo.setFcu(UserContext.get().getUserUuid(true));
             documentVo.setVersion(0);
             knowledgeDocumentMapper.insertKnowledgeDocument(documentVo);
-            if(StringUtils.isNotBlank(documentVo.getSource()) && documentVo.getInvokeId() != null) {
+            if(StringUtils.isNotBlank(documentVo.getSource())) {
+                if(documentVo.getInvokeId() == null) {
+                    throw new ParamNotExistsException("参数：“invokeId”不能为空");
+                }
                 knowledgeDocumentMapper.insertKnowledgeDocumentInvoke(new KnowledgeDocumentInvokeVo(documentVo.getId(), documentVo.getInvokeId(), documentVo.getSource()));
             }
             knowledgeDocumentMapper.insertKnowledgeDocumentViewCount(documentVo.getId(), 0);

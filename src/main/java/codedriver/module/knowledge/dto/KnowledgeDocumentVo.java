@@ -81,6 +81,10 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private String status;
     @EntityField(name = "当前用户草稿id", type = ApiParamType.LONG)
     private Long currentUserDraftId;
+    @EntityField(name = "调用者id", type = ApiParamType.LONG)
+    private Long invokeId;
+    @EntityField(name = "来源", type = ApiParamType.STRING)
+    private String source;
     @JSONField(serialize=false)
     private transient Integer isDelete;
     @JSONField(serialize=false)
@@ -272,6 +276,18 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     }
     public void setCurrentUserDraftId(Long currentUserDraftId) {
         this.currentUserDraftId = currentUserDraftId;
+    }
+    public Long getInvokeId() {
+        return invokeId;
+    }
+    public void setInvokeId(Long invokeId) {
+        this.invokeId = invokeId;
+    }
+    public String getSource() {
+        return source;
+    }
+    public void setSource(String source) {
+        this.source = source;
     }
   
 }

@@ -11,6 +11,7 @@ import codedriver.framework.elasticsearch.annotation.ESSearch;
 import codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentHistoricalVersionVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentInvokeVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineConfigVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineContentVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
@@ -127,6 +128,8 @@ public interface KnowledgeDocumentMapper {
     public int insertKnowledgeDocumentCollect(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
 
     public int insertKnowledgeDocumentViewCount(@Param("documentId") Long documentId,@Param("count") int count);
+
+    public int insertKnowledgeDocumentInvoke(KnowledgeDocumentInvokeVo knowledgeDocumentInvokeVo);
 
     public int updateKnowledgeDocumentToDeleteById(Long knowledgeDocumentId);
 

@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSONObject;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dao.mapper.TeamMapper;
+import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -33,6 +34,7 @@ import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentInvokeVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineConfigVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineContentVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
@@ -90,11 +92,15 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         @Param(name = "title", type = ApiParamType.STRING, isRequired = true, minLength = 1, desc = "标题"),
         @Param(name = "lineList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "行数据列表"),
         @Param(name = "fileIdList", type = ApiParamType.JSONARRAY, desc = "附件id列表"),
-        @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表")
+        @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表"),
+        @Param(name = "invokeId", type = ApiParamType.LONG, desc = "调用者id"),
+        @Param(name = "source", type = ApiParamType.STRING, desc = "来源"),
+        @Param(name = "isSubmit", type = ApiParamType.INTEGER, desc ="是否提交")
     })
     @Output({
         @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, desc = "文档id"),
-        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id")
+        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
+        @Param(name = "isReviewable", type = ApiParamType.INTEGER, desc = "是否能审批"),
     })
     @Description(desc = "保存文档草稿")
     @Override
@@ -114,6 +120,14 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         JSONObject resultObj = new JSONObject();
         Long documentId = null;
         Long drafrVersionId = null;
+        Integer isSubmit = jsonObj.getInteger("isSubmit");
+        int isReviewable = 0;
+        String status = KnowledgeDocumentVersionStatus.DRAFT.getValue();
+        if(Objects.equals(isSubmit, 1)) {
+            status = KnowledgeDocumentVersionStatus.SUBMITTED.getValue();
+            isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentTypeVo.getKnowledgeCircleId());           
+        }
+        resultObj.put("isReviewable", isReviewable);
         if(knowledgeDocumentVersionId != null) {
             /** 有版本id，则是在已有文档上修改 **/
             KnowledgeDocumentVersionVo oldKnowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
@@ -145,7 +159,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentId);
                 knowledgeDocumentVersionVo.setFromVersion(oldKnowledgeDocumentVersionVo.getVersion());
                 knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
-                knowledgeDocumentVersionVo.setStatus(KnowledgeDocumentVersionStatus.DRAFT.getValue());
+                knowledgeDocumentVersionVo.setStatus(status);
                 knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
                 drafrVersionId = knowledgeDocumentVersionVo.getId();
             }else {
@@ -176,7 +190,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 knowledgeDocumentVersionVo.setId(drafrVersionId);
                 knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
                 knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
-                knowledgeDocumentVersionVo.setStatus(KnowledgeDocumentVersionStatus.DRAFT.getValue());
+                knowledgeDocumentVersionVo.setStatus(status);
                 knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
                 knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(knowledgeDocumentVersionVo);
                 knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(drafrVersionId);
@@ -192,13 +206,19 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             documentVo.setFcu(UserContext.get().getUserUuid(true));
             documentVo.setVersion(0);
             knowledgeDocumentMapper.insertKnowledgeDocument(documentVo);
+            if(StringUtils.isNotBlank(documentVo.getSource())) {
+                if(documentVo.getInvokeId() == null) {
+                    throw new ParamNotExistsException("参数：“invokeId”不能为空");
+                }
+                knowledgeDocumentMapper.insertKnowledgeDocumentInvoke(new KnowledgeDocumentInvokeVo(documentVo.getId(), documentVo.getInvokeId(), documentVo.getSource()));
+            }
             knowledgeDocumentMapper.insertKnowledgeDocumentViewCount(documentVo.getId(), 0);
             knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
             knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
             knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentVo.getId());
             knowledgeDocumentVersionVo.setFromVersion(0);
             knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
-            knowledgeDocumentVersionVo.setStatus(KnowledgeDocumentVersionStatus.DRAFT.getValue());
+            knowledgeDocumentVersionVo.setStatus(status);
             knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
             documentId = documentVo.getId();
             drafrVersionId = knowledgeDocumentVersionVo.getId();

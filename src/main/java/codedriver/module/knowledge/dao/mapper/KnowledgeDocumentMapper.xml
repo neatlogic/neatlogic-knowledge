@@ -416,7 +416,7 @@
 	SELECT 
 	  COUNT(1)
 	FROM `knowledge_circle_user` 
-	WHERE (type = 'common' AND `uuid` = 'alluser')
+	WHERE ((type = 'common' AND `uuid` = 'alluser')
 	<if test="userUuid != null and userUuid != ''">
 		OR (type = 'user' AND `uuid` = #{userUuid})
 	</if>
@@ -433,6 +433,10 @@
 			#{roleUuid}
 		</foreach>
 		)
+	</if>
+	)
+	<if test="knowledgeCircleId != null">
+	AND `knowledge_circle_id` = #{knowledgeCircleId}
 	</if>
 	</select>
 	
@@ -547,6 +551,28 @@
 	
 	<select id="getKnowledgeDocumentDrafIdtByKnowledgeDocumentIdAndLcu" resultType="java.lang.Long">
 	SELECT `id` FROM `knowledge_document_version` WHERE `knowledge_document_id` = #{knowledgeDocumentId} AND `status` = 'draft' AND `lcu` = #{lcu}
+	</select>
+	
+	<select id="getKnowledgeDocumentIdByInvokeIdAndSource" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentInvokeVo" resultType="java.lang.Long">
+	SELECT `knowledge_document_id` FROM `knowledge_document_invoke` WHERE `invoke_id` = #{invokeId} AND `source` = #{source}
+	</select>
+	
+	<select id="getKnowledgeDocumentVersionByknowledgeDocumentIdLimitOne" parameterType="java.lang.Long" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
+	SELECT 
+	  `id`,
+	  `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
+	  `knowledge_document_id` AS knowledgeDocumentId,
+	  `from_version` AS fromVersion,
+	  `version`,
+	  `status`,
+	  `lcu`,
+	  `lcd`,
+	  `size`,
+	  `reviewer`,
+	  `review_time` AS reviewTime 
+	FROM `knowledge_document_version` 
+	WHERE `knowledge_document_id` = #{value}
+	LIMIT 1
 	</select>
 	
 	<insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">

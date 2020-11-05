@@ -108,6 +108,10 @@ public interface KnowledgeDocumentMapper {
 
     public Long getKnowledgeDocumentDrafIdtByKnowledgeDocumentIdAndLcu(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("lcu")String userUuid);
 
+    public Long getKnowledgeDocumentIdByInvokeIdAndSource(KnowledgeDocumentInvokeVo knowledgeDocumentInvokeVo);
+
+    public KnowledgeDocumentVersionVo getKnowledgeDocumentVersionByknowledgeDocumentIdLimitOne(Long knowledgeDocumentId);
+
     @ESSearch
     public int insertKnowledgeDocument(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
 

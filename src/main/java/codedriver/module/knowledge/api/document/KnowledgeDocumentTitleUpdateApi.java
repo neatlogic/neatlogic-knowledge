@@ -17,7 +17,7 @@ import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 @Service
-@OperationType(type = OperationTypeEnum.SEARCH)
+@OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
 public class KnowledgeDocumentTitleUpdateApi extends PrivateApiComponentBase {
 

@@ -31,7 +31,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentDraftUnsubmittedCa
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 @Service
-@OperationType(type = OperationTypeEnum.SEARCH)
+@OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
 public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
 

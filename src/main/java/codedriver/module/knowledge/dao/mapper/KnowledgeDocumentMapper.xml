@@ -652,11 +652,11 @@
 	</insert>
 	
 	<insert id="insertKnowledgeDocumentLineConfig" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentLineConfigVo">
-	INSERT INTO `knowledge_document_line_config` (`hash`, `config`) VALUES (#{hash}, #{config})
+	INSERT IGNORE INTO `knowledge_document_line_config` (`hash`, `config`) VALUES (#{hash}, #{config})
 	</insert>
 	
 	<insert id="insertKnowledgeDocumentLineContent" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentLineContentVo">
-	INSERT INTO `knowledge_document_line_content` (`hash`, `content`) VALUES (#{hash}, #{content})
+	INSERT IGNORE INTO `knowledge_document_line_content` (`hash`, `content`) VALUES (#{hash}, #{content})
 	</insert>
 	
 	<insert id="insertKnowledgeDocumentLineList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">

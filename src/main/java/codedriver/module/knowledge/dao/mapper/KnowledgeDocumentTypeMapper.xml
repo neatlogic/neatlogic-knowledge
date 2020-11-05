@@ -130,7 +130,7 @@
 	</select>
 
 	<select id="getDocumentCountByUuid" parameterType="java.lang.String" resultType="int">
-		SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_document_type_uuid` = #{value}
+		SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_document_type_uuid` = #{value} AND `knowledge_document_version_id` IS NOT NULL AND `is_delete` = 0
 	</select>
 	
 	<update id="updateTypeLeftRightCode">

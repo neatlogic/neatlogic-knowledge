@@ -27,7 +27,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotRevi
 import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentVersionCannotBeDeletedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedCannotBeDeletedException;
 @Service
-@OperationType(type = OperationTypeEnum.SEARCH)
+@OperationType(type = OperationTypeEnum.DELETE)
 @Transactional
 public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
 

@@ -56,7 +56,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentUnmodifiedCannotBe
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 @Service
-@OperationType(type = OperationTypeEnum.SEARCH)
+@OperationType(type = OperationTypeEnum.CREATE)
 @Transactional
 public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
 

@@ -27,7 +27,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotHistoricalVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 @Service
-@OperationType(type = OperationTypeEnum.SEARCH)
+@OperationType(type = OperationTypeEnum.OPERATE)
 @Transactional
 public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
 

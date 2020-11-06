@@ -47,6 +47,7 @@ public class LCSUtil {
                         currentNode.setTotalMatchLength(left).setPrevious(leftNode);
                     }
                 }
+                nodePool.addNode(currentNode);
             }
         }       
         return nodePool.getOldNode(oldList.size() - 1, newList.size() - 1);

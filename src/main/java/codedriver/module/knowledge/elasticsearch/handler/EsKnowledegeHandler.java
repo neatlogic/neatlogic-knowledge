@@ -2,14 +2,9 @@ package codedriver.module.knowledge.elasticsearch.handler;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,19 +16,15 @@ import com.techsure.multiattrsearch.MultiAttrsObject;
 import com.techsure.multiattrsearch.query.QueryResult;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.Expression;
 import codedriver.framework.common.util.FileUtil;
-import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerBase;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.util.HtmlUtil;
 import codedriver.framework.util.TikaUtil;
 import codedriver.framework.util.TimeUtil;
-import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
@@ -44,16 +35,6 @@ import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
 @Service
 public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocumentVo, JSONObject> {
     Logger logger = LoggerFactory.getLogger(EsKnowledegeHandler.class);
-    
-    private Map<String, Function<String, String>> map = new HashMap<>();
-
-    {
-        map.put("waitingforreview", sql -> getMyWaitingForReviewSql());
-        map.put("share", sql -> getMyShareSql());
-        map.put("collect", sql -> getMyCollectSql());
-        map.put("draft", sql -> getMyDraftSql());
-    }
-    
     
     @Autowired
     KnowledgeDocumentMapper knowledgeDocumentMapper;
@@ -109,6 +90,7 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
 
     @Override
     public String buildSql(KnowledgeDocumentVo knowledgeDocumentVo) {
+        //仅全局搜索知识标题和内容
         String sql = StringUtils.EMPTY;
         String whereSql = StringUtils.EMPTY;
         if( StringUtils.isNotBlank(knowledgeDocumentVo.getKeyword())) {
@@ -116,134 +98,24 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
             String contentCondition = String.format(Expression.MATCH.getExpressionEs(), "content",knowledgeDocumentVo.getKeyword());
             whereSql = String.format("(%s or %s)", titleCondition,contentCondition);
         }
-        //根据type 获取对应where sql
-        Function<String, String> result = map.get(knowledgeDocumentVo.getType());
-        if (result != null) {
-            String typeSql = result.apply("");
-            if(StringUtils.isNotBlank(typeSql)&&StringUtils.isNotBlank(whereSql)) {
-                whereSql = whereSql +" and " + typeSql;
-            }
-        }
-        //拼接查询sql
-        if(StringUtils.isNotBlank(whereSql)) {
+        if(StringUtils.isNotBlank(whereSql)){
             whereSql = " where " + whereSql;
         }
-        sql = String.format("select versionid,typeuuid,circleid,#title#,#content#,fcu,fcd from %s %s limit %d,%d ", TenantContext.get().getTenantUuid(),
-            whereSql,knowledgeDocumentVo.getStartNum(),knowledgeDocumentVo.getPageSize());
+        sql = String.format("select #title#,#content# from %s %s ", TenantContext.get().getTenantUuid(),whereSql);
         return sql;
-       
     }
 
     @Override
-    protected JSONObject makeupQueryResult(KnowledgeDocumentVo t, QueryResult result) {
-        JSONObject resultJson = new JSONObject();
+    protected JSONObject makeupQueryResult(KnowledgeDocumentVo knowledgeDocumentVo, QueryResult result) {
         List<MultiAttrsObject> resultData = result.getData();
-        List<Long> documentIdList = new ArrayList<Long>();
-        Map<String,JSONObject> documentHighlightMap = new HashMap<String,JSONObject>();
+        JSONObject esResultJson = new JSONObject();
+        List<Long> knowledgeDocumentIdList = new ArrayList<Long>();
         for (MultiAttrsObject el : resultData) {
-            JSONObject documentJson = new JSONObject();
-            JSONObject highlightData = el.getHighlightData();
-            documentJson.put("id", el.getId());
-            documentIdList.add(Long.valueOf(el.getId()));
-            documentHighlightMap.put(el.getId(), highlightData);
-           
+            esResultJson.put(el.getId(), el.getHighlightData());
+            knowledgeDocumentIdList.add(Long.parseLong(el.getId()));
         }
-        //替换 highlight 字段
-        List<KnowledgeDocumentVo> documentList = new ArrayList<KnowledgeDocumentVo>();
-        if(CollectionUtils.isNotEmpty(documentIdList)) {
-            documentList = knowledgeDocumentMapper.getKnowledgeDocumentByIdList(documentIdList);
-            for(KnowledgeDocumentVo documentVo : documentList) {
-                if(documentVo != null) {
-                    JSONObject highlightData = documentHighlightMap.get(documentVo.getId().toString());
-                    if(MapUtils.isNotEmpty(highlightData)) {
-                        if(highlightData.containsKey("title.txt")) {
-                            documentVo.setTitle(String.join("\n", JSONObject.parseArray(highlightData.getString("title.txt"),String.class)));
-                        }
-                        if(highlightData.containsKey("content.txt")) {
-                            documentVo.setContent( String.join("\n", JSONObject.parseArray(highlightData.getString("content.txt"),String.class)));
-                        }
-                    }
-                }
-            }
-        }
-        resultJson.put("dataList", documentList);
-        resultJson.put("rowNum", result.getTotal());
-        resultJson.put("pageSize", t.getPageSize());
-        resultJson.put("currentPage", t.getCurrentPage());
-        resultJson.put("pageCount", PageUtil.getPageCount(result.getTotal(), t.getPageSize()));
-        return resultJson;
-    }
-    
-    private String getSqlByKnowledgeVersionList(List<KnowledgeDocumentVersionVo>  knowledgeVersionList) {
-        String sql = StringUtils.EMPTY;
-        List<String> knowledgeDocumentIdList = new ArrayList<String>();
-        for(KnowledgeDocumentVersionVo knowVersion : knowledgeVersionList) {
-            if(!knowledgeDocumentIdList.contains(knowVersion.getKnowledgeDocumentId().toString())) {
-                knowledgeDocumentIdList.add(knowVersion.getKnowledgeDocumentId().toString());
-            }
-        }
-        if(CollectionUtils.isNotEmpty(knowledgeDocumentIdList)) {
-            sql = String.format(Expression.INCLUDE.getExpressionEs(), "id",String.format(" '%s'" ,String.join("','", knowledgeDocumentIdList)));
-        }
-        return sql;
-    }
-    
-    /**
-    * @Author 89770
-    * @Time 2020年10月27日  
-    * @Description: 获取我的草稿sql
-    * @Param 
-    * @return
-     */
-    private String getMyDraftSql() {
-        KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
-        knowledgeDocumentVersionVo.setStatusList(Arrays.asList(KnowledgeDocumentVersionStatus.DRAFT.getValue()));
-        knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid());
-        List<KnowledgeDocumentVersionVo>  knowledgeVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionList(knowledgeDocumentVersionVo);
-        return getSqlByKnowledgeVersionList(knowledgeVersionList);
+        esResultJson.put("knowledgeDocumentIdList", knowledgeDocumentIdList);
+        return esResultJson;
     }
 
-    /**
-    * @Author 89770
-    * @Time 2020年10月27日  
-    * @Description: 获取我的收藏sql
-    * @Param 
-    * @return
-     */
-    private String getMyCollectSql() {
-        KnowledgeDocumentCollectVo knowledgeDocumentCollectVo = new KnowledgeDocumentCollectVo();
-        knowledgeDocumentCollectVo.setUserUuid(UserContext.get().getUserUuid(true));
-        List<KnowledgeDocumentVersionVo> knowledgeVersionList =  knowledgeDocumentMapper.getKnowledgeDocumentVersionMyCollectList(knowledgeDocumentCollectVo);
-        return getSqlByKnowledgeVersionList(knowledgeVersionList);
-    }
-
-    /**
-    * @Author 89770
-    * @Time 2020年10月27日  
-    * @Description: 获取我的分享sql
-    * @Param 
-    * @return
-     */
-    private String getMyShareSql() {
-        KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
-        knowledgeDocumentVersionVo.setStatusList(Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue(),KnowledgeDocumentVersionStatus.SUBMITTED.getValue(),KnowledgeDocumentVersionStatus.REJECTED.getValue()));
-        knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid());
-        knowledgeDocumentVersionVo.setNeedPage(false);
-        List<KnowledgeDocumentVersionVo>  knowledgeVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionList(knowledgeDocumentVersionVo);
-        return getSqlByKnowledgeVersionList(knowledgeVersionList);
-    }
-
-    /**
-    * @Author 89770
-    * @Time 2020年10月27日  
-    * @Description: 获取待我审批sql
-    * @Param 
-    * @return
-     */
-    private String getMyWaitingForReviewSql() {
-        KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
-        knowledgeDocumentVersionVo.setReviewer(UserContext.get().getUserUuid(true));
-        List<KnowledgeDocumentVersionVo> knowledgeVersionList = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewList(knowledgeDocumentVersionVo);
-        return getSqlByKnowledgeVersionList(knowledgeVersionList);
-    }
 }

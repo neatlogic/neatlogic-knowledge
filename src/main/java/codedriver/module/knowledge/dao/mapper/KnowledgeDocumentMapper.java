@@ -27,6 +27,10 @@ public interface KnowledgeDocumentMapper {
     
     public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdList(@Param("documentIdlist") List<Long> documentIdList);
     
+    public List<Long> getKnowledgeDocumentIdList(KnowledgeDocumentVo knowledgeDocumentVo);
+    
+    public Integer getKnowledgeDocumentCount(KnowledgeDocumentVo knowledgeDocumentVo);
+    
     public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdListAndFcd(@Param("documentIdlist") List<Long> documentIdList,@Param("fromDate") String fromDate,@Param("toDate")String toDate);
     
     public KnowledgeDocumentVersionVo getKnowledgeDocumentVersionById(Long id);

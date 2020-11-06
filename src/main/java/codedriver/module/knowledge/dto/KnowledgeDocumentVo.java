@@ -91,6 +91,14 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private transient boolean isAutoGenerateId = true;
     @JSONField(serialize=false)
     private transient String type;
+    @JSONField(serialize=false)
+    private List<Long> knowledgeDocumentIdList;
+    @JSONField(serialize=false)
+    private String lcdStartTime;
+    @JSONField(serialize=false)
+    private String lcdEndTime;
+    
+    
     public String getType() {
         return type;
     }
@@ -289,5 +297,23 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     public void setSource(String source) {
         this.source = source;
     }
-  
+    public List<Long> getKnowledgeDocumentIdList() {
+        return knowledgeDocumentIdList;
+    }
+    public void setKnowledgeDocumentIdList(List<Long> knowledgeDocumentIdList) {
+        this.knowledgeDocumentIdList = knowledgeDocumentIdList;
+    }
+    public String getLcdStartTime() {
+        return lcdStartTime;
+    }
+    public void setLcdStartTime(String lcdStartTime) {
+        this.lcdStartTime = lcdStartTime;
+    }
+    public String getLcdEndTime() {
+        return lcdEndTime;
+    }
+    public void setLcdEndTime(String lcdEndTime) {
+        this.lcdEndTime = lcdEndTime;
+    }
+
 }

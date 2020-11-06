@@ -1,11 +1,20 @@
 package codedriver.module.knowledge.api.document;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
 import codedriver.framework.elasticsearch.core.IElasticSearchHandler;
 import codedriver.framework.reminder.core.OperationTypeEnum;
@@ -15,12 +24,19 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.util.HtmlUtil;
+import codedriver.framework.util.TimeUtil;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
 @Service
 @OperationType(type = OperationTypeEnum.DELETE)
 public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
 
+    @Autowired
+    KnowledgeDocumentMapper knowledgeDocumentMapper;
+    
     @Override
     public String getToken() {
         return "knowledge/document/search";
@@ -38,10 +54,13 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     
     @SuppressWarnings("unchecked")
     @Input({
-        @Param(name = "keyword", type = ApiParamType.STRING, isRequired = true, desc = "搜索关键字"),
-        @Param(name = "type", type = ApiParamType.ENUM, rule = "all,waitingforreview,share,collect,draft",isRequired = true, desc = "知识类型:所有知识all,带我审批的知识waitingforreview,我共享的知识share,我收藏的知识collect,草稿draft"),
-        @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页数", isRequired = false),
-        @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目", isRequired = false)
+        @Param(name = "keyword", type = ApiParamType.STRING, desc = "搜索关键字"),
+        @Param(name = "lcu", type = ApiParamType.STRING, desc = "修改人"),
+        @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc = "知识文档类型"),
+        @Param(name = "lcdConfig", type = ApiParamType.JSONOBJECT, desc = "最近修改时间； {timeRange: 6, timeUnit: 'month'} 或  {startTime: 1605196800000, endTime: 1607961600000}"),
+        @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表"),
+        @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页数"),
+        @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目")
     })
     @Output({
         @Param(name="dataList[].version", type = ApiParamType.INTEGER, desc="版本号"),
@@ -49,9 +68,9 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         @Param(name="dataList[].knowledgeCircleName", type = ApiParamType.STRING, desc="知识圈名称"),
         @Param(name="dataList[].title", type = ApiParamType.STRING, desc="知识标题"),
         @Param(name="dataList[].content", type = ApiParamType.STRING, desc="知识内容"),
-        @Param(name="dataList[].lcu", type = ApiParamType.STRING, desc="知识创建人uuid"),
-        @Param(name="dataList[].lcuName", type = ApiParamType.STRING, desc="知识创建人"),
-        @Param(name="dataList[].lcd", type = ApiParamType.STRING, desc="知识创建时间"),
+        @Param(name="dataList[].lcu", type = ApiParamType.STRING, desc="知识最近更新人uuid"),
+        @Param(name="dataList[].lcuName", type = ApiParamType.STRING, desc="知识最近更新人"),
+        @Param(name="dataList[].lcd", type = ApiParamType.STRING, desc="知识最近更新时间"),
         @Param(name="dataList[].tagList", type = ApiParamType.JSONARRAY, desc="知识标签"),
         @Param(name="dataList[].viewCount", type = ApiParamType.LONG, desc="知识浏览量"),
         @Param(name="dataList[].favorCount", type = ApiParamType.LONG, desc="知识点赞量"),
@@ -68,9 +87,83 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     @Description(desc = "搜索文档")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        KnowledgeDocumentVo documentVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
-        IElasticSearchHandler<KnowledgeDocumentVo, JSONObject> esHandler = ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE.getValue());
-        JSONObject data = JSONObject.parseObject(esHandler.search(documentVo).toString());
-        return data;
+        JSONObject resultJson = new JSONObject();
+        KnowledgeDocumentVo documentVoParam = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
+        JSONObject lcdConfig = jsonObj.getJSONObject("lcdConfig");
+        if(lcdConfig != null) {
+            getLcdTime(documentVoParam,lcdConfig);
+        }
+        //仅根据keyword,从es搜索标题和内容
+        JSONObject data = null;
+        if(StringUtils.isNotBlank(documentVoParam.getKeyword())){
+            IElasticSearchHandler<KnowledgeDocumentVo, JSONObject> esHandler = ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE.getValue());
+            data = JSONObject.parseObject(esHandler.search(documentVoParam).toString());
+            List<Long> documentIdList = JSONObject.parseArray(data.getJSONArray("knowledgeDocumentIdList").toJSONString(),Long.class);
+            //将从es搜索符合的知识送到数据库做二次过滤
+            documentVoParam.setKnowledgeDocumentIdList(documentIdList);
+        }
+        List<Long> documentIdList = knowledgeDocumentMapper.getKnowledgeDocumentIdList(documentVoParam);
+        List<KnowledgeDocumentVo> documentList = knowledgeDocumentMapper.getKnowledgeDocumentByIdList(documentIdList);
+        Integer total = knowledgeDocumentMapper.getKnowledgeDocumentCount(documentVoParam);
+       
+        for(KnowledgeDocumentVo documentVo : documentList) {
+            if(documentVo != null) {
+                //替换 highlight 字段
+                if(StringUtils.isNotBlank(documentVoParam.getKeyword())){
+                    JSONObject highlightData = data.getJSONObject(documentVo.getId().toString());
+                    if(MapUtils.isNotEmpty(highlightData)) {
+                        if(highlightData.containsKey("title.txt")) {
+                            documentVo.setTitle(String.join("\n", JSONObject.parseArray(highlightData.getString("title.txt"),String.class)));
+                        }
+                        if(highlightData.containsKey("content.txt")) {
+                            documentVo.setContent( String.join("\n", JSONObject.parseArray(highlightData.getString("content.txt"),String.class)));
+                        }
+                    }
+                }
+                //如果es找不到内容 则从数据库获取
+                if(StringUtils.isBlank(documentVo.getContent())) {
+                    StringBuilder contentsb = new StringBuilder();
+                    List<KnowledgeDocumentLineVo> documentLineList = documentVo.getLineList();
+                    if(CollectionUtils.isNotEmpty(documentLineList)) {
+                        for(KnowledgeDocumentLineVo line : documentLineList) {
+                            contentsb.append(line.getContent());
+                        }
+                        String content =HtmlUtil.removeHtml(contentsb.toString(), null);
+                        documentVo.setContent(HtmlUtil.removeHtml(contentsb.toString(), null).substring(0, content.length()> 250?250:content.length()));
+                        documentVo.setLineList(null);
+                    }
+                   
+                }
+            }
+        }
+        
+        resultJson.put("dataList", documentList);
+        resultJson.put("rowNum", total);
+        resultJson.put("pageSize", documentVoParam.getPageSize());
+        resultJson.put("currentPage", documentVoParam.getCurrentPage());
+        resultJson.put("pageCount", PageUtil.getPageCount(total, documentVoParam.getPageSize()));
+        return resultJson;
     }  
+    
+    /**
+    * @Author 89770
+    * @Time 2020年11月6日  
+    * @Description: 解析最近修改时间入参
+    * @Param 
+    * @return
+     */
+    private void getLcdTime(KnowledgeDocumentVo documentVoParam,JSONObject lcdConfig) {
+        String startTime = StringUtils.EMPTY;
+        String endTime = StringUtils.EMPTY;
+        SimpleDateFormat format = new SimpleDateFormat(TimeUtil.YYYY_MM_DD_HH_MM_SS);
+        if (lcdConfig.containsKey("startTime")) {
+            startTime = format.format(new Date(lcdConfig.getLong("startTime")));
+            endTime = format.format(new Date(lcdConfig.getLong("endTime")));
+        } else {
+            startTime = TimeUtil.timeTransfer(lcdConfig.getInteger("timeRange"), lcdConfig.getString("timeUnit"));
+            endTime = TimeUtil.timeNow();
+        }
+        documentVoParam.setLcdStartTime(startTime);
+        documentVoParam.setLcdEndTime(endTime);
+    }
 }

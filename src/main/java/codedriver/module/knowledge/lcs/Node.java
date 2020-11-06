@@ -10,9 +10,9 @@ import java.util.List;
  */
 public class Node {
     /** 旧数据的单元下标 **/
-    private final int oldIndex;
+    private int oldIndex;
     /** 新数据的单元下标 **/
-    private final int newIndex;
+    private int newIndex;
     /** 统计最大匹配长度 **/
     private int totalMatchLength;
     /** 记录这次比较是否匹配 **/
@@ -21,7 +21,8 @@ public class Node {
     private Node previous;
     /** 下一个节点 **/
     private Node next;
-    
+    /** 下一个节点数量 **/
+    private int nextCount;
     public Node(int oldIndex, int newIndex) {
         this.oldIndex = oldIndex;
         this.newIndex = newIndex;
@@ -31,6 +32,14 @@ public class Node {
     }
     public int getNewIndex() {
         return newIndex;
+    }
+    public Node setOldIndex(int oldIndex) {
+        this.oldIndex = oldIndex;
+        return this;
+    }
+    public Node setNewIndex(int newIndex) {
+        this.newIndex = newIndex;
+        return this;
     }
     public int getTotalMatchLength() {
         return totalMatchLength;
@@ -51,28 +60,43 @@ public class Node {
         return previous;
     }
 
-    public void setPrevious(Node previous) {
+    public Node setPrevious(Node previous) {
         this.previous = previous;
+        ++this.nextCount;
+        return this;
+    }
+    public int getNextCountIncrement() {
+        return ++this.nextCount;
+    }
+    public int getNextCountDecrement() {
+        return --this.nextCount;
+    }
+    public int getNextCount() {
+        return nextCount;
     }
     public List<SegmentPair> getSegmentPairList(){
         List<SegmentPair> resultList = new ArrayList<>();
         Node node = this;
         while(node.previous != null) {
+//            System.out.println(node);
             Node current = node;
             node = node.previous;
             node.next = current;          
         }
-    
+//        System.out.println(node);
+
+        int oldPrevMatchIndex = 0;
+        int newPrevMatchIndex = 0;
         if(node.match) {
             if(node.oldIndex != 0 || node.newIndex != 0) {
                 SegmentPair segmentMapping = new SegmentPair(0, 0, false);
                 segmentMapping.setEndIndex(node.oldIndex, node.newIndex);
                 resultList.add(segmentMapping);
+                oldPrevMatchIndex = node.oldIndex;
+                newPrevMatchIndex = node.newIndex;
             }
         }
-        SegmentPair segmentMapping = new SegmentPair(0, 0, node.match);
-        int oldPrevMatchIndex = 0;
-        int newPrevMatchIndex = 0;
+        SegmentPair segmentMapping = new SegmentPair(oldPrevMatchIndex, newPrevMatchIndex, node.match);
         do {               
             if(node.match) {
                 oldPrevMatchIndex = node.oldIndex;

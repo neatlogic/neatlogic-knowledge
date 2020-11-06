@@ -20,24 +20,24 @@ public class LCSUtil {
     * @return Node 返回最后一次比较结果信息
      */
     public static <T> Node LCSCompare(List<T> oldList, List<T> newList, BiPredicate<T, T> biPredicate) {
-        NodePool nodePool = new NodePool();       
+        NodePool nodePool = new NodePool(oldList.size(), newList.size());       
         for(int i = 0; i < oldList.size(); i++) {
             for(int j = 0; j < newList.size(); j++) {
-                Node currentNode = nodePool.getNode(i, j);
+                Node currentNode = nodePool.getNewNode(i, j);
                 if(biPredicate.test(oldList.get(i), newList.get(j))) {
                     currentNode.setTotalMatchLength(1).setMatch(true);
-                    Node upperLeftNode = nodePool.getNode(i - 1, j - 1);
+                    Node upperLeftNode = nodePool.getOldNode(i - 1, j - 1);
                     if(upperLeftNode != null) {
                         currentNode.setTotalMatchLength(upperLeftNode.getTotalMatchLength() + 1).setPrevious(upperLeftNode);
                     }
                 }else {
                     int left = 0;
                     int top = 0;
-                    Node leftNode = nodePool.getNode(i, j - 1);
+                    Node leftNode = nodePool.getOldNode(i, j - 1);
                     if(leftNode != null) {
                         left = leftNode.getTotalMatchLength();
                     }
-                    Node topNode = nodePool.getNode(i - 1, j);
+                    Node topNode = nodePool.getOldNode(i - 1, j);
                     if(topNode != null) {
                         top = topNode.getTotalMatchLength();
                     }
@@ -49,35 +49,38 @@ public class LCSUtil {
                 }
             }
         }       
-        return nodePool.getNode(oldList.size() - 1, newList.size() - 1);
+        return nodePool.getOldNode(oldList.size() - 1, newList.size() - 1);
     }
     /**
      * 
     * @Time:2020年11月02日
     * @Description: LCS算法比较字符串 
     * @param oldStr 旧字符串
-    * @param newList 新字符串
+    * @param newStr 新字符串
     * @return Node 返回最后一次比较结果信息
      */
     public static Node LCSCompare(String oldStr, String newStr) {
-        NodePool nodePool = new NodePool();       
+//        System.out.println(oldStr);
+//        System.out.println(newStr);
+//        System.out.println("--------------------------------------------------------------------------");
+        NodePool nodePool = new NodePool(oldStr.length(), newStr.length());       
         for(int i = 0; i < oldStr.length(); i++) {
             for(int j = 0; j < newStr.length(); j++) {
-                Node currentNode = nodePool.getNode(i, j);
+                Node currentNode = nodePool.getNewNode(i, j);
                 if(oldStr.charAt(i) == newStr.charAt(j)) {
                     currentNode.setTotalMatchLength(1).setMatch(true);
-                    Node upperLeftNode = nodePool.getNode(i - 1, j - 1);
+                    Node upperLeftNode = nodePool.getOldNode(i - 1, j - 1);
                     if(upperLeftNode != null) {
                         currentNode.setTotalMatchLength(upperLeftNode.getTotalMatchLength() + 1).setPrevious(upperLeftNode);
                     }
                 }else {
                     int left = 0;
                     int top = 0;
-                    Node leftNode = nodePool.getNode(i, j - 1);
+                    Node leftNode = nodePool.getOldNode(i, j - 1);
                     if(leftNode != null) {
                         left = leftNode.getTotalMatchLength();
                     }
-                    Node topNode = nodePool.getNode(i - 1, j);
+                    Node topNode = nodePool.getOldNode(i - 1, j);
                     if(topNode != null) {
                         top = topNode.getTotalMatchLength();
                     }
@@ -87,9 +90,12 @@ public class LCSUtil {
                         currentNode.setTotalMatchLength(left).setPrevious(leftNode);
                     }
                 }
+                nodePool.addNode(currentNode);
             }
-        }       
-        return nodePool.getNode(oldStr.length() - 1, newStr.length() - 1);
+//            System.out.println();
+        }
+//        System.out.println("===============================================================================");
+        return nodePool.getOldNode(oldStr.length() - 1, newStr.length() - 1);
     }
     /**
      * 

@@ -81,7 +81,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         }else {
             KnowledgeDocumentVo oldDocumentVo = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(oldVersionId);       
             resultObj.put("oldDocumentVo", oldDocumentVo);
-            compareTitle(oldDocumentVo, newDocumentVo);
+//            compareTitle(oldDocumentVo, newDocumentVo);
             compareLineList(oldDocumentVo, newDocumentVo);           
         }       
         return resultObj;
@@ -94,19 +94,19 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
     * @param newDocumentVo 
     * @return void
      */
-    private void compareTitle(KnowledgeDocumentVo oldDocumentVo, KnowledgeDocumentVo newDocumentVo) {
-        String oldTitle = oldDocumentVo.getTitle();
-        String newTitle = newDocumentVo.getTitle();
-        List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
-        List<SegmentRange> newSegmentRangeList = new ArrayList<>();
-        Node node = LCSUtil.LCSCompare(oldTitle, newTitle);
-        for(SegmentPair segmentpair : node.getSegmentPairList()) {
-            oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
-            newSegmentRangeList.add(segmentpair.getNewSegmentRange());
-        }
-        oldDocumentVo.setTitle(LCSUtil.wrapChangePlace(oldTitle, oldSegmentRangeList, "<span class='delete'>", "</span>"));
-        newDocumentVo.setTitle(LCSUtil.wrapChangePlace(newTitle, newSegmentRangeList, "<span class='insert'>", "</span>"));
-    }
+//    private void compareTitle(KnowledgeDocumentVo oldDocumentVo, KnowledgeDocumentVo newDocumentVo) {
+//        String oldTitle = oldDocumentVo.getTitle();
+//        String newTitle = newDocumentVo.getTitle();
+//        List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
+//        List<SegmentRange> newSegmentRangeList = new ArrayList<>();
+//        Node node = LCSUtil.LCSCompare(oldTitle, newTitle);
+//        for(SegmentPair segmentpair : node.getSegmentPairList()) {
+//            oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
+//            newSegmentRangeList.add(segmentpair.getNewSegmentRange());
+//        }
+//        oldDocumentVo.setTitle(LCSUtil.wrapChangePlace(oldTitle, oldSegmentRangeList, "<span class='delete'>", "</span>"));
+//        newDocumentVo.setTitle(LCSUtil.wrapChangePlace(newTitle, newSegmentRangeList, "<span class='insert'>", "</span>"));
+//    }
     /**
      * 
     * @Time:2020年10月28日

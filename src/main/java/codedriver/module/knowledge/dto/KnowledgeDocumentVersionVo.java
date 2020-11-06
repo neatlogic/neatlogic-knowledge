@@ -1,5 +1,6 @@
 package codedriver.module.knowledge.dto;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -58,6 +59,8 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     private int isCollect;
     @EntityField(name = "是否已删除", type = ApiParamType.INTEGER)
     private Integer isDelete;
+    @EntityField(name = "路径", type = ApiParamType.JSONARRAY)
+    private List<String> path = new ArrayList<>();
     @JSONField(serialize=false)
     private transient boolean isAutoGenerateId = true;
     @JSONField(serialize=false)
@@ -215,5 +218,11 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     }
     public void setIsDelete(Integer isDelete) {
         this.isDelete = isDelete;
+    }
+    public List<String> getPath() {
+        return path;
+    }
+    public void setPath(List<String> path) {
+        this.path = path;
     }
 }

@@ -50,6 +50,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedCann
 import codedriver.module.knowledge.exception.KnowledgeDocumentHasBeenDeletedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentRepeatInvokeException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentTitleRepeatException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentTypeNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentUnmodifiedCannotBeSavedException;
@@ -210,7 +211,11 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 if(documentVo.getInvokeId() == null) {
                     throw new ParamNotExistsException("参数：“invokeId”不能为空");
                 }
-                knowledgeDocumentMapper.insertKnowledgeDocumentInvoke(new KnowledgeDocumentInvokeVo(documentVo.getId(), documentVo.getInvokeId(), documentVo.getSource()));
+                KnowledgeDocumentInvokeVo knowledgeDocumentInvokeVo = new KnowledgeDocumentInvokeVo(documentVo.getId(), documentVo.getInvokeId(), documentVo.getSource());
+                if(knowledgeDocumentMapper.getKnowledgeDocumentIdByInvokeIdAndSource(knowledgeDocumentInvokeVo) != null) {
+                    throw new KnowledgeDocumentRepeatInvokeException();
+                }
+                knowledgeDocumentMapper.insertKnowledgeDocumentInvoke(knowledgeDocumentInvokeVo);
             }
             knowledgeDocumentMapper.insertKnowledgeDocumentViewCount(documentVo.getId(), 0);
             knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());

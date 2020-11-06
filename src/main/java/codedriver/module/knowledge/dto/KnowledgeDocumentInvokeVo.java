@@ -5,6 +5,10 @@ public class KnowledgeDocumentInvokeVo {
     private Long knowledgeDocumentId;
     private Long invokeId;
     private String source;
+    public KnowledgeDocumentInvokeVo(Long invokeId, String source) {
+        this.invokeId = invokeId;
+        this.source = source;
+    }
     public KnowledgeDocumentInvokeVo(Long knowledgeDocumentId, Long invokeId, String source) {
         this.knowledgeDocumentId = knowledgeDocumentId;
         this.invokeId = invokeId;

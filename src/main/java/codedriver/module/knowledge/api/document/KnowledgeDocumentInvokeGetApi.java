@@ -3,15 +3,17 @@ package codedriver.module.knowledge.api.document;
 import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dao.mapper.TeamMapper;
+import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.dto.UserVo;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -37,6 +39,8 @@ public class KnowledgeDocumentInvokeGetApi extends PrivateApiComponentBase {
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
     @Autowired
     private TeamMapper teamMapper;   
+    @Autowired
+    private UserMapper userMapper;   
     @Autowired
     private KnowledgeCircleMapper knowledgeCircleMapper;
     @Autowired
@@ -69,7 +73,9 @@ public class KnowledgeDocumentInvokeGetApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        KnowledgeDocumentInvokeVo knowledgeDocumentInvokeVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentInvokeVo.class);
+        Long invokeId = jsonObj.getLong("invokeId");
+        String source = jsonObj.getString("source");
+        KnowledgeDocumentInvokeVo knowledgeDocumentInvokeVo = new KnowledgeDocumentInvokeVo(invokeId, source);
         Long knowledgeDocumentId = knowledgeDocumentMapper.getKnowledgeDocumentIdByInvokeIdAndSource(knowledgeDocumentInvokeVo);
         if(knowledgeDocumentId != null) {
             resultObj.put("isTransferKnowledge", 0);
@@ -99,6 +105,14 @@ public class KnowledgeDocumentInvokeGetApi extends PrivateApiComponentBase {
                         knowledgeDocumentVersionVo.getPath().addAll(typeNameList);
                     }
                 }
+                if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getLcu())) {
+                    UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
+                    if(userVo != null) {
+                        knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
+                        knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
+                        knowledgeDocumentVersionVo.setLcuVipLevel(userVo.getVipLevel());
+                    }
+                }               
                 resultObj.put("knowledgeDocumentVersion", knowledgeDocumentVersionVo);               
             }
         }else {

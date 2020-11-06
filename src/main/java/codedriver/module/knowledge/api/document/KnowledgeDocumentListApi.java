@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -104,15 +105,18 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                     knowledgeDocumentVersionVo.setIsEditable(1);
                     knowledgeDocumentVersionVo.setIsDeletable(isApprover);
                     knowledgeDocumentIdList.add(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-                }
-                List<Long> collectedKnowledgeDocumentIdList = knowledgeDocumentMapper.getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(UserContext.get().getUserUuid(true), knowledgeDocumentIdList);
-                for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
                     knowledgeDocumentVersionVo.setAutoGenerateId(false);
                     knowledgeDocumentVersionVo.setId(null);
-                    if(collectedKnowledgeDocumentIdList.contains(knowledgeDocumentVersionVo.getKnowledgeDocumentId())) {
-                        knowledgeDocumentVersionVo.setIsCollect(1);
+                }
+                if(CollectionUtils.isNotEmpty(knowledgeDocumentIdList)) {
+                    List<Long> collectedKnowledgeDocumentIdList = knowledgeDocumentMapper.getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(UserContext.get().getUserUuid(true), knowledgeDocumentIdList);
+                    for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
+                        if(collectedKnowledgeDocumentIdList.contains(knowledgeDocumentVersionVo.getKnowledgeDocumentId())) {
+                            knowledgeDocumentVersionVo.setIsCollect(1);
+                        }
                     }
                 }
+                
                 resultObj.put("tbodyList", knowledgeDocumentVersionList);
             }
             return resultObj;

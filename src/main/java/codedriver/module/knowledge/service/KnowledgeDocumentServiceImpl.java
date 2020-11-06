@@ -13,9 +13,11 @@ import codedriver.framework.dto.UserVo;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
+import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
+import codedriver.module.knowledge.dto.KnowledgeCircleVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
@@ -40,8 +42,8 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     @Autowired
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMappper;
     
-//    @Autowired
-//    private KnowledgeCircleMapper knowledgeCircleMapper;
+    @Autowired
+    private KnowledgeCircleMapper knowledgeCircleMapper;
     
     @Autowired
     private UserMapper userMapper;
@@ -131,10 +133,10 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             knowledgeDocumentVo.setTagList(tagNameList);
         }
         
-//        KnowledgeCircleVo knowledgeCircleVo = knowledgeCircleMapper.getKnowledgeCircleById(knowledgeDocumentVo.getKnowledgeCircleId());
-//        if(knowledgeCircleVo != null) {
-//            knowledgeDocumentVo.getPath().add(knowledgeCircleVo.getName());
-//        }
+        KnowledgeCircleVo knowledgeCircleVo = knowledgeCircleMapper.getKnowledgeCircleById(knowledgeDocumentVo.getKnowledgeCircleId());
+        if(knowledgeCircleVo != null) {
+            knowledgeDocumentVo.getPath().add(knowledgeCircleVo.getName());
+        }
         KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMappper.getTypeByUuid(knowledgeDocumentVo.getKnowledgeDocumentTypeUuid());
         if(knowledgeDocumentTypeVo != null) {
             List<String> typeNameList = knowledgeDocumentTypeMappper.getAncestorsAndSelfNameByLftRht(knowledgeDocumentTypeVo.getLft(), knowledgeDocumentTypeVo.getRht(), knowledgeDocumentTypeVo.getKnowledgeCircleId());

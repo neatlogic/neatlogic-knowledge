@@ -4,7 +4,7 @@ public enum KnowledgeDocumentOperate {
     SUBMIT("submit", "提交", "提交了审核", false),
     PASS("pass", "通过", "通过了审核", false),
     REJECT("reject", "拒绝", "退回了审核", false),
-    SWITCHVERSION("switchversion", "切换版本", "切换【版本${DATA.oldVersion}】至【版本${DATA.newVersion}】", false);
+    SWITCHVERSION("switchversion", "切换版本", "切换【版本${DATA.oldVersion}】至【版本${DATA.newVersion}】", true);
     private String value;
     private String text;
     private String title;

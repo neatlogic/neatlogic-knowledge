@@ -144,6 +144,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
                 knowledgeDocumentVo.getPath().addAll(typeNameList);
             }
         }
+        knowledgeDocumentVo.setIsReviewer(knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId()));
         return knowledgeDocumentVo;
     }
 

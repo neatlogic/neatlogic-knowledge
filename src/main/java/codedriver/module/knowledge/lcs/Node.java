@@ -62,14 +62,14 @@ public class Node {
 
     public Node setPrevious(Node previous) {
         this.previous = previous;
-        ++this.nextCount;
+        if(previous != null) {
+            ++previous.nextCount;
+            System.out.println(this + "-----" + previous);
+        }
         return this;
     }
-    public int getNextCountIncrement() {
-        return ++this.nextCount;
-    }
-    public int getNextCountDecrement() {
-        return --this.nextCount;
+    public void getNextCountDecrement() {
+        --this.nextCount;
     }
     public int getNextCount() {
         return nextCount;
@@ -119,8 +119,18 @@ public class Node {
         resultList.add(segmentMapping);
         return resultList;
     }
+    
+    public void reset() {
+        this.oldIndex = 0;
+        this.newIndex = 0;
+        this.totalMatchLength = 0;
+        this.match = false;
+        this.previous = null;
+        this.next = null;
+        this.nextCount = 0;
+    }
     @Override
     public String toString() {
-        return "[" + oldIndex + "][" + newIndex + "]=" + totalMatchLength + "," + (match ? "T" : "F");
+        return "[" + oldIndex + "][" + newIndex + "]=" + totalMatchLength + "," + (match ? "T" : "F") + "," + nextCount;
     }
 }

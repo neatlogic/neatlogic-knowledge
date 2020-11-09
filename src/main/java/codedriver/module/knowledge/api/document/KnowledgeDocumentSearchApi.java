@@ -31,7 +31,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
 @Service
-@OperationType(type = OperationTypeEnum.DELETE)
+@OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
 
     @Autowired

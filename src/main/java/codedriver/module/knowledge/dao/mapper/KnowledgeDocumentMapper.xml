@@ -33,6 +33,119 @@
 	AND `is_delete` = 0
 	</select>
 	
+	<resultMap id="knowledgeDocumentVersionMap" type="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
+		<id column="id" property="id" />
+		<result column="version" property="version" />
+		<result column="knowledgeDocumentVersionId" property="knowledgeDocumentVersionId" />
+		<result column="knowledgeDocumentTypeUuid" property="knowledgeDocumentTypeUuid" />
+		<result column="title" property="title" />
+		<result column="lcd" property="lcd" />
+		<result column="lcu" property="lcu" />
+		<result column="status" property="status" />
+		<result column="lcuName" property="lcuName" />
+		<result column="source" property="source" />
+		<result column="from_version" property="fromVersion" />
+		<association property="tagVoList" javaType="codedriver.module.knowledge.dto.KnowledgeTagVo">
+			<result column="tagId" property="id" />
+			<result column="tagName" property="name" />
+		</association>
+		<association property="knowledgeDocumentLineList" javaType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
+			<result column="lineContent" property="content" />
+		</association>
+	</resultMap>
+	
+	<select id="getKnowledgeDocumentVersionByIdList" parameterType="java.util.List" resultMap="knowledgeDocumentVersionMap">
+		SELECT 
+		kdv.id,
+		kdv.`version`,
+		kdv.`from_version`,
+		kd.`id` AS knowledgeDocumentId,
+		kc.name AS knowledgeCircleName,
+		kd.`title`,
+		kdv.`lcd`,
+		kdv.`lcu`,
+		kdv.`status`,
+		kd.`source`,
+		(SELECT `user_name` FROM `user` WHERE `uuid` = kdv.`lcu`) AS lcuName,
+		ktg.`id` AS tagId,
+		ktg.`name` AS tagName, 
+		kdv.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
+		kdlc.`content` AS lineContent
+		FROM `knowledge_document_version` kdv
+		LEFT JOIN `knowledge_document` kd ON kd.`id` = kdv.`knowledge_document_id` AND kd.`knowledge_document_version_id` = kdv.`id`
+		LEFT JOIN `knowledge_circle` kc ON kd.`knowledge_circle_id` = kc.`id`
+		LEFT JOIN `knowledge_document_tag` kdt ON kdt.`knowledge_document_id` = kdv.`knowledge_document_id` AND kdt.`knowledge_document_version_id` = kdv.`id`
+		LEFT JOIN `knowledge_tag` ktg ON kdt.`tag_id` = ktg.`id`
+		LEFT JOIN `knowledge_document_line` kdl ON kdl.`knowledge_document_id` = kd.`id` AND kdl.`knowledge_document_version_id` = kdl.`knowledge_document_version_id`
+		LEFT JOIN `knowledge_document_line_content` kdlc ON kdl.`content_hash` = kdlc.`hash`
+		where kdv.`id` in 
+	    <foreach collection="documentVersionIdlist" item="id" open="(" separator="," close=")">
+	 	#{id}
+	 	</foreach>
+	</select>
+	
+	<sql id="searchDocumentVersionSql">
+		<where>
+	    	<if test="knowledgeDocumentVersionIdList != null and knowledgeDocumentVersionIdList.size() > 0">
+	    		kd.`id` in 
+			    <foreach collection="knowledgeDocumentVersionIdList" item="id" open="(" separator="," close=")">
+			 	#{id}
+			 	</foreach>
+	    	</if>
+	    	<if test="lcu != null and id != ''">
+	    		kdv.`lcu` = #{lcu}
+	    	</if>
+	    	<if test="lcdStartTime != null and  lcdStartTime != ''">
+	    		kdv.`lcd` >= #{lcdStartTime}
+	    	</if>
+	    	<if test="lcdEndTime != null and  lcdEndTime != ''">
+	    		kdv.`lcd` &lt;= #{lcdEndTime}
+	    	</if>
+	    	<if test="tagList != null and tagList.size()>0">
+	    		ktg.`name` in
+	    		<foreach collection="tagList" item="tag" open="(" separator="," close=")">
+	    			#{tag}
+	    		</foreach>
+	    	</if>
+	    	<if test="knowledgeDocumentTypeUuid != null and knowledgeDocumentTypeUuid != ''">
+	    		kd.`knowledge_document_type_uuid`  in ( 
+		    		SELECT `uuid` FROM `knowledge_document_type` WHERE 
+		    		`lft` >= (
+						SELECT `lft` FROM `knowledge_document_type` WHERE `uuid` = #{knowledgeDocumentTypeUuid}
+					 )
+					 AND 
+					 `rht` &lt;= (
+						SELECT `rht` FROM `knowledge_document_type` WHERE `uuid` = #{knowledgeDocumentTypeUuid}
+					 )
+				 )
+	    	</if>
+	    </where> 
+	</sql>
+	
+	<select id="getKnowledgeDocumentVersionIdList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="java.lang.Long">
+		SELECT 
+		distinct kdv.id
+		FROM `knowledge_document_version` kdv
+		LEFT JOIN `knowledge_document` kd ON kd.`id` = kdv.`knowledge_document_id` AND kd.`knowledge_document_version_id` = kdv.`id`
+		LEFT JOIN `knowledge_circle` kc ON kd.`knowledge_circle_id` = kc.`id`
+		LEFT JOIN `knowledge_document_tag` kdt ON kdt.`knowledge_document_id` = kdv.`knowledge_document_id` AND kdt.`knowledge_document_version_id` = kdv.`id`
+		LEFT JOIN `knowledge_tag` ktg ON kdt.`tag_id` = ktg.`id`
+		<include refid="searchDocumentVersionSql" />
+	    <if test="needPage">
+		limit #{startNum}, #{pageSize}
+		</if>
+	</select>
+	
+	<select id="getKnowledgeDocumentVersionCount" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="java.lang.Integer">
+		select count(distinct kdv.id)
+		FROM `knowledge_document_version` kdv
+		LEFT JOIN `knowledge_document` kd ON kd.`id` = kdv.`knowledge_document_id` AND kd.`knowledge_document_version_id` = kdv.`id`
+		LEFT JOIN `knowledge_circle` kc ON kd.`knowledge_circle_id` = kc.`id`
+		LEFT JOIN `knowledge_document_tag` kdt ON kdt.`knowledge_document_id` = kdv.`knowledge_document_id` AND kdt.`knowledge_document_version_id` = kdv.`id`
+		LEFT JOIN `knowledge_tag` ktg ON kdt.`tag_id` = ktg.`id`
+		<include refid="searchDocumentVersionSql" />
+	</select>
+	
 	<resultMap id="knowledgeDocumentMap" type="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
 		<id column="id" property="id" />
 		<result column="version" property="version" />
@@ -48,6 +161,7 @@
 		<result column="favorCount" property="favorCount" />
 		<result column="collectCount" property="collectCount" />
 		<result column="documentTypePath" property="documentTypePath" />
+		<result column="source" property="source" />
 		<association property="tagVoList" javaType="codedriver.module.knowledge.dto.KnowledgeTagVo">
 			<result column="tagId" property="id" />
 			<result column="tagName" property="name" />
@@ -68,6 +182,7 @@
 		kdv.`lcd`,
 		kdv.`lcu`,
 		kdv.`status`,
+		kd.`source`,
 		(SELECT `user_name` FROM `user` WHERE `uuid` = kdv.`lcu`) AS lcuName,
 		ktg.`id` AS tagId,
 		ktg.`name` AS tagName, 
@@ -108,8 +223,8 @@
 	    	<if test="lcdStartTime != null and  lcdStartTime != ''">
 	    		kdv.`lcd` >= #{lcdStartTime}
 	    	</if>
-	    	<if test="lcdStartTime != null and  lcdStartTime != ''">
-	    		kdv.`lcd` &lt;= #{lcdStartTime}
+	    	<if test="lcdEndTime != null and  lcdEndTime != ''">
+	    		kdv.`lcd` &lt;= #{lcdEndTime}
 	    	</if>
 	    	<if test="tagList != null and tagList.size()>0">
 	    		ktg.`name` in
@@ -121,11 +236,11 @@
 	    		kd.`knowledge_document_type_uuid`  in ( 
 		    		SELECT `uuid` FROM `knowledge_document_type` WHERE 
 		    		`lft` >= (
-						SELECT `lft` FROM `knowledge_document_type` WHERE `uuid` = '0996381494764be382b950c7559ebc34'
+						SELECT `lft` FROM `knowledge_document_type` WHERE `uuid` = #{knowledgeDocumentTypeUuid}
 					 )
 					 AND 
 					 `rht` &lt;= (
-						SELECT `rht` FROM `knowledge_document_type` WHERE `uuid` = '0996381494764be382b950c7559ebc34'
+						SELECT `rht` FROM `knowledge_document_type` WHERE `uuid` = #{knowledgeDocumentTypeUuid}
 					 )
 				 )
 	    	</if>

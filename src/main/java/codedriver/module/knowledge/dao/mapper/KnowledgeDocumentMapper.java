@@ -27,7 +27,13 @@ public interface KnowledgeDocumentMapper {
     
     public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdList(@Param("documentIdlist") List<Long> documentIdList);
     
+    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionByIdList(@Param("documentVersionIdlist") List<Long> documentVersionIdList);
+    
     public List<Long> getKnowledgeDocumentIdList(KnowledgeDocumentVo knowledgeDocumentVo);
+    
+    public List<Long> getKnowledgeDocumentVersionIdList(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+    
+    public Integer getKnowledgeDocumentVersionCount(KnowledgeDocumentVersionVo KnowledgeDocumentVersionVo);
     
     public Integer getKnowledgeDocumentCount(KnowledgeDocumentVo knowledgeDocumentVo);
     
@@ -126,10 +132,11 @@ public interface KnowledgeDocumentMapper {
     public int insertKnowledgeDocumentTag(KnowledgeDocumentTagVo knowledgeDocumentTagVo);
 
     public int insertKnowledgeDocumentLineConfig(KnowledgeDocumentLineConfigVo knowledgeDocumentLineConfigVo);
-
+    
     public int insertKnowledgeDocumentLineContent(KnowledgeDocumentLineContentVo knowledgeDocumentLineContentVo);
 
-    public int insertKnowledgeDocumentLineList(List<KnowledgeDocumentLineVo> knowledgeDocumentLineList);
+    @ESSearch
+    public int insertKnowledgeDocumentLineList(@ESParam("knowledgeversion")List<KnowledgeDocumentLineVo> knowledgeDocumentLineList);
 
     public int insertKnowledgeDocumentFavor(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
 

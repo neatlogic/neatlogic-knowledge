@@ -16,7 +16,6 @@ import codedriver.framework.util.SnowflakeUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 
 public class KnowledgeDocumentVersionVo extends BaseEditorVo {
-
     @EntityField(name = "版本id", type = ApiParamType.LONG)
     private Long id;
     @EntityField(name = "文档类型Uuid", type = ApiParamType.LONG)
@@ -61,10 +60,26 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     private Integer isDelete;
     @EntityField(name = "路径", type = ApiParamType.JSONARRAY)
     private List<String> path = new ArrayList<>();
+    @EntityField(name = "标签名列表", type = ApiParamType.JSONARRAY)
+    private List<String> tagList = new ArrayList<>();
+    @EntityField(name = "标签列表", type = ApiParamType.JSONARRAY)
+    private List<KnowledgeTagVo> tagVoList = new ArrayList<>();
+    @EntityField(name = "知识内容", type = ApiParamType.STRING)
+    private String content;
+    @EntityField(name = "行数据列表", type = ApiParamType.JSONARRAY)
+    private List<KnowledgeDocumentLineVo> knowledgeDocumentLineList = new ArrayList<>();
     @JSONField(serialize=false)
     private transient boolean isAutoGenerateId = true;
     @JSONField(serialize=false)
     private transient List<String> statusList;
+    @JSONField(serialize=false)
+    private String source;
+    @JSONField(serialize=false)
+    private String lcdStartTime;
+    @JSONField(serialize=false)
+    private String lcdEndTime;
+    @JSONField(serialize=false)
+    private List<Long> knowledgeDocumentVersionIdList;
     public boolean isAutoGenerateId() {
         return isAutoGenerateId;
     }
@@ -225,4 +240,54 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     public void setPath(List<String> path) {
         this.path = path;
     }
+    public List<KnowledgeDocumentLineVo> getKnowledgeDocumentLineList() {
+        return knowledgeDocumentLineList;
+    }
+    public void setKnowledgeDocumentLineList(List<KnowledgeDocumentLineVo> knowledgeDocumentLineList) {
+        this.knowledgeDocumentLineList = knowledgeDocumentLineList;
+    }
+    public List<String> getTagList() {
+        return tagList;
+    }
+    public void setTagList(List<String> tagList) {
+        this.tagList = tagList;
+    }
+    public String getSource() {
+        return source;
+    }
+    public void setSource(String source) {
+        this.source = source;
+    }
+    public String getContent() {
+        return content;
+    }
+    public void setContent(String content) {
+        this.content = content;
+    }
+    public String getLcdStartTime() {
+        return lcdStartTime;
+    }
+    public void setLcdStartTime(String lcdStartTime) {
+        this.lcdStartTime = lcdStartTime;
+    }
+    public String getLcdEndTime() {
+        return lcdEndTime;
+    }
+    public void setLcdEndTime(String lcdEndTime) {
+        this.lcdEndTime = lcdEndTime;
+    }
+    public List<Long> getKnowledgeDocumentVersionIdList() {
+        return knowledgeDocumentVersionIdList;
+    }
+    public void setKnowledgeDocumentVersionIdList(List<Long> knowledgeDocumentVersionIdList) {
+        this.knowledgeDocumentVersionIdList = knowledgeDocumentVersionIdList;
+    }
+    public List<KnowledgeTagVo> getTagVoList() {
+        return tagVoList;
+    }
+    public void setTagVoList(List<KnowledgeTagVo> tagVoList) {
+        this.tagVoList = tagVoList;
+    }
+    
+    
 }

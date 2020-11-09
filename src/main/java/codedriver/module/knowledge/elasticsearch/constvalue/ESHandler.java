@@ -1,7 +1,8 @@
 package codedriver.module.knowledge.elasticsearch.constvalue;
 
 public enum ESHandler {
-	KNOWLEDGE("knowledge","知识");
+	KNOWLEDGE("knowledge","知识"),
+	KNOWLEDGE_VERSION("knowledgeversion","知识版本");
 
 	private String value;
 	private String text;

@@ -28,6 +28,7 @@ import codedriver.framework.util.HtmlUtil;
 import codedriver.framework.util.TimeUtil;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
 @Service
@@ -52,10 +53,11 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         return null;
     }
     
-    @SuppressWarnings("unchecked")
     @Input({
+        @Param(name = "type", type = ApiParamType.STRING, desc = "搜索知识对象类型： document|documentVersion, 默认document"),
         @Param(name = "keyword", type = ApiParamType.STRING, desc = "搜索关键字"),
         @Param(name = "lcu", type = ApiParamType.STRING, desc = "修改人"),
+        @Param(name = "source", type = ApiParamType.STRING, desc = "来源"),
         @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc = "知识文档类型"),
         @Param(name = "lcdConfig", type = ApiParamType.JSONOBJECT, desc = "最近修改时间； {timeRange: 6, timeUnit: 'month'} 或  {startTime: 1605196800000, endTime: 1607961600000}"),
         @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表"),
@@ -88,6 +90,23 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultJson = new JSONObject();
+        String type = jsonObj.getString("type");
+        if("documentVersion".equals(type)) {
+            setDocumentVersionList(resultJson,jsonObj);
+        }else {
+            setDocumentList(resultJson,jsonObj);
+        }
+        
+       
+       
+        return resultJson;
+    }  
+    
+    /*
+     * 根据搜索条件，最终返回知识
+     */
+    @SuppressWarnings("unchecked")
+    private void setDocumentList(JSONObject resultJson,JSONObject jsonObj) {
         KnowledgeDocumentVo documentVoParam = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
         JSONObject lcdConfig = jsonObj.getJSONObject("lcdConfig");
         if(lcdConfig != null) {
@@ -136,14 +155,74 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                 }
             }
         }
-        
         resultJson.put("dataList", documentList);
         resultJson.put("rowNum", total);
         resultJson.put("pageSize", documentVoParam.getPageSize());
         resultJson.put("currentPage", documentVoParam.getCurrentPage());
         resultJson.put("pageCount", PageUtil.getPageCount(total, documentVoParam.getPageSize()));
-        return resultJson;
-    }  
+    }
+    
+    /*
+     * 根据搜索条件，最终返回知识版本
+     */
+    @SuppressWarnings("unchecked")
+    private void setDocumentVersionList(JSONObject resultJson,JSONObject jsonObj) {
+        KnowledgeDocumentVersionVo documentVersionVoParam = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
+        JSONObject lcdConfig = jsonObj.getJSONObject("lcdConfig");
+        if(lcdConfig != null) {
+            getLcdTime(documentVersionVoParam,lcdConfig);
+        }
+        //仅根据keyword,从es搜索标题和内容
+        JSONObject data = null;
+        if(StringUtils.isNotBlank(documentVersionVoParam.getKeyword())){
+            IElasticSearchHandler<KnowledgeDocumentVersionVo, JSONObject> esHandler = ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE_VERSION.getValue());
+            data = JSONObject.parseObject(esHandler.search(documentVersionVoParam).toString());
+            List<Long> documentVersionIdList = JSONObject.parseArray(data.getJSONArray("knowledgeDocumentVersionIdList").toJSONString(),Long.class);
+            //将从es搜索符合的知识送到数据库做二次过滤
+            documentVersionVoParam.setKnowledgeDocumentVersionIdList(documentVersionIdList);
+        }
+        
+        
+        List<Long> documentVersionIdList = knowledgeDocumentMapper.getKnowledgeDocumentVersionIdList(documentVersionVoParam);
+        List<KnowledgeDocumentVersionVo> documentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionByIdList(documentVersionIdList);
+        Integer total = knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam);
+       
+        for(KnowledgeDocumentVersionVo documentVersionVo : documentVersionList) {
+            if(documentVersionVo != null) {
+                //替换 highlight 字段
+                if(StringUtils.isNotBlank(documentVersionVoParam.getKeyword())){
+                    JSONObject highlightData = data.getJSONObject(documentVersionVo.getId().toString());
+                    if(MapUtils.isNotEmpty(highlightData)) {
+                        if(highlightData.containsKey("title.txt")) {
+                            documentVersionVo.setTitle(String.join("\n", JSONObject.parseArray(highlightData.getString("title.txt"),String.class)));
+                        }
+                        if(highlightData.containsKey("content.txt")) {
+                            documentVersionVo.setContent( String.join("\n", JSONObject.parseArray(highlightData.getString("content.txt"),String.class)));
+                        }
+                    }
+                }
+                //如果es找不到内容 则从数据库获取
+                if(StringUtils.isBlank(documentVersionVo.getContent())) {
+                    StringBuilder contentsb = new StringBuilder();
+                    List<KnowledgeDocumentLineVo> documentLineList = documentVersionVo.getKnowledgeDocumentLineList();
+                    if(CollectionUtils.isNotEmpty(documentLineList)) {
+                        for(KnowledgeDocumentLineVo line : documentLineList) {
+                            contentsb.append(line.getContent());
+                        }
+                        String content =HtmlUtil.removeHtml(contentsb.toString(), null);
+                        documentVersionVo.setContent(HtmlUtil.removeHtml(contentsb.toString(), null).substring(0, content.length()> 250?250:content.length()));
+                        documentVersionVo.setKnowledgeDocumentLineList(null);
+                    }
+                   
+                }
+            }
+        }
+        resultJson.put("dataList", documentVersionList);
+        resultJson.put("rowNum", total);
+        resultJson.put("pageSize", documentVersionVoParam.getPageSize());
+        resultJson.put("currentPage", documentVersionVoParam.getCurrentPage());
+        resultJson.put("pageCount", PageUtil.getPageCount(total, documentVersionVoParam.getPageSize()));
+    }
     
     /**
     * @Author 89770
@@ -152,7 +231,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     * @Param 
     * @return
      */
-    private void getLcdTime(KnowledgeDocumentVo documentVoParam,JSONObject lcdConfig) {
+    private void getLcdTime(Object param,JSONObject lcdConfig) {
         String startTime = StringUtils.EMPTY;
         String endTime = StringUtils.EMPTY;
         SimpleDateFormat format = new SimpleDateFormat(TimeUtil.YYYY_MM_DD_HH_MM_SS);
@@ -163,7 +242,13 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             startTime = TimeUtil.timeTransfer(lcdConfig.getInteger("timeRange"), lcdConfig.getString("timeUnit"));
             endTime = TimeUtil.timeNow();
         }
-        documentVoParam.setLcdStartTime(startTime);
-        documentVoParam.setLcdEndTime(endTime);
+        
+        if(param instanceof KnowledgeDocumentVersionVo) {
+            ((KnowledgeDocumentVersionVo)param).setLcdStartTime(startTime);
+            ((KnowledgeDocumentVersionVo)param).setLcdEndTime(endTime);
+        }else {
+            ((KnowledgeDocumentVo)param).setLcdStartTime(startTime);
+            ((KnowledgeDocumentVo)param).setLcdEndTime(endTime);
+        }
     }
 }

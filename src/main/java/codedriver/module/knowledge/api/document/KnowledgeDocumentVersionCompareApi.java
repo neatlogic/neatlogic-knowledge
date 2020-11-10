@@ -235,6 +235,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                           List<SegmentRange> newSegmentRangeList = new ArrayList<>();
                           Node node = LCSUtil.LCSCompare(oldMainBody, newMainBody);
                           for(SegmentPair segmentpair : node.getSegmentPairList()) {
+                              //System.out.println(segmentpair);
                               oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
                               newSegmentRangeList.add(segmentpair.getNewSegmentRange());
                           }

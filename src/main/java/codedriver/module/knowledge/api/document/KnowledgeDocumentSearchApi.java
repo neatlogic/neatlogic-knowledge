@@ -56,8 +56,11 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     @Input({
         @Param(name = "type", type = ApiParamType.STRING, desc = "搜索知识对象类型： document|documentVersion, 默认document"),
         @Param(name = "keyword", type = ApiParamType.STRING, desc = "搜索关键字"),
-        @Param(name = "lcu", type = ApiParamType.STRING, desc = "修改人"),
-        @Param(name = "source", type = ApiParamType.STRING, desc = "来源"),
+        @Param(name = "lcuList", type = ApiParamType.STRING, desc = "修改人"),
+        @Param(name = "reviewerList", type = ApiParamType.STRING, desc = "审批人(人/组/角色)"),
+        @Param(name = "collector", type = ApiParamType.STRING, desc = "收藏人"),
+        @Param(name = "sourceList", type = ApiParamType.STRING, desc = "来源"),
+        @Param(name = "statusList", type = ApiParamType.STRING, desc = "审批状态：all|submitted|passed|rejected|draft"),
         @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc = "知识文档类型"),
         @Param(name = "lcdConfig", type = ApiParamType.JSONOBJECT, desc = "最近修改时间； {timeRange: 6, timeUnit: 'month'} 或  {startTime: 1605196800000, endTime: 1607961600000}"),
         @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表"),
@@ -96,9 +99,6 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         }else {
             setDocumentList(resultJson,jsonObj);
         }
-        
-       
-       
         return resultJson;
     }  
     

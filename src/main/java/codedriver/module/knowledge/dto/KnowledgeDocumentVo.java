@@ -99,7 +99,8 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private String lcdEndTime;
     @EntityField(name = "是否是审核人", type = ApiParamType.INTEGER)
     private Integer isReviewer;
-    
+    @JSONField(serialize=false)
+    private String collector;
     
     public String getType() {
         return type;
@@ -322,6 +323,12 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     }
     public void setIsReviewer(Integer isReviewer) {
         this.isReviewer = isReviewer;
+    }
+    public String getCollector() {
+        return collector;
+    }
+    public void setCollector(String collector) {
+        this.collector = collector;
     }
 
 }

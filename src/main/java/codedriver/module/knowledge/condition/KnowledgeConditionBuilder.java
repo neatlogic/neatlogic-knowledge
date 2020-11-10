@@ -81,7 +81,7 @@ public class KnowledgeConditionBuilder {
        */
       public KnowledgeConditionBuilder setTag() {
           JSONObject conditionJson = new JSONObject();
-          conditionJson.put("handler", "tag");
+          conditionJson.put("handler", "tagList");
           conditionJson.put("handlerName", "标签");
           conditionJson.put("handlerType", FormHandlerType.SELECT.toString());
           

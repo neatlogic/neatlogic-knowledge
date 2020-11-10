@@ -64,7 +64,6 @@ public class Node {
         this.previous = previous;
         if(previous != null) {
             ++previous.nextCount;
-//            System.out.println(this + "-----" + previous);
         }
         return this;
     }

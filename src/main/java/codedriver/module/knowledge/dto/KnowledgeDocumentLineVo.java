@@ -6,6 +6,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.elasticsearch.annotation.ESKey;
+import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.restful.annotation.EntityField;
 
 public class KnowledgeDocumentLineVo {
@@ -18,6 +20,7 @@ public class KnowledgeDocumentLineVo {
     private JSONObject config;
     private Integer lineNumber;
     private transient Long knowledgeDocumentId;
+    @ESKey(type = ESKeyType.PKEY, name = "documentId")
     private transient Long knowledgeDocumentVersionId;
     private transient String contentHash;
     private transient String configHash;

@@ -12,9 +12,8 @@ import java.util.Queue;
  */
 public class NodePool {
 
-    //private int maximumPoolSize;
-    private int poolSize;
-    private int largestPoolSize;
+    private long poolSize;
+    private long largestPoolSize;
     private int lastOldIndex;
     private int lastNewIndex;
     private final int maximumOldLength;
@@ -23,7 +22,7 @@ public class NodePool {
     private int matchLength;
     
     private Queue<Node> freeNodeQueue = new LinkedList<>();
-    private Map<Integer, Node> map = new HashMap<>();
+    private Map<Long, Node> map = new HashMap<>();
     
     public NodePool(int maximumOldLength, int maximumNewLength) {
         this.maximumOldLength = maximumOldLength;
@@ -50,11 +49,10 @@ public class NodePool {
         if(i < 0 || j < 0) {
             return null;
         }
-//        System.out.println(generateKey(i, j) + "=========" + map.get(generateKey(i, j)));
         return map.get(generateKey(i, j));
     }
     public void addNode(Node node) {
-        Integer key = generateKey(node.getOldIndex(), node.getNewIndex());
+        Long key = generateKey(node.getOldIndex(), node.getNewIndex());
         if(!map.containsKey(key)) {
             if(matchLength < node.getTotalMatchLength()) {
                 matchLength = node.getTotalMatchLength();
@@ -66,7 +64,7 @@ public class NodePool {
             lastNewIndex = node.getNewIndex();
         }
     }
-    private int generateKey(int i, int j) {
+    private long generateKey(long i, long j) {
         return i * maximumNewLength + j;
     }
     
@@ -96,9 +94,7 @@ public class NodePool {
                 }
                 Node node = map.get(generateKey(oldIndex, newIndex));
                 if(node != null) {
-                    //System.out.println(node);
                     if(node.getNextCount() == 0) {
-                        //System.out.println(node);
                         map.remove(generateKey(oldIndex, newIndex));
                         Node prev = node.getPrevious();
                         if(prev != null) {

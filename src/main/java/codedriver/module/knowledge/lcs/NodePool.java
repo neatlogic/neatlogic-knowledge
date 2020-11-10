@@ -12,45 +12,47 @@ import java.util.Queue;
  */
 public class NodePool {
 
-    //private int maximumPoolSize;
-    private int poolSize;
-    private int largestPoolSize;
-//    private int lastOldIndex;
-//    private int lastNewIndex;
-    private final int maximumOldIndex;
-    private final int maximumNewIndex;
+    private long poolSize;
+    private long largestPoolSize;
+    private int lastOldIndex;
+    private int lastNewIndex;
+    private final int maximumOldLength;
+    private final int maximumNewLength;
     /** 最大匹配长度 **/
     private int matchLength;
     
     private Queue<Node> freeNodeQueue = new LinkedList<>();
-    private Map<String, Node> map = new HashMap<>();
+    private Map<Long, Node> map = new HashMap<>();
     
-    public NodePool(int maximumOldIndex, int maximumNewIndex) {
-        this.maximumOldIndex = maximumOldIndex;
-        this.maximumNewIndex = maximumNewIndex;
+    public NodePool(int maximumOldLength, int maximumNewLength) {
+        this.maximumOldLength = maximumOldLength;
+        this.maximumNewLength = maximumNewLength;
     }
     public Node getNewNode(int i, int j) {
         if(i < 0 || j < 0) {
             return null;
         }
-        Node node = map.get(generateKey(i, j));
-        if(node == null) {
+        Node node = null;
+        if(i > 1) {
             node = getFreeNode();
-            if(node != null) {
-                node.setOldIndex(i).setNewIndex(j);
-            }else {
-                node = new Node(i, j);
-                poolSize++;
-                largestPoolSize++;
-            }
         }
+        if(node != null) {
+            node.setOldIndex(i).setNewIndex(j);
+        }else {
+            node = new Node(i, j);
+            largestPoolSize++;
+        }
+        poolSize++;
         return node;
     }
     public Node getOldNode(int i, int j) {
+        if(i < 0 || j < 0) {
+            return null;
+        }
         return map.get(generateKey(i, j));
     }
     public void addNode(Node node) {
-        String key = generateKey(node.getOldIndex(), node.getNewIndex());
+        Long key = generateKey(node.getOldIndex(), node.getNewIndex());
         if(!map.containsKey(key)) {
             if(matchLength < node.getTotalMatchLength()) {
                 matchLength = node.getTotalMatchLength();
@@ -58,12 +60,12 @@ public class NodePool {
 //            System.out.print(node);
 //            System.out.print("\t");
             map.put(key, node);
-//            lastOldIndex = node.getOldIndex();
-//            lastNewIndex = node.getNewIndex();
+            lastOldIndex = node.getOldIndex();
+            lastNewIndex = node.getNewIndex();
         }
     }
-    private String generateKey(int i, int j) {
-        return i + "#" + j;
+    private long generateKey(long i, long j) {
+        return i * maximumNewLength + j;
     }
     
     private Node getFreeNode() {
@@ -76,12 +78,42 @@ public class NodePool {
         return node;
     }
     private int garbageCollectionNode() {
-        return 0;
+        int count = 0;
+        for(int oldIndex = lastOldIndex; oldIndex >= 0; oldIndex--) {
+            for(int newIndex = maximumNewLength - 1; newIndex >= 0; newIndex--) {
+                if(newIndex >= lastNewIndex) {
+                    if(oldIndex >= lastOldIndex - 1) {
+                        continue;
+                    }
+                }else {
+                    if(oldIndex == lastOldIndex) {
+                        if(oldIndex != maximumOldLength - 1) {
+                            continue;
+                        }
+                    }
+                }
+                Node node = map.get(generateKey(oldIndex, newIndex));
+                if(node != null) {
+                    if(node.getNextCount() == 0) {
+                        map.remove(generateKey(oldIndex, newIndex));
+                        Node prev = node.getPrevious();
+                        if(prev != null) {
+                            prev.nextCountDecrement();                           
+                        }
+                        node.reset();
+                        freeNodeQueue.add(node);
+                        count++;
+                    }
+                }
+            }
+        }
+        poolSize -= count;
+        return count;
     }
     @Override
     public String toString() {
-        return "NodePool [poolSize=" + poolSize + ", largestPoolSize=" + largestPoolSize + ", maximumOldIndex="
-            + maximumOldIndex + ", maximumNewIndex=" + maximumNewIndex + ", matchLength=" + matchLength + "]";
+        return "NodePool [poolSize=" + poolSize + ", largestPoolSize=" + largestPoolSize + ", maximumOldLength="
+            + maximumOldLength + ", maximumNewLength=" + maximumNewLength + ", matchLength=" + matchLength + "]";
     }
 
 }

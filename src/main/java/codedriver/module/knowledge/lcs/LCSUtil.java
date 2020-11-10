@@ -95,6 +95,7 @@ public class LCSUtil {
             }
 //            System.out.println();
         }
+//        System.out.println(nodePool);
 //        System.out.println("===============================================================================");
         return nodePool.getOldNode(oldStr.length() - 1, newStr.length() - 1);
     }

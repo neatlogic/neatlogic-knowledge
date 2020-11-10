@@ -31,7 +31,7 @@ public class KnowledgeConditionBuilder {
             return this;
         }
         JSONObject conditionJson = new JSONObject();
-        conditionJson.put("handler", "lcu");
+        conditionJson.put("handler", "lcuList");
         conditionJson.put("handlerName", "修改人");
         if(knowledgeType.equals(KnowledgeType.WAITINGFORREVIEW.getValue())) {
             conditionJson.put("handlerName", "提交人");
@@ -109,7 +109,7 @@ public class KnowledgeConditionBuilder {
         */
        public KnowledgeConditionBuilder setSource() {
            JSONObject conditionJson = new JSONObject();
-           conditionJson.put("handler", "source");
+           conditionJson.put("handler", "sourceList");
            conditionJson.put("handlerName", "来源");
            conditionJson.put("handlerType", FormHandlerType.SELECT.toString());
            
@@ -166,7 +166,7 @@ public class KnowledgeConditionBuilder {
                  return this;
              }
              JSONObject conditionJson = new JSONObject();
-             conditionJson.put("handler", "reviewer");
+             conditionJson.put("handler", "reviewerList");
              conditionJson.put("handlerName", "审批人");
              conditionJson.put("handlerType", FormHandlerType.USERSELECT.toString());
              
@@ -190,7 +190,7 @@ public class KnowledgeConditionBuilder {
                   return this;
               }
               JSONObject conditionJson = new JSONObject();
-              conditionJson.put("handler", "status");
+              conditionJson.put("handler", "statusList");
               conditionJson.put("handlerName", "审核状态");
               conditionJson.put("handlerType", FormHandlerType.SELECT.toString());
               

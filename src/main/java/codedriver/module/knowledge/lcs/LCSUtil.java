@@ -61,9 +61,9 @@ public class LCSUtil {
     * @return Node 返回最后一次比较结果信息
      */
     public static Node LCSCompare(String oldStr, String newStr) {
-        System.out.println(oldStr);
-        System.out.println(newStr);
-        System.out.println("--------------------------------------------------------------------------");
+//        System.out.println(oldStr);
+//        System.out.println(newStr);
+//        System.out.println("--------------------------------------------------------------------------");
         NodePool nodePool = new NodePool(oldStr.length(), newStr.length());       
         for(int i = 0; i < oldStr.length(); i++) {
             for(int j = 0; j < newStr.length(); j++) {
@@ -95,8 +95,8 @@ public class LCSUtil {
             }
 //           System.out.println();
         }
-        System.out.println(nodePool);
-        System.out.println("===============================================================================");
+//        System.out.println(nodePool);
+//        System.out.println("===============================================================================");
         return nodePool.getOldNode(oldStr.length() - 1, newStr.length() - 1);
     }
     /**

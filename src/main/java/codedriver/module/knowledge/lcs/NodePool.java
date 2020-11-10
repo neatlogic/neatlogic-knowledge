@@ -38,9 +38,9 @@ public class NodePool {
             node = getFreeNode();
         }
         if(node != null) {
-            node.setOldIndex(i).setNewIndex(j).setId(generateKey(i, j));;
+            node.setOldIndex(i).setNewIndex(j);
         }else {
-            node = new Node(generateKey(i, j), i, j);
+            node = new Node(i, j);
             largestPoolSize++;
         }
         poolSize++;

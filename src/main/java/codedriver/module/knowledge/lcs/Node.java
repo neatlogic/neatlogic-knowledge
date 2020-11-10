@@ -9,7 +9,6 @@ import java.util.List;
 * @Description: 节点类，两份不同数据（A、B）对比时，会先将数据分隔成不同的单元（字符串、字符等），A数据的每一个单元都会跟B数据的每一个单元比较一次，节点对象就是用来保存某一次比较的结果信息的。
  */
 public class Node {
-    private int id;
     /** 旧数据的单元下标 **/
     private int oldIndex;
     /** 新数据的单元下标 **/
@@ -27,17 +26,6 @@ public class Node {
     public Node(int oldIndex, int newIndex) {
         this.oldIndex = oldIndex;
         this.newIndex = newIndex;
-    }
-    public Node(int id, int oldIndex, int newIndex) {
-        this.id = id;
-        this.oldIndex = oldIndex;
-        this.newIndex = newIndex;
-    }
-    public int getId() {
-        return id;
-    }
-    public void setId(int id) {
-        this.id = id;
     }
     public int getOldIndex() {
         return oldIndex;
@@ -143,23 +131,6 @@ public class Node {
     }
     @Override
     public String toString() {
-        return "[" + oldIndex + "][" + newIndex + "]=" + totalMatchLength + "," + (match ? "T" : "F") + "," + nextCount;
+        return "[" + oldIndex + "][" + newIndex + "]=" + totalMatchLength + "," + (match ? "T" : "F");
     }
-//    @Override
-//    public int hashCode() {
-//        return id;
-//    }
-//    @Override
-//    public boolean equals(Object obj) {
-//        if (this == obj)
-//            return true;
-//        if (obj == null)
-//            return false;
-//        if (getClass() != obj.getClass())
-//            return false;
-//        Node other = (Node)obj;
-//        if (id != other.id)
-//            return false;
-//        return true;
-//    }
 }

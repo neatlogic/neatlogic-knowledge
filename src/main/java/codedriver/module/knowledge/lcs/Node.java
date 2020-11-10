@@ -67,7 +67,7 @@ public class Node {
         }
         return this;
     }
-    public void getNextCountDecrement() {
+    public void nextCountDecrement() {
         --this.nextCount;
     }
     public int getNextCount() {

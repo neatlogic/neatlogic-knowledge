@@ -98,7 +98,7 @@ public class NodePool {
                         map.remove(generateKey(oldIndex, newIndex));
                         Node prev = node.getPrevious();
                         if(prev != null) {
-                            prev.getNextCountDecrement();                           
+                            prev.nextCountDecrement();                           
                         }
                         node.reset();
                         freeNodeQueue.add(node);

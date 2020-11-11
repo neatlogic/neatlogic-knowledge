@@ -60,7 +60,7 @@ public class KnowledgeConditionBuilder {
          if(knowledgeType.equals(KnowledgeType.WAITINGFORREVIEW.getValue())) {
              conditionJson.put("handlerName", "提交时间");
          }
-         conditionJson.put("handlerType", FormHandlerType.TEAMSELECT.toString());
+         conditionJson.put("handlerType", FormHandlerType.TIMESELECT.toString());
          
          JSONObject config = new JSONObject();
          config.put("type", "datetimerange");
@@ -142,7 +142,7 @@ public class KnowledgeConditionBuilder {
             JSONObject conditionJson = new JSONObject();
             conditionJson.put("handler", "reviewDate");
             conditionJson.put("handlerName", "审核时间");
-            conditionJson.put("handlerType", FormHandlerType.TEAMSELECT.toString());
+            conditionJson.put("handlerType", FormHandlerType.TIMESELECT.toString());
             
             JSONObject config = new JSONObject();
             config.put("type", "datetimerange");

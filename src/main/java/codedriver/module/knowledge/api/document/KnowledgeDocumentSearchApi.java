@@ -1,6 +1,7 @@
 package codedriver.module.knowledge.api.document;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -58,11 +59,11 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     @Input({
         @Param(name = "type", type = ApiParamType.STRING, desc = "搜索知识对象类型： document|documentVersion, 默认document"),
         @Param(name = "keyword", type = ApiParamType.STRING, desc = "搜索关键字"),
-        @Param(name = "lcuList", type = ApiParamType.STRING, desc = "修改人"),
-        @Param(name = "reviewerList", type = ApiParamType.STRING, desc = "审批人"),
+        @Param(name = "lcuList", type = ApiParamType.JSONARRAY, desc = "修改人"),
+        @Param(name = "reviewerList", type = ApiParamType.JSONARRAY, desc = "审批人"),
         @Param(name = "collector", type = ApiParamType.STRING, desc = "收藏人"),
-        @Param(name = "sourceList", type = ApiParamType.STRING, desc = "来源"),
-        @Param(name = "statusList", type = ApiParamType.STRING, desc = "审批状态：all|submitted|passed|rejected|draft"),
+        @Param(name = "sourceList", type = ApiParamType.JSONARRAY, desc = "来源"),
+        @Param(name = "statusList", type = ApiParamType.JSONARRAY, desc = "审批状态：all|submitted|passed|rejected|draft"),
         @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc = "知识文档类型"),
         @Param(name = "lcd", type = ApiParamType.JSONOBJECT, desc = "最近修改时间； {timeRange: 6, timeUnit: 'month'} 或  {startTime: 1605196800000, endTime: 1607961600000}"),
         @Param(name = "reviewDate", type = ApiParamType.JSONOBJECT, desc = "最近修改时间； {timeRange: 6, timeUnit: 'month'} 或  {startTime: 1605196800000, endTime: 1607961600000}"),
@@ -127,7 +128,12 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             documentVoParam.setKnowledgeDocumentIdList(documentIdList);
         }
         List<Long> documentIdList = knowledgeDocumentMapper.getKnowledgeDocumentIdList(documentVoParam);
-        List<KnowledgeDocumentVo> documentList = knowledgeDocumentMapper.getKnowledgeDocumentByIdList(documentIdList);
+        List<KnowledgeDocumentVo> documentList = null;
+        if(CollectionUtils.isNotEmpty(documentIdList)) {
+            documentList = knowledgeDocumentMapper.getKnowledgeDocumentByIdList(documentIdList);
+        }else {
+            documentList = new ArrayList<KnowledgeDocumentVo>();
+        }
         Integer total = knowledgeDocumentMapper.getKnowledgeDocumentCount(documentVoParam);
        
         for(KnowledgeDocumentVo documentVo : documentList) {
@@ -197,7 +203,12 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         
         
         List<Long> documentVersionIdList = knowledgeDocumentMapper.getKnowledgeDocumentVersionIdList(documentVersionVoParam);
-        List<KnowledgeDocumentVersionVo> documentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionByIdList(documentVersionIdList);
+        List<KnowledgeDocumentVersionVo> documentVersionList = null;
+        if(CollectionUtils.isNotEmpty(documentVersionIdList)) {
+            documentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionByIdList(documentVersionIdList);
+        }else {
+            documentVersionList = new ArrayList<KnowledgeDocumentVersionVo>();
+        }
         Integer total = knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam);
        
         for(KnowledgeDocumentVersionVo documentVersionVo : documentVersionList) {

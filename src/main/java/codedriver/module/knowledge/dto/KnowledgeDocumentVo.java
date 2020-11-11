@@ -3,9 +3,13 @@ package codedriver.module.knowledge.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.alibaba.fastjson.annotation.JSONField;
 
+
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.common.dto.BaseEditorVo;
 import codedriver.framework.elasticsearch.annotation.ESKey;
 import codedriver.framework.elasticsearch.constvalue.ESKeyType;
@@ -333,6 +337,9 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
         this.isReviewer = isReviewer;
     }
     public String getCollector() {
+        if(StringUtils.isNotBlank(collector)) {
+            collector = collector.replaceAll(GroupSearch.USER.getValuePlugin(), "");
+        }
         return collector;
     }
     public void setCollector(String collector) {

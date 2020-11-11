@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.common.dto.BaseEditorVo;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
@@ -300,6 +302,11 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
         this.tagVoList = tagVoList;
     }
     public List<String> getLcuList() {
+        if(CollectionUtils.isNotEmpty(lcuList)) {
+            for(int i = 0;i<lcuList.size();i++) {
+                lcuList.set(i, lcuList.get(i).replaceAll(GroupSearch.USER.getValuePlugin(), ""));
+            }
+        }
         return lcuList;
     }
     public void setLcuList(List<String> lcuList) {

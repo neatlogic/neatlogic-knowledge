@@ -43,17 +43,20 @@ public class KnowledgeTypeVo {
             defaultCondition.put("type", "documentVersion");
             if(KnowledgeType.WAITINGFORREVIEW.getValue().equals(this.value)) {
                 defaultCondition.put("reviewerList", Arrays.asList(GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid()));
+                defaultCondition.put("statusList", Arrays.asList(KnowledgeDocumentVersionStatus.SUBMITTED.getValue()));
             }else if(KnowledgeType.SHARE.getValue().equals(this.value)){
                 defaultCondition.put("lcuList", Arrays.asList(GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid()));
-                defaultCondition.put("statusList", Arrays.asList(KnowledgeDocumentVersionStatus.SUBMITTED));
+                defaultCondition.put("statusList", Arrays.asList(KnowledgeDocumentVersionStatus.SUBMITTED.getValue(),KnowledgeDocumentVersionStatus.REJECTED.getValue(),KnowledgeDocumentVersionStatus.PASSED.getValue()));
             }else if(KnowledgeType.COLLECT.getValue().equals(this.value)){
                 defaultCondition.put("collector", GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid());
                 defaultCondition.put("type", "document");
+                defaultCondition.put("statusList", Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue()));
             }else if(KnowledgeType.DRAFT.getValue().equals(this.value)){
                 defaultCondition.put("lcuList",  Arrays.asList(GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid()));
-                defaultCondition.put("statusList", Arrays.asList(KnowledgeDocumentVersionStatus.DRAFT));
+                defaultCondition.put("statusList", Arrays.asList(KnowledgeDocumentVersionStatus.DRAFT.getValue()));
             }else if(KnowledgeType.ALL.getValue().equals(this.getValue())) {
                 defaultCondition.put("type", "document");
+                defaultCondition.put("statusList", Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue()));
             }
             
         }

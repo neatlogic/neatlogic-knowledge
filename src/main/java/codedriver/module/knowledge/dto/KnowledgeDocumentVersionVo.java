@@ -80,6 +80,17 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     private String lcdEndTime;
     @JSONField(serialize=false)
     private List<Long> knowledgeDocumentVersionIdList;
+    @JSONField(serialize=false)
+    private List<String> lcuList;
+    @JSONField(serialize=false)
+    private List<String> reviewerList;
+    @JSONField(serialize=false)
+    private List<String> sourceList;
+    @JSONField(serialize=false)
+    private String reviewDateStartTime;
+    @JSONField(serialize=false)
+    private String reviewDateEndTime;
+    
     public boolean isAutoGenerateId() {
         return isAutoGenerateId;
     }
@@ -287,6 +298,36 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     }
     public void setTagVoList(List<KnowledgeTagVo> tagVoList) {
         this.tagVoList = tagVoList;
+    }
+    public List<String> getLcuList() {
+        return lcuList;
+    }
+    public void setLcuList(List<String> lcuList) {
+        this.lcuList = lcuList;
+    }
+    public List<String> getReviewerList() {
+        return reviewerList;
+    }
+    public void setReviewerList(List<String> reviewerList) {
+        this.reviewerList = reviewerList;
+    }
+    public List<String> getSourceList() {
+        return sourceList;
+    }
+    public void setSourceList(List<String> sourceList) {
+        this.sourceList = sourceList;
+    }
+    public String getReviewDateStartTime() {
+        return reviewDateStartTime;
+    }
+    public void setReviewDateStartTime(String reviewDateStartTime) {
+        this.reviewDateStartTime = reviewDateStartTime;
+    }
+    public String getReviewDateEndTime() {
+        return reviewDateEndTime;
+    }
+    public void setReviewDateEndTime(String reviewDateEndTime) {
+        this.reviewDateEndTime = reviewDateEndTime;
     }
     
     

@@ -101,6 +101,14 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private Integer isReviewer;
     @JSONField(serialize=false)
     private String collector;
+    @JSONField(serialize=false)
+    private List<String> lcuList;
+    @JSONField(serialize=false)
+    private List<String> reviewerList;
+    @JSONField(serialize=false)
+    private List<String> sourceList;
+    @JSONField(serialize=false)
+    private List<String> statusList;
     
     public String getType() {
         return type;
@@ -329,6 +337,30 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     }
     public void setCollector(String collector) {
         this.collector = collector;
+    }
+    public List<String> getLcuList() {
+        return lcuList;
+    }
+    public void setLcuList(List<String> lcuList) {
+        this.lcuList = lcuList;
+    }
+    public List<String> getReviewerList() {
+        return reviewerList;
+    }
+    public void setReviewerList(List<String> reviewerList) {
+        this.reviewerList = reviewerList;
+    }
+    public List<String> getSourceList() {
+        return sourceList;
+    }
+    public void setSourceList(List<String> sourceList) {
+        this.sourceList = sourceList;
+    }
+    public List<String> getStatusList() {
+        return statusList;
+    }
+    public void setStatusList(List<String> statusList) {
+        this.statusList = statusList;
     }
 
 }

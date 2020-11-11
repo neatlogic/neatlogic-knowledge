@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -26,6 +27,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.HtmlUtil;
 import codedriver.framework.util.TimeUtil;
+import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
@@ -57,12 +59,13 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         @Param(name = "type", type = ApiParamType.STRING, desc = "搜索知识对象类型： document|documentVersion, 默认document"),
         @Param(name = "keyword", type = ApiParamType.STRING, desc = "搜索关键字"),
         @Param(name = "lcuList", type = ApiParamType.STRING, desc = "修改人"),
-        @Param(name = "reviewerList", type = ApiParamType.STRING, desc = "审批人(人/组/角色)"),
+        @Param(name = "reviewerList", type = ApiParamType.STRING, desc = "审批人"),
         @Param(name = "collector", type = ApiParamType.STRING, desc = "收藏人"),
         @Param(name = "sourceList", type = ApiParamType.STRING, desc = "来源"),
         @Param(name = "statusList", type = ApiParamType.STRING, desc = "审批状态：all|submitted|passed|rejected|draft"),
         @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc = "知识文档类型"),
-        @Param(name = "lcdConfig", type = ApiParamType.JSONOBJECT, desc = "最近修改时间； {timeRange: 6, timeUnit: 'month'} 或  {startTime: 1605196800000, endTime: 1607961600000}"),
+        @Param(name = "lcd", type = ApiParamType.JSONOBJECT, desc = "最近修改时间； {timeRange: 6, timeUnit: 'month'} 或  {startTime: 1605196800000, endTime: 1607961600000}"),
+        @Param(name = "reviewDate", type = ApiParamType.JSONOBJECT, desc = "最近修改时间； {timeRange: 6, timeUnit: 'month'} 或  {startTime: 1605196800000, endTime: 1607961600000}"),
         @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表"),
         @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页数"),
         @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目")
@@ -108,9 +111,11 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     @SuppressWarnings("unchecked")
     private void setDocumentList(JSONObject resultJson,JSONObject jsonObj) {
         KnowledgeDocumentVo documentVoParam = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
-        JSONObject lcdConfig = jsonObj.getJSONObject("lcdConfig");
-        if(lcdConfig != null) {
-            getLcdTime(documentVoParam,lcdConfig);
+        JSONObject lcd = jsonObj.getJSONObject("lcd");
+        if(lcd != null) {
+            JSONObject lcdJson = getTime(lcd);
+            documentVoParam.setLcdStartTime(lcdJson.getString("startTime"));
+            documentVoParam.setLcdEndTime(lcdJson.getString("endTime"));
         }
         //仅根据keyword,从es搜索标题和内容
         JSONObject data = null;
@@ -168,9 +173,17 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     @SuppressWarnings("unchecked")
     private void setDocumentVersionList(JSONObject resultJson,JSONObject jsonObj) {
         KnowledgeDocumentVersionVo documentVersionVoParam = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
-        JSONObject lcdConfig = jsonObj.getJSONObject("lcdConfig");
-        if(lcdConfig != null) {
-            getLcdTime(documentVersionVoParam,lcdConfig);
+        JSONObject lcd = jsonObj.getJSONObject("lcd");
+        if(lcd != null) {
+            JSONObject lcdJson = getTime(lcd);
+            documentVersionVoParam.setLcdStartTime(lcdJson.getString("startTime"));
+            documentVersionVoParam.setLcdEndTime(lcdJson.getString("endTime"));
+        }
+        JSONObject reviewDate = jsonObj.getJSONObject("reviewDate");
+        if(reviewDate != null) {
+            JSONObject reviewDateJson = getTime(reviewDate);
+            documentVersionVoParam.setReviewDateStartTime(reviewDateJson.getString("startTime"));
+            documentVersionVoParam.setReviewDateEndTime(reviewDateJson.getString("endTime"));
         }
         //仅根据keyword,从es搜索标题和内容
         JSONObject data = null;
@@ -217,6 +230,31 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                 }
             }
         }
+        //补充状态
+        if(!KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(documentVersionVoParam.getStatus())){
+            JSONArray statusArray = new JSONArray();
+            JSONObject jsonAll = new JSONObject();
+            jsonAll.put("value", KnowledgeDocumentVersionStatus.ALL.getValue());
+            jsonAll.put("text", KnowledgeDocumentVersionStatus.ALL.getText());
+            jsonAll.put("count", 0);
+            statusArray.add(jsonAll);
+            JSONObject jsonSubmit = new JSONObject();
+            jsonSubmit.put("value", KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
+            jsonSubmit.put("text", KnowledgeDocumentVersionStatus.SUBMITTED.getText());
+            jsonSubmit.put("count", 0);
+            statusArray.add(jsonSubmit);
+            JSONObject jsonPass = new JSONObject();
+            jsonPass.put("value", KnowledgeDocumentVersionStatus.PASSED.getValue());
+            jsonPass.put("text", KnowledgeDocumentVersionStatus.PASSED.getText());
+            jsonPass.put("count", 0);
+            statusArray.add(jsonPass);
+            JSONObject jsonReject = new JSONObject();
+            jsonReject.put("value", KnowledgeDocumentVersionStatus.REJECTED.getValue());
+            jsonReject.put("text", KnowledgeDocumentVersionStatus.REJECTED.getText());
+            jsonReject.put("count", 0);
+            statusArray.add(jsonReject);
+            resultJson.put("statusList", statusArray);
+        }
         resultJson.put("dataList", documentVersionList);
         resultJson.put("rowNum", total);
         resultJson.put("pageSize", documentVersionVoParam.getPageSize());
@@ -231,7 +269,8 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     * @Param 
     * @return
      */
-    private void getLcdTime(Object param,JSONObject lcdConfig) {
+    private JSONObject getTime(JSONObject lcdConfig) {
+        JSONObject json = new JSONObject();
         String startTime = StringUtils.EMPTY;
         String endTime = StringUtils.EMPTY;
         SimpleDateFormat format = new SimpleDateFormat(TimeUtil.YYYY_MM_DD_HH_MM_SS);
@@ -242,13 +281,9 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             startTime = TimeUtil.timeTransfer(lcdConfig.getInteger("timeRange"), lcdConfig.getString("timeUnit"));
             endTime = TimeUtil.timeNow();
         }
+        json.put("startTime", startTime);
+        json.put("endTime", endTime);
         
-        if(param instanceof KnowledgeDocumentVersionVo) {
-            ((KnowledgeDocumentVersionVo)param).setLcdStartTime(startTime);
-            ((KnowledgeDocumentVersionVo)param).setLcdEndTime(endTime);
-        }else {
-            ((KnowledgeDocumentVo)param).setLcdStartTime(startTime);
-            ((KnowledgeDocumentVo)param).setLcdEndTime(endTime);
-        }
+        return json;
     }
 }

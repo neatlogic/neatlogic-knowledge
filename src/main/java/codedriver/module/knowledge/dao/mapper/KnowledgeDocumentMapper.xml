@@ -92,8 +92,11 @@
 			 	#{id}
 			 	</foreach>
 	    	</if>
-	    	<if test="lcu != null and id != ''">
-	    		kdv.`lcu` = #{lcu}
+	    	<if test="lcuList != null and lcuList.size()>0 ">
+	    		kdv.`lcu` in
+	    		<foreach collection="lcuList" item="lcu" open="(" separator="," close=")">
+	    			#{lcu}
+	    		</foreach>
 	    	</if>
 	    	<if test="lcdStartTime != null and  lcdStartTime != ''">
 	    		kdv.`lcd` >= #{lcdStartTime}
@@ -105,6 +108,24 @@
 	    		ktg.`name` in
 	    		<foreach collection="tagList" item="tag" open="(" separator="," close=")">
 	    			#{tag}
+	    		</foreach>
+	    	</if>
+	    	<if test="sourceList != null and sourceList.size()>0">
+	    		kd.`source` in
+	    		<foreach collection="sourceList" item="source" open="(" separator="," close=")">
+	    			#{source}
+	    		</foreach>
+	    	</if>
+	    	<if test="statusList != null and statusList.size()>0">
+	    		kdv.`status` in
+	    		<foreach collection="statusList" item="status" open="(" separator="," close=")">
+	    			#{status}
+	    		</foreach>
+	    	</if>
+	    	<if test="reviewerList != null and reviewerList.size()>0">
+	    		kdv.`reviewer` in
+	    		<foreach collection="reviewerList" item="reviewer" open="(" separator="," close=")">
+	    			#{reviewer}
 	    		</foreach>
 	    	</if>
 	    	<if test="knowledgeDocumentTypeUuid != null and knowledgeDocumentTypeUuid != ''">
@@ -217,8 +238,11 @@
 			 	#{id}
 			 	</foreach>
 	    	</if>
-	    	<if test="lcu != null and id != ''">
-	    		kdv.`lcu` = #{lcu}
+	    	<if test="lcuList != null and lcuList.size()>0 ">
+	    		kdv.`lcu` in
+	    		<foreach collection="lcuList" item="lcu" open="(" separator="," close=")">
+	    			#{lcu}
+	    		</foreach>
 	    	</if>
 	    	<if test="lcdStartTime != null and  lcdStartTime != ''">
 	    		kdv.`lcd` >= #{lcdStartTime}
@@ -230,6 +254,12 @@
 	    		ktg.`name` in
 	    		<foreach collection="tagList" item="tag" open="(" separator="," close=")">
 	    			#{tag}
+	    		</foreach>
+	    	</if>
+	    	<if test="sourceList != null and sourceList.size()>0">
+	    		kd.`source` in
+	    		<foreach collection="sourceList" item="source" open="(" separator="," close=")">
+	    			#{source}
 	    		</foreach>
 	    	</if>
 	    	<if test="knowledgeDocumentTypeUuid != null and knowledgeDocumentTypeUuid != ''">

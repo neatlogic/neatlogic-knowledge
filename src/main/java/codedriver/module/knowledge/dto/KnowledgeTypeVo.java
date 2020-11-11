@@ -40,19 +40,23 @@ public class KnowledgeTypeVo {
     public JSONObject getDefaultCondition() {
         if(defaultCondition == null) {
             defaultCondition = new JSONObject();
-            if(KnowledgeType.WAITINGFORREVIEW.getValue() == this.value) {
+            defaultCondition.put("type", "documentVersion");
+            if(KnowledgeType.WAITINGFORREVIEW.getValue().equals(this.value)) {
                 defaultCondition.put("reviewerList", Arrays.asList(GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid()));
-            }else if(KnowledgeType.SHARE.getValue() == this.value){
+            }else if(KnowledgeType.SHARE.getValue().equals(this.value)){
                 defaultCondition.put("lcuList", Arrays.asList(GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid()));
                 defaultCondition.put("statusList", Arrays.asList(KnowledgeDocumentVersionStatus.SUBMITTED));
-            }else if(KnowledgeType.COLLECT.getValue() == this.value){
+            }else if(KnowledgeType.COLLECT.getValue().equals(this.value)){
                 defaultCondition.put("collector", GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid());
-            }else if(KnowledgeType.DRAFT.getValue() == this.value){
+                defaultCondition.put("type", "document");
+            }else if(KnowledgeType.DRAFT.getValue().equals(this.value)){
                 defaultCondition.put("lcuList",  Arrays.asList(GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid()));
                 defaultCondition.put("statusList", Arrays.asList(KnowledgeDocumentVersionStatus.DRAFT));
+            }else if(KnowledgeType.ALL.getValue().equals(this.getValue())) {
+                defaultCondition.put("type", "document");
             }
+            
         }
         return defaultCondition;
     }
-
 }

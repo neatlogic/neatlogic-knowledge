@@ -182,4 +182,6 @@ public interface KnowledgeDocumentMapper {
 
     public int deleteKnowledgeDocumentDraftByKnowledgeDocumentIdAndLcu(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("lcu")String userUuid);
 
+    public int deleteKnowledgeDocumentInvokeByKnowledgeDocumentId(Long knowledgeDocumentId);
+
 }

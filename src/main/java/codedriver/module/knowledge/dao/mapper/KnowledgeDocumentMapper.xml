@@ -1054,4 +1054,8 @@
 	<delete id="deleteKnowledgeDocumentDraftByKnowledgeDocumentIdAndLcu">
 	DELETE FROM `knowledge_document_version` WHERE `knowledge_document_id` = #{knowledgeDocumentId} AND `status` = 'draft' AND `lcu` = #{lcu}
 	</delete>
+	
+	<delete id="deleteKnowledgeDocumentInvokeByKnowledgeDocumentId" parameterType="java.lang.Long">
+	DELETE FROM `knowledge_document_invoke` WHERE `knowledge_document_id` = #{value}
+	</delete>
 </mapper>

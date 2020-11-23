@@ -1,5 +1,7 @@
 package codedriver.module.knowledge.api.document;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,6 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -38,6 +41,9 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
     @Autowired
     private KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
 
+    @Autowired
+    private TeamMapper teamMapper;
+    
     @Override
     public String getToken() {
         return "knowledge/document/draft/submit";
@@ -91,7 +97,8 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
         
-        int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId());
+        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
         JSONObject resultObj = new JSONObject();
         resultObj.put("isReviewable", isReviewable);
         

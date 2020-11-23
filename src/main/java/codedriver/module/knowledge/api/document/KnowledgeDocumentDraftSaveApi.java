@@ -112,7 +112,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         if(knowledgeDocumentTypeVo == null) {
             throw new KnowledgeDocumentTypeNotFoundException(documentVo.getKnowledgeDocumentTypeUuid());
         }
-        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
         if(knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
             throw new KnowledgeDocumentCurrentUserNotMemberException();
         }
@@ -126,7 +126,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         String status = KnowledgeDocumentVersionStatus.DRAFT.getValue();
         if(Objects.equals(isSubmit, 1)) {
             status = KnowledgeDocumentVersionStatus.SUBMITTED.getValue();
-            isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentTypeVo.getKnowledgeCircleId());           
+            isReviewable = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());           
         }
         resultObj.put("isReviewable", isReviewable);
         if(knowledgeDocumentVersionId != null) {

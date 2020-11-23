@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dto.UserVo;
 import codedriver.framework.file.dao.mapper.FileMapper;
@@ -47,6 +48,9 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     
     @Autowired
     private UserMapper userMapper;
+    
+    @Autowired
+    private TeamMapper teamMapper;
 
     @Override
     public int isDeletable(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo) {
@@ -86,7 +90,8 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     public int isReviewable(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo) {
         if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-            if(knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId()) > 0) {
+            List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+            if(knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) > 0) {
                 return 1;
             }
         }
@@ -144,7 +149,8 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
                 knowledgeDocumentVo.getPath().addAll(typeNameList);
             }
         }
-        knowledgeDocumentVo.setIsReviewer(knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId()));
+        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        knowledgeDocumentVo.setIsReviewer(knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()));
         return knowledgeDocumentVo;
     }
 

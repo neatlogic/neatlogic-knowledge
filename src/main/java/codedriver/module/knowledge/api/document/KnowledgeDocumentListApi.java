@@ -80,7 +80,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             if(knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
                 throw new KnowledgeDocumentCurrentUserNotMemberException();
             }
-            int isApprover = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentTypeVo.getKnowledgeCircleId());
+            int isApprover = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
             JSONObject resultObj = new JSONObject();
             resultObj.put("theadList", getTheadList());
             resultObj.put("tbodyList", new ArrayList<>());

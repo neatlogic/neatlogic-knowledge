@@ -1,5 +1,7 @@
 package codedriver.module.knowledge.api.document;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,6 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -37,6 +40,9 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
     @Autowired
     private KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
 
+    @Autowired
+    private TeamMapper teamMapper;
+    
     @Override
     public String getToken() {
         return "knowledge/document/version/switch";
@@ -84,7 +90,8 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
 //            throw new KnowledgeDocumentVersionSwitchFailedExecption();
 //        }
         int oldVersion = knowledgeDocumentVo.getVersion();
-        if(knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), knowledgeDocumentVo.getKnowledgeCircleId()) == 0) {
+        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        if(knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
             throw new KnowledgeDocumentCurrentUserNotReviewerException();
         }
 

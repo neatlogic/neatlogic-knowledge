@@ -92,7 +92,8 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
     @Description(desc = "查询知识分类列表")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), null);
+        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(null, UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
         List<KnowledgeTypeVo> resultList = new ArrayList<>();
         for(KnowledgeType type : KnowledgeType.values()) {
             if(KnowledgeType.WAITINGFORREVIEW == type && isReviewable == 0) {

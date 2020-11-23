@@ -642,7 +642,26 @@
 	SELECT 
 	  COUNT(1)
 	FROM `knowledge_circle_user` 
-	WHERE `auth_type` = 'approver' AND `uuid` = #{uuid}
+	WHERE `auth_type` = 'approver' 
+	AND ((type = 'common' AND `uuid` = 'alluser')
+	<if test="userUuid != null and userUuid != ''">
+		OR (type = 'user' AND `uuid` = #{userUuid})
+	</if>
+	<if test="teamUuidList != null and teamUuidList.size() > 0">
+		OR (type = 'team' AND `uuid` IN
+		<foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
+			#{teamUuid}
+		</foreach>
+		)
+	</if>
+	<if test="roleUuidList != null and roleUuidList.size() > 0">
+		OR (type = 'role' AND `uuid` IN
+		<foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
+			#{roleUuid}
+		</foreach>
+		)
+	</if>
+	)
 	<if test="knowledgeCircleId != null">
 	AND `knowledge_circle_id` = #{knowledgeCircleId}
 	</if>

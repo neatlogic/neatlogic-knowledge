@@ -1,5 +1,6 @@
 package codedriver.module.knowledge.api.document;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +12,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -41,6 +43,9 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
     @Autowired
     private KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
 
+    @Autowired
+    private TeamMapper teamMapper;
+    
     @Override
     public String getToken() {
         return "knowledge/document/draft/review";
@@ -72,7 +77,8 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         
-        if(knowledgeDocumentMapper.checkUserIsApprover(UserContext.get().getUserUuid(true), documentVo.getKnowledgeCircleId()) == 0) {
+        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        if(knowledgeDocumentMapper.checkUserIsApprover(documentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
             throw new KnowledgeDocumentCurrentUserNotReviewerException();
         }
         if(!Objects.equals(documentVo.getVersion(), knowledgeDocumentVersionVo.getFromVersion())) {

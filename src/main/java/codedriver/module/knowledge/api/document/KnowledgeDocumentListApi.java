@@ -126,11 +126,11 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             JSONObject resultObj = new JSONObject();
             resultObj.put("theadList", getWaitingForMyReviewTheadList());
             resultObj.put("tbodyList", new ArrayList<>());
-            KnowledgeDocumentVersionVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
-            searchVo.setReviewer(UserContext.get().getUserUuid(true));
+            List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+            BasePageVo searchVo = JSON.toJavaObject(jsonObj, BasePageVo.class);
             int pageCount = 0;
             if(searchVo.getNeedPage()) {
-                int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewCount(searchVo);
+                int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewCount(searchVo, UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
                 pageCount = PageUtil.getPageCount(rowNum, searchVo.getPageSize());
                 resultObj.put("currentPage", searchVo.getCurrentPage());
                 resultObj.put("pageSize", searchVo.getPageSize());
@@ -138,7 +138,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                 resultObj.put("rowNum", rowNum);
             }
             if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
-                List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewList(searchVo);
+                List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewList(searchVo, UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
                 resultObj.put("tbodyList", knowledgeDocumentVersionList);
             }
             return resultObj;

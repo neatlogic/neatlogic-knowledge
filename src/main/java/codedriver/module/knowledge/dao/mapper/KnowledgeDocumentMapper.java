@@ -59,9 +59,19 @@ public interface KnowledgeDocumentMapper {
 
     public Integer getKnowledgeDocumentVersionMaxVerionByKnowledgeDocumentId(Long knowledgeDocumentId);
 
-    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentWaitingForReviewList(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentWaitingForReviewList(
+        @Param("basePageVo") BasePageVo basePageVo,
+        @Param("userUuid") String userUuid, 
+        @Param("teamUuidList") List<String> teamUuidList, 
+        @Param("roleUuidList") List<String> roleUuidList
+        );
 
-    public int getKnowledgeDocumentWaitingForReviewCount(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+    public int getKnowledgeDocumentWaitingForReviewCount(
+        @Param("basePageVo") BasePageVo basePageVo,
+        @Param("userUuid") String userUuid, 
+        @Param("teamUuidList") List<String> teamUuidList, 
+        @Param("roleUuidList") List<String> roleUuidList
+        );
 
     public List<KnowledgeDocumentHistoricalVersionVo> getKnowledgeDocumentHistorialVersionListByKnowledgeDocumentId(Long knowledgeDocumentId);
     

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
@@ -41,9 +42,8 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             return knowledgeDocumentMapper.getCurrentUserKnowledgeDocumentCount(UserContext.get().getUserUuid(), teamUuidList, UserContext.get().getRoleUuidList());
         });
         map.put(KnowledgeType.WAITINGFORREVIEW, () -> {
-            KnowledgeDocumentVersionVo searchVo = new KnowledgeDocumentVersionVo();
-            searchVo.setReviewer(UserContext.get().getUserUuid(true));
-            return knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewCount(searchVo);
+            List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid());
+            return knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewCount(new BasePageVo(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
         });
         map.put(KnowledgeType.SHARE, () -> {
             KnowledgeDocumentVersionVo searchVo = new KnowledgeDocumentVersionVo();

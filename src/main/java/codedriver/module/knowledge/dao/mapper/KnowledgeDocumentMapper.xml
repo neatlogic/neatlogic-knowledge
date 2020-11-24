@@ -481,6 +481,29 @@
 	SELECT MAX(`version`) FROM `knowledge_document_version` WHERE `knowledge_document_id` = #{value}
 	</select>
 	
+	<sql id="getKnowledgeDocumentWaitingForReviewSql">
+	WHERE a.`auth_type` = 'approver' 	
+	AND ((type = 'user' AND a.`uuid` = #{userUuid})
+	<if test="teamUuidList != null and teamUuidList.size() > 0">
+		OR (type = 'team' AND a.`uuid` IN
+		<foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
+			#{teamUuid}
+		</foreach>
+		)
+	</if>
+	<if test="roleUuidList != null and roleUuidList.size() > 0">
+		OR (type = 'role' AND a.`uuid` IN
+		<foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
+			#{roleUuid}
+		</foreach>
+		)
+	</if>
+	)
+	<if test="basePageVo != null and basePageVo.keyword != null and basePageVo.keyword != ''">
+	AND b.`title` LIKE CONCAT('%', #{basePageVo.keyword}, '%')
+	</if>
+	</sql>
+	
 	<select id="getKnowledgeDocumentWaitingForReviewList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 	SELECT 
 	  c.`id`,
@@ -498,30 +521,8 @@
 	FROM `knowledge_circle_user` a 
 	JOIN `knowledge_document` b ON b.`knowledge_circle_id` = a.`knowledge_circle_id` AND b.`is_delete` = 0
 	JOIN `knowledge_document_version` c ON c.`knowledge_document_id` = b.`id` AND c.`status` = 'submitted'
-	JOIN `user` d ON d.`uuid` = c.`lcu`
-	WHERE a.`auth_type` = 'approver' 
-	AND ((type = 'common' AND a.`uuid` = 'alluser')
-	<if test="userUuid != null and userUuid != ''">
-		OR (type = 'user' AND a.`uuid` = #{userUuid})
-	</if>
-	<if test="teamUuidList != null and teamUuidList.size() > 0">
-		OR (type = 'team' AND a.`uuid` IN
-		<foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
-			#{teamUuid}
-		</foreach>
-		)
-	</if>
-	<if test="roleUuidList != null and roleUuidList.size() > 0">
-		OR (type = 'role' AND a.`uuid` IN
-		<foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
-			#{roleUuid}
-		</foreach>
-		)
-	</if>
-	)
-	<if test="basePageVo != null and basePageVo.keyword != null and basePageVo.keyword != ''">
-	AND b.`title` LIKE CONCAT('%', #{basePageVo.keyword}, '%')
-	</if>
+	LEFT JOIN `user` d ON d.`uuid` = c.`lcu`
+	<include refid="getKnowledgeDocumentWaitingForReviewSql" />	
 	ORDER BY c.`lcd` DESC
 	<if test="basePageVo != null and basePageVo.needPage">
 	limit #{basePageVo.startNum}, #{basePageVo.pageSize}
@@ -534,29 +535,7 @@
 	FROM `knowledge_circle_user` a 
 	JOIN `knowledge_document` b ON b.`knowledge_circle_id` = a.`knowledge_circle_id` AND b.`is_delete` = 0
 	JOIN `knowledge_document_version` c ON c.`knowledge_document_id` = b.`id` AND c.`status` = 'submitted'
-	WHERE a.`auth_type` = 'approver' 
-	AND ((type = 'common' AND a.`uuid` = 'alluser')
-	<if test="userUuid != null and userUuid != ''">
-		OR (type = 'user' AND a.`uuid` = #{userUuid})
-	</if>
-	<if test="teamUuidList != null and teamUuidList.size() > 0">
-		OR (type = 'team' AND a.`uuid` IN
-		<foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
-			#{teamUuid}
-		</foreach>
-		)
-	</if>
-	<if test="roleUuidList != null and roleUuidList.size() > 0">
-		OR (type = 'role' AND a.`uuid` IN
-		<foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
-			#{roleUuid}
-		</foreach>
-		)
-	</if>
-	)
-	<if test="basePageVo != null and basePageVo.keyword != null and basePageVo.keyword != ''">
-	AND b.`title` LIKE CONCAT('%', #{basePageVo.keyword}, '%')
-	</if>
+	<include refid="getKnowledgeDocumentWaitingForReviewSql" />	
 	</select>
 	
 	<select id="getKnowledgeDocumentHistorialVersionListByKnowledgeDocumentId" parameterType="java.lang.Long" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentHistoricalVersionVo">

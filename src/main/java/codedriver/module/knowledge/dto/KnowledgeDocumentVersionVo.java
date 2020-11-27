@@ -92,6 +92,12 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     private String reviewDateStartTime;
     @JSONField(serialize=false)
     private String reviewDateEndTime;
+    @JSONField(serialize=false)
+    private List<String> reviewerRoleUuidList = new ArrayList<>();
+    @JSONField(serialize=false)
+    private List<String> reviewerTeamUuidList = new ArrayList<>();
+    @JSONField(serialize=false)
+    private Integer isReviewer;
     
     public boolean isAutoGenerateId() {
         return isAutoGenerateId;
@@ -335,6 +341,24 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     }
     public void setReviewDateEndTime(String reviewDateEndTime) {
         this.reviewDateEndTime = reviewDateEndTime;
+    }
+    public List<String> getReviewerRoleUuidList() {
+        return reviewerRoleUuidList;
+    }
+    public void setReviewerRoleUuidList(List<String> reviewerRoleUuidList) {
+        this.reviewerRoleUuidList = reviewerRoleUuidList;
+    }
+    public List<String> getReviewerTeamUuidList() {
+        return reviewerTeamUuidList;
+    }
+    public void setReviewerTeamUuidList(List<String> reviewerTeamUuidList) {
+        this.reviewerTeamUuidList = reviewerTeamUuidList;
+    }
+    public Integer getIsReviewer() {
+        return isReviewer;
+    }
+    public void setIsReviewer(Integer isReviewer) {
+        this.isReviewer = isReviewer;
     }
     
     

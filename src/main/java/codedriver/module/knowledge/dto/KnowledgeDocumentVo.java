@@ -3,10 +3,10 @@ package codedriver.module.knowledge.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.annotation.JSONField;
-
 
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.GroupSearch;
@@ -113,7 +113,6 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private List<String> sourceList;
     @JSONField(serialize=false)
     private List<String> statusList;
-    
     public String getType() {
         return type;
     }
@@ -346,6 +345,11 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
         this.collector = collector;
     }
     public List<String> getLcuList() {
+        if(CollectionUtils.isNotEmpty(lcuList)) {
+            for(int i = 0;i<lcuList.size();i++) {
+                lcuList.set(i, lcuList.get(i).replaceAll(GroupSearch.USER.getValuePlugin(), ""));
+            }
+        }
         return lcuList;
     }
     public void setLcuList(List<String> lcuList) {
@@ -369,5 +373,4 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     public void setStatusList(List<String> statusList) {
         this.statusList = statusList;
     }
-
 }

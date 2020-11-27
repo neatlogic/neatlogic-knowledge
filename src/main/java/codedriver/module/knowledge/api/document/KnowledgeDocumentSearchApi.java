@@ -3,6 +3,7 @@ package codedriver.module.knowledge.api.document;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -16,7 +17,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.common.util.PageUtil;
+import codedriver.framework.dao.mapper.TeamMapper;
+import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
 import codedriver.framework.elasticsearch.core.IElasticSearchHandler;
 import codedriver.framework.reminder.core.OperationTypeEnum;
@@ -40,6 +44,12 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
 
     @Autowired
     KnowledgeDocumentMapper knowledgeDocumentMapper;
+    
+    @Autowired
+    TeamMapper teamMapper;
+    
+    @Autowired
+    UserMapper userMapper;
     
     @Override
     public String getToken() {
@@ -111,8 +121,10 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
      */
     @SuppressWarnings("unchecked")
     private void setDocumentList(JSONObject resultJson,JSONObject jsonObj) {
-        KnowledgeDocumentVo documentVoParam = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
         JSONObject lcd = jsonObj.getJSONObject("lcd");
+        jsonObj.remove("lcd");
+        KnowledgeDocumentVo documentVoParam = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
+        
         if(lcd != null) {
             JSONObject lcdJson = getTime(lcd);
             documentVoParam.setLcdStartTime(lcdJson.getString("startTime"));
@@ -201,7 +213,35 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             documentVersionVoParam.setKnowledgeDocumentVersionIdList(documentVersionIdList);
         }
         
-        
+        //
+        if(CollectionUtils.isNotEmpty(documentVersionVoParam.getReviewerList()) && CollectionUtils.isNotEmpty(documentVersionVoParam.getStatusList())) {
+            //如果是“待审批”，则搜 knowledge_circle_user中 auth_type 为 “approver” 数据鉴权
+            if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())) {
+                documentVersionVoParam.setIsReviewer(1);
+                Iterator<String> reviewerIterator = documentVersionVoParam.getReviewerList().iterator();
+                List<String> reviewerList = new ArrayList<String>();
+                while(reviewerIterator.hasNext()) {
+                    String reviewer = reviewerIterator.next();
+                    if(reviewer.startsWith(GroupSearch.USER.getValuePlugin())){
+                        reviewer = reviewer.replaceAll(GroupSearch.USER.getValuePlugin(), StringUtils.EMPTY);
+                        documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
+                        documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
+                        reviewerList.add(reviewer);
+                    }else if(reviewer.startsWith(GroupSearch.TEAM.getValuePlugin())) {
+                        reviewer = reviewer.replaceAll(GroupSearch.TEAM.getValuePlugin(), StringUtils.EMPTY);
+                        documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
+                    }else {
+                        reviewer = reviewer.replaceAll(GroupSearch.ROLE.getValuePlugin(), StringUtils.EMPTY);
+                        documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
+                    }
+                }
+                documentVersionVoParam.setReviewerList(reviewerList);
+            }else if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.REJECTED.getValue())//否则查询 knowledge_document_version中的 “reviewer”
+                ||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.PASSED.getValue())){
+                documentVersionVoParam.setIsReviewer(0);
+                documentVersionVoParam.setReviewer(documentVersionVoParam.getReviewerList().get(0));
+            }
+        }
         List<Long> documentVersionIdList = knowledgeDocumentMapper.getKnowledgeDocumentVersionIdList(documentVersionVoParam);
         List<KnowledgeDocumentVersionVo> documentVersionList = null;
         if(CollectionUtils.isNotEmpty(documentVersionIdList)) {

@@ -125,12 +125,6 @@
 	    			#{status}
 	    		</foreach>
 	    	</if>
-	    	<if test="reviewerList != null and reviewerList.size()>0">
-	    		and kdv.`reviewer` in
-	    		<foreach collection="reviewerList" item="reviewer" open="(" separator="," close=")">
-	    			#{reviewer}
-	    		</foreach>
-	    	</if>
 	    	<if test="knowledgeDocumentTypeUuid != null and knowledgeDocumentTypeUuid != ''">
 	    		and kd.`knowledge_document_type_uuid`  in ( 
 		    		SELECT `uuid` FROM `knowledge_document_type` WHERE 
@@ -144,6 +138,36 @@
 				 )
 				 AND kc.`id` = (SELECT knowledge_circle_id FROM `knowledge_document_type` WHERE `uuid` = #{knowledgeDocumentTypeUuid})
 	    	</if>
+	    	<if test="isReviewer == 1">
+	    		and (
+	    			(
+	    				kcu.type = "user" and kcu.auth_type = "approver" and kcu.uuid in 
+	    				<foreach collection="reviewerList" item="reviewer" open="(" separator="," close=")">
+			    			#{reviewer}
+			    		</foreach>
+	    			)
+	    			or
+	    			(
+	    				kcu.type = "team" and kcu.auth_type = "approver" and kcu.uuid in 
+	    				<foreach collection="reviewerTeamUuidList" item="reviewerTeam" open="(" separator="," close=")">
+			    			#{reviewerTeam}
+			    		</foreach>
+	    			)
+	    			or
+	    			(
+	    				kcu.type = "role" and kcu.auth_type = "approver" and kcu.uuid in 
+	    				<foreach collection="reviewerRoleUuidList" item="reviewerRole" open="(" separator="," close=")">
+			    			#{reviewerRole}
+			    		</foreach>
+	    			)
+	    		)
+	    	</if>
+	    	<if test="isReviewer == 0 and reviewerList != null and reviewerList.size()>0">
+	    		and kdv.`reviewer` in
+	    		<foreach collection="reviewerList" item="reviewer" open="(" separator="," close=")">
+	    			#{reviewer}
+	    		</foreach>
+	    	</if>
 	    </where> 
 	</sql>
 	
@@ -151,21 +175,21 @@
 		SELECT 
 		distinct kdv.id
 		FROM `knowledge_document_version` kdv
-		LEFT JOIN `knowledge_document` kd ON kd.`id` = kdv.`knowledge_document_id` AND kd.`knowledge_document_version_id` = kdv.`id` AND  kd.`is_delete` = 0 AND kdv.`is_delete` = 0
+		LEFT JOIN `knowledge_document` kd ON kd.`id` = kdv.`knowledge_document_id` AND  kd.`is_delete` = 0 AND kdv.`is_delete` = 0
 		LEFT JOIN `knowledge_circle` kc ON kd.`knowledge_circle_id` = kc.`id`
 		LEFT JOIN `knowledge_document_tag` kdt ON kdt.`knowledge_document_id` = kdv.`knowledge_document_id` AND kdt.`knowledge_document_version_id` = kdv.`id`
 		LEFT JOIN `knowledge_tag` ktg ON kdt.`tag_id` = ktg.`id`
 		LEFT JOIN `knowledge_circle_user` kcu ON kcu.`knowledge_circle_id` = kd.`knowledge_circle_id` AND kcu.`auth_type` = 'approver'
 		<include refid="searchDocumentVersionSql" />
 	    <if test="needPage">
-		limit #{startNum}, #{pageSize}
+		limit #{startNum},#{pageSize}
 		</if>
 	</select>
 	
 	<select id="getKnowledgeDocumentVersionCount" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="java.lang.Integer">
 		select count(distinct kdv.id)
 		FROM `knowledge_document_version` kdv
-		LEFT JOIN `knowledge_document` kd ON kd.`id` = kdv.`knowledge_document_id` AND kd.`knowledge_document_version_id` = kdv.`id` AND  kd.`is_delete` = 0 AND kdv.`is_delete` = 0
+		LEFT JOIN `knowledge_document` kd ON kd.`id` = kdv.`knowledge_document_id` AND  kd.`is_delete` = 0 AND kdv.`is_delete` = 0
 		LEFT JOIN `knowledge_circle` kc ON kd.`knowledge_circle_id` = kc.`id`
 		LEFT JOIN `knowledge_document_tag` kdt ON kdt.`knowledge_document_id` = kdv.`knowledge_document_id` AND kdt.`knowledge_document_version_id` = kdv.`id`
 		LEFT JOIN `knowledge_tag` ktg ON kdt.`tag_id` = ktg.`id`

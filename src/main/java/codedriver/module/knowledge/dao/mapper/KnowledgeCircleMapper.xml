@@ -65,7 +65,7 @@
 		and `auth_type` = #{authType}
 	</select>
 
-	<select id="getCircleIdListByMemberUuidList" parameterType="java.util.List" resultType="java.lang.Long">
+	<select id="getCircleIdListByUserUuidList" parameterType="java.util.List" resultType="java.lang.Long">
 		select
 		`knowledge_circle_id`
 		from `knowledge_circle_user`
@@ -73,7 +73,6 @@
 		<foreach collection="list" item="uuid" separator="," open="(" close=")">
 			#{uuid}
 		</foreach>
-		and `auth_type` = 'member'
 	</select>
 
 	<select id="checkCircleHasKnowledge" parameterType="java.lang.Long" resultType="int">

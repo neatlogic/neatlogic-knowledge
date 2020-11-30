@@ -71,7 +71,7 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 		uuidList.addAll(roleUuidList);
 		uuidList.add(UserContext.get().getUserUuid());
 		/** 获取当前用户所有的圈子ID集合 */
-		List<Long> circleIdList = knowledgeCircleMapper.getCircleIdListByMemberUuidList(uuidList);
+		List<Long> circleIdList = knowledgeCircleMapper.getCircleIdListByUserUuidList(uuidList);
 		/** 根据圈子ID查询分类 */
 		if(CollectionUtils.isNotEmpty(circleIdList)){
 			Set<Long> circleIdSet = circleIdList.stream().collect(Collectors.toSet());

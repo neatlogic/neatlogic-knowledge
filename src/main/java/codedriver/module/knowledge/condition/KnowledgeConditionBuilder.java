@@ -88,7 +88,7 @@ public class KnowledgeConditionBuilder {
           JSONObject config = new JSONObject();
           config.put("type", FormHandlerType.SELECT.toString());
           config.put("search", true);
-          config.put("url", "api/rest/knowledge/tag/list");
+          config.put("dynamicUrl", "api/rest/knowledge/tag/list");
           config.put("rootName", "list");
           config.put("valueName", "value");
           config.put("textName", "text");

@@ -16,11 +16,13 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.dto.UserVo;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
 import codedriver.framework.elasticsearch.core.IElasticSearchHandler;
 import codedriver.framework.reminder.core.OperationTypeEnum;
@@ -34,10 +36,13 @@ import codedriver.framework.util.HtmlUtil;
 import codedriver.framework.util.TimeUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
+import codedriver.module.knowledge.exception.KnowledgeDocumentTypeNotFoundException;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
@@ -51,6 +56,8 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     @Autowired
     UserMapper userMapper;
     
+    @Autowired
+    private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
     @Override
     public String getToken() {
         return "knowledge/document/search";
@@ -148,6 +155,51 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         }
         Integer total = knowledgeDocumentMapper.getKnowledgeDocumentCount(documentVoParam);
        
+        //如果入参条件存在知识类型，则直接判断当前用户是不是知识圈审批人
+        Integer isApprover = null;
+        List<Long> approveCircleIdList = new ArrayList<Long>();
+        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        if(StringUtils.isNotBlank(documentVoParam.getKnowledgeDocumentTypeUuid())) {
+            KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMapper.getTypeByUuid(documentVoParam.getKnowledgeDocumentTypeUuid());
+            if(knowledgeDocumentTypeVo == null) {
+                throw new KnowledgeDocumentTypeNotFoundException(documentVoParam.getKnowledgeDocumentTypeUuid());
+            }
+            isApprover = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+        }else {
+            //查询当前登录人所有圈子的审批权限
+            approveCircleIdList = knowledgeDocumentMapper.getUserAllApproverCircleIdList(UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+            
+        }
+        
+        //跟新操作
+        List<Long> knowledgeDocumentIdTmpList = new ArrayList<>(); 
+        for(KnowledgeDocumentVo knowledgeDocumentVo : documentList) {
+            UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVo.getLcu());
+            if(userVo != null) {
+                knowledgeDocumentVo.setLcuName(userVo.getUserName());
+                knowledgeDocumentVo.setLcuInfo(userVo.getUserInfo());
+            }
+            knowledgeDocumentVo.setIsEditable(1);
+            if(isApprover == null ) {
+                isApprover = 0;
+                if(approveCircleIdList.contains(knowledgeDocumentVo.getKnowledgeCircleId())) {
+                    isApprover = 1;
+                }
+            }
+            knowledgeDocumentVo.setIsDeletable(isApprover);
+            knowledgeDocumentIdTmpList.add(knowledgeDocumentVo.getId());
+            knowledgeDocumentVo.setAutoGenerateId(false);
+        }
+        if(CollectionUtils.isNotEmpty(documentList)) {
+            List<Long> collectedKnowledgeDocumentIdList = knowledgeDocumentMapper.getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(UserContext.get().getUserUuid(true), knowledgeDocumentIdTmpList);
+            for(KnowledgeDocumentVo knowledgeDocumentVo : documentList) {
+                if(collectedKnowledgeDocumentIdList.contains(knowledgeDocumentVo.getId())) {
+                    knowledgeDocumentVo.setIsCollect(1);
+                }
+            }
+        }
+        
+        JSONArray returnDataList = new JSONArray();
         for(KnowledgeDocumentVo documentVo : documentList) {
             if(documentVo != null) {
                 //替换 highlight 字段
@@ -177,6 +229,12 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                    
                 }
             }
+            
+            //组装返回数据
+            JSONObject returnData = JSONObject.parseObject(JSON.toJSONString(documentVo));
+            returnData.put("knowledgeDocumentId", returnData.getLong("id"));
+            returnDataList.add(returnData);
+            
         }
         resultJson.put("dataList", documentList);
         resultJson.put("rowNum", total);
@@ -190,8 +248,9 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
      */
     @SuppressWarnings("unchecked")
     private void setDocumentVersionList(JSONObject resultJson,JSONObject jsonObj) {
-        KnowledgeDocumentVersionVo documentVersionVoParam = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
         JSONObject lcd = jsonObj.getJSONObject("lcd");
+        jsonObj.remove("lcd");
+        KnowledgeDocumentVersionVo documentVersionVoParam = JSON.toJavaObject(jsonObj, KnowledgeDocumentVersionVo.class);
         if(lcd != null) {
             JSONObject lcdJson = getTime(lcd);
             documentVersionVoParam.setLcdStartTime(lcdJson.getString("startTime"));
@@ -213,7 +272,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             documentVersionVoParam.setKnowledgeDocumentVersionIdList(documentVersionIdList);
         }
         
-        //
+        //拼装 “审批人”条件 
         if(CollectionUtils.isNotEmpty(documentVersionVoParam.getReviewerList()) && CollectionUtils.isNotEmpty(documentVersionVoParam.getStatusList())) {
             //如果是“待审批”，则搜 knowledge_circle_user中 auth_type 为 “approver” 数据鉴权
             if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())) {
@@ -251,6 +310,20 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         }
         Integer total = knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam);
        
+        //跟新操作（如果是草稿,可以删除或编辑）
+        if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.DRAFT.getValue())) {
+            int isApprover = 0;
+            for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : documentVersionList) {
+                if(knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
+                    isApprover = 1;
+                }
+                knowledgeDocumentVersionVo.setIsEditable(isApprover);
+                knowledgeDocumentVersionVo.setIsDeletable(isApprover);
+            }
+        }
+       
+        
+        //跟新es highlight
         for(KnowledgeDocumentVersionVo documentVersionVo : documentVersionList) {
             if(documentVersionVo != null) {
                 //替换 highlight 字段
@@ -285,7 +358,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         if(!KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(documentVersionVoParam.getStatus())){
             JSONArray statusArray = new JSONArray();
             JSONObject jsonAll = new JSONObject();
-            jsonAll.put("value", KnowledgeDocumentVersionStatus.ALL.getValue());
+            jsonAll.put("value", null);
             jsonAll.put("text", KnowledgeDocumentVersionStatus.ALL.getText());
             jsonAll.put("count", 0);
             statusArray.add(jsonAll);

@@ -96,6 +96,12 @@ public interface KnowledgeDocumentMapper {
         @Param("roleUuidList") List<String> roleUuidList
         );
     
+    public List<Long> getUserAllApproverCircleIdList(
+        @Param("userUuid") String userUuid, 
+        @Param("teamUuidList") List<String> teamUuidList, 
+        @Param("roleUuidList") List<String> roleUuidList
+        );
+    
     public int checkUserIsMember(
         @Param("knowledgeCircleId") Long knowledgeCircleId, 
         @Param("userUuid") String userUuid, 

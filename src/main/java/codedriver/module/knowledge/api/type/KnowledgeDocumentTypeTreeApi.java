@@ -57,7 +57,7 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 	@Override
 	public Object myDoService(JSONObject jsonObj) throws Exception {
 		JSONArray result = new JSONArray();
-		List uuidList = new ArrayList();
+		List<String> uuidList = new ArrayList<String>();
 		/** 获取当前用户所在组和角色 */
 		List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid());
 		List<String> roleUuidList = userMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid());
@@ -75,16 +75,16 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 				type.setKnowledgeCircleId(id);
 				List<KnowledgeDocumentTypeVo> typeList = knowledgeDocumentTypeMapper.searchType(type);
 				/** 计算每个分类及其子类的文档数 */
-				if(CollectionUtils.isNotEmpty(typeList)){
-					for(KnowledgeDocumentTypeVo vo : typeList){
-						int count = 0;
-						List<KnowledgeDocumentTypeVo> childAndSelf = knowledgeDocumentTypeMapper.getChildAndSelfByLftRht(vo.getLft(), vo.getRht(), id);
-						for(KnowledgeDocumentTypeVo obj : childAndSelf){
-							count += knowledgeDocumentTypeMapper.getDocumentCountByUuid(obj.getUuid());
-						}
-						vo.setDocumentCount(count);
-					}
-				}
+                /*if(CollectionUtils.isNotEmpty(typeList)){
+                	for(KnowledgeDocumentTypeVo vo : typeList){
+                		int count = 0;
+                		List<KnowledgeDocumentTypeVo> childAndSelf = knowledgeDocumentTypeMapper.getChildAndSelfByLftRht(vo.getLft(), vo.getRht(), id);
+                		for(KnowledgeDocumentTypeVo obj : childAndSelf){
+                			count += knowledgeDocumentTypeMapper.getDocumentCountByUuid(obj.getUuid());
+                		}
+                		vo.setDocumentCount(count);
+                	}
+                }*/
 				JSONObject circle = new JSONObject();
 				circle.put("id",id);
 				circle.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());

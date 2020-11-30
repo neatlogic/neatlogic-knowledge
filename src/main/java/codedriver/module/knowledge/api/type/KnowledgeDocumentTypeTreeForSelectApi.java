@@ -1,25 +1,35 @@
 package codedriver.module.knowledge.api.type;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
-import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.dao.mapper.UserMapper;
-import codedriver.framework.reminder.core.OperationTypeEnum;
-import codedriver.framework.restful.annotation.*;
-import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
-import codedriver.module.knowledge.service.KnowledgeDocumentTypeService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
+import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.dao.mapper.TeamMapper;
+import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.reminder.core.OperationTypeEnum;
+import codedriver.framework.restful.annotation.Description;
+import codedriver.framework.restful.annotation.Input;
+import codedriver.framework.restful.annotation.OperationType;
+import codedriver.framework.restful.annotation.Output;
+import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
+import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
+import codedriver.module.knowledge.service.KnowledgeDocumentTypeService;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -63,7 +73,7 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 		JSONArray result = new JSONArray();
 		String keyword = jsonObj.getString("keyword");
 //		List<KnowledgeDocumentTypeVo> docTypeList = null;
-		List uuidList = new ArrayList();
+		List<String> uuidList = new ArrayList<String>();
 		/** 获取当前用户所在组和角色 */
 		List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid());
 		List<String> roleUuidList = userMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid());

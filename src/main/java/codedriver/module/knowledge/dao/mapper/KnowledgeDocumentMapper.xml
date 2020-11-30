@@ -36,8 +36,10 @@
 	<resultMap id="knowledgeDocumentVersionMap" type="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
 		<id column="id" property="id" />
 		<result column="version" property="version" />
+		<result column="knowledgeDocumentId" property="knowledgeDocumentId" />
 		<result column="knowledgeDocumentVersionId" property="knowledgeDocumentVersionId" />
 		<result column="knowledgeDocumentTypeUuid" property="knowledgeDocumentTypeUuid" />
+		<result column="knowledgeCircleId" property="knowledgeCircleId" />
 		<result column="title" property="title" />
 		<result column="lcd" property="lcd" />
 		<result column="lcu" property="lcu" />
@@ -61,6 +63,7 @@
 		kdv.`from_version`,
 		kd.`id` AS knowledgeDocumentId,
 		kc.name AS knowledgeCircleName,
+		kc.id AS knowledgeCircleId,
 		kd.`title`,
 		kdv.`lcd`,
 		kdv.`lcu`,
@@ -72,7 +75,7 @@
 		kdv.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
 		kdlc.`content` AS lineContent
 		FROM `knowledge_document_version` kdv
-		LEFT JOIN `knowledge_document` kd ON kd.`id` = kdv.`knowledge_document_id` AND kd.`knowledge_document_version_id` = kdv.`id`
+		LEFT JOIN `knowledge_document` kd ON kd.`id` = kdv.`knowledge_document_id` 
 		LEFT JOIN `knowledge_circle` kc ON kd.`knowledge_circle_id` = kc.`id`
 		LEFT JOIN `knowledge_document_tag` kdt ON kdt.`knowledge_document_id` = kdv.`knowledge_document_id` AND kdt.`knowledge_document_version_id` = kdv.`id`
 		LEFT JOIN `knowledge_tag` ktg ON kdt.`tag_id` = ktg.`id`
@@ -701,6 +704,32 @@
 	<if test="knowledgeCircleId != null">
 	AND `knowledge_circle_id` = #{knowledgeCircleId}
 	</if>
+	</select>
+	
+	<select id="getUserAllApproverCircleIdList" resultType="java.lang.Long">
+	SELECT 
+	 knowledge_circle_id
+	FROM `knowledge_circle_user` 
+	WHERE `auth_type` = 'approver' 
+	AND ((type = 'common' AND `uuid` = 'alluser')
+	<if test="userUuid != null and userUuid != ''">
+		OR (type = 'user' AND `uuid` = #{userUuid})
+	</if>
+	<if test="teamUuidList != null and teamUuidList.size() > 0">
+		OR (type = 'team' AND `uuid` IN
+		<foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
+			#{teamUuid}
+		</foreach>
+		)
+	</if>
+	<if test="roleUuidList != null and roleUuidList.size() > 0">
+		OR (type = 'role' AND `uuid` IN
+		<foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
+			#{roleUuid}
+		</foreach>
+		)
+	</if>
+	)
 	</select>
 	
 	<select id="checkUserIsMember" resultType="int">

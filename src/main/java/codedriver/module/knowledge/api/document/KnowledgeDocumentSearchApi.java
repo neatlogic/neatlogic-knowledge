@@ -233,10 +233,11 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             //组装返回数据
             JSONObject returnData = JSONObject.parseObject(JSON.toJSONString(documentVo));
             returnData.put("knowledgeDocumentId", returnData.getLong("id"));
+            returnData.put("id", returnData.getLong("knowledgeDocumentVersionId"));
             returnDataList.add(returnData);
             
         }
-        resultJson.put("dataList", documentList);
+        resultJson.put("dataList", returnDataList);
         resultJson.put("rowNum", total);
         resultJson.put("pageSize", documentVoParam.getPageSize());
         resultJson.put("currentPage", documentVoParam.getCurrentPage());

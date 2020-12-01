@@ -375,11 +375,12 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             //如果审核不通过，则补充原因
             if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
                 KnowledgeDocumentAuditVo  rejectAudit = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditListByDocumentIdAndVersionIdAndOperate(new KnowledgeDocumentAuditVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(),knowledgeDocumentVersionVo.getId(),KnowledgeDocumentOperate.REJECT.getValue()));
-                String rejectReason =knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditConfigStringByHash(rejectAudit.getConfigHash());
-                if(StringUtils.isNotBlank(rejectReason)) {
-                    knowledgeDocumentVersionVo.setRejectReason(JSONObject.parseObject(rejectReason).getString("content"));
+                if(rejectAudit != null) {
+                    String rejectReason =knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditConfigStringByHash(rejectAudit.getConfigHash());
+                    if(StringUtils.isNotBlank(rejectReason)) {
+                        knowledgeDocumentVersionVo.setRejectReason(JSONObject.parseObject(rejectReason).getString("content"));
+                    }
                 }
-               
             }
         }
        

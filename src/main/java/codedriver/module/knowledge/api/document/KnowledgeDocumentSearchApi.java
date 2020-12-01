@@ -161,30 +161,37 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         }
         Integer total = knowledgeDocumentMapper.getKnowledgeDocumentCount(documentVoParam);
        
-        //如果入参条件存在知识类型，则直接判断当前用户是不是知识圈审批人
-        Integer isApprover = null;
-        List<Long> approveCircleIdList = new ArrayList<Long>();
-        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        if(StringUtils.isNotBlank(documentVoParam.getKnowledgeDocumentTypeUuid())) {
-            KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMapper.getTypeByUuid(documentVoParam.getKnowledgeDocumentTypeUuid());
-            if(knowledgeDocumentTypeVo == null) {
-                throw new KnowledgeDocumentTypeNotFoundException(documentVoParam.getKnowledgeDocumentTypeUuid());
-            }
-            isApprover = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
-        }else {
-            //查询当前登录人所有圈子的审批权限
-            approveCircleIdList = knowledgeDocumentMapper.getUserAllApproverCircleIdList(UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
-            
+        JSONArray returnDataList = new JSONArray();
+        List<Long> collectedKnowledgeDocumentIdList = new ArrayList<Long>();
+        List<Long> favorKnowledgeDocumentIdList = new ArrayList<Long>();
+        if(CollectionUtils.isNotEmpty(documentList)) {
+           collectedKnowledgeDocumentIdList = knowledgeDocumentMapper.getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(UserContext.get().getUserUuid(true), documentIdList);
+           favorKnowledgeDocumentIdList = knowledgeDocumentMapper.getKnowledgeDocumentFavorDocumentIdListByUserUuidAndDocumentIdList(UserContext.get().getUserUuid(true), documentIdList);
         }
-        
-        //跟新操作
-        List<Long> knowledgeDocumentIdTmpList = new ArrayList<>(); 
         for(KnowledgeDocumentVo knowledgeDocumentVo : documentList) {
+            //补充头像信息
             UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVo.getLcu());
             if(userVo != null) {
                 knowledgeDocumentVo.setLcuName(userVo.getUserName());
                 knowledgeDocumentVo.setLcuInfo(userVo.getUserInfo());
             }
+            //如果入参条件存在知识类型，则直接判断当前用户是不是知识圈审批人
+            Integer isApprover = null;
+            List<Long> approveCircleIdList = new ArrayList<Long>();
+            List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+            if(StringUtils.isNotBlank(documentVoParam.getKnowledgeDocumentTypeUuid())) {
+                KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMapper.getTypeByUuid(documentVoParam.getKnowledgeDocumentTypeUuid());
+                if(knowledgeDocumentTypeVo == null) {
+                    throw new KnowledgeDocumentTypeNotFoundException(documentVoParam.getKnowledgeDocumentTypeUuid());
+                }
+                isApprover = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+            }else {
+                //查询当前登录人所有圈子的审批权限
+                approveCircleIdList = knowledgeDocumentMapper.getUserAllApproverCircleIdList(UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+                
+            }
+            //判断是否有权限编辑删除
+            List<Long> knowledgeDocumentIdTmpList = new ArrayList<>(); 
             knowledgeDocumentVo.setIsEditable(1);
             if(isApprover == null ) {
                 isApprover = 0;
@@ -194,55 +201,50 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             }
             knowledgeDocumentVo.setIsDeletable(isApprover);
             knowledgeDocumentIdTmpList.add(knowledgeDocumentVo.getId());
-            knowledgeDocumentVo.setAutoGenerateId(false);
-        }
-        if(CollectionUtils.isNotEmpty(documentList)) {
-            List<Long> collectedKnowledgeDocumentIdList = knowledgeDocumentMapper.getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(UserContext.get().getUserUuid(true), knowledgeDocumentIdTmpList);
-            for(KnowledgeDocumentVo knowledgeDocumentVo : documentList) {
-                if(collectedKnowledgeDocumentIdList.contains(knowledgeDocumentVo.getId())) {
-                    knowledgeDocumentVo.setIsCollect(1);
-                }
-            }
-        }
-        
-        JSONArray returnDataList = new JSONArray();
-        for(KnowledgeDocumentVo documentVo : documentList) {
-            if(documentVo != null) {
-                //替换 highlight 字段
-                if(StringUtils.isNotBlank(documentVoParam.getKeyword())){
-                    JSONObject highlightData = data.getJSONObject(documentVo.getId().toString());
-                    if(MapUtils.isNotEmpty(highlightData)) {
-                        if(highlightData.containsKey("title.txt")) {
-                            documentVo.setTitle(String.join("\n", JSONObject.parseArray(highlightData.getString("title.txt"),String.class)));
-                        }
-                        if(highlightData.containsKey("content.txt")) {
-                            documentVo.setContent( String.join("\n", JSONObject.parseArray(highlightData.getString("content.txt"),String.class)));
-                        }
-                    }
-                }
-                //如果es找不到内容 则从数据库获取
-                if(StringUtils.isBlank(documentVo.getContent())) {
-                    StringBuilder contentsb = new StringBuilder();
-                    List<KnowledgeDocumentLineVo> documentLineList = documentVo.getLineList();
-                    if(CollectionUtils.isNotEmpty(documentLineList)) {
-                        for(KnowledgeDocumentLineVo line : documentLineList) {
-                            contentsb.append(line.getContent());
-                        }
-                        String content =HtmlUtil.removeHtml(contentsb.toString(), null);
-                        documentVo.setContent(HtmlUtil.removeHtml(contentsb.toString(), null).substring(0, content.length()> 250?250:content.length()));
-                        documentVo.setLineList(null);
-                    }
-                   
-                }
-            }
             
+            //判断本人是否已经收藏
+            if(collectedKnowledgeDocumentIdList.contains(knowledgeDocumentVo.getId())) {
+                knowledgeDocumentVo.setIsCollect(1);
+            }
+           
+            //判断本人是否已经点赞
+            if(favorKnowledgeDocumentIdList.contains(knowledgeDocumentVo.getId())) {
+                knowledgeDocumentVo.setIsFavor(1);
+            }
+
+            //替换 highlight 字段
+            if(StringUtils.isNotBlank(documentVoParam.getKeyword())){
+                JSONObject highlightData = data.getJSONObject(knowledgeDocumentVo.getId().toString());
+                if(MapUtils.isNotEmpty(highlightData)) {
+                    if(highlightData.containsKey("title.txt")) {
+                        knowledgeDocumentVo.setTitle(String.join("\n", JSONObject.parseArray(highlightData.getString("title.txt"),String.class)));
+                    }
+                    if(highlightData.containsKey("content.txt")) {
+                        knowledgeDocumentVo.setContent( String.join("\n", JSONObject.parseArray(highlightData.getString("content.txt"),String.class)));
+                    }
+                }
+            }
+            //如果es找不到内容 则从数据库获取
+            if(StringUtils.isBlank(knowledgeDocumentVo.getContent())) {
+                StringBuilder contentsb = new StringBuilder();
+                List<KnowledgeDocumentLineVo> documentLineList = knowledgeDocumentVo.getLineList();
+                if(CollectionUtils.isNotEmpty(documentLineList)) {
+                    for(KnowledgeDocumentLineVo line : documentLineList) {
+                        contentsb.append(line.getContent());
+                    }
+                    String content =HtmlUtil.removeHtml(contentsb.toString(), null);
+                    knowledgeDocumentVo.setContent(HtmlUtil.removeHtml(contentsb.toString(), null).substring(0, content.length()> 250?250:content.length()));
+                    knowledgeDocumentVo.setLineList(null);
+                }
+               
+            }
             //组装返回数据
-            JSONObject returnData = JSONObject.parseObject(JSON.toJSONString(documentVo));
+            JSONObject returnData = JSONObject.parseObject(JSON.toJSONString(knowledgeDocumentVo));
             returnData.put("knowledgeDocumentId", returnData.getLong("id"));
             returnData.put("id", returnData.getLong("knowledgeDocumentVersionId"));
             returnDataList.add(returnData);
-            
         }
+      
         resultJson.put("dataList", returnDataList);
         resultJson.put("rowNum", total);
         resultJson.put("pageSize", documentVoParam.getPageSize());

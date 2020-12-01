@@ -869,6 +869,17 @@
 	</foreach>
 	</select>
 	
+	<select id="getKnowledgeDocumentFavorDocumentIdListByUserUuidAndDocumentIdList" resultType="java.lang.Long">
+	SELECT 
+	  `knowledge_document_id`
+	FROM `knowledge_document_favor` 
+	WHERE `user_uuid` = #{userUuid}
+	AND `knowledge_document_id` IN 
+	<foreach collection="knowledgeDocumentIdList" item="knowledgeDocumentId" open="(" separator="," close=")">
+	#{knowledgeDocumentId}
+	</foreach>
+	</select>
+	
 	<select id="getKnowledgeDocumentDrafIdtByKnowledgeDocumentIdAndLcu" resultType="java.lang.Long">
 	SELECT `id` FROM `knowledge_document_version` WHERE `knowledge_document_id` = #{knowledgeDocumentId} AND `status` = 'draft' AND `lcu` = #{lcu}
 	</select>

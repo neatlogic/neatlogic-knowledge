@@ -5,12 +5,31 @@
 	<select id="getKnowledgeDocumentAuditListByKnowledgeDocumentId" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo">
 	SELECT 
 	  `knowledge_document_id` AS knowledgeDocumentId,
+	  `knowledge_document_version_id` AS knowledgeDocumentVersionId,
 	  `fcu`,
 	  `operate`,
 	  `fcd`,
 	  `config_hash` AS configHash
 	FROM `knowledge_document_audit` 
 	WHERE `knowledge_document_id` = #{knowledgeDocumentId}
+	ORDER BY `fcd` DESC
+	<if test="needPage">
+	LIMIT #{startNum}, #{pageSize}
+	</if>
+	</select>
+	
+	<select id="getKnowledgeDocumentAuditListByDocumentIdAndVersionIdAndOperate" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo">
+	SELECT 
+	  `knowledge_document_id` AS knowledgeDocumentId,
+	  `knowledge_document_version_id` AS knowledgeDocumentVersionId,
+	  `fcu`,
+	  `operate`,
+	  `fcd`,
+	  `config_hash` AS configHash
+	FROM `knowledge_document_audit` 
+	WHERE `knowledge_document_id` = #{knowledgeDocumentId} 
+	and `knowledge_document_version_id` = #{knowledgeDocumentVersionId}
+	and `operate` = #{operate}
 	ORDER BY `fcd` DESC
 	<if test="needPage">
 	LIMIT #{startNum}, #{pageSize}
@@ -28,6 +47,7 @@
 	<insert id="insertKnowledgeDocumentAudit" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo">
 	INSERT INTO `knowledge_document_audit` (
 	  `knowledge_document_id`,
+	  `knowledge_document_version_id`,
 	  `fcu`,
 	  `operate`,
 	  `fcd`,
@@ -36,6 +56,7 @@
 	VALUES
 	  (
 	    #{knowledgeDocumentId},
+	    #{knowledgeDocumentVersionId},
 	    #{fcu},
 	    #{operate},
 	    NOW(),

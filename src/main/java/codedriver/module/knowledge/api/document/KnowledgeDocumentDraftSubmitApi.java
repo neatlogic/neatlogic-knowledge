@@ -104,6 +104,7 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         
         KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();
         knowledgeDocumentAuditVo.setKnowledgeDocumentId(knowledgeDocumentVo.getId());
+        knowledgeDocumentAuditVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
         knowledgeDocumentAuditVo.setOperate(KnowledgeDocumentOperate.SUBMIT.getValue());
         knowledgeDocumentAuditMapper.insertKnowledgeDocumentAudit(knowledgeDocumentAuditVo);

@@ -34,9 +34,12 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.HtmlUtil;
 import codedriver.framework.util.TimeUtil;
+import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
+import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
@@ -49,6 +52,9 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
 
     @Autowired
     KnowledgeDocumentMapper knowledgeDocumentMapper;
+    
+    @Autowired
+    KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
     
     @Autowired
     TeamMapper teamMapper;
@@ -263,6 +269,15 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             documentVersionVoParam.setReviewDateStartTime(reviewDateJson.getString("startTime"));
             documentVersionVoParam.setReviewDateEndTime(reviewDateJson.getString("endTime"));
         }
+        //status all
+        List<String>  statusList = documentVersionVoParam.getStatusList();
+        if(statusList.contains(KnowledgeDocumentVersionStatus.ALL.getValue())) {
+            statusList.remove(KnowledgeDocumentVersionStatus.ALL.getValue());
+            statusList.add(KnowledgeDocumentVersionStatus.PASSED.getValue());
+            statusList.add(KnowledgeDocumentVersionStatus.REJECTED.getValue());
+            statusList.add(KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
+            documentVersionVoParam.setStatusList(statusList);
+        }
         //仅根据keyword,从es搜索标题和内容
         JSONObject data = null;
         if(StringUtils.isNotBlank(documentVersionVoParam.getKeyword())){
@@ -298,10 +313,18 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                 documentVersionVoParam.setReviewerList(reviewerList);
             }else if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.REJECTED.getValue())//否则查询 knowledge_document_version中的 “reviewer”
                 ||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.PASSED.getValue())){
+                List<String> reviewerList = documentVersionVoParam.getReviewerList();
+                if(CollectionUtils.isNotEmpty(reviewerList)) {
+                    for(int i = 0;i<reviewerList.size();i++) {
+                        reviewerList.set(i, reviewerList.get(i).replaceAll(GroupSearch.USER.getValuePlugin(), ""));
+                    }
+                }
                 documentVersionVoParam.setIsReviewer(0);
                 documentVersionVoParam.setReviewer(documentVersionVoParam.getReviewerList().get(0));
             }
         }
+        
+        //查询符合条件的知识版本
         List<Long> documentVersionIdList = knowledgeDocumentMapper.getKnowledgeDocumentVersionIdList(documentVersionVoParam);
         List<KnowledgeDocumentVersionVo> documentVersionList = null;
         if(CollectionUtils.isNotEmpty(documentVersionIdList)) {
@@ -311,55 +334,58 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         }
         Integer total = knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam);
        
-        //跟新操作（如果是草稿,可以删除或编辑）
-        if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.DRAFT.getValue())) {
-            int isApprover = 0;
-            for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : documentVersionList) {
+        
+        for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : documentVersionList) {
+            //跟新操作（如果是草稿,可以删除或编辑）
+            if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.DRAFT.getValue())) {
+                int isApprover = 0;
                 if(knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
                     isApprover = 1;
                 }
                 knowledgeDocumentVersionVo.setIsEditable(isApprover);
                 knowledgeDocumentVersionVo.setIsDeletable(isApprover);
             }
-        }
-       
-        
-        //跟新es highlight
-        for(KnowledgeDocumentVersionVo documentVersionVo : documentVersionList) {
-            if(documentVersionVo != null) {
-                //替换 highlight 字段
-                if(StringUtils.isNotBlank(documentVersionVoParam.getKeyword())){
-                    JSONObject highlightData = data.getJSONObject(documentVersionVo.getId().toString());
-                    if(MapUtils.isNotEmpty(highlightData)) {
-                        if(highlightData.containsKey("title.txt")) {
-                            documentVersionVo.setTitle(String.join("\n", JSONObject.parseArray(highlightData.getString("title.txt"),String.class)));
-                        }
-                        if(highlightData.containsKey("content.txt")) {
-                            documentVersionVo.setContent( String.join("\n", JSONObject.parseArray(highlightData.getString("content.txt"),String.class)));
-                        }
+            //替换 highlight 字段
+            if(StringUtils.isNotBlank(documentVersionVoParam.getKeyword())){
+                JSONObject highlightData = data.getJSONObject(knowledgeDocumentVersionVo.getId().toString());
+                if(MapUtils.isNotEmpty(highlightData)) {
+                    if(highlightData.containsKey("title.txt")) {
+                        knowledgeDocumentVersionVo.setTitle(String.join("\n", JSONObject.parseArray(highlightData.getString("title.txt"),String.class)));
                     }
-                }
-                //如果es找不到内容 则从数据库获取
-                if(StringUtils.isBlank(documentVersionVo.getContent())) {
-                    StringBuilder contentsb = new StringBuilder();
-                    List<KnowledgeDocumentLineVo> documentLineList = documentVersionVo.getKnowledgeDocumentLineList();
-                    if(CollectionUtils.isNotEmpty(documentLineList)) {
-                        for(KnowledgeDocumentLineVo line : documentLineList) {
-                            contentsb.append(line.getContent());
-                        }
-                        String content =HtmlUtil.removeHtml(contentsb.toString(), null);
-                        documentVersionVo.setContent(HtmlUtil.removeHtml(contentsb.toString(), null).substring(0, content.length()> 250?250:content.length()));
-                        documentVersionVo.setKnowledgeDocumentLineList(null);
+                    if(highlightData.containsKey("content.txt")) {
+                        knowledgeDocumentVersionVo.setContent( String.join("\n", JSONObject.parseArray(highlightData.getString("content.txt"),String.class)));
                     }
-                   
                 }
             }
+            //如果es找不到内容 则从数据库获取
+            if(StringUtils.isBlank(knowledgeDocumentVersionVo.getContent())) {
+                StringBuilder contentsb = new StringBuilder();
+                List<KnowledgeDocumentLineVo> documentLineList = knowledgeDocumentVersionVo.getKnowledgeDocumentLineList();
+                if(CollectionUtils.isNotEmpty(documentLineList)) {
+                    for(KnowledgeDocumentLineVo line : documentLineList) {
+                        contentsb.append(line.getContent());
+                    }
+                    String content =HtmlUtil.removeHtml(contentsb.toString(), null);
+                    knowledgeDocumentVersionVo.setContent(HtmlUtil.removeHtml(contentsb.toString(), null).substring(0, content.length()> 250?250:content.length()));
+                    knowledgeDocumentVersionVo.setKnowledgeDocumentLineList(null);
+                }
+            }
+            //如果审核不通过，则补充原因
+            if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+                KnowledgeDocumentAuditVo  rejectAudit = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditListByDocumentIdAndVersionIdAndOperate(new KnowledgeDocumentAuditVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(),knowledgeDocumentVersionVo.getId(),KnowledgeDocumentOperate.REJECT.getValue()));
+                String rejectReason =knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditConfigStringByHash(rejectAudit.getConfigHash());
+                if(StringUtils.isNotBlank(rejectReason)) {
+                    knowledgeDocumentVersionVo.setRejectReason(JSONObject.parseObject(rejectReason).getString("content"));
+                }
+               
+            }
         }
+       
         //补充状态
         if(!KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(documentVersionVoParam.getStatus())){
             JSONArray statusArray = new JSONArray();
             JSONObject jsonAll = new JSONObject();
-            jsonAll.put("value", null);
+            jsonAll.put("value",  KnowledgeDocumentVersionStatus.ALL.getValue());
             jsonAll.put("text", KnowledgeDocumentVersionStatus.ALL.getText());
             jsonAll.put("count", 0);
             statusArray.add(jsonAll);

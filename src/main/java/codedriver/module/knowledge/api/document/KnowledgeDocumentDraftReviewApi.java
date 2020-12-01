@@ -121,6 +121,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
 
         KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();
         knowledgeDocumentAuditVo.setKnowledgeDocumentId(documentVo.getId());
+        knowledgeDocumentAuditVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
         knowledgeDocumentAuditVo.setOperate(operate);
         String content = jsonObj.getString("content");

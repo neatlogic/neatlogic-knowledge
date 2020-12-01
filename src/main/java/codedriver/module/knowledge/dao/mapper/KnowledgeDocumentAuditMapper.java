@@ -8,6 +8,8 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 public interface KnowledgeDocumentAuditMapper {
 
     public List<KnowledgeDocumentAuditVo> getKnowledgeDocumentAuditListByKnowledgeDocumentId(KnowledgeDocumentAuditVo knowledgeDocumentAuditVo);
+    
+    public KnowledgeDocumentAuditVo getKnowledgeDocumentAuditListByDocumentIdAndVersionIdAndOperate(KnowledgeDocumentAuditVo knowledgeDocumentAuditVo);
 
     public int getKnowledgeDocumentAuditCountByKnowledgeDocumentId(KnowledgeDocumentAuditVo searchVo);
 

@@ -80,7 +80,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             return knowledgeDocumentMapper.checkIfTheVersionIsTheCurrentVersion(knowledgeDocumentVersionVo);
         }else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             if(knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
-                return knowledgeDocumentMapper.checkIfTheVersionIsTheCurrentVersion(knowledgeDocumentVersionVo);
+                return 1;
             }
         }
         return 0;

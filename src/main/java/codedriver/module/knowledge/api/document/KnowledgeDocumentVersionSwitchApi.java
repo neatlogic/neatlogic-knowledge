@@ -102,6 +102,7 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
         
         KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();
         knowledgeDocumentAuditVo.setKnowledgeDocumentId(knowledgeDocumentVo.getId());
+        knowledgeDocumentAuditVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
         knowledgeDocumentAuditVo.setOperate(KnowledgeDocumentOperate.SWITCHVERSION.getValue());
         JSONObject config = new JSONObject();

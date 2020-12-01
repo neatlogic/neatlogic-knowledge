@@ -70,6 +70,8 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     private List<KnowledgeTagVo> tagVoList = new ArrayList<>();
     @EntityField(name = "知识内容", type = ApiParamType.STRING)
     private String content;
+    @EntityField(name = "不通过原因", type = ApiParamType.STRING)
+    private String rejectReason;
     @EntityField(name = "行数据列表", type = ApiParamType.JSONARRAY)
     private List<KnowledgeDocumentLineVo> knowledgeDocumentLineList = new ArrayList<>();
     @JSONField(serialize=false)
@@ -368,6 +370,13 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     public void setKnowledgeCircleId(Long knowledgeCircleId) {
         this.knowledgeCircleId = knowledgeCircleId;
     }
+    public String getRejectReason() {
+        return rejectReason;
+    }
+    public void setRejectReason(String rejectReason) {
+        this.rejectReason = rejectReason;
+    }
+    
     
     
 }

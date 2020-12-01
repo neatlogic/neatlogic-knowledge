@@ -10,6 +10,8 @@ public class KnowledgeDocumentAuditVo extends BaseEditorVo {
     
     @EntityField(name = "文档id", type = ApiParamType.LONG)
     private Long KnowledgeDocumentId;
+    @EntityField(name = "文档版本id", type = ApiParamType.LONG)
+    private Long knowledgeDocumentVersionId;
     @EntityField(name = "操作类型", type = ApiParamType.STRING)
     private String operate;
     @EntityField(name = "操作描述", type = ApiParamType.STRING)
@@ -23,6 +25,13 @@ public class KnowledgeDocumentAuditVo extends BaseEditorVo {
     }
     public void setKnowledgeDocumentId(Long knowledgeDocumentId) {
         KnowledgeDocumentId = knowledgeDocumentId;
+    }
+    public KnowledgeDocumentAuditVo(){}
+    
+    public KnowledgeDocumentAuditVo(Long knowledgeDocumentId,Long knowledgeDocumentVersionId,String operate) {
+        KnowledgeDocumentId = knowledgeDocumentId;
+        this.knowledgeDocumentVersionId = knowledgeDocumentVersionId;
+        this.operate = operate;
     }
     public String getOperate() {
         return operate;
@@ -54,4 +63,11 @@ public class KnowledgeDocumentAuditVo extends BaseEditorVo {
     public void setConfigHash(String configHash) {
         this.configHash = configHash;
     }
+    public Long getKnowledgeDocumentVersionId() {
+        return knowledgeDocumentVersionId;
+    }
+    public void setKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId) {
+        this.knowledgeDocumentVersionId = knowledgeDocumentVersionId;
+    }
+    
 }

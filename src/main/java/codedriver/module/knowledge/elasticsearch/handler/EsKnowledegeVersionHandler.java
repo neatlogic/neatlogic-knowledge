@@ -91,7 +91,7 @@ public class EsKnowledegeVersionHandler extends ElasticSearchHandlerBase<Knowled
         if(StringUtils.isNotBlank(whereSql)){
             whereSql = " where " + whereSql;
         }
-        sql = String.format("select #title#,#content# from %s %s ", TenantContext.get().getTenantUuid(),whereSql);
+        sql = String.format("select id,#title#,#content# from %s %s ", TenantContext.get().getTenantUuid(),whereSql);
         return sql;
     }
 

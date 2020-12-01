@@ -169,7 +169,7 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     }
     public KnowledgeDocumentVersionStatusVo getStatusVo() {
         if(statusVo == null && StringUtils.isNotBlank(status)) {
-            statusVo = new KnowledgeDocumentVersionStatusVo(status, KnowledgeDocumentVersionStatus.getText(status));
+            statusVo = new KnowledgeDocumentVersionStatusVo(status, KnowledgeDocumentVersionStatus.getText(status),KnowledgeDocumentVersionStatus.getColor(status));
         }
         return statusVo;
     }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -263,6 +264,15 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             documentVersionVoParam.setReviewDateStartTime(reviewDateJson.getString("startTime"));
             documentVersionVoParam.setReviewDateEndTime(reviewDateJson.getString("endTime"));
         }
+        //status all
+        List<String>  statusList = documentVersionVoParam.getStatusList();
+        if(statusList.contains(KnowledgeDocumentVersionStatus.ALL.getValue())) {
+            statusList.remove(KnowledgeDocumentVersionStatus.ALL.getValue());
+            statusList.add(KnowledgeDocumentVersionStatus.PASSED.getValue());
+            statusList.add(KnowledgeDocumentVersionStatus.REJECTED.getValue());
+            statusList.add(KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
+            documentVersionVoParam.setStatusList(statusList);
+        }
         //仅根据keyword,从es搜索标题和内容
         JSONObject data = null;
         if(StringUtils.isNotBlank(documentVersionVoParam.getKeyword())){
@@ -298,10 +308,18 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                 documentVersionVoParam.setReviewerList(reviewerList);
             }else if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.REJECTED.getValue())//否则查询 knowledge_document_version中的 “reviewer”
                 ||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.PASSED.getValue())){
+                List<String> reviewerList = documentVersionVoParam.getReviewerList();
+                if(CollectionUtils.isNotEmpty(reviewerList)) {
+                    for(int i = 0;i<reviewerList.size();i++) {
+                        reviewerList.set(i, reviewerList.get(i).replaceAll(GroupSearch.USER.getValuePlugin(), ""));
+                    }
+                }
                 documentVersionVoParam.setIsReviewer(0);
                 documentVersionVoParam.setReviewer(documentVersionVoParam.getReviewerList().get(0));
             }
         }
+        
+        //查询符合条件的知识版本
         List<Long> documentVersionIdList = knowledgeDocumentMapper.getKnowledgeDocumentVersionIdList(documentVersionVoParam);
         List<KnowledgeDocumentVersionVo> documentVersionList = null;
         if(CollectionUtils.isNotEmpty(documentVersionIdList)) {
@@ -323,7 +341,6 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             }
         }
        
-        
         //跟新es highlight
         for(KnowledgeDocumentVersionVo documentVersionVo : documentVersionList) {
             if(documentVersionVo != null) {
@@ -359,7 +376,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         if(!KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(documentVersionVoParam.getStatus())){
             JSONArray statusArray = new JSONArray();
             JSONObject jsonAll = new JSONObject();
-            jsonAll.put("value", null);
+            jsonAll.put("value",  KnowledgeDocumentVersionStatus.ALL.getValue());
             jsonAll.put("text", KnowledgeDocumentVersionStatus.ALL.getText());
             jsonAll.put("count", 0);
             statusArray.add(jsonAll);

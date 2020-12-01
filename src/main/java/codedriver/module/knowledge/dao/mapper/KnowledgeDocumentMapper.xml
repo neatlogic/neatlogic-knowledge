@@ -93,7 +93,7 @@
 				1 != 1
 			</if>
 	    	<if test="keyword != null and knowledgeDocumentVersionIdList != null and knowledgeDocumentVersionIdList.size() > 0">
-	    		kd.`id` in 
+	    		kdv.`id` in 
 			    <foreach collection="knowledgeDocumentVersionIdList" item="id" open="(" separator="," close=")">
 			 	#{id}
 			 	</foreach>

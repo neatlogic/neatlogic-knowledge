@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.techsure.multiattrsearch.MultiAttrsObject;
+import com.techsure.multiattrsearch.QueryResultSet;
 import com.techsure.multiattrsearch.query.QueryResult;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
@@ -91,7 +92,7 @@ public class EsKnowledegeVersionHandler extends ElasticSearchHandlerBase<Knowled
         if(StringUtils.isNotBlank(whereSql)){
             whereSql = " where " + whereSql;
         }
-        sql = String.format("select id,#title#,#content# from %s %s ", TenantContext.get().getTenantUuid(),whereSql);
+        sql = String.format("select id,#title#,#content# from %s %s limit 1000", TenantContext.get().getTenantUuid(),whereSql);
         return sql;
     }
 
@@ -103,6 +104,22 @@ public class EsKnowledegeVersionHandler extends ElasticSearchHandlerBase<Knowled
         for (MultiAttrsObject el : resultData) {
             esResultJson.put(el.getId(), el.getHighlightData());
             knowledgeDocumentVersionIdList.add(Long.parseLong(el.getId()));
+        }
+        esResultJson.put("knowledgeDocumentVersionIdList", knowledgeDocumentVersionIdList);
+        return esResultJson;
+    }
+    
+    @Override
+    protected JSONObject makeupQueryIterateResult(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo, QueryResultSet resultSet) {
+        JSONObject esResultJson = new JSONObject();
+        List<Long> knowledgeDocumentVersionIdList = new ArrayList<Long>();
+        while (resultSet.hasMoreResults()) {
+            QueryResult result = resultSet.fetchResult();
+            List<MultiAttrsObject> resultData = result.getData();
+            for (MultiAttrsObject el : resultData) {
+                esResultJson.put(el.getId(), el.getHighlightData());
+                knowledgeDocumentVersionIdList.add(Long.parseLong(el.getId()));
+            }
         }
         esResultJson.put("knowledgeDocumentVersionIdList", knowledgeDocumentVersionIdList);
         return esResultJson;

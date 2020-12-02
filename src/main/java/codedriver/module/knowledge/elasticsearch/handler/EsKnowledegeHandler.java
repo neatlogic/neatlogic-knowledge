@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.techsure.multiattrsearch.MultiAttrsObject;
+import com.techsure.multiattrsearch.QueryResultSet;
 import com.techsure.multiattrsearch.query.QueryResult;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
@@ -27,8 +28,6 @@ import codedriver.framework.util.TimeUtil;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
 
@@ -51,7 +50,6 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
     public JSONObject mySave(Long documentId) {
         JSONObject esObject = new JSONObject();
         KnowledgeDocumentVo documentVo =  knowledgeDocumentMapper.getKnowledgeDocumentById(documentId);
-        KnowledgeDocumentVersionVo  documentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(documentVo.getKnowledgeDocumentVersionId());
         //获取知识内容
         List<KnowledgeDocumentLineVo>  documentLineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(documentVo.getKnowledgeDocumentVersionId());
         StringBuilder contentsb = new StringBuilder();
@@ -75,12 +73,12 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
         }
         esObject.put("filecontent", fileContentsb.toString());
         //tagList
-        List<Long> tagIdList = knowledgeDocumentMapper.getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(documentVo.getId(),documentVo.getKnowledgeDocumentVersionId()));
-        esObject.put("taglist", tagIdList);
+        //List<Long> tagIdList = knowledgeDocumentMapper.getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(documentVo.getId(),documentVo.getKnowledgeDocumentVersionId()));
+        //esObject.put("taglist", tagIdList);
         esObject.put("versionid", documentVo.getVersion());
         esObject.put("typeuuid", documentVo.getKnowledgeDocumentTypeUuid());
         esObject.put("circleid", documentVo.getKnowledgeCircleId());
-        esObject.put("title", documentVersionVo.getTitle());
+        esObject.put("title", documentVo.getTitle());
         esObject.put("content", HtmlUtil.removeHtml(contentsb.toString(), null));
         esObject.put("fcu", documentVo.getFcu());
         esObject.put("fcd", TimeUtil.convertDateToString(documentVo.getFcd(), TimeUtil.YYYY_MM_DD_HH_MM_SS));
@@ -101,7 +99,7 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
         if(StringUtils.isNotBlank(whereSql)){
             whereSql = " where " + whereSql;
         }
-        sql = String.format("select id,#title#,#content# from %s %s ", TenantContext.get().getTenantUuid(),whereSql);
+        sql = String.format("select id,#title#,#content# from %s %s limit 1000", TenantContext.get().getTenantUuid(),whereSql);
         return sql;
     }
 
@@ -113,6 +111,22 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
         for (MultiAttrsObject el : resultData) {
             esResultJson.put(el.getId(), el.getHighlightData());
             knowledgeDocumentIdList.add(Long.parseLong(el.getId()));
+        }
+        esResultJson.put("knowledgeDocumentIdList", knowledgeDocumentIdList);
+        return esResultJson;
+    }
+    
+    @Override
+    protected JSONObject makeupQueryIterateResult(KnowledgeDocumentVo knowledgeDocumentVo, QueryResultSet resultSet) {
+        JSONObject esResultJson = new JSONObject();
+        List<Long> knowledgeDocumentIdList = new ArrayList<Long>();
+        while (resultSet.hasMoreResults()) {
+            QueryResult result = resultSet.fetchResult();
+            List<MultiAttrsObject> resultData = result.getData();
+            for (MultiAttrsObject el : resultData) {
+                esResultJson.put(el.getId(), el.getHighlightData());
+                knowledgeDocumentIdList.add(Long.parseLong(el.getId()));
+            }
         }
         esResultJson.put("knowledgeDocumentIdList", knowledgeDocumentIdList);
         return esResultJson;

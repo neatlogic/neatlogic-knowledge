@@ -147,7 +147,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         JSONObject data = null;
         if(StringUtils.isNotBlank(documentVoParam.getKeyword())){
             IElasticSearchHandler<KnowledgeDocumentVo, JSONObject> esHandler = ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE.getValue());
-            data = JSONObject.parseObject(esHandler.search(documentVoParam).toString());
+            data = JSONObject.parseObject(esHandler.iterateSearch(documentVoParam).toString());
             List<Long> documentIdList = JSONObject.parseArray(data.getJSONArray("knowledgeDocumentIdList").toJSONString(),Long.class);
             //将从es搜索符合的知识送到数据库做二次过滤
             documentVoParam.setKnowledgeDocumentIdList(documentIdList);
@@ -284,7 +284,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         JSONObject data = null;
         if(StringUtils.isNotBlank(documentVersionVoParam.getKeyword())){
             IElasticSearchHandler<KnowledgeDocumentVersionVo, JSONObject> esHandler = ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE_VERSION.getValue());
-            data = JSONObject.parseObject(esHandler.search(documentVersionVoParam).toString());
+            data = JSONObject.parseObject(esHandler.iterateSearch(documentVersionVoParam).toString());
             List<Long> documentVersionIdList = JSONObject.parseArray(data.getJSONArray("knowledgeDocumentVersionIdList").toJSONString(),Long.class);
             //将从es搜索符合的知识送到数据库做二次过滤
             documentVersionVoParam.setKnowledgeDocumentVersionIdList(documentVersionIdList);

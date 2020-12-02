@@ -57,7 +57,11 @@ public class EsKnowledgeDocumentSyncApi extends PrivateApiComponentBase {
         @Param(name = "fromDate", type = ApiParamType.STRING, desc = "创建时间>=fromDate"),
         @Param(name = "toDate", type = ApiParamType.STRING, desc = "创建时间<toDate"),
         @Param(name = "documentIdList", type = ApiParamType.JSONARRAY, desc = "documentId数组"),
-        @Param(name = "action", type = ApiParamType.STRING, desc = "delete,refresh")})
+        @Param(name = "documentVersionIdList", type = ApiParamType.JSONARRAY, desc = "documentVersionId数组"),
+        @Param(name = "action", type = ApiParamType.STRING, desc = "delete,refresh"),
+        @Param(name = "type", type = ApiParamType.STRING, desc = "knowledge,knowledgeversion"),
+    })
+    
     @Output({
 
     })
@@ -65,17 +69,24 @@ public class EsKnowledgeDocumentSyncApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         List<Object> documentIdObjList = jsonObj.getJSONArray("documentIdList");
+        List<Object> documentVersionIdObjList = jsonObj.getJSONArray("documentVersionIdList");
         List<Long> documentIdList = null;
+        List<Long> documentVersionIdList = null;
         List<String> documentIdStrList = null;
         if (CollectionUtils.isNotEmpty(documentIdObjList)) {
             documentIdList = documentIdObjList.stream().map(object -> Long.parseLong(object.toString())).collect(Collectors.toList());
+            documentVersionIdList = documentVersionIdObjList.stream().map(object -> Long.parseLong(object.toString())).collect(Collectors.toList());
             documentIdStrList = documentIdObjList.stream().map(object -> object.toString()).collect(Collectors.toList());
         }
         String fromDate = jsonObj.getString("fromDate");
         String toDate = jsonObj.getString("toDate");
         String action = jsonObj.getString("action");
+        String type = jsonObj.getString("type");
         if (action == null) {
             action = "refresh";
+        }
+        if (type == null) {
+            type = "knowledge";
         }
         
         //删除符合条件es数据
@@ -99,7 +110,7 @@ public class EsKnowledgeDocumentSyncApi extends PrivateApiComponentBase {
             }
         }
         String esSql = String.format("select id from %s %s limit 20 ",TenantContext.get().getTenantUuid(),whereSql);
-        MultiAttrsObjectPool  objectPool = ElasticSearchPoolManager.getObjectPool(ESHandler.KNOWLEDGE.getValue());
+        MultiAttrsObjectPool  objectPool = ElasticSearchPoolManager.getObjectPool(type);
         objectPool.checkout(TenantContext.get().getTenantUuid());
         QueryParser parser = objectPool.createQueryParser();
         MultiAttrsQuery query = parser.parse(esSql);
@@ -114,9 +125,16 @@ public class EsKnowledgeDocumentSyncApi extends PrivateApiComponentBase {
         } 
         //如果需要更新
         if (action.equals("refresh")) {
-            List<KnowledgeDocumentVo> documentVoList = knowledgeDocumentMapper.getKnowledgeDocumentByIdListAndFcd(documentIdList,fromDate,toDate);
-            for (KnowledgeDocumentVo knowledgeVo : documentVoList) {
-                ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE.getValue()).save(knowledgeVo.getId());
+            if(type.equals(ESHandler.KNOWLEDGE.getValue())) {
+                List<KnowledgeDocumentVo> documentVoList = knowledgeDocumentMapper.getKnowledgeDocumentByIdListAndFcd(documentIdList,fromDate,toDate);
+                for (KnowledgeDocumentVo knowledgeVo : documentVoList) {
+                    ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE.getValue()).save(knowledgeVo.getId());
+                }
+            }else {
+                List<Long> versionIdList = knowledgeDocumentMapper.getKnowledgeDocumentVersionIdListByLcd(documentVersionIdList,fromDate,toDate);
+                for (Long version : versionIdList) {
+                    ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE_VERSION.getValue()).save(version);
+                }
             }
         }
 

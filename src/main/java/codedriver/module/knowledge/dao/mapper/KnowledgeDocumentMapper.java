@@ -39,6 +39,8 @@ public interface KnowledgeDocumentMapper {
     
     public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdListAndFcd(@Param("documentIdlist") List<Long> documentIdList,@Param("fromDate") String fromDate,@Param("toDate")String toDate);
     
+    public List<Long> getKnowledgeDocumentVersionIdListByLcd(@Param("documentVersionIdlist") List<Long> documentVersionIdList,@Param("fromDate") String fromDate,@Param("toDate")String toDate);
+    
     public KnowledgeDocumentVersionVo getKnowledgeDocumentVersionById(Long id);
     
     public int checkKnowledgeDocumentLineConfigHashIsExists(String hash);

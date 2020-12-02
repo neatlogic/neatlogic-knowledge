@@ -14,6 +14,8 @@ import codedriver.framework.common.dto.BaseEditorVo;
 import codedriver.framework.elasticsearch.annotation.ESKey;
 import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.file.dto.FileVo;
+import codedriver.framework.knowledge.dto.SyncSourceVo;
+import codedriver.framework.knowledge.source.SyncSourceFactory;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 
@@ -89,6 +91,8 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private Long invokeId;
     @EntityField(name = "来源", type = ApiParamType.STRING)
     private String source;
+    @EntityField(name = "来源名", type = ApiParamType.STRING)
+    private String sourceName;
     @JSONField(serialize=false)
     private transient Integer isDelete;
     @JSONField(serialize=false)
@@ -373,4 +377,17 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     public void setStatusList(List<String> statusList) {
         this.statusList = statusList;
     }
+    public String getSourceName() {
+        if(StringUtils.isNotBlank(source)) {
+            SyncSourceVo syncSource = SyncSourceFactory.getUserProfileMap().get(source);
+            if(syncSource != null) {
+                this.setSourceName(syncSource.getSourceName()+"转知识");
+            }
+        }
+        return sourceName;
+    }
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
+    }
+    
 }

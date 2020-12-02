@@ -85,6 +85,8 @@
 	    <foreach collection="documentVersionIdlist" item="id" open="(" separator="," close=")">
 	 	#{id}
 	 	</foreach>
+	 	order by kdv.`lcd` desc
+	 	
 	</select>
 	
 	<sql id="searchDocumentVersionSql">
@@ -388,6 +390,24 @@
 			</if>
 			<if test="toDate != null and toDate != ''">
 				AND kd.`fcd` &lt;= #{toDate}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getKnowledgeDocumentVersionIdListByLcd" resultType="java.lang.Long">
+		SELECT id FROM `knowledge_document_version` 
+		<where>
+			<if test="documentVersionIdlist != null and documentVersionIdlist.size() > 0">
+			     `id` in 
+			    <foreach collection="documentVersionIdlist" item="id" open="(" separator="," close=")">
+			 		#{id}
+			 	</foreach>
+		 	</if>
+			<if test="fromDate != null and fromDate != ''">
+				and `lcd` >= #{fromDate}
+			</if>
+			<if test="toDate != null and toDate != ''">
+				AND `lcd` &lt;= #{toDate}
 			</if>
 		</where>
 	</select>

@@ -13,6 +13,8 @@ import com.alibaba.fastjson.annotation.JSONField;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.common.dto.BaseEditorVo;
+import codedriver.framework.knowledge.dto.SyncSourceVo;
+import codedriver.framework.knowledge.source.SyncSourceFactory;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
@@ -78,8 +80,10 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     private transient boolean isAutoGenerateId = true;
     @JSONField(serialize=false)
     private transient List<String> statusList;
-    @JSONField(serialize=false)
+    @EntityField(name = "来源", type = ApiParamType.INTEGER)
     private String source;
+    @EntityField(name = "来源名", type = ApiParamType.INTEGER)
+    private String sourceName;
     @JSONField(serialize=false)
     private String lcdStartTime;
     @JSONField(serialize=false)
@@ -375,6 +379,18 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     }
     public void setRejectReason(String rejectReason) {
         this.rejectReason = rejectReason;
+    }
+    public String getSourceName() {
+        if(StringUtils.isNotBlank(source)) {
+            SyncSourceVo syncSource = SyncSourceFactory.getUserProfileMap().get(source);
+            if(syncSource != null) {
+                this.setSourceName(syncSource.getSourceName()+"转知识");
+            }
+        }
+        return sourceName;
+    }
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
     }
     
     

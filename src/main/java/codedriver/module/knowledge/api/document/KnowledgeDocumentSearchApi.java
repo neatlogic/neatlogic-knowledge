@@ -382,30 +382,45 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                     }
                 }
             }
+            
         }
        
         //补充状态
         if(!KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(documentVersionVoParam.getStatus())){
             JSONArray statusArray = new JSONArray();
             JSONObject jsonAll = new JSONObject();
+            List<String> statusTmpList = new ArrayList<>();
             jsonAll.put("value",  KnowledgeDocumentVersionStatus.ALL.getValue());
             jsonAll.put("text", KnowledgeDocumentVersionStatus.ALL.getText());
-            jsonAll.put("count", 0);
+            statusTmpList.add(KnowledgeDocumentVersionStatus.PASSED.getValue());
+            statusTmpList.add(KnowledgeDocumentVersionStatus.REJECTED.getValue());
+            statusTmpList.add(KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
+            documentVersionVoParam.setStatusList(statusTmpList);
+            jsonAll.put("count", knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam));
             statusArray.add(jsonAll);
             JSONObject jsonSubmit = new JSONObject();
             jsonSubmit.put("value", KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
             jsonSubmit.put("text", KnowledgeDocumentVersionStatus.SUBMITTED.getText());
-            jsonSubmit.put("count", 0);
+            statusTmpList.clear();
+            statusTmpList.add(KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
+            documentVersionVoParam.setStatusList(statusTmpList);
+            jsonSubmit.put("count", knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam));
             statusArray.add(jsonSubmit);
             JSONObject jsonPass = new JSONObject();
             jsonPass.put("value", KnowledgeDocumentVersionStatus.PASSED.getValue());
             jsonPass.put("text", KnowledgeDocumentVersionStatus.PASSED.getText());
-            jsonPass.put("count", 0);
+            statusTmpList.clear();
+            statusTmpList.add(KnowledgeDocumentVersionStatus.PASSED.getValue());
+            documentVersionVoParam.setStatusList(statusTmpList);
+            jsonPass.put("count", knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam));
             statusArray.add(jsonPass);
             JSONObject jsonReject = new JSONObject();
             jsonReject.put("value", KnowledgeDocumentVersionStatus.REJECTED.getValue());
             jsonReject.put("text", KnowledgeDocumentVersionStatus.REJECTED.getText());
-            jsonReject.put("count", 0);
+            statusTmpList.clear();
+            statusTmpList.add(KnowledgeDocumentVersionStatus.REJECTED.getValue());
+            documentVersionVoParam.setStatusList(statusTmpList);
+            jsonReject.put("count", knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam));
             statusArray.add(jsonReject);
             resultJson.put("statusList", statusArray);
         }

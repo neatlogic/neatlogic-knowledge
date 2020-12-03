@@ -311,6 +311,7 @@
 		<result column="knowledgeDocumentVersionId" property="knowledgeDocumentVersionId" />
 		<result column="knowledgeDocumentTypeUuid" property="knowledgeDocumentTypeUuid" />
 		<result column="knowledgeCircleName" property="knowledgeCircleName" />
+		<result column="knowledgeCircleId" property="knowledgeCircleId" />
 		<result column="title" property="title" />
 		<result column="lcd" property="lcd" />
 		<result column="lcu" property="lcu" />
@@ -337,6 +338,7 @@
 		kdv.`version`,
 		kdv.`id` AS knowledgeDocumentVersionId,
 		kc.name AS knowledgeCircleName,
+		kc.id AS knowledgeCircleId,
 		kd.`title`,
 		kdv.`lcd`,
 		kdv.`lcu`,
@@ -463,6 +465,7 @@
 		kdv.`version`,
 		kdv.`id` AS knowledgeDocumentVersionId,
 		kc.name AS knowledgeCircleName,
+		kc.id AS knowledgeCircleId,
 		kd.`title`,
 		kdv.`lcd`,
 		kdv.`lcu`,

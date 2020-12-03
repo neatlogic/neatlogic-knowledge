@@ -95,6 +95,7 @@ public class KnowledgeConditionBuilder {
           config.put("multiple", true);
           config.put("value", "");
           config.put("defaultValue", "");
+          config.put("isEqualValue", true);
           
           conditionJson.put("config", config);
           conditionJson.put("sort", 5);

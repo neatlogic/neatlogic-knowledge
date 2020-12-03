@@ -251,7 +251,7 @@
 	
 	<select id="getKnowledgeDocumentVersionIdList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="java.lang.Long">
 		SELECT 
-		distinct kdv.id
+		kdv.id
 		FROM `knowledge_document_version` kdv
 		LEFT JOIN `knowledge_document` kd ON kd.`id` = kdv.`knowledge_document_id` AND  kd.`is_delete` = 0 AND kdv.`is_delete` = 0
 		LEFT JOIN `knowledge_circle` kc ON kd.`knowledge_circle_id` = kc.`id`
@@ -273,6 +273,7 @@
 				<include refid="approveSql" />
 			</if>
 		</where>
+		GROUP BY kdv.id
 		order by kdv.`lcd` desc	
 	    <if test="needPage">
 		limit #{startNum},#{pageSize}
@@ -365,6 +366,7 @@
 	    <foreach collection="documentIdlist" item="id" open="(" separator="," close=")">
 	 	#{id}
 	 	</foreach>
+	 	order by kdv.lcd desc
 	</select>
 	
 	<sql id="searchDocumentSql">
@@ -429,7 +431,7 @@
 	
 	<select id="getKnowledgeDocumentIdList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo" resultType="java.lang.Long">
 		SELECT 
-		distinct kd.id
+		kd.id
 		FROM `knowledge_document` kd
 		JOIN `knowledge_document_version` kdv ON kd.`id` = kdv.`knowledge_document_id` AND kd.`knowledge_document_version_id` = kdv.`id` AND  kd.`is_delete` = 0 AND kdv.`is_delete` = 0
 		LEFT JOIN `knowledge_circle` kc ON kd.`knowledge_circle_id` = kc.`id`
@@ -438,6 +440,8 @@
 		LEFT JOIN `knowledge_document_collect` kdc ON kd.id = kdc.`knowledge_document_id`
 		<include refid="searchDocumentSql" />
 	    <if test="needPage">
+	    GROUP BY kd.id
+	    order by kdv.lcd desc
 		limit #{startNum}, #{pageSize}
 		</if>
 	</select>

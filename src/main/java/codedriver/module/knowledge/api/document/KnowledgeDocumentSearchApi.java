@@ -42,6 +42,7 @@ import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentVersionStatusVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
@@ -271,15 +272,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             documentVersionVoParam.setReviewDateStartTime(reviewDateJson.getString("startTime"));
             documentVersionVoParam.setReviewDateEndTime(reviewDateJson.getString("endTime"));
         }
-        //status all
-        List<String>  statusList = documentVersionVoParam.getStatusList();
-        if(statusList.contains(KnowledgeDocumentVersionStatus.ALL.getValue())) {
-            statusList.remove(KnowledgeDocumentVersionStatus.ALL.getValue());
-            statusList.add(KnowledgeDocumentVersionStatus.PASSED.getValue());
-            statusList.add(KnowledgeDocumentVersionStatus.REJECTED.getValue());
-            statusList.add(KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
-            documentVersionVoParam.setStatusList(statusList);
-        }
+       
         //仅根据keyword,从es搜索标题和内容
         JSONObject data = null;
         if(StringUtils.isNotBlank(documentVersionVoParam.getKeyword())){
@@ -291,50 +284,29 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         }
         
         //拼装 “审批人”条件 
-        if(CollectionUtils.isNotEmpty(documentVersionVoParam.getReviewerList()) && CollectionUtils.isNotEmpty(documentVersionVoParam.getStatusList())) {
-            //如果是“待审批”，则搜 knowledge_circle_user中 auth_type 为 “approver” 数据鉴权
-            if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())) {
-                documentVersionVoParam.setIsReviewer(1);
-                Iterator<String> reviewerIterator = documentVersionVoParam.getReviewerList().iterator();
-                List<String> reviewerList = new ArrayList<String>();
-                while(reviewerIterator.hasNext()) {
-                    String reviewer = reviewerIterator.next();
-                    if(reviewer.startsWith(GroupSearch.USER.getValuePlugin())){
-                        reviewer = reviewer.replaceAll(GroupSearch.USER.getValuePlugin(), StringUtils.EMPTY);
-                        documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
-                        documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
-                        reviewerList.add(reviewer);
-                    }else if(reviewer.startsWith(GroupSearch.TEAM.getValuePlugin())) {
-                        reviewer = reviewer.replaceAll(GroupSearch.TEAM.getValuePlugin(), StringUtils.EMPTY);
-                        documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
-                    }else {
-                        reviewer = reviewer.replaceAll(GroupSearch.ROLE.getValuePlugin(), StringUtils.EMPTY);
-                        documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
-                    }
-                }
-                documentVersionVoParam.setReviewerList(reviewerList);
-            }else if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.REJECTED.getValue())//否则查询 knowledge_document_version中的 “reviewer”
-                ||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.PASSED.getValue())){
-                List<String> reviewerList = documentVersionVoParam.getReviewerList();
-                if(CollectionUtils.isNotEmpty(reviewerList)) {
-                    for(int i = 0;i<reviewerList.size();i++) {
-                        reviewerList.set(i, reviewerList.get(i).replaceAll(GroupSearch.USER.getValuePlugin(), ""));
-                    }
-                }
-                documentVersionVoParam.setIsReviewer(0);
-                documentVersionVoParam.setReviewer(documentVersionVoParam.getReviewerList().get(0));
-            }
-        }
+        getReviewerParam(documentVersionVoParam);
+            
         
         //查询符合条件的知识版本
-        List<Long> documentVersionIdList = knowledgeDocumentMapper.getKnowledgeDocumentVersionIdList(documentVersionVoParam);
+        List<Long> documentVersionIdList = null;
+        Integer total = 0;
+        //status all
+        List<String>  statusList = documentVersionVoParam.getStatusList();
+        if(statusList.contains(KnowledgeDocumentVersionStatus.ALL.getValue())) {
+            documentVersionIdList = knowledgeDocumentMapper.getMyAllReviewKnowledgeDocumentVersionIdList(documentVersionVoParam);
+            total = knowledgeDocumentMapper.getMyAllReviewKnowledgeDocumentVersionCount(documentVersionVoParam);
+        }else {
+            documentVersionIdList = knowledgeDocumentMapper.getKnowledgeDocumentVersionIdList(documentVersionVoParam);
+            total = knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam);
+        }
+        
         List<KnowledgeDocumentVersionVo> documentVersionList = null;
         if(CollectionUtils.isNotEmpty(documentVersionIdList)) {
             documentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionByIdList(documentVersionIdList);
         }else {
             documentVersionList = new ArrayList<KnowledgeDocumentVersionVo>();
         }
-        Integer total = knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam);
+       
        
         
         for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : documentVersionList) {
@@ -383,28 +355,21 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                 }
             }
             
+            //去掉未提交status
+            KnowledgeDocumentVersionStatusVo  statusVo =  knowledgeDocumentVersionVo.getStatusVo();
+            if(knowledgeDocumentVersionVo.getStatusVo() != null && KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(statusVo.getValue())) {
+                knowledgeDocumentVersionVo.setStatus(null);
+                knowledgeDocumentVersionVo.setStatusVo(null);
+            }
         }
        
         //补充状态
-        if(!KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(documentVersionVoParam.getStatus())){
+        if(!documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.DRAFT.getValue())){
             JSONArray statusArray = new JSONArray();
             JSONObject jsonAll = new JSONObject();
             List<String> statusTmpList = new ArrayList<>();
-            jsonAll.put("value",  KnowledgeDocumentVersionStatus.ALL.getValue());
-            jsonAll.put("text", KnowledgeDocumentVersionStatus.ALL.getText());
-            statusTmpList.add(KnowledgeDocumentVersionStatus.PASSED.getValue());
-            statusTmpList.add(KnowledgeDocumentVersionStatus.REJECTED.getValue());
-            statusTmpList.add(KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
-            documentVersionVoParam.setStatusList(statusTmpList);
-            jsonAll.put("count", knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam));
             statusArray.add(jsonAll);
             JSONObject jsonSubmit = new JSONObject();
-            jsonSubmit.put("value", KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
-            jsonSubmit.put("text", KnowledgeDocumentVersionStatus.SUBMITTED.getText());
-            statusTmpList.clear();
-            statusTmpList.add(KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
-            documentVersionVoParam.setStatusList(statusTmpList);
-            jsonSubmit.put("count", knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam));
             statusArray.add(jsonSubmit);
             JSONObject jsonPass = new JSONObject();
             jsonPass.put("value", KnowledgeDocumentVersionStatus.PASSED.getValue());
@@ -412,6 +377,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             statusTmpList.clear();
             statusTmpList.add(KnowledgeDocumentVersionStatus.PASSED.getValue());
             documentVersionVoParam.setStatusList(statusTmpList);
+            documentVersionVoParam.setIsReviewer(1);
             jsonPass.put("count", knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam));
             statusArray.add(jsonPass);
             JSONObject jsonReject = new JSONObject();
@@ -420,8 +386,21 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             statusTmpList.clear();
             statusTmpList.add(KnowledgeDocumentVersionStatus.REJECTED.getValue());
             documentVersionVoParam.setStatusList(statusTmpList);
+            documentVersionVoParam.setIsReviewer(1);
             jsonReject.put("count", knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam));
             statusArray.add(jsonReject);
+            
+            jsonSubmit.put("value", KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
+            jsonSubmit.put("text", KnowledgeDocumentVersionStatus.SUBMITTED.getText());
+            statusTmpList.clear();
+            statusTmpList.add(KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
+            documentVersionVoParam.setStatusList(statusTmpList);
+            getReviewerParam(documentVersionVoParam);
+            jsonSubmit.put("count", knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam));
+            jsonAll.put("value",  KnowledgeDocumentVersionStatus.ALL.getValue());
+            jsonAll.put("text", KnowledgeDocumentVersionStatus.ALL.getText());
+            jsonAll.put("count", jsonSubmit.getLong("count")+jsonPass.getLong("count")+jsonReject.getLong("count"));
+            
             resultJson.put("statusList", statusArray);
         }
         resultJson.put("dataList", documentVersionList);
@@ -429,6 +408,54 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         resultJson.put("pageSize", documentVersionVoParam.getPageSize());
         resultJson.put("currentPage", documentVersionVoParam.getCurrentPage());
         resultJson.put("pageCount", PageUtil.getPageCount(total, documentVersionVoParam.getPageSize()));
+    }
+    
+    /**
+    * @Author 89770
+    * @Time 2020年12月3日  
+    * @Description: 根据不同的审批状态，补充审批人条件
+    * @Param 
+    * @return
+     */
+    private void getReviewerParam(KnowledgeDocumentVersionVo documentVersionVoParam) {
+        documentVersionVoParam.getReviewerRoleUuidList().clear();
+        documentVersionVoParam.getReviewerTeamUuidList().clear();
+        if(CollectionUtils.isNotEmpty(documentVersionVoParam.getReviewerList()) && CollectionUtils.isNotEmpty(documentVersionVoParam.getStatusList())) {
+            //如果是“待审批”，则搜 knowledge_circle_user中 auth_type 为 “approver” 数据鉴权
+            if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.ALL.getValue())||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())) {
+                documentVersionVoParam.setIsReviewer(0);
+                Iterator<String> reviewerIterator = documentVersionVoParam.getReviewerList().iterator();
+                List<String> reviewerList = new ArrayList<String>();
+                while(reviewerIterator.hasNext()) {
+                    String reviewer = reviewerIterator.next();
+                    if(reviewer.startsWith(GroupSearch.USER.getValuePlugin())||(!reviewer.startsWith(GroupSearch.TEAM.getValuePlugin())&&!reviewer.startsWith(GroupSearch.ROLE.getValuePlugin()))){
+                        reviewer = reviewer.replaceAll(GroupSearch.USER.getValuePlugin(), StringUtils.EMPTY);
+                        documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
+                        documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
+                        reviewerList.add(reviewer);
+                    }else if(reviewer.startsWith(GroupSearch.TEAM.getValuePlugin())) {
+                        reviewer = reviewer.replaceAll(GroupSearch.TEAM.getValuePlugin(), StringUtils.EMPTY);
+                        documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
+                    }else {
+                        reviewer = reviewer.replaceAll(GroupSearch.ROLE.getValuePlugin(), StringUtils.EMPTY);
+                        documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
+                    }
+                }
+                documentVersionVoParam.setReviewerList(reviewerList);
+            }
+            
+            if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.ALL.getValue())||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.REJECTED.getValue())//否则查询 knowledge_document_version中的 “reviewer”
+                ||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.PASSED.getValue())){
+                List<String> reviewerList = documentVersionVoParam.getReviewerList();
+                if(CollectionUtils.isNotEmpty(reviewerList)) {
+                    for(int i = 0;i<reviewerList.size();i++) {
+                        reviewerList.set(i, reviewerList.get(i).replaceAll(GroupSearch.USER.getValuePlugin(), ""));
+                    }
+                }
+                documentVersionVoParam.setIsReviewer(1);
+                documentVersionVoParam.setReviewer(documentVersionVoParam.getReviewerList().get(0));
+            }
+        }
     }
     
     /**

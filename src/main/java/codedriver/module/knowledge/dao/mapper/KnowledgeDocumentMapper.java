@@ -33,6 +33,10 @@ public interface KnowledgeDocumentMapper {
     
     public List<Long> getKnowledgeDocumentVersionIdList(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
     
+    public List<Long> getMyAllReviewKnowledgeDocumentVersionIdList(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+    
+    public int getMyAllReviewKnowledgeDocumentVersionCount(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+    
     public Integer getKnowledgeDocumentVersionCount(KnowledgeDocumentVersionVo KnowledgeDocumentVersionVo);
     
     public Integer getKnowledgeDocumentCount(KnowledgeDocumentVo knowledgeDocumentVo);

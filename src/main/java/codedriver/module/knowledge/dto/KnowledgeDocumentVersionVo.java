@@ -179,6 +179,10 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
         }
         return statusVo;
     }
+    
+    public void setStatusVo(KnowledgeDocumentVersionStatusVo statusVo) {
+        this.statusVo = statusVo;
+    }
     public String getTitle() {
         return title;
     }

@@ -153,6 +153,10 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             //将从es搜索符合的知识送到数据库做二次过滤
             documentVoParam.setKnowledgeDocumentIdList(documentIdList);
         }
+        
+        //补充查看权限条件参数（圈子成员or圈子审批人）
+        getDocumentVeiwParam(documentVoParam);
+        //从db过滤知识
         List<Long> documentIdList = knowledgeDocumentMapper.getKnowledgeDocumentIdList(documentVoParam);
         List<KnowledgeDocumentVo> documentList = null;
         if(CollectionUtils.isNotEmpty(documentIdList)) {
@@ -252,7 +256,20 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         resultJson.put("currentPage", documentVoParam.getCurrentPage());
         resultJson.put("pageCount", PageUtil.getPageCount(total, documentVoParam.getPageSize()));
     }
-    
+
+    /**
+    * @Author 89770
+    * @Time 2020年12月7日  
+    * @Description: 补充查看权限条件（知识圈成员or知识圈审批人）
+    * @Param 
+    * @return
+     */
+    private void getDocumentVeiwParam(KnowledgeDocumentVo documentVoParam) {
+        String userUuid = UserContext.get().getUserUuid(true);
+        documentVoParam.setCircleUserUuid(userUuid);
+        documentVoParam.setCircleTeamUuidList(teamMapper.getTeamUuidListByUserUuid(userUuid));
+        documentVoParam.setCircleRoleUuidList(userMapper.getRoleUuidListByUserUuid(userUuid));
+    }
     /*
      * 根据搜索条件，最终返回知识版本
      */

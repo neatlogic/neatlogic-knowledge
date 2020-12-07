@@ -60,7 +60,7 @@
 		 `name` = #{name},
 		 `content` = #{content},
 		 `lcu` = #{lcu},
-		 `lcd` = NOW()
+		 `lcd` = NOW(3)
 		 WHERE `id` = #{id}
 	</update>
 
@@ -88,8 +88,8 @@
 		#{isActive},
 		#{fcu},
 		#{lcu},
-		now(),
-		now()
+		now(3),
+		now(3)
 		)
     </insert>
 	<delete id="deleteKnowledgeTemplate" parameterType="java.lang.Long">

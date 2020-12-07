@@ -59,7 +59,7 @@
 	    #{knowledgeDocumentVersionId},
 	    #{fcu},
 	    #{operate},
-	    NOW(),
+	    NOW(3),
 	    #{configHash}
 	  )
 	</insert>

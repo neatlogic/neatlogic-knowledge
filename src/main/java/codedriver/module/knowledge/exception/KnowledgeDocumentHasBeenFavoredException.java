@@ -6,7 +6,7 @@ public class KnowledgeDocumentHasBeenFavoredException extends ApiRuntimeExceptio
 
     private static final long serialVersionUID = 4725067136465559549L;
 
-    public KnowledgeDocumentHasBeenFavoredException(Long id){
-        super("您已点赞文档：'" + id);
+    public KnowledgeDocumentHasBeenFavoredException(String title){
+        super("您已点赞文档：'" + title);
     }
 }

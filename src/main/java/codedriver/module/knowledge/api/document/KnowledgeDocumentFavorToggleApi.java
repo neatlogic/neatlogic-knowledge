@@ -6,6 +6,7 @@ import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentHasBeenFavoredException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import com.alibaba.fastjson.JSONObject;
@@ -52,7 +53,8 @@ public class KnowledgeDocumentFavorToggleApi extends PrivateApiComponentBase {
         }
         if(isFavor == 1){
             if(knowledgeDocumentMapper.checkDocumentHasBeenFavored(documentId,UserContext.get().getUserUuid()) > 0){
-                throw new KnowledgeDocumentHasBeenFavoredException(documentId);
+                KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(documentId);
+                throw new KnowledgeDocumentHasBeenFavoredException(documentVo.getTitle());
             }
             knowledgeDocumentMapper.insertKnowledgeDocumentFavor(documentId, UserContext.get().getUserUuid());
         }else if(isFavor == 0){

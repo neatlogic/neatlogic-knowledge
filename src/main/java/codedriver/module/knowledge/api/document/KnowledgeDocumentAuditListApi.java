@@ -17,6 +17,7 @@ import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dto.UserVo;
+import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -29,7 +30,6 @@ import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotMemberException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -83,7 +83,7 @@ public class KnowledgeDocumentAuditListApi extends PrivateApiComponentBase {
         }
         List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
         if(knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
-            throw new KnowledgeDocumentCurrentUserNotMemberException();
+            throw new PermissionDeniedException();
         }
         int pageCount = 0;
         if(searchVo.getNeedPage()) {

@@ -11,6 +11,7 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.dao.mapper.TeamMapper;
+import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -20,7 +21,6 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotMemberException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 
 @Service
@@ -64,7 +64,7 @@ public class KnowledgeDocumentHistoricalVersionListForSelectApi extends PrivateA
         }
         List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
         if(knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
-            throw new KnowledgeDocumentCurrentUserNotMemberException();
+            throw new PermissionDeniedException();
         }
         List<ValueTextVo> list = knowledgeDocumentMapper.getKnowledgeDocumentHistorialVersionListForSelectByKnowledgeDocumentId(knowledgeDocumentId);
         resultObj.put("list", list);        

@@ -1090,7 +1090,7 @@
 	    #{knowledgeDocumentTypeUuid},
 	    #{knowledgeCircleId},
 	    #{fcu},
-	    NOW(),
+	    NOW(3),
 	    #{source}
 	  )
 	</insert>
@@ -1115,7 +1115,7 @@
 	    #{fromVersion},
 	    #{status},
 	    #{lcu},
-	    NOW()
+	    NOW(3)
 	  )
 	</insert>
 	
@@ -1180,11 +1180,11 @@
 	</insert>
 
 	<insert id="insertKnowledgeDocumentFavor">
-	INSERT INTO `knowledge_document_favor` (`knowledge_document_id`, `user_uuid`,`fcd`) VALUES (#{documentId}, #{userUuid}, now())
+	INSERT INTO `knowledge_document_favor` (`knowledge_document_id`, `user_uuid`,`fcd`) VALUES (#{documentId}, #{userUuid}, now(3))
 	</insert>
 
 	<insert id="insertKnowledgeDocumentCollect">
-	INSERT INTO `knowledge_document_collect` (`knowledge_document_id`, `user_uuid`,`fcd`) VALUES (#{documentId}, #{userUuid}, now())
+	INSERT INTO `knowledge_document_collect` (`knowledge_document_id`, `user_uuid`,`fcd`) VALUES (#{documentId}, #{userUuid}, now(3))
 	</insert>
 
 	<insert id="insertKnowledgeDocumentViewCount">
@@ -1218,10 +1218,10 @@
 		<if test="status != null and status != ''">
 		`status` = #{status}, 
 			<if test="status == 'draft'">
-			`lcd` = NOW(),
+			`lcd` = NOW(3),
 			</if>
 			<if test="status == 'passed' or status == 'rejected'">
-			`review_time` = NOW(),
+			`review_time` = NOW(3),
 			</if>
 		</if>	
 		<if test="lcu != null and lcu != ''">

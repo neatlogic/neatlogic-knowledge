@@ -35,20 +35,6 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private String knowledgeCircleName;
     @EntityField(name = "标题", type = ApiParamType.STRING)
     private String title;
-//    @EntityField(name = "文档大小，单位是字节", type = ApiParamType.INTEGER)
-//    private Integer size;
-//    @EntityField(name = "文档大小描述", type = ApiParamType.STRING)
-//    private Integer sizeDesc;
-//    @EntityField(name = "审核人", type = ApiParamType.STRING)
-//    private String reviewer;
-//    @EntityField(name = "审核人名", type = ApiParamType.STRING)
-//    private String reviewerName;
-//    @EntityField(name = "修改者额外属性", type = ApiParamType.STRING)
-//    private String reviewerInfo;
-//    @EntityField(name = "修改者头像", type = ApiParamType.STRING)
-//    private String reviewerAvatar;
-//    @EntityField(name = "审核时间", type = ApiParamType.LONG)
-//    private Date reviewerTime;
     @EntityField(name = "行数据列表", type = ApiParamType.JSONARRAY)
     private List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
     @EntityField(name = "附件列表", type = ApiParamType.JSONARRAY)
@@ -117,6 +103,13 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private List<String> sourceList;
     @JSONField(serialize=false)
     private List<String> statusList;
+    @JSONField(serialize=false)
+    private String circleUserUuid;
+    @JSONField(serialize=false)
+    private List<String> circleTeamUuidList;
+    @JSONField(serialize=false)
+    private List<String> circleRoleUuidList;
+    
     public String getType() {
         return type;
     }
@@ -389,5 +382,22 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     public void setSourceName(String sourceName) {
         this.sourceName = sourceName;
     }
-    
+    public String getCircleUserUuid() {
+        return circleUserUuid;
+    }
+    public void setCircleUserUuid(String circleUserUuid) {
+        this.circleUserUuid = circleUserUuid;
+    }
+    public List<String> getCircleTeamUuidList() {
+        return circleTeamUuidList;
+    }
+    public void setCircleTeamUuidList(List<String> circleTeamUuidList) {
+        this.circleTeamUuidList = circleTeamUuidList;
+    }
+    public List<String> getCircleRoleUuidList() {
+        return circleRoleUuidList;
+    }
+    public void setCircleRoleUuidList(List<String> circleRoleUuidList) {
+        this.circleRoleUuidList = circleRoleUuidList;
+    }
 }

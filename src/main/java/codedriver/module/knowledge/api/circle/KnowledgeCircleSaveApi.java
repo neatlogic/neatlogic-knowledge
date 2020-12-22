@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_CIRCLE_MODIFY;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,7 @@ import codedriver.module.knowledge.service.KnowledgeDocumentTypeService;
  *
  */
 
-@AuthAction(name = "KNOWLEDGE_CIRCLE_MODIFY")
+@AuthAction(action = KNOWLEDGE_CIRCLE_MODIFY.class)
 @Service
 @Transactional
 @OperationType(type = OperationTypeEnum.CREATE)

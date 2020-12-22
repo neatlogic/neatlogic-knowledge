@@ -1,6 +1,8 @@
 package codedriver.module.knowledge.api.document;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.label.NO_AUTH;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@AuthAction(action = NO_AUTH.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class KnowledgeDocumentFavorToggleApi extends PrivateApiComponentBase {
 

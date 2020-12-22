@@ -3,6 +3,8 @@ package codedriver.module.knowledge.api.document;
 import java.util.List;
 import java.util.Objects;
 
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.label.NO_AUTH;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentDraftUnsubmittedCa
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 @Service
+@AuthAction(action = NO_AUTH.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
 public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {

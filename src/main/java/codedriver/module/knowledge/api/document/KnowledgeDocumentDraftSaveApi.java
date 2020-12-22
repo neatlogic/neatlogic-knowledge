@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.label.NO_AUTH;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,6 +59,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentUnmodifiedCannotBe
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 @Service
+@AuthAction(action = NO_AUTH.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 @Transactional
 public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {

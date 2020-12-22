@@ -5,13 +5,14 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_TEMPLATE_MODIFY;
 import codedriver.module.knowledge.dao.mapper.KnowledgeTemplateMapper;
 import codedriver.module.knowledge.exception.KnowledgeTemplateNotFoundException;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@AuthAction(name = "KNOWLEDGE_TEMPLATE_MODIFY")
+@AuthAction(action = KNOWLEDGE_TEMPLATE_MODIFY.class)
 @Service
 @OperationType(type = OperationTypeEnum.DELETE)
 public class KnowledgeTemplateDeleteApi extends PrivateApiComponentBase{

@@ -1,14 +1,8 @@
 package codedriver.module.knowledge.api.document;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.alibaba.fastjson.JSONObject;
-
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.label.NO_AUTH;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.reminder.core.OperationTypeEnum;
@@ -29,7 +23,14 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotRevi
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotHistoricalVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
+import com.alibaba.fastjson.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 @Service
+@AuthAction(action = NO_AUTH.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 @Transactional
 public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {

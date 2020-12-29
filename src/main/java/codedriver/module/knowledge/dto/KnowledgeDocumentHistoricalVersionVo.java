@@ -1,13 +1,13 @@
 package codedriver.module.knowledge.dto;
 
-import java.util.Date;
 
+import codedriver.framework.common.dto.BaseEditorVo;
 import org.apache.commons.lang3.StringUtils;
 
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 
-public class KnowledgeDocumentHistoricalVersionVo {
+public class KnowledgeDocumentHistoricalVersionVo extends BaseEditorVo {
     @EntityField(name = "版本id", type = ApiParamType.LONG)
     private Long id;
     @EntityField(name = "文档id", type = ApiParamType.LONG)
@@ -18,12 +18,12 @@ public class KnowledgeDocumentHistoricalVersionVo {
     private String versionName;
     @EntityField(name = "标题", type = ApiParamType.STRING)
     private String title;
-    @EntityField(name = "修改者", type = ApiParamType.STRING)
-    private String lcu;
-    @EntityField(name = "修改者中文名", type = ApiParamType.STRING)
-    private String lcuName;
-    @EntityField(name = "修改日期", type = ApiParamType.STRING)
-    private Date lcd;
+//    @EntityField(name = "修改者", type = ApiParamType.STRING)
+//    private String lcu;
+//    @EntityField(name = "修改者中文名", type = ApiParamType.STRING)
+//    private String lcuName;
+//    @EntityField(name = "修改日期", type = ApiParamType.STRING)
+//    private Date lcd;
     @EntityField(name = "是否可删除", type = ApiParamType.INTEGER)
     private Integer isDeletable;
     @EntityField(name = "是否可回退", type = ApiParamType.INTEGER)
@@ -58,24 +58,24 @@ public class KnowledgeDocumentHistoricalVersionVo {
     public void setTitle(String title) {
         this.title = title;
     }
-    public String getLcu() {
-        return lcu;
-    }
-    public void setLcu(String lcu) {
-        this.lcu = lcu;
-    }
-    public String getLcuName() {
-        return lcuName;
-    }
-    public void setLcuName(String lcuName) {
-        this.lcuName = lcuName;
-    }
-    public Date getLcd() {
-        return lcd;
-    }
-    public void setLcd(Date lcd) {
-        this.lcd = lcd;
-    }
+//    public String getLcu() {
+//        return lcu;
+//    }
+//    public void setLcu(String lcu) {
+//        this.lcu = lcu;
+//    }
+//    public String getLcuName() {
+//        return lcuName;
+//    }
+//    public void setLcuName(String lcuName) {
+//        this.lcuName = lcuName;
+//    }
+//    public Date getLcd() {
+//        return lcd;
+//    }
+//    public void setLcd(Date lcd) {
+//        this.lcd = lcd;
+//    }
     public Integer getIsDeletable() {
         return isDeletable;
     }

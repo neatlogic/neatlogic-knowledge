@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -177,8 +178,12 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             //补充头像信息
             UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVo.getLcu());
             if(userVo != null) {
-                knowledgeDocumentVo.setLcuName(userVo.getUserName());
-                knowledgeDocumentVo.setLcuInfo(userVo.getUserInfo());
+                //使用新对象，防止缓存
+                UserVo vo = new UserVo();
+                BeanUtils.copyProperties(userVo,vo);
+                knowledgeDocumentVo.setLcuVo(vo);
+//                knowledgeDocumentVo.setLcuName(userVo.getUserName());
+//                knowledgeDocumentVo.setLcuInfo(userVo.getUserInfo());
             }
             //如果入参条件存在知识类型，则直接判断当前用户是不是知识圈审批人
             Integer isApprover = null;
@@ -377,6 +382,15 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             if(knowledgeDocumentVersionVo.getStatusVo() != null && KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(statusVo.getValue())) {
                 knowledgeDocumentVersionVo.setStatus(null);
                 knowledgeDocumentVersionVo.setStatusVo(null);
+            }
+
+            //补充lcu信息
+            UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
+            if(userVo != null){
+                //使用新对象，防止缓存
+                UserVo vo = new UserVo();
+                BeanUtils.copyProperties(userVo,vo);
+                knowledgeDocumentVersionVo.setLcuVo(vo);
             }
         }
        

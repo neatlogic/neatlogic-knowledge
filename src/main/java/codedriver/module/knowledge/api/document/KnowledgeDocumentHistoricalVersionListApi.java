@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -91,7 +92,11 @@ public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiCompone
             }
             UserVo userVo = userMapper.getUserBaseInfoByUuid(item.getLcu());
             if(userVo != null) {
-                item.setLcuName(userVo.getUserName());
+//                item.setLcuName(userVo.getUserName());
+                //使用新对象，防止缓存
+                UserVo vo = new UserVo();
+                BeanUtils.copyProperties(userVo,vo);
+                item.setLcuVo(vo);
             }
         }
         resultObj.put("historicalVersionList", historicalVersionList);        

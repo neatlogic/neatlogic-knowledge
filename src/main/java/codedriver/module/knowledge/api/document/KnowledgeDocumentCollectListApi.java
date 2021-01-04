@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.fastjson.JSON;
@@ -89,13 +90,19 @@ public class KnowledgeDocumentCollectListApi extends PrivateApiComponentBase {
             for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
                 if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getFcu())) {
                     UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getFcu());
-                    knowledgeDocumentVersionVo.setFcuName(userVo.getUserName());
-                    knowledgeDocumentVersionVo.setFcuInfo(userVo.getUserInfo());
+                    UserVo vo = new UserVo();
+                    BeanUtils.copyProperties(userVo,vo);
+                    knowledgeDocumentVersionVo.setFcuVo(vo);
+//                    knowledgeDocumentVersionVo.setFcuName(userVo.getUserName());
+//                    knowledgeDocumentVersionVo.setFcuInfo(userVo.getUserInfo());
                 }
                 if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getLcu())) {
                     UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
-                    knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
-                    knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
+                    UserVo vo = new UserVo();
+                    BeanUtils.copyProperties(userVo,vo);
+                    knowledgeDocumentVersionVo.setLcuVo(vo);
+//                    knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
+//                    knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
                 }
                 knowledgeDocumentVersionVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
                 knowledgeDocumentVersionVo.setIsEditable(1);

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -121,8 +122,12 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         knowledgeDocumentVo.setLcu(knowledgeDocumentVersionVo.getLcu());
         UserVo lcuUserVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
         if(lcuUserVo != null) {
-            knowledgeDocumentVo.setLcuName(lcuUserVo.getUserName());
-            knowledgeDocumentVo.setLcuInfo(lcuUserVo.getUserInfo());
+            //使用新对象，防止缓存
+            UserVo vo = new UserVo();
+            BeanUtils.copyProperties(lcuUserVo,vo);
+            knowledgeDocumentVo.setLcuVo(vo);
+//            knowledgeDocumentVo.setLcuName(lcuUserVo.getUserName());
+//            knowledgeDocumentVo.setLcuInfo(lcuUserVo.getUserInfo());
         }
         List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentVo.setLineList(lineList);

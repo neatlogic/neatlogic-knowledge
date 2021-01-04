@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -99,9 +100,13 @@ public class KnowledgeDocumentAuditListApi extends PrivateApiComponentBase {
             for(KnowledgeDocumentAuditVo knowledgeDocumentAuditVo : knowledgeDocumentAuditList) {
                 if(StringUtils.isNotBlank(knowledgeDocumentAuditVo.getFcu())) {
                     UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentAuditVo.getFcu());
-                    knowledgeDocumentAuditVo.setFcuName(userVo.getUserName());
-                    knowledgeDocumentAuditVo.setFcuInfo(userVo.getUserInfo());
-                    knowledgeDocumentAuditVo.setFcuVipLevel(userVo.getVipLevel());
+                    //使用新对象，防止缓存
+                    UserVo vo = new UserVo();
+                    BeanUtils.copyProperties(userVo,vo);
+                    knowledgeDocumentAuditVo.setFcuVo(vo);
+//                    knowledgeDocumentAuditVo.setFcuName(userVo.getUserName());
+//                    knowledgeDocumentAuditVo.setFcuInfo(userVo.getUserInfo());
+//                    knowledgeDocumentAuditVo.setFcuVipLevel(userVo.getVipLevel());
                 }
                 String title = KnowledgeDocumentOperate.getTitle(knowledgeDocumentAuditVo.getOperate());
                 if(StringUtils.isNotBlank(knowledgeDocumentAuditVo.getConfigHash())) {

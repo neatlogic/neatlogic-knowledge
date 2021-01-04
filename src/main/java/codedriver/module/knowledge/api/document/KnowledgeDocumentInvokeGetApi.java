@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -108,9 +109,12 @@ public class KnowledgeDocumentInvokeGetApi extends PrivateApiComponentBase {
                 if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getLcu())) {
                     UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
                     if(userVo != null) {
-                        knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
-                        knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
-                        knowledgeDocumentVersionVo.setLcuVipLevel(userVo.getVipLevel());
+                        UserVo vo = new UserVo();
+                        BeanUtils.copyProperties(userVo,vo);
+                        knowledgeDocumentVersionVo.setLcuVo(vo);
+//                        knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
+//                        knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
+//                        knowledgeDocumentVersionVo.setLcuVipLevel(userVo.getVipLevel());
                     }
                 }               
                 resultObj.put("knowledgeDocumentVersion", knowledgeDocumentVersionVo);               

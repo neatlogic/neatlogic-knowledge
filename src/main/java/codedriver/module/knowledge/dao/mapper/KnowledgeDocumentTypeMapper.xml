@@ -64,7 +64,7 @@
 		a.`rht`,
 		a.`knowledge_circle_id` as knowledgeCircleId,
 		(SELECT COUNT(1) FROM `knowledge_document_type` WHERE `parent_uuid` = a.`uuid`) as `childCount`,
-		(SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_document_type_uuid` = a.`uuid`) as `documentCount`
+		(SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_document_type_uuid` = a.`uuid` and `is_delete` = 0) as `documentCount`
 		FROM `knowledge_document_type` a
 		WHERE a.`lft` &gt;= #{lft}
 		AND a.`rht` &lt;= #{rht}

@@ -11,6 +11,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -99,8 +100,11 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                 for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
                     UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
                     if(userVo != null) {
-                        knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
-                        knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
+                        UserVo vo = new UserVo();
+                        BeanUtils.copyProperties(userVo,vo);
+                        knowledgeDocumentVersionVo.setLcuVo(vo);
+//                        knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
+//                        knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
                     }
                     knowledgeDocumentVersionVo.setIsEditable(1);
                     knowledgeDocumentVersionVo.setIsDeletable(isApprover);
@@ -163,10 +167,13 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             }
             if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
                 UserVo currentUserVo = userMapper.getUserBaseInfoByUuid(UserContext.get().getUserUuid(true));
+                UserVo copyVo = new UserVo();
+                BeanUtils.copyProperties(currentUserVo,copyVo);
                 List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionList(searchVo);
                 for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
-                    knowledgeDocumentVersionVo.setLcuName(currentUserVo.getUserName());
-                    knowledgeDocumentVersionVo.setLcuInfo(currentUserVo.getUserInfo());
+                    knowledgeDocumentVersionVo.setLcuVo(copyVo);
+//                    knowledgeDocumentVersionVo.setLcuName(currentUserVo.getUserName());
+//                    knowledgeDocumentVersionVo.setLcuInfo(currentUserVo.getUserInfo());
                     if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getReviewer())) {
                         UserVo reviewerUserVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getReviewer());
                         knowledgeDocumentVersionVo.setReviewerName(reviewerUserVo.getUserName());
@@ -205,8 +212,11 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                     }
                     if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getLcu())) {
                         UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
-                        knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
-                        knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
+                        UserVo vo = new UserVo();
+                        BeanUtils.copyProperties(userVo,vo);
+                        knowledgeDocumentVersionVo.setLcuVo(vo);
+//                        knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
+//                        knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
                     }
                     knowledgeDocumentVersionVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
                     knowledgeDocumentVersionVo.setIsEditable(1);
@@ -238,10 +248,13 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             }
             if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
                 UserVo currentUserVo = userMapper.getUserBaseInfoByUuid(UserContext.get().getUserUuid(true));
+                UserVo copyVo = new UserVo();
+                BeanUtils.copyProperties(currentUserVo,copyVo);
                 List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionList(searchVo);
                 for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
-                    knowledgeDocumentVersionVo.setLcuName(currentUserVo.getUserName());
-                    knowledgeDocumentVersionVo.setLcuInfo(currentUserVo.getUserInfo());
+                    knowledgeDocumentVersionVo.setLcuVo(copyVo);
+//                    knowledgeDocumentVersionVo.setLcuName(currentUserVo.getUserName());
+//                    knowledgeDocumentVersionVo.setLcuInfo(currentUserVo.getUserInfo());
                     knowledgeDocumentVersionVo.setIsDeletable(1);
                     knowledgeDocumentVersionVo.setIsEditable(knowledgeDocumentService.isEditable(knowledgeDocumentVersionVo));
                 }

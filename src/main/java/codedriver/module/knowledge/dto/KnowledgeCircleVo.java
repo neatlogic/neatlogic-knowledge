@@ -3,6 +3,7 @@ package codedriver.module.knowledge.dto;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.dto.UserVo;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 import org.apache.commons.collections4.CollectionUtils;
@@ -22,6 +23,8 @@ public class KnowledgeCircleVo extends BasePageVo {
 	private Integer memberCount;
 	@EntityField(name = "审批人用户名列表", type = ApiParamType.JSONARRAY)
 	private List<String> approverNameList;
+	@EntityField(name = "审批人用户列表", type = ApiParamType.JSONARRAY)
+	private List<UserVo> approverVoList;
 	@EntityField(name = "审批人列表", type = ApiParamType.JSONARRAY)
 	private List<String> approverList;
 	@EntityField(name = "成员列表", type = ApiParamType.JSONARRAY)
@@ -125,5 +128,13 @@ public class KnowledgeCircleVo extends BasePageVo {
 
 	public void setDocumentTypeList(List<KnowledgeDocumentTypeVo> documentTypeList) {
 		this.documentTypeList = documentTypeList;
+	}
+
+	public List<UserVo> getApproverVoList() {
+		return approverVoList;
+	}
+
+	public void setApproverVoList(List<UserVo> approverVoList) {
+		this.approverVoList = approverVoList;
 	}
 }

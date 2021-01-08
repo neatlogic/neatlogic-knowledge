@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -96,10 +97,12 @@ public class KnowledgeCircleSearchApi extends PrivateApiComponentBase{
 
 				vo.setMemberCount(memberUuidSet.size());
 
-				/** 根据筛选到的审批人UUID查询用户名 */
+				/** 根据筛选到的审批人UUID查询用户 */
 				if(CollectionUtils.isNotEmpty(approverUuidSet)){
-					List<String> approverNameList = userMapper.getUserNameListByUuidList(new ArrayList<>(approverUuidSet));
-					vo.setApproverNameList(approverNameList);
+//					List<String> approverNameList = userMapper.getUserNameListByUuidList(new ArrayList<>(approverUuidSet));
+//					vo.setApproverNameList(approverNameList);
+					userMapper.getUserListByUuidList(approverUuidSet.stream().collect(Collectors.toList()));
+					vo.setApproverVoList(userMapper.getUserListByUuidList(approverUuidSet.stream().collect(Collectors.toList())));
 				}
 			}
 		}

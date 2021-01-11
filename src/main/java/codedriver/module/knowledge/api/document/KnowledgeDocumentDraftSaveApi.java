@@ -58,6 +58,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentTypeNotFoundExcept
 import codedriver.module.knowledge.exception.KnowledgeDocumentUnmodifiedCannotBeSavedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
+
 @Service
 @AuthAction(action = NO_AUTH.class)
 @OperationType(type = OperationTypeEnum.CREATE)
@@ -89,22 +90,22 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
     public String getConfig() {
         return null;
     }
-    
+
     @Input({
-        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
-        @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, isRequired = true, desc = "类型id"),
-        @Param(name = "title", type = ApiParamType.STRING, isRequired = true, minLength = 1, desc = "标题"),
-        @Param(name = "lineList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "行数据列表"),
-        @Param(name = "fileIdList", type = ApiParamType.JSONARRAY, desc = "附件id列表"),
-        @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表"),
-        @Param(name = "invokeId", type = ApiParamType.LONG, desc = "调用者id"),
-        @Param(name = "source", type = ApiParamType.STRING, desc = "来源"),
-        @Param(name = "isSubmit", type = ApiParamType.INTEGER, desc ="是否提交")
+            @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
+            @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, isRequired = true, desc = "类型id"),
+            @Param(name = "title", type = ApiParamType.STRING, isRequired = true, minLength = 1, desc = "标题"),
+            @Param(name = "lineList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "行数据列表"),
+            @Param(name = "fileIdList", type = ApiParamType.JSONARRAY, desc = "附件id列表"),
+            @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表"),
+            @Param(name = "invokeId", type = ApiParamType.LONG, desc = "调用者id"),
+            @Param(name = "source", type = ApiParamType.STRING, desc = "来源"),
+            @Param(name = "isSubmit", type = ApiParamType.INTEGER, desc = "是否提交")
     })
     @Output({
-        @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, desc = "文档id"),
-        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
-        @Param(name = "isReviewable", type = ApiParamType.INTEGER, desc = "是否能审批"),
+            @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, desc = "文档id"),
+            @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
+            @Param(name = "isReviewable", type = ApiParamType.INTEGER, desc = "是否能审批"),
     })
     @Description(desc = "保存文档草稿")
     @Override
@@ -112,11 +113,11 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
         KnowledgeDocumentVo documentVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
         KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMapper.getTypeByUuid(documentVo.getKnowledgeDocumentTypeUuid());
-        if(knowledgeDocumentTypeVo == null) {
+        if (knowledgeDocumentTypeVo == null) {
             throw new KnowledgeDocumentTypeNotFoundException(documentVo.getKnowledgeDocumentTypeUuid());
         }
         List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        if(knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+        if (knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
             throw new PermissionDeniedException();
         }
         documentVo.setKnowledgeCircleId(knowledgeDocumentTypeVo.getKnowledgeCircleId());
@@ -127,31 +128,31 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         Integer isSubmit = jsonObj.getInteger("isSubmit");
         int isReviewable = 0;
         String status = KnowledgeDocumentVersionStatus.DRAFT.getValue();
-        if(Objects.equals(isSubmit, 1)) {
+        if (Objects.equals(isSubmit, 1)) {
             status = KnowledgeDocumentVersionStatus.SUBMITTED.getValue();
-            isReviewable = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());           
+            isReviewable = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
         }
         resultObj.put("isReviewable", isReviewable);
-        if(knowledgeDocumentVersionId != null) {
+        if (knowledgeDocumentVersionId != null) {
             /** 有版本id，则是在已有文档上修改 **/
             KnowledgeDocumentVersionVo oldKnowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-            if(oldKnowledgeDocumentVersionVo == null) {
+            if (oldKnowledgeDocumentVersionVo == null) {
                 throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
             }
             /** 获取文档锁 **/
             knowledgeDocumentMapper.getKnowledgeDocumentLockById(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
             KnowledgeDocumentVo oldDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
-            if(oldDocumentVo == null) {
+            if (oldDocumentVo == null) {
                 throw new KnowledgeDocumentNotFoundException(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
             }
-            if(Objects.equals(oldDocumentVo.getIsDelete(), 1)) {
+            if (Objects.equals(oldDocumentVo.getIsDelete(), 1)) {
                 throw new KnowledgeDocumentHasBeenDeletedException(oldDocumentVo.getId());
             }
             documentId = oldDocumentVo.getId();
             oldKnowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-            if(knowledgeDocumentVersionId.equals(oldDocumentVo.getKnowledgeDocumentVersionId())) {
+            if (knowledgeDocumentVersionId.equals(oldDocumentVo.getKnowledgeDocumentVersionId())) {
                 KnowledgeDocumentVo before = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
-                if(!checkDocumentIsModify(before, documentVo)) {
+                if (!checkDocumentIsModify(before, documentVo)) {
                     throw new KnowledgeDocumentUnmodifiedCannotBeSavedException();
                 }
                 /** 删除这个文档当前用户的草稿 **/
@@ -166,14 +167,14 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 knowledgeDocumentVersionVo.setStatus(status);
                 knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
                 drafrVersionId = knowledgeDocumentVersionVo.getId();
-            }else {
-                if(!Objects.equals(oldDocumentVo.getVersion(), oldKnowledgeDocumentVersionVo.getFromVersion())) {
+            } else {
+                if (!Objects.equals(oldDocumentVo.getVersion(), oldKnowledgeDocumentVersionVo.getFromVersion())) {
                     throw new KnowledgeDocumentNotCurrentVersionException(oldKnowledgeDocumentVersionVo.getFromVersion());
                 }
                 /** 如果入参版本id不是文档当前版本id，说明该操作是在已有草稿上再次保存 **/
-                if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
+                if (KnowledgeDocumentVersionStatus.PASSED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
                     throw new KnowledgeDocumentDraftPublishedCannotBeModifiedException();
-                }else if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
+                } else if (KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
                     throw new KnowledgeDocumentDraftSubmittedCannotBeModifiedException();
                 }
 //                else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
@@ -181,10 +182,10 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
 //                }
                 drafrVersionId = knowledgeDocumentVersionId;
                 KnowledgeDocumentVo before = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
-                if(!before.getLcu().equals(UserContext.get().getUserUuid(true))) {
+                if (!before.getLcu().equals(UserContext.get().getUserUuid(true))) {
                     throw new KnowledgeDocumentCurrentUserNotOwnerException();
                 }
-                if(!checkDocumentIsModify(before, documentVo)) {
+                if (!checkDocumentIsModify(before, documentVo)) {
                     resultObj.put("knowledgeDocumentId", documentId);
                     resultObj.put("knowledgeDocumentVersionId", drafrVersionId);
                     return resultObj;
@@ -201,21 +202,21 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(documentId, drafrVersionId));
                 knowledgeDocumentMapper.deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(documentId, drafrVersionId));
             }
-        }else {
+        } else {
             /** 没有版本id，则是首次创建文档 **/
-            if(knowledgeDocumentMapper.getKnowledgeDocumentByTitle(documentVo.getTitle()) != null) {
+            if (knowledgeDocumentMapper.getKnowledgeDocumentByTitle(documentVo.getTitle()) != null) {
                 throw new KnowledgeDocumentTitleRepeatException(documentVo.getTitle());
             }
             KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
             documentVo.setFcu(UserContext.get().getUserUuid(true));
             documentVo.setVersion(0);
             knowledgeDocumentMapper.insertKnowledgeDocument(documentVo);
-            if(StringUtils.isNotBlank(documentVo.getSource())) {
-                if(documentVo.getInvokeId() == null) {
+            if (StringUtils.isNotBlank(documentVo.getSource())) {
+                if (documentVo.getInvokeId() == null) {
                     throw new ParamNotExistsException("参数：“invokeId”不能为空");
                 }
                 KnowledgeDocumentInvokeVo knowledgeDocumentInvokeVo = new KnowledgeDocumentInvokeVo(documentVo.getId(), documentVo.getInvokeId(), documentVo.getSource());
-                if(knowledgeDocumentMapper.getKnowledgeDocumentIdByInvokeIdAndSource(knowledgeDocumentInvokeVo) != null) {
+                if (knowledgeDocumentMapper.getKnowledgeDocumentIdByInvokeIdAndSource(knowledgeDocumentInvokeVo) != null) {
                     throw new KnowledgeDocumentRepeatInvokeException();
                 }
                 knowledgeDocumentMapper.insertKnowledgeDocumentInvoke(knowledgeDocumentInvokeVo);
@@ -235,7 +236,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         KnowledgeDocumentFileVo knowledgeDocumentFileVo = new KnowledgeDocumentFileVo();
         knowledgeDocumentFileVo.setKnowledgeDocumentId(documentId);
         knowledgeDocumentFileVo.setKnowledgeDocumentVersionId(drafrVersionId);
-        for(Long fileId : documentVo.getFileIdList()) {
+        for (Long fileId : documentVo.getFileIdList()) {
             knowledgeDocumentFileVo.setFileId(fileId);
             knowledgeDocumentMapper.insertKnowledgeDocumentFile(knowledgeDocumentFileVo);
         }
@@ -243,9 +244,9 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         KnowledgeDocumentTagVo knowledgeDocumentTagVo = new KnowledgeDocumentTagVo();
         knowledgeDocumentTagVo.setKnowledgeDocumentId(documentId);
         knowledgeDocumentTagVo.setKnowledgeDocumentVersionId(drafrVersionId);
-        for(String tagName : documentVo.getTagList()) {
+        for (String tagName : documentVo.getTagList()) {
             Long tagId = knowledgeTagMapper.getKnowledgeTagIdByName(tagName);
-            if(tagId == null) {
+            if (tagId == null) {
                 KnowledgeTagVo knowledgeTagVo = new KnowledgeTagVo(tagName);
                 knowledgeTagMapper.insertKnowledgeTag(knowledgeTagVo);
                 tagId = knowledgeTagVo.getId();
@@ -256,33 +257,35 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         /** 保存每行内容，计算文档大小 **/
         int size = 0;
         int lineNumber = 0;
-        List<KnowledgeDocumentLineVo> knowledgeDocumentLineList = new ArrayList<>();
-        for(KnowledgeDocumentLineVo knowledgeDocumentLineVo : documentVo.getLineList()) {
+        List<KnowledgeDocumentLineVo> knowledgeDocumentLineList = new ArrayList<>(100);
+        for (KnowledgeDocumentLineVo knowledgeDocumentLineVo : documentVo.getLineList()) {
             knowledgeDocumentLineVo.setLineNumber(++lineNumber);
             knowledgeDocumentLineVo.setKnowledgeDocumentId(documentId);
             knowledgeDocumentLineVo.setKnowledgeDocumentVersionId(drafrVersionId);
             knowledgeDocumentLineVo.setUuid(UuidUtil.randomUuid());
-            if(knowledgeDocumentLineVo.getConfig() != null) {
+            System.out.println(knowledgeDocumentLineVo.getUuid());
+            if (knowledgeDocumentLineVo.getConfig() != null) {
                 KnowledgeDocumentLineConfigVo knowledgeDocumentLineConfigVo = new KnowledgeDocumentLineConfigVo(knowledgeDocumentLineVo.getConfigStr());
                 knowledgeDocumentLineVo.setConfigHash(knowledgeDocumentLineConfigVo.getHash());
-                if(knowledgeDocumentMapper.checkKnowledgeDocumentLineConfigHashIsExists(knowledgeDocumentLineConfigVo.getHash()) == 0) {
+                if (knowledgeDocumentMapper.checkKnowledgeDocumentLineConfigHashIsExists(knowledgeDocumentLineConfigVo.getHash()) == 0) {
                     knowledgeDocumentMapper.insertKnowledgeDocumentLineConfig(knowledgeDocumentLineConfigVo);
                 }
             }
-            if(StringUtils.isNotBlank(knowledgeDocumentLineVo.getContent())) {
+            if (StringUtils.isNotBlank(knowledgeDocumentLineVo.getContent())) {
                 size += knowledgeDocumentLineVo.getContent().getBytes("UTF-8").length;
                 KnowledgeDocumentLineContentVo knowledgeDocumentLineContentVo = new KnowledgeDocumentLineContentVo(knowledgeDocumentLineVo.getContent());
                 knowledgeDocumentLineVo.setContentHash(knowledgeDocumentLineContentVo.getHash());
-                if(knowledgeDocumentMapper.checkKnowledgeDocumentLineContentHashIsExists(knowledgeDocumentLineContentVo.getHash()) == 0) {
+                if (knowledgeDocumentMapper.checkKnowledgeDocumentLineContentHashIsExists(knowledgeDocumentLineContentVo.getHash()) == 0) {
                     knowledgeDocumentMapper.insertKnowledgeDocumentLineContent(knowledgeDocumentLineContentVo);
                 }
             }
             knowledgeDocumentLineList.add(knowledgeDocumentLineVo);
-            if(knowledgeDocumentLineList.size() >= 100) {
+            if (knowledgeDocumentLineList.size() >= 100) {
                 knowledgeDocumentMapper.insertKnowledgeDocumentLineList(knowledgeDocumentLineList);
+                knowledgeDocumentLineList.clear();
             }
         }
-        if(CollectionUtils.isNotEmpty(knowledgeDocumentLineList)) {
+        if (CollectionUtils.isNotEmpty(knowledgeDocumentLineList)) {
             knowledgeDocumentMapper.insertKnowledgeDocumentLineList(knowledgeDocumentLineList);
         }
         /** 更新文档大小 **/
@@ -296,47 +299,46 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
     }
 
     /**
-     * 
-    * @Time:2020年10月29日
-    * @Description: 检查文档内容信息是否被修改 
-    * @param before
-    * @param after
-    * @return boolean
+     * @param before
+     * @param after
+     * @return boolean
+     * @Time:2020年10月29日
+     * @Description: 检查文档内容信息是否被修改
      */
     private boolean checkDocumentIsModify(KnowledgeDocumentVo before, KnowledgeDocumentVo after) {
         //knowledgeDocumentTypeUuid
-        if(!Objects.equals(before.getKnowledgeDocumentTypeUuid(), after.getKnowledgeDocumentTypeUuid())) {
+        if (!Objects.equals(before.getKnowledgeDocumentTypeUuid(), after.getKnowledgeDocumentTypeUuid())) {
             return true;
         }
         //title
-        if(!Objects.equals(before.getTitle(), after.getTitle())) {
+        if (!Objects.equals(before.getTitle(), after.getTitle())) {
             return true;
         }
         //fileIdList
-        if(!SetUtils.isEqualSet(new HashSet<>(before.getFileIdList()), new HashSet<>(after.getFileIdList()))) {
+        if (!SetUtils.isEqualSet(new HashSet<>(before.getFileIdList()), new HashSet<>(after.getFileIdList()))) {
             return true;
         }
         //tagList
-        if(!SetUtils.isEqualSet(new HashSet<>(before.getTagList()), new HashSet<>(after.getTagList()))) {
+        if (!SetUtils.isEqualSet(new HashSet<>(before.getTagList()), new HashSet<>(after.getTagList()))) {
             return true;
         }
         //lineList
         List<KnowledgeDocumentLineVo> beforeLineList = before.getLineList();
         List<KnowledgeDocumentLineVo> afterLineList = after.getLineList();
-        if(beforeLineList.size() != afterLineList.size()) {
+        if (beforeLineList.size() != afterLineList.size()) {
             return true;
         }
         Iterator<KnowledgeDocumentLineVo> beforeLineIterator = beforeLineList.iterator();
         Iterator<KnowledgeDocumentLineVo> afterLineIterator = afterLineList.iterator();
-        while(beforeLineIterator.hasNext() && afterLineIterator.hasNext()) {
+        while (beforeLineIterator.hasNext() && afterLineIterator.hasNext()) {
             KnowledgeDocumentLineVo beforeLine = beforeLineIterator.next();
             KnowledgeDocumentLineVo afterLine = afterLineIterator.next();
-            if(!Objects.equals(beforeLine.getHandler(), afterLine.getHandler())) {
+            if (!Objects.equals(beforeLine.getHandler(), afterLine.getHandler())) {
                 return true;
             }
             String beforeMainBody = KnowledgeDocumentLineHandler.getMainBody(beforeLine);
             String afterMainBody = KnowledgeDocumentLineHandler.getMainBody(afterLine);
-            if(!Objects.equals(beforeMainBody, afterMainBody)) {
+            if (!Objects.equals(beforeMainBody, afterMainBody)) {
 //                System.out.println(beforeMainBody);
 //                System.out.println(afterMainBody);
                 return true;

@@ -71,6 +71,8 @@ public class KnowledgeCircleGetApi extends PrivateApiComponentBase{
 			typeList.add(root);
 			for(KnowledgeDocumentTypeVo vo : typeList){
 				idMap.put(vo.getUuid(),vo);
+				/** 计算当前分类下的知识数(包括子类的) */
+				vo.setDocumentCount(knowledgeDocumentTypeMapper.getDocumentCountByLftRht(vo.getLft(),vo.getRht(),id));
 			}
 			for(KnowledgeDocumentTypeVo vo : typeList){
 				String parentUuid = vo.getParentUuid();

@@ -15,7 +15,9 @@ public interface KnowledgeDocumentTypeMapper {
     public List<KnowledgeDocumentTypeVo> getTypeByParentUuid(@Param("parentUuid") String parentUuid, @Param("knowledgeCircleId") Long knowledgeCircleId);
 
     public List<KnowledgeDocumentTypeVo> getTypeForTree(@Param("lft") Integer lft, @Param("rht") Integer rht, @Param("knowledgeCircleId") Long knowledgeCircleId);
-    
+
+    public int getDocumentCountByLftRht(@Param("lft") Integer lft, @Param("rht") Integer rht, @Param("knowledgeCircleId") Long knowledgeCircleId);
+
     public List<String> getAncestorsAndSelfNameByLftRht(@Param("lft") Integer lft, @Param("rht") Integer rht, @Param("knowledgeCircleId") Long knowledgeCircleId);
 
     public KnowledgeDocumentTypeVo getTypeByUuid(String uuid);

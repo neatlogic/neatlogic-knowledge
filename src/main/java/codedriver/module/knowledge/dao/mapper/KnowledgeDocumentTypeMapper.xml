@@ -72,6 +72,25 @@
 		ORDER BY a.`lft`
 	</select>
 
+	<select id="getDocumentCountByLftRht" resultType="int">
+		SELECT
+		COUNT(1)
+		FROM
+		`knowledge_document`
+		WHERE
+		`knowledge_document_type_uuid` IN
+		(
+		SELECT
+		`uuid`
+		FROM
+		`knowledge_document_type`
+		WHERE `lft` &gt;= #{lft}
+		AND `rht` &lt;= #{rht}
+		AND `is_delete` = 0
+		and `knowledge_circle_id` = #{knowledgeCircleId}
+		)
+	</select>
+
 	<select id="getAncestorsAndSelfNameByLftRht" resultType="java.lang.String">
 	SELECT `name` FROM `knowledge_document_type` 
 	WHERE `knowledge_circle_id` = #{knowledgeCircleId} AND `lft` &lt;= #{lft} AND `rht` &gt;= #{rht}

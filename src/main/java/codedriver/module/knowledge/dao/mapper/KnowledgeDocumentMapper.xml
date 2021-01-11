@@ -774,6 +774,7 @@
 	a.`id` AS value
 	FROM `knowledge_document` a
 	WHERE a.`is_delete` = 0
+	AND a.knowledge_document_version_id IS NOT NULL
 	<if test="keyword != null and keyword != ''">
 	AND a.`title` LIKE CONCAT('%', #{keyword}, '%')
 	</if>
@@ -788,6 +789,7 @@
 	COUNT(1)
 	FROM `knowledge_document` a
 	WHERE a.`is_delete` = 0
+	AND a.knowledge_document_version_id IS NOT NULL
 	<if test="keyword != null and keyword != ''">
 	AND a.`title` LIKE CONCAT('%', #{keyword}, '%')
 	</if>

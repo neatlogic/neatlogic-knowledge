@@ -17,7 +17,7 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.dto.AuthorityVo;
-import codedriver.framework.reminder.core.OperationTypeEnum;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;

@@ -14,7 +14,7 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
-import codedriver.framework.reminder.core.OperationTypeEnum;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;

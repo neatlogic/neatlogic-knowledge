@@ -80,9 +80,12 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private String source;
     @EntityField(name = "来源名", type = ApiParamType.STRING)
     private String sourceName;
+    @EntityField(name = "审核人列表", type = ApiParamType.JSONARRAY)
     private List<WorkAssignmentUnitVo> reviewerVoList;
     @EntityField(name = "不通过原因", type = ApiParamType.STRING)
     private String rejectReason;
+    @EntityField(name = "审核人", type = ApiParamType.JSONOBJECT)
+    private WorkAssignmentUnitVo reviewerVo;
     @JSONField(serialize=false)
     private transient Integer isDelete;
     @JSONField(serialize=false)
@@ -411,5 +414,13 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
 
     public void setRejectReason(String rejectReason) {
         this.rejectReason = rejectReason;
+    }
+
+    public WorkAssignmentUnitVo getReviewerVo() {
+        return reviewerVo;
+    }
+
+    public void setReviewerVo(WorkAssignmentUnitVo reviewerVo) {
+        this.reviewerVo = reviewerVo;
     }
 }

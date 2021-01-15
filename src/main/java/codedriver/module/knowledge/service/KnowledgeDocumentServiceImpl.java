@@ -124,31 +124,30 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             if(knowledgeDocumentVo.getIsReviewable() == 0){
                 if(!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
                     throw new PermissionDeniedException();
-                }else {
-                    /** 查出审核人 **/
-                    List<WorkAssignmentUnitVo> reviewerVoList = new ArrayList<>();
-                    List<KnowledgeCircleUserVo> reviewerList = knowledgeCircleMapper.getKnowledgeCircleUserListByIdAndAuthType(knowledgeDocumentVo.getKnowledgeCircleId(), KnowledgeCircleUserVo.AuthType.APPROVER.getValue());
-                    for(KnowledgeCircleUserVo reviewer : reviewerList){
-                        if(reviewer.getType().equals(GroupSearch.USER.getValue())){
-                            UserVo userVo = userMapper.getUserBaseInfoByUuid(reviewer.getUuid());
-                            if(userVo != null && userVo.getIsActive() == 1){
-                                reviewerVoList.add(new WorkAssignmentUnitVo(userVo));
-                            }
-                        }else if(reviewer.getType().equals(GroupSearch.TEAM.getValue())){
-                            TeamVo teamVo = teamMapper.getTeamByUuid(reviewer.getUuid());
-                            if(teamVo != null){
-                                reviewerVoList.add(new WorkAssignmentUnitVo(teamVo));
-                            }
-                        }else if(reviewer.getType().equals(GroupSearch.ROLE.getValue())){
-                            RoleVo roleVo = roleMapper.getRoleByUuid(reviewer.getUuid());
-                            if(roleVo != null){
-                                reviewerVoList.add(new WorkAssignmentUnitVo(roleVo));
-                            }
-                        }
-                    }
-                    knowledgeDocumentVo.setReviewerVoList(reviewerVoList);
                 }
             }
+            /** 查出审核人 **/
+            List<WorkAssignmentUnitVo> reviewerVoList = new ArrayList<>();
+            List<KnowledgeCircleUserVo> reviewerList = knowledgeCircleMapper.getKnowledgeCircleUserListByIdAndAuthType(knowledgeDocumentVo.getKnowledgeCircleId(), KnowledgeCircleUserVo.AuthType.APPROVER.getValue());
+            for(KnowledgeCircleUserVo reviewer : reviewerList){
+                if(reviewer.getType().equals(GroupSearch.USER.getValue())){
+                    UserVo userVo = userMapper.getUserBaseInfoByUuid(reviewer.getUuid());
+                    if(userVo != null && userVo.getIsActive() == 1){
+                        reviewerVoList.add(new WorkAssignmentUnitVo(userVo));
+                    }
+                }else if(reviewer.getType().equals(GroupSearch.TEAM.getValue())){
+                    TeamVo teamVo = teamMapper.getTeamByUuid(reviewer.getUuid());
+                    if(teamVo != null){
+                        reviewerVoList.add(new WorkAssignmentUnitVo(teamVo));
+                    }
+                }else if(reviewer.getType().equals(GroupSearch.ROLE.getValue())){
+                    RoleVo roleVo = roleMapper.getRoleByUuid(reviewer.getUuid());
+                    if(roleVo != null){
+                        reviewerVoList.add(new WorkAssignmentUnitVo(roleVo));
+                    }
+                }
+            }
+            knowledgeDocumentVo.setReviewerVoList(reviewerVoList);
         }else if(knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.DRAFT.getValue())){
             if(!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
                 throw new PermissionDeniedException();
@@ -162,6 +161,12 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
                     String rejectReason =knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditConfigStringByHash(rejectAudit.getConfigHash());
                     if(StringUtils.isNotBlank(rejectReason)) {
                         knowledgeDocumentVo.setRejectReason((String) JSONPath.read(rejectReason,"content"));
+                    }
+                }
+                if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getReviewer())){
+                    UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getReviewer());
+                    if(userVo != null && userVo.getIsActive() == 1){
+                        knowledgeDocumentVo.setReviewerVo(new WorkAssignmentUnitVo(userVo));
                     }
                 }
             }

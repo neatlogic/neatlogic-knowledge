@@ -70,7 +70,10 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
         if(knowledgeDocumentVersionVo == null) {
             throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
         }
-        knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        if(knowledgeDocumentVo == null) {
+            throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        }
         knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         if(KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentNotHistoricalVersionException(knowledgeDocumentVersionId);
@@ -82,10 +85,6 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
 //        }
         else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentNotHistoricalVersionException(knowledgeDocumentVersionId);
-        }
-        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-        if(knowledgeDocumentVo == null) {
-            throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
 //        if(knowledgeDocumentMapper.checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion(knowledgeDocumentVo.getId(), knowledgeDocumentVo.getVersion()) > 0) {
 //            throw new KnowledgeDocumentVersionSwitchFailedExecption();

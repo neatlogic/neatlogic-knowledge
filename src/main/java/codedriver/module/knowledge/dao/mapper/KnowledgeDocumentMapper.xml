@@ -30,6 +30,7 @@
                `fcd`
         FROM `knowledge_document`
         WHERE `title` = #{value}
+          AND `knowledge_document_version_id` IS NOT NULL
           AND `is_delete` = 0
     </select>
 
@@ -619,8 +620,16 @@
         WHERE `hash` = #{value}
     </select>
 
-    <select id="getKnowledgeDocumentLockById" parameterType="java.lang.Long" resultType="java.lang.Long">
-        SELECT `id`
+    <select id="getKnowledgeDocumentLockById" parameterType="java.lang.Long" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
+        SELECT `id`,
+               `title`,
+               `knowledge_document_version_id` AS knowledgeDocumentVersionId,
+               `knowledge_document_type_uuid`  AS knowledgeDocumentTypeUuid,
+               `knowledge_circle_id`           AS knowledgeCircleId,
+               `is_delete`                     AS isDelete,
+               `version`,
+               `fcu`,
+               `fcd`
         FROM `knowledge_document`
         WHERE `id` = #{value} FOR UPDATE
     </select>

@@ -51,7 +51,7 @@ public interface KnowledgeDocumentMapper {
 
     public int checkKnowledgeDocumentLineContentHashIsExists(String hash);
 
-    public Long getKnowledgeDocumentLockById(Long id);
+    public KnowledgeDocumentVo getKnowledgeDocumentLockById(Long id);
 
     public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionMyVersionList(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 

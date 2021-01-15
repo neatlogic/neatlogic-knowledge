@@ -3,6 +3,7 @@ package codedriver.module.knowledge.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import codedriver.framework.dto.WorkAssignmentUnitVo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -79,6 +80,9 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private String source;
     @EntityField(name = "来源名", type = ApiParamType.STRING)
     private String sourceName;
+    private List<WorkAssignmentUnitVo> reviewerVoList;
+    @EntityField(name = "不通过原因", type = ApiParamType.STRING)
+    private String rejectReason;
     @JSONField(serialize=false)
     private transient Integer isDelete;
     @JSONField(serialize=false)
@@ -91,8 +95,6 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private String lcdStartTime;
     @JSONField(serialize=false)
     private String lcdEndTime;
-    @EntityField(name = "是否是审核人", type = ApiParamType.INTEGER)
-    private Integer isReviewer;
     @JSONField(serialize=false)
     private String collector;
     @JSONField(serialize=false)
@@ -326,12 +328,6 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     public void setLcdEndTime(String lcdEndTime) {
         this.lcdEndTime = lcdEndTime;
     }
-    public Integer getIsReviewer() {
-        return isReviewer;
-    }
-    public void setIsReviewer(Integer isReviewer) {
-        this.isReviewer = isReviewer;
-    }
     public String getCollector() {
         if(StringUtils.isNotBlank(collector)) {
             collector = collector.replaceAll(GroupSearch.USER.getValuePlugin(), "");
@@ -399,5 +395,21 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     }
     public void setCircleRoleUuidList(List<String> circleRoleUuidList) {
         this.circleRoleUuidList = circleRoleUuidList;
+    }
+
+    public List<WorkAssignmentUnitVo> getReviewerVoList() {
+        return reviewerVoList;
+    }
+
+    public void setReviewerVoList(List<WorkAssignmentUnitVo> reviewerVoList) {
+        this.reviewerVoList = reviewerVoList;
+    }
+
+    public String getRejectReason() {
+        return rejectReason;
+    }
+
+    public void setRejectReason(String rejectReason) {
+        this.rejectReason = rejectReason;
     }
 }

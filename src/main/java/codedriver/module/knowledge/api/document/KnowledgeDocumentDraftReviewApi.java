@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.label.NO_AUTH;
+import codedriver.module.knowledge.exception.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,11 +30,7 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentAuditConfigVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotReviewerException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftReviewedException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftUnsubmittedCannotBeReviewedException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
+
 @Service
 @AuthAction(action = NO_AUTH.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
@@ -65,7 +62,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
     }
     @Input({
         @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id"),
-        @Param(name = "action", type = ApiParamType.ENUM, rule = "passed,rejected", isRequired = true, desc = "通过，退回"),
+        @Param(name = "action", type = ApiParamType.ENUM, rule = "pass,reject", isRequired = true, desc = "通过，退回"),
         @Param(name = "content", type = ApiParamType.STRING, desc = "描述")
     })
     @Description(desc = "审核文档草稿")
@@ -76,9 +73,11 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         if(knowledgeDocumentVersionVo == null) {
             throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
         }
-        knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        if(documentVo == null) {
+            throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        }
         knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-        KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         
         List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
         if(knowledgeDocumentMapper.checkUserIsApprover(documentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
@@ -94,39 +93,42 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         }else if(KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftUnsubmittedCannotBeReviewedException();
         }
-//        else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-//            throw new KnowledgeDocumentDraftUnsubmittedCannotBeReviewedException();
-//        }
-        String operate = KnowledgeDocumentOperate.REJECT.getValue();
+
         String action = jsonObj.getString("action");
         KnowledgeDocumentVersionVo updateStatusVo = new KnowledgeDocumentVersionVo();
         updateStatusVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
         updateStatusVo.setId(knowledgeDocumentVersionId);
-        updateStatusVo.setStatus(action);
         updateStatusVo.setReviewer(UserContext.get().getUserUuid(true));
-        if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(action)) {
-            operate = KnowledgeDocumentOperate.PASS.getValue();
+        if(KnowledgeDocumentOperate.PASS.getValue().equals(action)) {
+            if(documentVo.getKnowledgeDocumentVersionId() == null){
+                if(knowledgeDocumentMapper.getKnowledgeDocumentByTitle(documentVo.getTitle()) != null){
+                    throw new KnowledgeDocumentTitleRepeatException(documentVo.getTitle());
+                }
+            }
+
             Integer maxVersion = knowledgeDocumentMapper.getKnowledgeDocumentVersionMaxVerionByKnowledgeDocumentId(documentVo.getId());
             if(maxVersion == null) {
                 maxVersion = 0;
             }
+            updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.PASSED.getValue());
             updateStatusVo.setVersion(maxVersion + 1);
-        }
-        knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
-        
-        if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(action)) {
+
 //            knowledgeDocumentMapper.updateKnowledgeDocumentVersionStatusByKnowledgeDocumentIdAndVersionAndStatus(documentVo.getId(), knowledgeDocumentVersionVo.getFromVersion(), KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
             documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             documentVo.setVersion(updateStatusVo.getVersion());
             documentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
             knowledgeDocumentMapper.updateKnowledgeDocumentById(documentVo);
+        }else{
+            updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.REJECTED.getValue());
         }
+        updateStatusVo.setLcu(null);
+        knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
 
         KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();
         knowledgeDocumentAuditVo.setKnowledgeDocumentId(documentVo.getId());
         knowledgeDocumentAuditVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
-        knowledgeDocumentAuditVo.setOperate(operate);
+        knowledgeDocumentAuditVo.setOperate(action);
         String content = jsonObj.getString("content");
         if(StringUtils.isNotEmpty(content)) {
             JSONObject config = new JSONObject();

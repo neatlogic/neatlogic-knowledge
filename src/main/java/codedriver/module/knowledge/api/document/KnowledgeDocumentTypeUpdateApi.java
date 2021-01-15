@@ -1,5 +1,6 @@
 package codedriver.module.knowledge.api.document;
 
+import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +56,10 @@ public class KnowledgeDocumentTypeUpdateApi extends PrivateApiComponentBase {
         if(!knowledgeDocumentVo.getKnowledgeDocumentTypeUuid().equals(knowledgeDocumentTypeUuid)) {
             knowledgeDocumentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentTypeUuid);
             knowledgeDocumentMapper.updateKnowledgeDocumentById(knowledgeDocumentVo);
+            KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
+            knowledgeDocumentVersionVo.setKnowledgeDocumentId(knowledgeDocumentId);
+            knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentTypeUuid);
+            knowledgeDocumentMapper.updateKnowledgeDocumentVersionTypeByKnowledgeDocumentId(knowledgeDocumentVersionVo);
         }
         return null;
     }

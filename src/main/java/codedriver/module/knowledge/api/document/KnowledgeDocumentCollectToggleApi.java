@@ -35,31 +35,29 @@ public class KnowledgeDocumentCollectToggleApi extends PrivateApiComponentBase {
     }
     
     @Input({
-        @Param(name = "documentId", type = ApiParamType.LONG, isRequired = true, desc = "文档id"),
-        @Param(name = "isCollect", type = ApiParamType.ENUM,rule = "0,1",isRequired = true, desc = "是否收藏(0：否；1：是)"),
+        @Param(name = "documentId", type = ApiParamType.LONG, isRequired = true, desc = "文档id")
     })
     @Output({
             @Param(name = "count", type = ApiParamType.INTEGER, desc = "文档收藏数"),
+            @Param(name = "isCollect", type = ApiParamType.ENUM, rule = "0,1", desc = "是否收藏"),
     })
     @Description(desc = "收藏或取消收藏文档")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject result = new JSONObject();
         Long documentId = jsonObj.getLong("documentId");
-        int isCollect = jsonObj.getIntValue("isCollect");
-        if(knowledgeDocumentMapper.getKnowledgeDocumentById(documentId) == null){
+        if(knowledgeDocumentMapper.getKnowledgeDocumentLockById(documentId) == null){
             throw new KnowledgeDocumentNotFoundException(documentId);
         }
-        if(isCollect == 1){
-            if(knowledgeDocumentMapper.checkDocumentHasBeenCollected(documentId,UserContext.get().getUserUuid()) > 0){
-                throw new KnowledgeDocumentHasBeenCollectedException(documentId);
-            }
+        if(knowledgeDocumentMapper.checkDocumentHasBeenCollected(documentId,UserContext.get().getUserUuid()) == 0){
             knowledgeDocumentMapper.insertKnowledgeDocumentCollect(documentId, UserContext.get().getUserUuid());
-        }else if(isCollect == 0){
+            result.put("isCollect", 1);
+        }else{
             knowledgeDocumentMapper.deleteKnowledgeDocumentCollect(documentId, UserContext.get().getUserUuid());
+            result.put("isCollect", 0);
         }
-        int favorCount = knowledgeDocumentMapper.getDocumentCollectCount(documentId);
-        result.put("count",favorCount);
+        int collectCount = knowledgeDocumentMapper.getDocumentCollectCount(documentId);
+        result.put("count",collectCount);
         return result;
     }
 

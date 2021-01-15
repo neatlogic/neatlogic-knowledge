@@ -65,8 +65,7 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
         KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         if(knowledgeDocumentVersionVo != null) {
-            knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-            KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+            KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
             if(knowledgeDocumentVo != null) {
                 if(Objects.equals(knowledgeDocumentVo.getKnowledgeDocumentVersionId(), knowledgeDocumentVersionId)) {
                     throw new KnowledgeDocumentCurrentVersionCannotBeDeletedException();

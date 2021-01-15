@@ -31,9 +31,7 @@
 	and `knowledge_document_version_id` = #{knowledgeDocumentVersionId}
 	and `operate` = #{operate}
 	ORDER BY `fcd` DESC
-	<if test="needPage">
-	LIMIT #{startNum}, #{pageSize}
-	</if>
+	LIMIT 1
 	</select>
 	
 	<select id="getKnowledgeDocumentAuditCountByKnowledgeDocumentId" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo" resultType="int">

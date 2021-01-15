@@ -4,6 +4,7 @@ import java.util.List;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.label.NO_AUTH;
+import codedriver.module.knowledge.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,11 +28,7 @@ import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotOwnerException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmitFailedExecption;
-import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
+
 @Service
 @AuthAction(action = NO_AUTH.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
@@ -79,15 +76,17 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         if(!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
             throw new KnowledgeDocumentCurrentUserNotOwnerException();
         }
-        knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
+        if(knowledgeDocumentVo.getKnowledgeDocumentVersionId() == null){
+            if(knowledgeDocumentMapper.getKnowledgeDocumentByTitle(knowledgeDocumentVo.getTitle()) != null){
+                throw new KnowledgeDocumentTitleRepeatException(knowledgeDocumentVo.getTitle());
+            }
+        }
         knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-//        if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-//            throw new KnowledgeDocumentDraftExpiredCannotSubmitException(knowledgeDocumentVersionId);
-//        }else 
+
         if(!KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftSubmittedException();
         }

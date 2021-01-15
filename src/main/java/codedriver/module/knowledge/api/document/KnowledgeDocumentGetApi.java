@@ -1,8 +1,9 @@
 package codedriver.module.knowledge.api.document;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
+import codedriver.framework.dto.WorkAssignmentUnitVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,6 @@ import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotOwnerException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 @Service
@@ -38,7 +38,7 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
     
     @Autowired
     private TeamMapper teamMapper;
-    
+
     @Override
     public String getToken() {
         return "knowledge/document/get";
@@ -75,39 +75,27 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         if(knowledgeDocumentMapper.checkUserIsMember(documentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
             throw new PermissionDeniedException();
         }
+
+        Long currentVersionId = documentVo.getKnowledgeDocumentVersionId();
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
-        if(knowledgeDocumentVersionId == null) {
-            knowledgeDocumentVersionId = documentVo.getKnowledgeDocumentVersionId();
-        }
-        KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-        int isReviewable = knowledgeDocumentService.isReviewable(knowledgeDocumentVersionVo);
-        if(!knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.PASSED.getValue())) {
-            if(knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.SUBMITTED.getValue()) && isReviewable == 1) {
-                
-            }else if(!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
-                throw new KnowledgeDocumentCurrentUserNotOwnerException();
+        if(knowledgeDocumentVersionId != null) {
+            currentVersionId = knowledgeDocumentVersionId;
+        }else{
+            Integer isReadOnly = jsonObj.getInteger("isReadOnly");
+            if(Objects.equals(isReadOnly, 1)) {
+                knowledgeDocumentMapper.updateKnowledgeViewCountIncrementOne(knowledgeDocumentId);
             }
         }
-        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
-        
+
+        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(currentVersionId);
         knowledgeDocumentVo.setFavorCount(knowledgeDocumentMapper.getDocumentFavorCount(knowledgeDocumentVo.getId()));
         knowledgeDocumentVo.setCollectCount(knowledgeDocumentMapper.getDocumentCollectCount(knowledgeDocumentVo.getId()));
         knowledgeDocumentVo.setViewCount(knowledgeDocumentMapper.getDocumentViewCount(knowledgeDocumentVo.getId()));
         knowledgeDocumentVo.setIsCollect(knowledgeDocumentMapper.checkDocumentHasBeenCollected(knowledgeDocumentVo.getId(), UserContext.get().getUserUuid(true)));
         knowledgeDocumentVo.setIsFavor(knowledgeDocumentMapper.checkDocumentHasBeenFavored(knowledgeDocumentVo.getId(), UserContext.get().getUserUuid(true)));
         
-        knowledgeDocumentVo.setIsEditable(knowledgeDocumentService.isEditable(knowledgeDocumentVersionVo));
-        knowledgeDocumentVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
-        knowledgeDocumentVo.setIsReviewable(isReviewable);
-        
         Long draftId = knowledgeDocumentMapper.getKnowledgeDocumentDrafIdtByKnowledgeDocumentIdAndLcu(knowledgeDocumentVo.getId(), UserContext.get().getUserUuid(true));
         knowledgeDocumentVo.setCurrentUserDraftId(draftId);
-        Integer isReadOnly = jsonObj.getInteger("isReadOnly");
-        if(Objects.equals(isReadOnly, 1)) {
-            if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus()) && Objects.equals(knowledgeDocumentVersionId, knowledgeDocumentVo.getKnowledgeDocumentVersionId())) {
-                knowledgeDocumentMapper.updateKnowledgeViewCountIncrementOne(knowledgeDocumentVo.getId());
-            }
-        }
         return knowledgeDocumentVo;
     }
 

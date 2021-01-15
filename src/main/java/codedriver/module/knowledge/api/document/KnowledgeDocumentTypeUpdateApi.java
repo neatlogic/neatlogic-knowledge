@@ -47,11 +47,10 @@ public class KnowledgeDocumentTypeUpdateApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentId = jsonObj.getLong("knowledgeDocumentId");
-        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId);
+        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentId);
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
         }
-        knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentId);
         String knowledgeDocumentTypeUuid = jsonObj.getString("knowledgeDocumentTypeUuid");
         if(!knowledgeDocumentVo.getKnowledgeDocumentTypeUuid().equals(knowledgeDocumentTypeUuid)) {
             knowledgeDocumentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentTypeUuid);

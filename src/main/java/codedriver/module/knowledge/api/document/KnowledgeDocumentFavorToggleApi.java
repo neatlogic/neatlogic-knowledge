@@ -39,29 +39,26 @@ public class KnowledgeDocumentFavorToggleApi extends PrivateApiComponentBase {
     }
     
     @Input({
-        @Param(name = "documentId", type = ApiParamType.LONG, isRequired = true, desc = "文档id"),
-        @Param(name = "isFavor", type = ApiParamType.ENUM,rule = "0,1",isRequired = true, desc = "是否点赞(0：否；1：是)"),
+        @Param(name = "documentId", type = ApiParamType.LONG, isRequired = true, desc = "文档id")
     })
     @Output({
             @Param(name = "count", type = ApiParamType.INTEGER, desc = "文档点赞数"),
+            @Param(name = "isFavor", type = ApiParamType.ENUM, rule = "0,1", desc = "是否点赞"),
     })
     @Description(desc = "点赞或取消点赞文档")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject result = new JSONObject();
         Long documentId = jsonObj.getLong("documentId");
-        int isFavor = jsonObj.getIntValue("isFavor");
-        if(knowledgeDocumentMapper.getKnowledgeDocumentById(documentId) == null){
+        if(knowledgeDocumentMapper.getKnowledgeDocumentLockById(documentId) == null){
             throw new KnowledgeDocumentNotFoundException(documentId);
         }
-        if(isFavor == 1){
-            if(knowledgeDocumentMapper.checkDocumentHasBeenFavored(documentId,UserContext.get().getUserUuid()) > 0){
-                KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(documentId);
-                throw new KnowledgeDocumentHasBeenFavoredException(documentVo.getTitle());
-            }
+        if(knowledgeDocumentMapper.checkDocumentHasBeenFavored(documentId,UserContext.get().getUserUuid()) == 0){
             knowledgeDocumentMapper.insertKnowledgeDocumentFavor(documentId, UserContext.get().getUserUuid());
-        }else if(isFavor == 0){
+            result.put("isFavor", 1);
+        }else{
             knowledgeDocumentMapper.deleteKnowledgeDocumentFavor(documentId, UserContext.get().getUserUuid());
+            result.put("isFavor", 0);
         }
         int favorCount = knowledgeDocumentMapper.getDocumentFavorCount(documentId);
         result.put("count",favorCount);

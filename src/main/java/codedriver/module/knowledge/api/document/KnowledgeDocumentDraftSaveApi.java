@@ -140,8 +140,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
             }
             /** 获取文档锁 **/
-            knowledgeDocumentMapper.getKnowledgeDocumentLockById(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
-            KnowledgeDocumentVo oldDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
+            KnowledgeDocumentVo oldDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
             if (oldDocumentVo == null) {
                 throw new KnowledgeDocumentNotFoundException(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
             }
@@ -263,7 +262,6 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             knowledgeDocumentLineVo.setKnowledgeDocumentId(documentId);
             knowledgeDocumentLineVo.setKnowledgeDocumentVersionId(drafrVersionId);
             knowledgeDocumentLineVo.setUuid(UuidUtil.randomUuid());
-            System.out.println(knowledgeDocumentLineVo.getUuid());
             if (knowledgeDocumentLineVo.getConfig() != null) {
                 KnowledgeDocumentLineConfigVo knowledgeDocumentLineConfigVo = new KnowledgeDocumentLineConfigVo(knowledgeDocumentLineVo.getConfigStr());
                 knowledgeDocumentLineVo.setConfigHash(knowledgeDocumentLineConfigVo.getHash());

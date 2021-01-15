@@ -195,6 +195,8 @@ public interface KnowledgeDocumentMapper {
 
     public int updateKnowledgeDocumentVersionToDeleteById(Long id);
 
+    public int updateKnowledgeDocumentVersionTypeByKnowledgeDocumentId(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+
     public int deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
 
     public int deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(KnowledgeDocumentFileVo knowledgeDocumentFileVo);
@@ -212,5 +214,4 @@ public interface KnowledgeDocumentMapper {
     public int deleteKnowledgeDocumentDraftByKnowledgeDocumentIdAndLcu(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("lcu")String userUuid);
 
     public int deleteKnowledgeDocumentInvokeByKnowledgeDocumentId(Long knowledgeDocumentId);
-
 }

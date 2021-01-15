@@ -1364,6 +1364,10 @@
         WHERE `id` = #{value}
     </update>
 
+    <update id="updateKnowledgeDocumentVersionTypeByKnowledgeDocumentId" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
+        UPDATE `knowledge_document_version` SET `knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid} WHERE `knowledge_document_id` = #{knowledgeDocumentId}
+    </update>
+
     <delete id="deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId" parameterType="java.lang.Long">
         DELETE
         FROM `knowledge_document_line`

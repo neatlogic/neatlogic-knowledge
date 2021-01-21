@@ -86,6 +86,8 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private String rejectReason;
     @EntityField(name = "审核人", type = ApiParamType.JSONOBJECT)
     private WorkAssignmentUnitVo reviewerVo;
+    @EntityField(name = "当前用户是否是审核人", type = ApiParamType.INTEGER)
+    private Integer isReviewer;
     @JSONField(serialize=false)
     private transient Integer isDelete;
     @JSONField(serialize=false)
@@ -422,5 +424,13 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
 
     public void setReviewerVo(WorkAssignmentUnitVo reviewerVo) {
         this.reviewerVo = reviewerVo;
+    }
+
+    public Integer getIsReviewer() {
+        return isReviewer;
+    }
+
+    public void setIsReviewer(Integer isReviewer) {
+        this.isReviewer = isReviewer;
     }
 }

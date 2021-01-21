@@ -151,6 +151,8 @@ public interface KnowledgeDocumentMapper {
 
     public KnowledgeDocumentVersionVo getKnowledgeDocumentVersionByknowledgeDocumentIdLimitOne(Long knowledgeDocumentId);
 
+    public int checkKnowledgeDocumentTitleIsRepeat(KnowledgeDocumentVo documentVo);
+
     @ESSearch
     public int insertKnowledgeDocument(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
 

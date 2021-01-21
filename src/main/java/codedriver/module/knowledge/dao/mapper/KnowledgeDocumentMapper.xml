@@ -1157,6 +1157,15 @@
         WHERE `knowledge_document_id` = #{value} LIMIT 1
     </select>
 
+    <select id="checkKnowledgeDocumentTitleIsRepeat" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo" resultType="int">
+        SELECT COUNT(1)
+        FROM `knowledge_document`
+        WHERE `title` = #{title}
+          and `id` != #{id}
+          AND `knowledge_document_version_id` IS NOT NULL
+          AND `is_delete` = 0
+    </select>
+
     <insert id="insertKnowledgeDocument" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
         INSERT INTO `knowledge_document` (`id`,
                                           `title`,

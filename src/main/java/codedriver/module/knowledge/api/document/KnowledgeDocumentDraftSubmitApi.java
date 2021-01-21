@@ -81,7 +81,7 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
         if(knowledgeDocumentVo.getKnowledgeDocumentVersionId() == null){
-            if(knowledgeDocumentMapper.getKnowledgeDocumentByTitle(knowledgeDocumentVo.getTitle()) != null){
+            if(knowledgeDocumentMapper.checkKnowledgeDocumentTitleIsRepeat(knowledgeDocumentVo) > 0){
                 throw new KnowledgeDocumentTitleRepeatException(knowledgeDocumentVo.getTitle());
             }
         }

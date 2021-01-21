@@ -1,19 +1,23 @@
 package codedriver.module.knowledge.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.dao.mapper.RoleMapper;
+import codedriver.framework.dao.mapper.TeamMapper;
+import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dto.RoleVo;
 import codedriver.framework.dto.TeamVo;
+import codedriver.framework.dto.UserVo;
 import codedriver.framework.dto.WorkAssignmentUnitVo;
 import codedriver.framework.exception.type.PermissionDeniedException;
+import codedriver.framework.file.dao.mapper.FileMapper;
+import codedriver.framework.file.dto.FileVo;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
+import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.*;
 import codedriver.module.knowledge.dto.*;
-import com.alibaba.fastjson.JSONObject;
+import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 import com.alibaba.fastjson.JSONPath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,15 +25,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
-import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.dao.mapper.UserMapper;
-import codedriver.framework.dto.UserVo;
-import codedriver.framework.file.dao.mapper.FileMapper;
-import codedriver.framework.file.dto.FileVo;
-import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
-import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
@@ -216,4 +215,46 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         return knowledgeDocumentVo;
     }
 
+
+    @Override
+    public void getReviewerParam(KnowledgeDocumentVersionVo documentVersionVoParam) {
+        documentVersionVoParam.getReviewerRoleUuidList().clear();
+        documentVersionVoParam.getReviewerTeamUuidList().clear();
+        if(CollectionUtils.isNotEmpty(documentVersionVoParam.getReviewerList()) && CollectionUtils.isNotEmpty(documentVersionVoParam.getStatusList())) {
+            //如果是“待审批”，则搜 knowledge_circle_user中 auth_type 为 “approver” 数据鉴权
+            if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.ALL.getValue())||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())) {
+                documentVersionVoParam.setIsReviewer(0);
+                Iterator<String> reviewerIterator = documentVersionVoParam.getReviewerList().iterator();
+                List<String> reviewerList = new ArrayList<String>();
+                while(reviewerIterator.hasNext()) {
+                    String reviewer = reviewerIterator.next();
+                    if(reviewer.startsWith(GroupSearch.USER.getValuePlugin())||(!reviewer.startsWith(GroupSearch.TEAM.getValuePlugin())&&!reviewer.startsWith(GroupSearch.ROLE.getValuePlugin()))){
+                        reviewer = reviewer.replaceAll(GroupSearch.USER.getValuePlugin(), StringUtils.EMPTY);
+                        documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
+                        documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
+                        reviewerList.add(reviewer);
+                    }else if(reviewer.startsWith(GroupSearch.TEAM.getValuePlugin())) {
+                        reviewer = reviewer.replaceAll(GroupSearch.TEAM.getValuePlugin(), StringUtils.EMPTY);
+                        documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
+                    }else {
+                        reviewer = reviewer.replaceAll(GroupSearch.ROLE.getValuePlugin(), StringUtils.EMPTY);
+                        documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
+                    }
+                }
+                documentVersionVoParam.setReviewerList(reviewerList);
+            }
+
+            if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.ALL.getValue())||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.REJECTED.getValue())//否则查询 knowledge_document_version中的 “reviewer”
+                    ||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.PASSED.getValue())){
+                List<String> reviewerList = documentVersionVoParam.getReviewerList();
+                if(CollectionUtils.isNotEmpty(reviewerList)) {
+                    for(int i = 0;i<reviewerList.size();i++) {
+                        reviewerList.set(i, reviewerList.get(i).replaceAll(GroupSearch.USER.getValuePlugin(), ""));
+                    }
+                }
+                documentVersionVoParam.setIsReviewer(1);
+                documentVersionVoParam.setReviewer(documentVersionVoParam.getReviewerList().get(0));
+            }
+        }
+    }
 }

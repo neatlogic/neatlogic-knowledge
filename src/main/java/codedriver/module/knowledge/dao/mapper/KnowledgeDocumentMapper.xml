@@ -201,7 +201,6 @@
         LEFT JOIN `knowledge_circle_user` kcu ON kcu.`knowledge_circle_id` = kd.`knowledge_circle_id` AND
         kcu.`auth_type` = 'approver'
         <where>
-            kd.`is_delete` = 0 AND kdv.`is_delete` = 0
             <include refid="searchDocumentVersionSql"/>
             and kdv.`status` in ('passed','rejected')
             <include refid="reviewerSql"/>
@@ -244,7 +243,6 @@
         LEFT JOIN `knowledge_circle_user` kcu ON kcu.`knowledge_circle_id` = kd.`knowledge_circle_id` AND
         kcu.`auth_type` = 'approver'
         <where>
-            kd.`is_delete` = 0 AND kdv.`is_delete` = 0
             <include refid="searchDocumentVersionSql"/>
             and kdv.`status` in ('passed','rejected')
             <include refid="reviewerSql"/>
@@ -282,7 +280,6 @@
         LEFT JOIN `knowledge_circle_user` kcu ON kcu.`knowledge_circle_id` = kd.`knowledge_circle_id` AND
         kcu.`auth_type` = 'approver'
         <where>
-            kd.`is_delete` = 0 AND kdv.`is_delete` = 0
             <include refid="searchDocumentVersionSql"/>
             <if test="statusList != null and statusList.size()>0">
                 and kdv.`status` in
@@ -316,7 +313,6 @@
         LEFT JOIN `knowledge_circle_user` kcu ON kcu.`knowledge_circle_id` = kd.`knowledge_circle_id` AND
         kcu.`auth_type` = 'approver'
         <where>
-            kd.`is_delete` = 0 AND kdv.`is_delete` = 0
             <include refid="searchDocumentVersionSql"/>
             <if test="statusList != null and statusList.size()>0">
                 and kdv.`status` in

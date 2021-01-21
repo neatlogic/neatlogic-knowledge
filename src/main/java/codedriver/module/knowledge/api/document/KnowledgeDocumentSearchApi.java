@@ -1,37 +1,15 @@
 package codedriver.module.knowledge.api.document;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dto.UserVo;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
 import codedriver.framework.elasticsearch.core.IElasticSearchHandler;
+import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Output;
-import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.HtmlUtil;
 import codedriver.framework.util.TimeUtil;
@@ -40,14 +18,24 @@ import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVersionStatusVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.module.knowledge.dto.*;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
 import codedriver.module.knowledge.exception.KnowledgeDocumentTypeNotFoundException;
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
@@ -66,6 +54,10 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     
     @Autowired
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
+
+    @Autowired
+    private KnowledgeDocumentService knowledgeDocumentService;
+
     @Override
     public String getToken() {
         return "knowledge/document/search";
@@ -112,6 +104,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         @Param(name="dataList[].documentTypePath", type = ApiParamType.STRING, desc="知识圈分类路径"),
         @Param(name="dataList[].knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc="知识圈分类uuid"),
         @Param(name="dataList[].status", type = ApiParamType.STRING, desc="知识当前版本状态"),
+        @Param(name="statusList", type = ApiParamType.JSONARRAY, desc="”待我审批“、”我提交的“ 知识分类，对应“全部” “待审批” “以通过” “不通过” 分类的数量"),
         @Param(name="rowNum", type = ApiParamType.INTEGER, desc="总数"),
         @Param(name="pageSize", type = ApiParamType.INTEGER, desc="每页数据条目"),
         @Param(name="currentPage", type = ApiParamType.INTEGER, desc="当前页数"),
@@ -156,7 +149,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         }
         
         //补充查看权限条件参数（圈子成员or圈子审批人）
-        getDocumentVeiwParam(documentVoParam);
+        getDocumentViewParam(documentVoParam);
         //从db过滤知识
         List<Long> documentIdList = knowledgeDocumentMapper.getKnowledgeDocumentIdList(documentVoParam);
         List<KnowledgeDocumentVo> documentList = null;
@@ -269,7 +262,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     * @Param 
     * @return
      */
-    private void getDocumentVeiwParam(KnowledgeDocumentVo documentVoParam) {
+    private void getDocumentViewParam(KnowledgeDocumentVo documentVoParam) {
         String userUuid = UserContext.get().getUserUuid(true);
         documentVoParam.setCircleUserUuid(userUuid);
         documentVoParam.setCircleTeamUuidList(teamMapper.getTeamUuidListByUserUuid(userUuid));
@@ -306,7 +299,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         }
         
         //拼装 “审批人”条件 
-        getReviewerParam(documentVersionVoParam);
+        knowledgeDocumentService.getReviewerParam(documentVersionVoParam);
             
         
         //查询符合条件的知识版本
@@ -426,7 +419,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             statusTmpList.clear();
             statusTmpList.add(KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
             documentVersionVoParam.setStatusList(statusTmpList);
-            getReviewerParam(documentVersionVoParam);
+            knowledgeDocumentService.getReviewerParam(documentVersionVoParam);
             jsonSubmit.put("count", knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam));
             jsonAll.put("value",  KnowledgeDocumentVersionStatus.ALL.getValue());
             jsonAll.put("text", KnowledgeDocumentVersionStatus.ALL.getText());
@@ -440,55 +433,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         resultJson.put("currentPage", documentVersionVoParam.getCurrentPage());
         resultJson.put("pageCount", PageUtil.getPageCount(total, documentVersionVoParam.getPageSize()));
     }
-    
-    /**
-    * @Author 89770
-    * @Time 2020年12月3日  
-    * @Description: 根据不同的审批状态，补充审批人条件
-    * @Param 
-    * @return
-     */
-    private void getReviewerParam(KnowledgeDocumentVersionVo documentVersionVoParam) {
-        documentVersionVoParam.getReviewerRoleUuidList().clear();
-        documentVersionVoParam.getReviewerTeamUuidList().clear();
-        if(CollectionUtils.isNotEmpty(documentVersionVoParam.getReviewerList()) && CollectionUtils.isNotEmpty(documentVersionVoParam.getStatusList())) {
-            //如果是“待审批”，则搜 knowledge_circle_user中 auth_type 为 “approver” 数据鉴权
-            if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.ALL.getValue())||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())) {
-                documentVersionVoParam.setIsReviewer(0);
-                Iterator<String> reviewerIterator = documentVersionVoParam.getReviewerList().iterator();
-                List<String> reviewerList = new ArrayList<String>();
-                while(reviewerIterator.hasNext()) {
-                    String reviewer = reviewerIterator.next();
-                    if(reviewer.startsWith(GroupSearch.USER.getValuePlugin())||(!reviewer.startsWith(GroupSearch.TEAM.getValuePlugin())&&!reviewer.startsWith(GroupSearch.ROLE.getValuePlugin()))){
-                        reviewer = reviewer.replaceAll(GroupSearch.USER.getValuePlugin(), StringUtils.EMPTY);
-                        documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
-                        documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
-                        reviewerList.add(reviewer);
-                    }else if(reviewer.startsWith(GroupSearch.TEAM.getValuePlugin())) {
-                        reviewer = reviewer.replaceAll(GroupSearch.TEAM.getValuePlugin(), StringUtils.EMPTY);
-                        documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
-                    }else {
-                        reviewer = reviewer.replaceAll(GroupSearch.ROLE.getValuePlugin(), StringUtils.EMPTY);
-                        documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
-                    }
-                }
-                documentVersionVoParam.setReviewerList(reviewerList);
-            }
-            
-            if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.ALL.getValue())||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.REJECTED.getValue())//否则查询 knowledge_document_version中的 “reviewer”
-                ||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.PASSED.getValue())){
-                List<String> reviewerList = documentVersionVoParam.getReviewerList();
-                if(CollectionUtils.isNotEmpty(reviewerList)) {
-                    for(int i = 0;i<reviewerList.size();i++) {
-                        reviewerList.set(i, reviewerList.get(i).replaceAll(GroupSearch.USER.getValuePlugin(), ""));
-                    }
-                }
-                documentVersionVoParam.setIsReviewer(1);
-                documentVersionVoParam.setReviewer(documentVersionVoParam.getReviewerList().get(0));
-            }
-        }
-    }
-    
+
     /**
     * @Author 89770
     * @Time 2020年11月6日  

@@ -1,8 +1,9 @@
 package codedriver.module.knowledge.api.type;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
-import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.dao.mapper.TeamMapper;
+import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
@@ -12,9 +13,10 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.constvalue.KnowledgeType;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.dto.KnowledgeTypeVo;
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,47 +24,65 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.function.Supplier;
-//TODO sql废弃
+
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeTypeListApi extends PrivateApiComponentBase {
+    @Autowired
+    private KnowledgeDocumentService knowledgeDocumentService;
 
-    private Map<KnowledgeType, Supplier<Integer>> map = new HashMap<>();
+    private final Map<KnowledgeType, Supplier<Integer>> map = new HashMap<>();
     @PostConstruct
     public void init() {
         map.put(KnowledgeType.ALL, () -> {
-            List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid());
-            return knowledgeDocumentMapper.getCurrentUserKnowledgeDocumentCount(UserContext.get().getUserUuid(), teamUuidList, UserContext.get().getRoleUuidList());
+            KnowledgeDocumentVo documentVoParam = new KnowledgeDocumentVo();
+            String userUuid = UserContext.get().getUserUuid(true);
+            documentVoParam.setCircleUserUuid(userUuid);
+            documentVoParam.setCircleTeamUuidList(teamMapper.getTeamUuidListByUserUuid(userUuid));
+            documentVoParam.setCircleRoleUuidList(userMapper.getRoleUuidListByUserUuid(userUuid));
+            documentVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.PASSED.getValue()));
+            return knowledgeDocumentMapper.getKnowledgeDocumentCount(documentVoParam);
         });
         map.put(KnowledgeType.WAITINGFORREVIEW, () -> {
-            List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid());
-            return knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewCount(new BasePageVo(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+            KnowledgeDocumentVersionVo documentVersionVoParam = new KnowledgeDocumentVersionVo();
+            documentVersionVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.SUBMITTED.getValue()));
+            documentVersionVoParam.setReviewerList(Collections.singletonList(GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid(true)));
+            knowledgeDocumentService.getReviewerParam(documentVersionVoParam);
+            return knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam);
         });
         map.put(KnowledgeType.SHARE, () -> {
-            KnowledgeDocumentVersionVo searchVo = new KnowledgeDocumentVersionVo();
-            searchVo.setLcu(UserContext.get().getUserUuid(true));
-            List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.PASSED.getValue(), KnowledgeDocumentVersionStatus.REJECTED.getValue(), KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
-            searchVo.setStatusList(statusList);
-            return knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionCount(searchVo);
+            KnowledgeDocumentVersionVo documentVersionVoParam = new KnowledgeDocumentVersionVo();
+            documentVersionVoParam.setStatusList(Arrays.asList(KnowledgeDocumentVersionStatus.SUBMITTED.getValue(),KnowledgeDocumentVersionStatus.REJECTED.getValue(),KnowledgeDocumentVersionStatus.PASSED.getValue()));
+            documentVersionVoParam.setLcuList(Collections.singletonList(GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid(true)));
+            knowledgeDocumentService.getReviewerParam(documentVersionVoParam);
+            return knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam);
         });
         map.put(KnowledgeType.COLLECT, () -> {
-            KnowledgeDocumentCollectVo searchVo = new KnowledgeDocumentCollectVo(); 
-            searchVo.setUserUuid(UserContext.get().getUserUuid(true));
-            return knowledgeDocumentMapper.getKnowledgeDocumentVersionMyCollectCount(searchVo);
+            KnowledgeDocumentVo documentVoParam = new KnowledgeDocumentVo();
+            String userUuid = UserContext.get().getUserUuid(true);
+            documentVoParam.setCircleUserUuid(userUuid);
+            documentVoParam.setCircleTeamUuidList(teamMapper.getTeamUuidListByUserUuid(userUuid));
+            documentVoParam.setCircleRoleUuidList(userMapper.getRoleUuidListByUserUuid(userUuid));
+            documentVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.PASSED.getValue()));
+            documentVoParam.setCollector(userUuid);
+            return knowledgeDocumentMapper.getKnowledgeDocumentCount(documentVoParam);
         });
         map.put(KnowledgeType.DRAFT, () -> {
-            KnowledgeDocumentVersionVo searchVo = new KnowledgeDocumentVersionVo();
-            searchVo.setLcu(UserContext.get().getUserUuid(true));
-            List<String> statusList = Arrays.asList(KnowledgeDocumentVersionStatus.DRAFT.getValue());
-            searchVo.setStatusList(statusList);
-            return knowledgeDocumentMapper.getKnowledgeDocumentVersionMyVersionCount(searchVo);
+            KnowledgeDocumentVersionVo documentVersionVoParam = new KnowledgeDocumentVersionVo();
+            documentVersionVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.DRAFT.getValue()));
+            documentVersionVoParam.setLcuList(Collections.singletonList(GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid(true)));
+            knowledgeDocumentService.getReviewerParam(documentVersionVoParam);
+            return knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam);
         });
     }
     @Autowired
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    
+
     @Autowired
-    private TeamMapper teamMapper;
+    TeamMapper teamMapper;
+
+    @Autowired
+    UserMapper userMapper;
 
     @Override
     public String getToken() {

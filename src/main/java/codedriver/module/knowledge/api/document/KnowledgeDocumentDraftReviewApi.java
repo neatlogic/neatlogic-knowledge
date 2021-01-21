@@ -101,7 +101,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         updateStatusVo.setReviewer(UserContext.get().getUserUuid(true));
         if(KnowledgeDocumentOperate.PASS.getValue().equals(action)) {
             if(documentVo.getKnowledgeDocumentVersionId() == null){
-                if(knowledgeDocumentMapper.getKnowledgeDocumentByTitle(documentVo.getTitle()) != null){
+                if(knowledgeDocumentMapper.checkKnowledgeDocumentTitleIsRepeat(documentVo) > 0){
                     throw new KnowledgeDocumentTitleRepeatException(documentVo.getTitle());
                 }
             }

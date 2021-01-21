@@ -10,7 +10,7 @@ public interface KnowledgeDocumentService {
     
     public int isEditable(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
     
-    public int isReviewable(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+    public int isReviewer(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
     
     public KnowledgeDocumentVo getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId) throws PermissionDeniedException;
 }

@@ -96,13 +96,10 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     }
 
     @Override
-    public int isReviewable(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo) {
-        if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-            List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-            if(knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) > 0) {
-                return 1;
-            }
+    public int isReviewer(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo) {
+        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        if(knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVersionVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) > 0) {
+            return 1;
         }
         return 0;
     }
@@ -117,14 +114,18 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
-        knowledgeDocumentVo.setIsReviewable(isReviewable(knowledgeDocumentVersionVo));
+        knowledgeDocumentVersionVo.setKnowledgeCircleId(knowledgeDocumentVo.getKnowledgeCircleId());
+        knowledgeDocumentVo.setIsReviewer(isReviewer(knowledgeDocumentVersionVo));
+        knowledgeDocumentVo.setIsReviewable(0);
         knowledgeDocumentVo.setIsEditable(isEditable(knowledgeDocumentVersionVo));
         knowledgeDocumentVo.setIsDeletable(isDeletable(knowledgeDocumentVersionVo));
         if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())){
-            if(knowledgeDocumentVo.getIsReviewable() == 0){
+            if(knowledgeDocumentVo.getIsReviewer() == 0){
                 if(!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
                     throw new PermissionDeniedException();
                 }
+            }else {
+                knowledgeDocumentVo.setIsReviewable(1);
             }
             /** 查出审核人 **/
             List<WorkAssignmentUnitVo> reviewerVoList = new ArrayList<>();
@@ -179,6 +180,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         }
         knowledgeDocumentVo.setVersion(knowledgeDocumentVersionVo.getVersion() != null ? knowledgeDocumentVersionVo.getVersion() : knowledgeDocumentVersionVo.getFromVersion());
         knowledgeDocumentVo.setLcu(knowledgeDocumentVersionVo.getLcu());
+        knowledgeDocumentVo.setLcd(knowledgeDocumentVersionVo.getLcd());
         UserVo lcuUserVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
         if(lcuUserVo != null) {
             //使用新对象，防止缓存

@@ -1308,9 +1308,6 @@
                 `review_time` = NOW(3),
             </if>
         </if>
-        <if test="lcu != null and lcu != ''">
-            `lcu` = #{lcu},
-        </if>
         <if test="size != null">
             `size` = #{size},
         </if>

@@ -191,6 +191,10 @@ public interface KnowledgeDocumentMapper {
     @ESSearch
     public int updateKnowledgeDocumentById(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
 
+    public int updateKnowledgeDocumentTitleById(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
+
+    public int updateKnowledgeDocumentTypeUuidById(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
+
     public int updateKnowledgeViewCountIncrementOne(Long documentId);
 
     public int updateKnowledgeDocumentVersionToDeleteByKnowledgeDocumentId(Long knowledgeDocumentId);

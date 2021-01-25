@@ -19,16 +19,15 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentAuditConfigVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotReviewerException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentNotHistoricalVersionException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
+import codedriver.module.knowledge.exception.*;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
+
 @Service
 @AuthAction(action = NO_AUTH.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
@@ -74,21 +73,18 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
+        if (Objects.equals(knowledgeDocumentVo.getIsDelete(), 1)) {
+            throw new KnowledgeDocumentHasBeenDeletedException(knowledgeDocumentVo.getId());
+        }
         knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         if(KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentNotHistoricalVersionException(knowledgeDocumentVersionId);
         }else if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentNotHistoricalVersionException(knowledgeDocumentVersionId);
         }
-//        else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-//            throw new KnowledgeDocumentNotHistoricalVersionException(knowledgeDocumentVersionId);
-//        }
         else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentNotHistoricalVersionException(knowledgeDocumentVersionId);
         }
-//        if(knowledgeDocumentMapper.checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion(knowledgeDocumentVo.getId(), knowledgeDocumentVo.getVersion()) > 0) {
-//            throw new KnowledgeDocumentVersionSwitchFailedExecption();
-//        }
         int oldVersion = knowledgeDocumentVo.getVersion();
         List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
         if(knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
@@ -97,7 +93,6 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
 
         knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentVo.setVersion(knowledgeDocumentVersionVo.getVersion());
-        knowledgeDocumentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
         knowledgeDocumentMapper.updateKnowledgeDocumentById(knowledgeDocumentVo);
         
         KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();

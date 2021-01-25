@@ -97,6 +97,9 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         KnowledgeDocumentVersionVo updateStatusVo = new KnowledgeDocumentVersionVo();
         updateStatusVo.setId(knowledgeDocumentVersionId);
         updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
+        if(knowledgeDocumentVersionVo.getIsDelete() == 1){
+            updateStatusVo.setFromVersion(0);
+        }
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
         
         List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));

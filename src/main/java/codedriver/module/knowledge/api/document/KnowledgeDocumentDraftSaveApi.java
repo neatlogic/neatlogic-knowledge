@@ -186,6 +186,11 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 /** 如果入参版本id是文档当前版本id，说明该操作是当前版本上修改首次存草稿 **/
                 knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentVo.getId());
                 knowledgeDocumentVersionVo.setFromVersion(oldKnowledgeDocumentVersionVo.getVersion());
+                if(oldKnowledgeDocumentVersionVo.getIsDelete() == 1){
+                    knowledgeDocumentVersionVo.setFromVersion(0);
+                }else{
+                    knowledgeDocumentVersionVo.setFromVersion(oldKnowledgeDocumentVersionVo.getVersion());
+                }
                 knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
                 documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionVo.getId());
                 resultObj.put("knowledgeDocumentVersionId", knowledgeDocumentVersionVo.getId());
@@ -203,6 +208,9 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                     return resultObj;
                 }
                 /** 覆盖旧草稿时，更新标题、修改用户、修改时间，删除行数据、附件、标签数据，后面再重新插入 **/
+                if(oldKnowledgeDocumentVersionVo.getIsDelete() == 1){
+                    knowledgeDocumentVersionVo.setFromVersion(0);
+                }
                 knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(knowledgeDocumentVersionVo);
                 knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(knowledgeDocumentVersionVo.getId());
                 knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(documentVo.getId(), knowledgeDocumentVersionVo.getId()));

@@ -77,12 +77,12 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         if(documentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
-        knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         
         List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
         if(knowledgeDocumentMapper.checkUserIsApprover(documentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
             throw new KnowledgeDocumentCurrentUserNotReviewerException();
         }
+        knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftReviewedException();
         }else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
@@ -96,6 +96,9 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         updateStatusVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
         updateStatusVo.setId(knowledgeDocumentVersionId);
         updateStatusVo.setReviewer(UserContext.get().getUserUuid(true));
+        if(knowledgeDocumentVersionVo.getIsDelete() == 1){
+            updateStatusVo.setFromVersion(0);
+        }
         if(KnowledgeDocumentOperate.PASS.getValue().equals(action)) {
             if(documentVo.getKnowledgeDocumentVersionId() == null){
                 if(knowledgeDocumentMapper.checkKnowledgeDocumentTitleIsRepeat(documentVo) > 0){

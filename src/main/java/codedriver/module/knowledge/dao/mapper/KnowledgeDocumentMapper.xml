@@ -599,7 +599,8 @@
                `lcd`,
                `size`,
                `reviewer`,
-               `review_time`                  AS reviewTime
+               `review_time`                  AS reviewTime,
+               `is_delete`                  AS isDelete
         FROM `knowledge_document_version`
         WHERE `id` = #{value}
     </select>
@@ -720,6 +721,7 @@
         SELECT MAX(`version`)
         FROM `knowledge_document_version`
         WHERE `knowledge_document_id` = #{value}
+          AND `is_delete` = 0
     </select>
 
     <sql id="getKnowledgeDocumentWaitingForReviewSql">
@@ -1317,6 +1319,9 @@
         <if test="version != null">
             `version` = #{version},
         </if>
+        <if test="fromVersion != null">
+            `from_version` = #{fromVersion},
+        </if>
         `is_delete` = 0
         WHERE `id` = #{id}
     </update>
@@ -1372,6 +1377,13 @@
 
     <update id="updateKnowledgeDocumentVersionTypeByKnowledgeDocumentId" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
         UPDATE `knowledge_document_version` SET `knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid} WHERE `knowledge_document_id` = #{knowledgeDocumentId}
+    </update>
+
+    <update id="resetKnowledgeViewCountByDocumentId" parameterType="java.lang.Long">
+        update `knowledge_document_view_count`
+        SET
+            `count`= 0
+        WHERE `knowledge_document_id` = #{value}
     </update>
 
     <delete id="deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId" parameterType="java.lang.Long">
@@ -1433,6 +1445,18 @@
     <delete id="deleteKnowledgeDocumentInvokeByKnowledgeDocumentId" parameterType="java.lang.Long">
         DELETE
         FROM `knowledge_document_invoke`
+        WHERE `knowledge_document_id` = #{value}
+    </delete>
+
+    <delete id="deleteKnowledgeDocumentCollectByDocumentId" parameterType="java.lang.Long">
+        DELETE
+        FROM `knowledge_document_collect`
+        WHERE `knowledge_document_id` = #{value}
+    </delete>
+
+    <delete id="deleteKnowledgeDocumentFavorByDocumentId" parameterType="java.lang.Long">
+        DELETE
+        FROM `knowledge_document_favor`
         WHERE `knowledge_document_id` = #{value}
     </delete>
 </mapper>

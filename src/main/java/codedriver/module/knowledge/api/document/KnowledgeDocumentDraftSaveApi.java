@@ -1,5 +1,6 @@
 package codedriver.module.knowledge.api.document;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,8 +50,6 @@ import codedriver.module.knowledge.dto.KnowledgeTagVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotOwnerException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftPublishedCannotBeModifiedException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedCannotBeModifiedException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentHasBeenDeletedException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentNotCurrentVersionException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentRepeatInvokeException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentTitleRepeatException;
@@ -123,8 +122,6 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         documentVo.setKnowledgeCircleId(knowledgeDocumentTypeVo.getKnowledgeCircleId());
         documentVo.setId(null);
         JSONObject resultObj = new JSONObject();
-        Long documentId = null;
-        Long drafrVersionId = null;
         Integer isSubmit = jsonObj.getInteger("isSubmit");
         int isReviewable = 0;
         String status = KnowledgeDocumentVersionStatus.DRAFT.getValue();
@@ -133,80 +130,17 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             isReviewable = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
         }
         resultObj.put("isReviewable", isReviewable);
-        if (knowledgeDocumentVersionId != null) {
-            /** 有版本id，则是在已有文档上修改 **/
-            KnowledgeDocumentVersionVo oldKnowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-            if (oldKnowledgeDocumentVersionVo == null) {
-                throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
-            }
-            /** 获取文档锁 **/
-            KnowledgeDocumentVo oldDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
-            if (oldDocumentVo == null) {
-                throw new KnowledgeDocumentNotFoundException(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
-            }
-            if (Objects.equals(oldDocumentVo.getIsDelete(), 1)) {
-                throw new KnowledgeDocumentHasBeenDeletedException(oldDocumentVo.getId());
-            }
-            documentId = oldDocumentVo.getId();
-            oldKnowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-            if (knowledgeDocumentVersionId.equals(oldDocumentVo.getKnowledgeDocumentVersionId())) {
-                KnowledgeDocumentVo before = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
-                if (!checkDocumentIsModify(before, documentVo)) {
-                    throw new KnowledgeDocumentUnmodifiedCannotBeSavedException();
-                }
-                /** 删除这个文档当前用户的草稿 **/
-                knowledgeDocumentMapper.deleteKnowledgeDocumentDraftByKnowledgeDocumentIdAndLcu(documentId, UserContext.get().getUserUuid(true));
-                /** 如果入参版本id是文档当前版本id，说明该操作是当前版本上修改首次存草稿 **/
-                KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
-                knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
-                knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
-                knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentId);
-                knowledgeDocumentVersionVo.setFromVersion(oldKnowledgeDocumentVersionVo.getVersion());
-                knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
-                knowledgeDocumentVersionVo.setStatus(status);
-                knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
-                drafrVersionId = knowledgeDocumentVersionVo.getId();
-            } else {
-                if (!Objects.equals(oldDocumentVo.getVersion(), oldKnowledgeDocumentVersionVo.getFromVersion())) {
-                    throw new KnowledgeDocumentNotCurrentVersionException(oldKnowledgeDocumentVersionVo.getFromVersion());
-                }
-                /** 如果入参版本id不是文档当前版本id，说明该操作是在已有草稿上再次保存 **/
-                if (KnowledgeDocumentVersionStatus.PASSED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
-                    throw new KnowledgeDocumentDraftPublishedCannotBeModifiedException();
-                } else if (KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
-                    throw new KnowledgeDocumentDraftSubmittedCannotBeModifiedException();
-                }
-//                else if(KnowledgeDocumentVersionStatus.EXPIRED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
-//                    throw new KnowledgeDocumentDraftExpiredCannotBeModifiedException();
-//                }
-                drafrVersionId = knowledgeDocumentVersionId;
-                KnowledgeDocumentVo before = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
-                if (!before.getLcu().equals(UserContext.get().getUserUuid(true))) {
-                    throw new KnowledgeDocumentCurrentUserNotOwnerException();
-                }
-                if (!checkDocumentIsModify(before, documentVo)) {
-                    resultObj.put("knowledgeDocumentId", documentId);
-                    resultObj.put("knowledgeDocumentVersionId", drafrVersionId);
-                    return resultObj;
-                }
-                /** 覆盖旧草稿时，更新标题、修改用户、修改时间，删除行数据、附件、标签数据，后面再重新插入 **/
-                KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
-                knowledgeDocumentVersionVo.setId(drafrVersionId);
-                knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
-                knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
-                knowledgeDocumentVersionVo.setStatus(status);
-                knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
-                knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(knowledgeDocumentVersionVo);
-                knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(drafrVersionId);
-                knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(documentId, drafrVersionId));
-                knowledgeDocumentMapper.deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(documentId, drafrVersionId));
-            }
-        } else {
+
+        KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
+        knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
+        knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
+        knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
+        knowledgeDocumentVersionVo.setStatus(status);
+        if (knowledgeDocumentVersionId == null) {
             /** 没有版本id，则是首次创建文档 **/
             if (knowledgeDocumentMapper.getKnowledgeDocumentByTitle(documentVo.getTitle()) != null) {
                 throw new KnowledgeDocumentTitleRepeatException(documentVo.getTitle());
             }
-            KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
             documentVo.setFcu(UserContext.get().getUserUuid(true));
             documentVo.setVersion(0);
             knowledgeDocumentMapper.insertKnowledgeDocument(documentVo);
@@ -221,28 +155,83 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 knowledgeDocumentMapper.insertKnowledgeDocumentInvoke(knowledgeDocumentInvokeVo);
             }
             knowledgeDocumentMapper.insertKnowledgeDocumentViewCount(documentVo.getId(), 0);
-            knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
-            knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
             knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentVo.getId());
             knowledgeDocumentVersionVo.setFromVersion(0);
-            knowledgeDocumentVersionVo.setLcu(UserContext.get().getUserUuid(true));
-            knowledgeDocumentVersionVo.setStatus(status);
             knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
-            documentId = documentVo.getId();
-            drafrVersionId = knowledgeDocumentVersionVo.getId();
+            documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionVo.getId());
+            resultObj.put("knowledgeDocumentId", documentVo.getId());
+            resultObj.put("knowledgeDocumentVersionId", knowledgeDocumentVersionVo.getId());
+        } else {
+            /** 有版本id，则是在已有文档上修改 **/
+            KnowledgeDocumentVersionVo oldKnowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
+            if (oldKnowledgeDocumentVersionVo == null) {
+                throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
+            }
+            if (!oldKnowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
+                throw new KnowledgeDocumentCurrentUserNotOwnerException();
+            }
+            /** 获取文档锁 **/
+            KnowledgeDocumentVo oldDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
+            if (oldDocumentVo == null) {
+                throw new KnowledgeDocumentNotFoundException(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
+            }
+            documentVo.setId(oldDocumentVo.getId());
+            resultObj.put("knowledgeDocumentId", documentVo.getId());
+            KnowledgeDocumentVo before = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+            oldKnowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
+            if (knowledgeDocumentVersionId.equals(oldDocumentVo.getKnowledgeDocumentVersionId())) {
+                if (!checkDocumentIsModify(before, documentVo)) {
+                    throw new KnowledgeDocumentUnmodifiedCannotBeSavedException();
+                }
+                /** 如果入参版本id是文档当前版本id，说明该操作是当前版本上修改首次存草稿 **/
+                knowledgeDocumentVersionVo.setKnowledgeDocumentId(documentVo.getId());
+                knowledgeDocumentVersionVo.setFromVersion(oldKnowledgeDocumentVersionVo.getVersion());
+                knowledgeDocumentMapper.insertKnowledgeDocumentVersion(knowledgeDocumentVersionVo);
+                documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionVo.getId());
+                resultObj.put("knowledgeDocumentVersionId", knowledgeDocumentVersionVo.getId());
+            } else {
+                /** 如果入参版本id不是文档当前版本id，说明该操作是在已有草稿上再次保存 **/
+                if (KnowledgeDocumentVersionStatus.PASSED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
+                    throw new KnowledgeDocumentDraftPublishedCannotBeModifiedException();
+                } else if (KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
+                    throw new KnowledgeDocumentDraftSubmittedCannotBeModifiedException();
+                }
+                knowledgeDocumentVersionVo.setId(knowledgeDocumentVersionId);
+                documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionVo.getId());
+                resultObj.put("knowledgeDocumentVersionId", knowledgeDocumentVersionVo.getId());
+                if (!checkDocumentIsModify(before, documentVo)) {
+                    return resultObj;
+                }
+                /** 覆盖旧草稿时，更新标题、修改用户、修改时间，删除行数据、附件、标签数据，后面再重新插入 **/
+                knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(knowledgeDocumentVersionVo);
+                knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(knowledgeDocumentVersionVo.getId());
+                knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(documentVo.getId(), knowledgeDocumentVersionVo.getId()));
+                knowledgeDocumentMapper.deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(documentVo.getId(), knowledgeDocumentVersionVo.getId()));
+            }
         }
+        saveDocument(documentVo);
+        return resultObj;
+    }
+    /**
+     * @Description: 保存文档内容
+     * @Author: linbq
+     * @Date: 2021/1/25 12:14
+     * @Params:[documentVo]
+     * @Returns:void
+     **/
+    private void saveDocument(KnowledgeDocumentVo documentVo) throws UnsupportedEncodingException {
         /** 保存附件 **/
         KnowledgeDocumentFileVo knowledgeDocumentFileVo = new KnowledgeDocumentFileVo();
-        knowledgeDocumentFileVo.setKnowledgeDocumentId(documentId);
-        knowledgeDocumentFileVo.setKnowledgeDocumentVersionId(drafrVersionId);
+        knowledgeDocumentFileVo.setKnowledgeDocumentId(documentVo.getId());
+        knowledgeDocumentFileVo.setKnowledgeDocumentVersionId(documentVo.getKnowledgeDocumentVersionId());
         for (Long fileId : documentVo.getFileIdList()) {
             knowledgeDocumentFileVo.setFileId(fileId);
             knowledgeDocumentMapper.insertKnowledgeDocumentFile(knowledgeDocumentFileVo);
         }
         /** 保存标签 **/
         KnowledgeDocumentTagVo knowledgeDocumentTagVo = new KnowledgeDocumentTagVo();
-        knowledgeDocumentTagVo.setKnowledgeDocumentId(documentId);
-        knowledgeDocumentTagVo.setKnowledgeDocumentVersionId(drafrVersionId);
+        knowledgeDocumentTagVo.setKnowledgeDocumentId(documentVo.getId());
+        knowledgeDocumentTagVo.setKnowledgeDocumentVersionId(documentVo.getKnowledgeDocumentVersionId());
         for (String tagName : documentVo.getTagList()) {
             Long tagId = knowledgeTagMapper.getKnowledgeTagIdByName(tagName);
             if (tagId == null) {
@@ -259,8 +248,8 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         List<KnowledgeDocumentLineVo> knowledgeDocumentLineList = new ArrayList<>(100);
         for (KnowledgeDocumentLineVo knowledgeDocumentLineVo : documentVo.getLineList()) {
             knowledgeDocumentLineVo.setLineNumber(++lineNumber);
-            knowledgeDocumentLineVo.setKnowledgeDocumentId(documentId);
-            knowledgeDocumentLineVo.setKnowledgeDocumentVersionId(drafrVersionId);
+            knowledgeDocumentLineVo.setKnowledgeDocumentId(documentVo.getId());
+            knowledgeDocumentLineVo.setKnowledgeDocumentVersionId(documentVo.getKnowledgeDocumentVersionId());
             knowledgeDocumentLineVo.setUuid(UuidUtil.randomUuid());
             if (knowledgeDocumentLineVo.getConfig() != null) {
                 KnowledgeDocumentLineConfigVo knowledgeDocumentLineConfigVo = new KnowledgeDocumentLineConfigVo(knowledgeDocumentLineVo.getConfigStr());
@@ -288,12 +277,9 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         }
         /** 更新文档大小 **/
         KnowledgeDocumentVersionVo updateSizeVo = new KnowledgeDocumentVersionVo();
-        updateSizeVo.setId(drafrVersionId);
+        updateSizeVo.setId(documentVo.getKnowledgeDocumentVersionId());
         updateSizeVo.setSize(size);
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateSizeVo);
-        resultObj.put("knowledgeDocumentId", documentId);
-        resultObj.put("knowledgeDocumentVersionId", drafrVersionId);
-        return resultObj;
     }
 
     /**

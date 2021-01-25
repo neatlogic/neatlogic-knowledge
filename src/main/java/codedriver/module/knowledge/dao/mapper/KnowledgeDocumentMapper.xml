@@ -1317,7 +1317,7 @@
         <if test="version != null">
             `version` = #{version},
         </if>
-        `id` = #{id}
+        `is_delete` = 0
         WHERE `id` = #{id}
     </update>
 
@@ -1332,19 +1332,23 @@
     <update id="updateKnowledgeDocumentById" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
         UPDATE `knowledge_document`
         SET
-        <if test="knowledgeDocumentVersionId != null">
             `knowledge_document_version_id` = #{knowledgeDocumentVersionId},
-        </if>
-        <if test="knowledgeDocumentTypeUuid != null and knowledgeDocumentTypeUuid != ''">
-            `knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid},
-        </if>
-        <if test="version != null">
             `version` = #{version},
-        </if>
-        <if test="title != null and title != ''">
-            `title` = #{title},
-        </if>
-        `id` = `id`
+            `is_delete` = 0
+        WHERE `id` = #{id}
+    </update>
+
+    <update id="updateKnowledgeDocumentTitleById" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
+        UPDATE `knowledge_document`
+        SET
+            `title` = #{title}
+        WHERE `id` = #{id}
+    </update>
+
+    <update id="updateKnowledgeDocumentTypeUuidById" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
+        UPDATE `knowledge_document`
+        SET
+            `knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid}
         WHERE `id` = #{id}
     </update>
 

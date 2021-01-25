@@ -54,7 +54,7 @@ public class KnowledgeDocumentTitleUpdateApi extends PrivateApiComponentBase {
         String title = jsonObj.getString("title");
         if(!knowledgeDocumentVo.getTitle().equals(title)) {
             knowledgeDocumentVo.setTitle(title);
-            knowledgeDocumentMapper.updateKnowledgeDocumentById(knowledgeDocumentVo);
+            knowledgeDocumentMapper.updateKnowledgeDocumentTitleById(knowledgeDocumentVo);
         }
         return null;
     }

@@ -55,7 +55,7 @@ public class KnowledgeDocumentTypeUpdateApi extends PrivateApiComponentBase {
         String knowledgeDocumentTypeUuid = jsonObj.getString("knowledgeDocumentTypeUuid");
         if(!knowledgeDocumentVo.getKnowledgeDocumentTypeUuid().equals(knowledgeDocumentTypeUuid)) {
             knowledgeDocumentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentTypeUuid);
-            knowledgeDocumentMapper.updateKnowledgeDocumentById(knowledgeDocumentVo);
+            knowledgeDocumentMapper.updateKnowledgeDocumentTypeUuidById(knowledgeDocumentVo);
             KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
             knowledgeDocumentVersionVo.setKnowledgeDocumentId(knowledgeDocumentId);
             knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentTypeUuid);

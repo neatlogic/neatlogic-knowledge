@@ -83,9 +83,6 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         if(knowledgeDocumentMapper.checkUserIsApprover(documentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
             throw new KnowledgeDocumentCurrentUserNotReviewerException();
         }
-        if(!Objects.equals(documentVo.getVersion(), knowledgeDocumentVersionVo.getFromVersion())) {
-            throw new KnowledgeDocumentNotCurrentVersionException(knowledgeDocumentVersionVo.getFromVersion());
-        }
         if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftReviewedException();
         }else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
@@ -113,10 +110,8 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
             updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.PASSED.getValue());
             updateStatusVo.setVersion(maxVersion + 1);
 
-//            knowledgeDocumentMapper.updateKnowledgeDocumentVersionStatusByKnowledgeDocumentIdAndVersionAndStatus(documentVo.getId(), knowledgeDocumentVersionVo.getFromVersion(), KnowledgeDocumentVersionStatus.DRAFT.getValue(), KnowledgeDocumentVersionStatus.EXPIRED.getValue());
             documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             documentVo.setVersion(updateStatusVo.getVersion());
-            documentVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
             knowledgeDocumentMapper.updateKnowledgeDocumentById(documentVo);
         }else{
             updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.REJECTED.getValue());

@@ -119,7 +119,6 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         }else{
             updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.REJECTED.getValue());
         }
-        updateStatusVo.setLcu(null);
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
 
         KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();

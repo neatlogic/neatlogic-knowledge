@@ -28,11 +28,14 @@
 		COUNT(1)
 		FROM
 		`knowledge_template`
-		WHERE
-		1=1
+		<where>
 		<if test="keyword != null and keyword != ''">
 			and `name` LIKE CONCAT('%', #{keyword}, '%')
 		</if>
+		<if test="isActive != null">
+			and `is_active` = #{isActive}
+		</if>
+		</where>
 	</select>
 
 	<select id="searchKnowledgeTemplate" parameterType="codedriver.module.knowledge.dto.KnowledgeTemplateVo" resultType="codedriver.module.knowledge.dto.KnowledgeTemplateVo">
@@ -45,10 +48,14 @@
 		`fcd`,
 		`lcd`
 		FROM `knowledge_template`
-		where 1=1
+		<where>
 		<if test="keyword != null and keyword != ''">
 			and `name` LIKE CONCAT('%', #{keyword}, '%')
 		</if>
+		<if test="isActive != null">
+			and `is_active` = #{isActive}
+		</if>
+		</where>
 		ORDER BY `lcd` desc
 		<if test="needPage == true">
 			LIMIT #{startNum}, #{pageSize}

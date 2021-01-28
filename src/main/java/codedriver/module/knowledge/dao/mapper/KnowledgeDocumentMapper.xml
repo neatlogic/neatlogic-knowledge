@@ -801,6 +801,15 @@
         ORDER BY `version` DESC
     </select>
 
+    <select id="getKnowledgeDocumentHistorialVersionIdListByKnowledgeDocumentId" parameterType="java.lang.Long"
+            resultType="java.lang.Long">
+        SELECT `id`
+        FROM `knowledge_document_version`
+        WHERE `knowledge_document_id` = #{value}
+          AND `status` = 'passed'
+          AND `is_delete` = 0
+    </select>
+
     <select id="getKnowledgeDocumentHistorialVersionCountByKnowledgeDocumentId" parameterType="java.lang.Long"
             resultType="int">
         SELECT COUNT(1)
@@ -1458,5 +1467,13 @@
         DELETE
         FROM `knowledge_document_favor`
         WHERE `knowledge_document_id` = #{value}
+    </delete>
+
+    <delete id="deleteKnowledgeDocumentAuditByKnowledgeDocumentVersionIdList" parameterType="java.lang.Long">
+        DELETE FROM `knowledge_document_audit`
+        WHERE `knowledge_document_version_id` IN
+        <foreach collection="list" item="knowledgeDocumentVersionId" open="(" separator="," close=")">
+            #{knowledgeDocumentVersionId}
+        </foreach>
     </delete>
 </mapper>

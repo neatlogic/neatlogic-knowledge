@@ -80,6 +80,8 @@ public interface KnowledgeDocumentMapper {
         );
 
     public List<KnowledgeDocumentHistoricalVersionVo> getKnowledgeDocumentHistorialVersionListByKnowledgeDocumentId(Long knowledgeDocumentId);
+
+    public List<Long> getKnowledgeDocumentHistorialVersionIdListByKnowledgeDocumentId(Long knowledgeDocumentId);
     
     public int getKnowledgeDocumentHistorialVersionCountByKnowledgeDocumentId(Long knowledgeDocumentId);
     
@@ -226,4 +228,6 @@ public interface KnowledgeDocumentMapper {
     public int deleteKnowledgeDocumentCollectByDocumentId(Long knowledgeDocumentId);
 
     public int deleteKnowledgeDocumentFavorByDocumentId(Long knowledgeDocumentId);
+
+    public int deleteKnowledgeDocumentAuditByKnowledgeDocumentVersionIdList(List<Long> knowledgeDocumentVersionIdList);
 }

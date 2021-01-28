@@ -4,6 +4,7 @@ import java.util.List;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.label.NO_AUTH;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,11 +67,16 @@ public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentCurrentUserNotReviewerException();
         }
         knowledgeDocumentMapper.updateKnowledgeDocumentToDeleteById(knowledgeDocumentId);
-        knowledgeDocumentMapper.updateKnowledgeDocumentVersionToDeleteByKnowledgeDocumentId(knowledgeDocumentId);
         knowledgeDocumentMapper.deleteKnowledgeDocumentInvokeByKnowledgeDocumentId(knowledgeDocumentId);
         knowledgeDocumentMapper.deleteKnowledgeDocumentCollectByDocumentId(knowledgeDocumentId);
         knowledgeDocumentMapper.deleteKnowledgeDocumentFavorByDocumentId(knowledgeDocumentId);
         knowledgeDocumentMapper.resetKnowledgeViewCountByDocumentId(knowledgeDocumentId);
+
+        List<Long> knowledgeDocumentVersionIdList =  knowledgeDocumentMapper.getKnowledgeDocumentHistorialVersionIdListByKnowledgeDocumentId(knowledgeDocumentId);
+        if(CollectionUtils.isNotEmpty(knowledgeDocumentVersionIdList)){
+            knowledgeDocumentMapper.updateKnowledgeDocumentVersionToDeleteByKnowledgeDocumentId(knowledgeDocumentId);
+            knowledgeDocumentMapper.deleteKnowledgeDocumentAuditByKnowledgeDocumentVersionIdList(knowledgeDocumentVersionIdList);
+        }
         /** 删除es对应知识 **/
         ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE.getValue()).delete(knowledgeDocumentId.toString());
         return null;

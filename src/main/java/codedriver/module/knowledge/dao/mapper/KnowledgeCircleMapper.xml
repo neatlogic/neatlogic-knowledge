@@ -77,7 +77,7 @@
 	</select>
 
 	<select id="checkCircleHasKnowledge" parameterType="java.lang.Long" resultType="int">
-		select count(1) from (select `id` from `knowledge_document` where `knowledge_circle_id` = #{value} limit 1) a
+		select count(1) from (select `id` from `knowledge_document` where `knowledge_circle_id` = #{value} and `is_delete` = 0 limit 1) a
 	</select>
 
 	<update id="updateKnowledgeCircle" parameterType="codedriver.module.knowledge.dto.KnowledgeCircleVo">

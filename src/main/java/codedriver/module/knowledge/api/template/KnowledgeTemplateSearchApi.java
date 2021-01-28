@@ -41,6 +41,9 @@ public class KnowledgeTemplateSearchApi extends PrivateApiComponentBase{
 
 
 	@Input({
+			@Param(name = "isActive",
+					type = ApiParamType.INTEGER,
+					desc = "是否激活"),
 			@Param( name = "keyword",
 					type = ApiParamType.STRING,
 					desc = "关键词",

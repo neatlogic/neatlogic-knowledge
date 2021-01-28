@@ -39,11 +39,12 @@
 
 	<select id="getKnowledgeCircleById" parameterType="java.lang.Long" resultType="codedriver.module.knowledge.dto.KnowledgeCircleVo">
 		select
-		`id`,
-		`name`
+		a.`id`,
+		a.`name`,
+		(SELECT COUNT(1) FROM `knowledge_document` WHERE `knowledge_circle_id` = a.`id` and `is_delete` = 0) as `documentCount`
 		from
-		`knowledge_circle`
-		where `id` = #{value}
+		`knowledge_circle` a
+		where a.`id` = #{value}
 	</select>
 
 	<select id="getKnowledgeCircleUserList" resultType="codedriver.module.knowledge.dto.KnowledgeCircleUserVo">

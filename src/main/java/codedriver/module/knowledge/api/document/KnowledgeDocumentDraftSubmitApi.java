@@ -105,7 +105,6 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
         int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
         JSONObject resultObj = new JSONObject();
-        isReviewable = isReviewable == 0 ? 0 : 1;
         resultObj.put("isReviewable", isReviewable);
         
         KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();

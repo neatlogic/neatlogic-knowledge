@@ -91,9 +91,6 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         knowledgeDocumentVo.setViewCount(knowledgeDocumentMapper.getDocumentViewCount(knowledgeDocumentVo.getId()));
         knowledgeDocumentVo.setIsCollect(knowledgeDocumentMapper.checkDocumentHasBeenCollected(knowledgeDocumentVo.getId(), UserContext.get().getUserUuid(true)));
         knowledgeDocumentVo.setIsFavor(knowledgeDocumentMapper.checkDocumentHasBeenFavored(knowledgeDocumentVo.getId(), UserContext.get().getUserUuid(true)));
-        
-        Long draftId = knowledgeDocumentMapper.getKnowledgeDocumentDrafIdtByKnowledgeDocumentIdAndLcu(knowledgeDocumentVo.getId(), UserContext.get().getUserUuid(true));
-        knowledgeDocumentVo.setCurrentUserDraftId(draftId);
         return knowledgeDocumentVo;
     }
 

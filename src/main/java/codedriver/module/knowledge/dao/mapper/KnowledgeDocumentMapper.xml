@@ -925,7 +925,7 @@
 
     <select id="checkUserIsApprover" resultType="int">
         SELECT
-        COUNT(1)
+        IF(COUNT(1)=0, 0, 1)
         FROM `knowledge_circle_user`
         WHERE `auth_type` = 'approver'
         AND ((type = 'common' AND `uuid` = 'alluser')
@@ -1129,14 +1129,6 @@
         <foreach collection="knowledgeDocumentIdList" item="knowledgeDocumentId" open="(" separator="," close=")">
             #{knowledgeDocumentId}
         </foreach>
-    </select>
-
-    <select id="getKnowledgeDocumentDrafIdtByKnowledgeDocumentIdAndLcu" resultType="java.lang.Long">
-        SELECT `id`
-        FROM `knowledge_document_version`
-        WHERE `knowledge_document_id` = #{knowledgeDocumentId}
-          AND `status` = 'draft'
-          AND `lcu` = #{lcu}
     </select>
 
     <select id="getKnowledgeDocumentIdByInvokeIdAndSource"

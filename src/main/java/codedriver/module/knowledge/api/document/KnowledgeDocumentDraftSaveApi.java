@@ -167,9 +167,6 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             if (oldKnowledgeDocumentVersionVo == null) {
                 throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
             }
-            if (!oldKnowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
-                throw new KnowledgeDocumentCurrentUserNotOwnerException();
-            }
             /** 获取文档锁 **/
             KnowledgeDocumentVo oldDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
             if (oldDocumentVo == null) {
@@ -200,6 +197,9 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                     throw new KnowledgeDocumentDraftPublishedCannotBeModifiedException();
                 } else if (KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
                     throw new KnowledgeDocumentDraftSubmittedCannotBeModifiedException();
+                }
+                if (!oldKnowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
+                    throw new KnowledgeDocumentCurrentUserNotOwnerException();
                 }
                 knowledgeDocumentVersionVo.setId(knowledgeDocumentVersionId);
                 documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionVo.getId());

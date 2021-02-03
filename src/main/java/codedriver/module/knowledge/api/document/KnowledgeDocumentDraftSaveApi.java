@@ -9,6 +9,7 @@ import java.util.Objects;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.label.NO_AUTH;
+import codedriver.module.knowledge.exception.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,15 +48,6 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.dto.KnowledgeTagVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotOwnerException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftPublishedCannotBeModifiedException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentDraftSubmittedCannotBeModifiedException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentRepeatInvokeException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentTitleRepeatException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentTypeNotFoundException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentUnmodifiedCannotBeSavedException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 
 @Service
@@ -171,6 +163,11 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             KnowledgeDocumentVo oldDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
             if (oldDocumentVo == null) {
                 throw new KnowledgeDocumentNotFoundException(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId());
+            }
+            if(status.equals(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())){
+                if(knowledgeDocumentMapper.checkIFThereIsSubmittedDraftByKnowDocumentId(oldKnowledgeDocumentVersionVo.getKnowledgeDocumentId()) > 0) {
+                    throw new KnowledgeDocumentDraftSubmitFailedExecption();
+                }
             }
             documentVo.setId(oldDocumentVo.getId());
             resultObj.put("knowledgeDocumentId", documentVo.getId());

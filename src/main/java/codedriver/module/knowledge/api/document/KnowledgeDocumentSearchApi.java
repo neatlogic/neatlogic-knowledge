@@ -395,15 +395,16 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             statusArray.add(jsonAll);
             JSONObject jsonSubmit = new JSONObject();
             statusArray.add(jsonSubmit);
+            //通过
             JSONObject jsonPass = new JSONObject();
             jsonPass.put("value", KnowledgeDocumentVersionStatus.PASSED.getValue());
             jsonPass.put("text", KnowledgeDocumentVersionStatus.PASSED.getText());
-            statusTmpList.clear();
             statusTmpList.add(KnowledgeDocumentVersionStatus.PASSED.getValue());
             documentVersionVoParam.setStatusList(statusTmpList);
             documentVersionVoParam.setIsReviewer(1);
             jsonPass.put("count", knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam));
             statusArray.add(jsonPass);
+            //不通过
             JSONObject jsonReject = new JSONObject();
             jsonReject.put("value", KnowledgeDocumentVersionStatus.REJECTED.getValue());
             jsonReject.put("text", KnowledgeDocumentVersionStatus.REJECTED.getText());
@@ -413,7 +414,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             documentVersionVoParam.setIsReviewer(1);
             jsonReject.put("count", knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam));
             statusArray.add(jsonReject);
-            
+            //待审批
             jsonSubmit.put("value", KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
             jsonSubmit.put("text", KnowledgeDocumentVersionStatus.SUBMITTED.getText());
             statusTmpList.clear();

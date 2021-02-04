@@ -217,7 +217,6 @@
         LEFT JOIN `knowledge_circle_user` kcu ON kcu.`knowledge_circle_id` = kd.`knowledge_circle_id` AND
         kcu.`auth_type` = 'approver'
         <where>
-            kd.`is_delete` = 0 AND kdv.`is_delete` = 0
             <include refid="searchDocumentVersionSql"/>
             and kdv.`status` in ('submitted')
             <include refid="approveSql"/>
@@ -259,7 +258,6 @@
         LEFT JOIN `knowledge_circle_user` kcu ON kcu.`knowledge_circle_id` = kd.`knowledge_circle_id` AND
         kcu.`auth_type` = 'approver'
         <where>
-            kd.`is_delete` = 0 AND kdv.`is_delete` = 0
             <include refid="searchDocumentVersionSql"/>
             and kdv.`status` in ('submitted')
             <include refid="approveSql"/>

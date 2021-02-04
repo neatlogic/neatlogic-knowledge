@@ -52,10 +52,10 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
         });
         map.put(KnowledgeType.SHARE, () -> {
             KnowledgeDocumentVersionVo documentVersionVoParam = new KnowledgeDocumentVersionVo();
-            documentVersionVoParam.setStatusList(Arrays.asList(KnowledgeDocumentVersionStatus.SUBMITTED.getValue(),KnowledgeDocumentVersionStatus.REJECTED.getValue(),KnowledgeDocumentVersionStatus.PASSED.getValue()));
+            documentVersionVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.ALL.getValue()));
             documentVersionVoParam.setLcuList(Collections.singletonList(GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid(true)));
             knowledgeDocumentService.getReviewerParam(documentVersionVoParam);
-            return knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam);
+            return knowledgeDocumentMapper.getMyAllReviewKnowledgeDocumentVersionCount(documentVersionVoParam);
         });
         map.put(KnowledgeType.COLLECT, () -> {
             KnowledgeDocumentVo documentVoParam = new KnowledgeDocumentVo();

@@ -1,13 +1,12 @@
 package codedriver.module.knowledge.dto;
 
-import java.util.Arrays;
-
-import com.alibaba.fastjson.JSONObject;
-
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.constvalue.KnowledgeType;
+import com.alibaba.fastjson.JSONObject;
+
+import java.util.Arrays;
 
 public class KnowledgeTypeVo {
 
@@ -46,7 +45,7 @@ public class KnowledgeTypeVo {
                 defaultCondition.put("statusList", Arrays.asList(KnowledgeDocumentVersionStatus.SUBMITTED.getValue()));
             }else if(KnowledgeType.SHARE.getValue().equals(this.value)){
                 defaultCondition.put("lcuList", Arrays.asList(GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid()));
-                defaultCondition.put("statusList", Arrays.asList(KnowledgeDocumentVersionStatus.SUBMITTED.getValue(),KnowledgeDocumentVersionStatus.REJECTED.getValue(),KnowledgeDocumentVersionStatus.PASSED.getValue()));
+                defaultCondition.put("statusList", Arrays.asList(KnowledgeDocumentVersionStatus.ALL.getValue()));
             }else if(KnowledgeType.COLLECT.getValue().equals(this.value)){
                 defaultCondition.put("collector", GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid());
                 defaultCondition.put("type", "document");

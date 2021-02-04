@@ -174,7 +174,11 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             }
         }
         if(Objects.equals(knowledgeDocumentVersionId, knowledgeDocumentVo.getKnowledgeDocumentVersionId())) {
-            knowledgeDocumentVo.setIsCurrentVersion(1);
+            if(Objects.equals(knowledgeDocumentVo.getIsDelete(), 0) && Objects.equals(knowledgeDocumentVersionVo.getIsDelete(), 0)){
+                knowledgeDocumentVo.setIsCurrentVersion(1);
+            }else {
+                knowledgeDocumentVo.setIsCurrentVersion(0);
+            }
         }else {
             knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             knowledgeDocumentVo.setIsCurrentVersion(0);

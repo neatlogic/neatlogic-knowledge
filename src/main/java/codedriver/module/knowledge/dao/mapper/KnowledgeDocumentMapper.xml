@@ -805,7 +805,6 @@
         FROM `knowledge_document_version`
         WHERE `knowledge_document_id` = #{value}
           AND `status` = 'passed'
-          AND `is_delete` = 0
     </select>
 
     <select id="getKnowledgeDocumentHistorialVersionCountByKnowledgeDocumentId" parameterType="java.lang.Long"

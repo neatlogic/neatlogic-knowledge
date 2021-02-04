@@ -1,8 +1,10 @@
 package codedriver.module.knowledge.service;
 
 import codedriver.framework.exception.type.PermissionDeniedException;
+import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import com.alibaba.fastjson.JSONObject;
 
 public interface KnowledgeDocumentService {
 
@@ -22,4 +24,12 @@ public interface KnowledgeDocumentService {
      * @return
      */
     public void getReviewerParam(KnowledgeDocumentVersionVo documentVersionVoParam);
+    /**
+     * @Description: 记录对文档操作（如提交，审核，切换版本，删除版本）
+     * @Author: linbq
+     * @Date: 2021/2/4 16:06
+     * @Params:[knowledgeDocumentId, knowledgeDocumentVersionId, operate, config]
+     * @Returns:void
+     **/
+    public void audit(Long knowledgeDocumentId, Long knowledgeDocumentVersionId, KnowledgeDocumentOperate operate, JSONObject config);
 }

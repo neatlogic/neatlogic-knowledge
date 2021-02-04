@@ -13,18 +13,16 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentAuditConfigVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.*;
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,13 +32,13 @@ import java.util.Objects;
 @Transactional
 public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    
-    @Autowired
-    private KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
 
-    @Autowired
+    @Resource
+    private KnowledgeDocumentService knowledgeDocumentService;
+
+    @Resource
     private TeamMapper teamMapper;
     
     @Override
@@ -94,19 +92,11 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
         knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentVo.setVersion(knowledgeDocumentVersionVo.getVersion());
         knowledgeDocumentMapper.updateKnowledgeDocumentById(knowledgeDocumentVo);
-        
-        KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();
-        knowledgeDocumentAuditVo.setKnowledgeDocumentId(knowledgeDocumentVo.getId());
-        knowledgeDocumentAuditVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
-        knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
-        knowledgeDocumentAuditVo.setOperate(KnowledgeDocumentOperate.SWITCHVERSION.getValue());
+
         JSONObject config = new JSONObject();
         config.put("oldVersion", oldVersion);
         config.put("newVersion", knowledgeDocumentVersionVo.getVersion());
-        KnowledgeDocumentAuditConfigVo knowledgeDocumentAuditConfigVo = new KnowledgeDocumentAuditConfigVo(config.toJSONString());
-        knowledgeDocumentAuditMapper.insertKnowledgeDocumentAuditConfig(knowledgeDocumentAuditConfigVo);
-        knowledgeDocumentAuditVo.setConfigHash(knowledgeDocumentAuditConfigVo.getHash());
-        knowledgeDocumentAuditMapper.insertKnowledgeDocumentAudit(knowledgeDocumentAuditVo);
+        knowledgeDocumentService.audit(knowledgeDocumentVo.getId(), knowledgeDocumentVersionId, KnowledgeDocumentOperate.SWITCHVERSION, config);
         return null;
     }
 

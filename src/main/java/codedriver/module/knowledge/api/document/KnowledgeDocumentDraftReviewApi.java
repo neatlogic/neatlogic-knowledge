@@ -1,13 +1,12 @@
 package codedriver.module.knowledge.api.document;
 
 import java.util.List;
-import java.util.Objects;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.label.NO_AUTH;
 import codedriver.module.knowledge.exception.*;
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,12 +23,11 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentAuditConfigVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = NO_AUTH.class)
@@ -37,13 +35,13 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 @Transactional
 public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    
-    @Autowired
-    private KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
 
-    @Autowired
+    @Resource
+    private KnowledgeDocumentService knowledgeDocumentService;
+
+    @Resource
     private TeamMapper teamMapper;
     
     @Override
@@ -90,7 +88,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         }else if(KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             throw new KnowledgeDocumentDraftUnsubmittedCannotBeReviewedException();
         }
-
+        KnowledgeDocumentOperate operate = KnowledgeDocumentOperate.PASS;
         String action = jsonObj.getString("action");
         KnowledgeDocumentVersionVo updateStatusVo = new KnowledgeDocumentVersionVo();
         updateStatusVo.setKnowledgeDocumentTypeUuid(knowledgeDocumentVersionVo.getKnowledgeDocumentTypeUuid());
@@ -99,7 +97,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         if(knowledgeDocumentVersionVo.getIsDelete() == 1){
             updateStatusVo.setFromVersion(0);
         }
-        if(KnowledgeDocumentOperate.PASS.getValue().equals(action)) {
+        if(operate.getValue().equals(action)) {
             if(documentVo.getKnowledgeDocumentVersionId() == null){
                 if(knowledgeDocumentMapper.checkKnowledgeDocumentTitleIsRepeat(documentVo) > 0){
                     throw new KnowledgeDocumentTitleRepeatException(documentVo.getTitle());
@@ -117,24 +115,17 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
             documentVo.setVersion(updateStatusVo.getVersion());
             knowledgeDocumentMapper.updateKnowledgeDocumentById(documentVo);
         }else{
+            operate = KnowledgeDocumentOperate.REJECT;
             updateStatusVo.setStatus(KnowledgeDocumentVersionStatus.REJECTED.getValue());
         }
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
-
-        KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();
-        knowledgeDocumentAuditVo.setKnowledgeDocumentId(documentVo.getId());
-        knowledgeDocumentAuditVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
-        knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
-        knowledgeDocumentAuditVo.setOperate(action);
+        JSONObject config = null;
         String content = jsonObj.getString("content");
         if(StringUtils.isNotEmpty(content)) {
-            JSONObject config = new JSONObject();
+            config = new JSONObject();
             config.put("content", content);
-            KnowledgeDocumentAuditConfigVo knowledgeDocumentAuditConfigVo = new KnowledgeDocumentAuditConfigVo(config.toJSONString());
-            knowledgeDocumentAuditMapper.insertKnowledgeDocumentAuditConfig(knowledgeDocumentAuditConfigVo);
-            knowledgeDocumentAuditVo.setConfigHash(knowledgeDocumentAuditConfigVo.getHash());
         }
-        knowledgeDocumentAuditMapper.insertKnowledgeDocumentAudit(knowledgeDocumentAuditVo);
+        knowledgeDocumentService.audit(documentVo.getId(), knowledgeDocumentVersionId, operate, config);
         return null;
     }
 

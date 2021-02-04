@@ -74,6 +74,7 @@ public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
 
         List<Long> knowledgeDocumentVersionIdList =  knowledgeDocumentMapper.getKnowledgeDocumentHistorialVersionIdListByKnowledgeDocumentId(knowledgeDocumentId);
         if(CollectionUtils.isNotEmpty(knowledgeDocumentVersionIdList)){
+            System.out.println(knowledgeDocumentVersionIdList);
             knowledgeDocumentMapper.updateKnowledgeDocumentVersionToDeleteByKnowledgeDocumentId(knowledgeDocumentId);
             knowledgeDocumentMapper.deleteKnowledgeDocumentAuditByKnowledgeDocumentVersionIdList(knowledgeDocumentVersionIdList);
         }

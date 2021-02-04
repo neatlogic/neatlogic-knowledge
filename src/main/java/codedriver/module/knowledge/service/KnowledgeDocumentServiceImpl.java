@@ -18,8 +18,10 @@ import codedriver.module.knowledge.dao.mapper.*;
 import codedriver.module.knowledge.dto.*;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -258,5 +260,26 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
                 documentVersionVoParam.setReviewer(documentVersionVoParam.getReviewerList().get(0));
             }
         }
+    }
+    /**
+     * @Description: 记录对文档操作（如提交，审核，切换版本，删除版本）
+     * @Author: linbq
+     * @Date: 2021/2/4 16:06
+     * @Params:[knowledgeDocumentId, knowledgeDocumentVersionId, operate, config]
+     * @Returns:void
+     **/
+    @Override
+    public void audit(Long knowledgeDocumentId, Long knowledgeDocumentVersionId, KnowledgeDocumentOperate operate, JSONObject config) {
+        KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();
+        knowledgeDocumentAuditVo.setKnowledgeDocumentId(knowledgeDocumentId);
+        knowledgeDocumentAuditVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+        knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
+        knowledgeDocumentAuditVo.setOperate(operate.getValue());
+        if(MapUtils.isNotEmpty(config)){
+            KnowledgeDocumentAuditConfigVo knowledgeDocumentAuditConfigVo = new KnowledgeDocumentAuditConfigVo(config.toJSONString());
+            knowledgeDocumentAuditMapper.insertKnowledgeDocumentAuditConfig(knowledgeDocumentAuditConfigVo);
+            knowledgeDocumentAuditVo.setConfigHash(knowledgeDocumentAuditConfigVo.getHash());
+        }
+        knowledgeDocumentAuditMapper.insertKnowledgeDocumentAudit(knowledgeDocumentAuditVo);
     }
 }

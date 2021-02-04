@@ -5,7 +5,7 @@ import java.util.List;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.label.NO_AUTH;
 import codedriver.module.knowledge.exception.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,11 +23,11 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = NO_AUTH.class)
@@ -35,13 +35,13 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 @Transactional
 public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    
-    @Autowired
-    private KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
 
-    @Autowired
+    @Resource
+    private KnowledgeDocumentService knowledgeDocumentService;
+
+    @Resource
     private TeamMapper teamMapper;
     
     @Override
@@ -106,13 +106,8 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
         JSONObject resultObj = new JSONObject();
         resultObj.put("isReviewable", isReviewable);
-        
-        KnowledgeDocumentAuditVo knowledgeDocumentAuditVo = new KnowledgeDocumentAuditVo();
-        knowledgeDocumentAuditVo.setKnowledgeDocumentId(knowledgeDocumentVo.getId());
-        knowledgeDocumentAuditVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
-        knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
-        knowledgeDocumentAuditVo.setOperate(KnowledgeDocumentOperate.SUBMIT.getValue());
-        knowledgeDocumentAuditMapper.insertKnowledgeDocumentAudit(knowledgeDocumentAuditVo);
+
+        knowledgeDocumentService.audit(knowledgeDocumentVo.getId(), knowledgeDocumentVersionId, KnowledgeDocumentOperate.SUBMIT, null);
         return resultObj;
     }
 

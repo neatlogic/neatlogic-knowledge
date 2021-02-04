@@ -9,11 +9,11 @@ import java.util.Objects;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.label.NO_AUTH;
+import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.exception.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,21 +50,23 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.dto.KnowledgeTagVo;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 
+import javax.annotation.Resource;
+
 @Service
 @AuthAction(action = NO_AUTH.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 @Transactional
 public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    @Autowired
+    @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
-    @Autowired
+    @Resource
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
-    @Autowired
+    @Resource
     private KnowledgeTagMapper knowledgeTagMapper;
-    @Autowired
+    @Resource
     private TeamMapper teamMapper;
 
     @Override
@@ -123,6 +125,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         }
         resultObj.put("isReviewable", isReviewable);
 
+        boolean needSaveDocument = true;
         KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = new KnowledgeDocumentVersionVo();
         knowledgeDocumentVersionVo.setTitle(documentVo.getTitle());
         knowledgeDocumentVersionVo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
@@ -201,20 +204,25 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
                 knowledgeDocumentVersionVo.setId(knowledgeDocumentVersionId);
                 documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionVo.getId());
                 resultObj.put("knowledgeDocumentVersionId", knowledgeDocumentVersionVo.getId());
-                if (!checkDocumentIsModify(before, documentVo)) {
-                    return resultObj;
+                needSaveDocument = checkDocumentIsModify(before, documentVo);
+                if (needSaveDocument) {
+                    knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(knowledgeDocumentVersionVo.getId());
+                    knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(documentVo.getId(), knowledgeDocumentVersionVo.getId()));
+                    knowledgeDocumentMapper.deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(documentVo.getId(), knowledgeDocumentVersionVo.getId()));
                 }
                 /** 覆盖旧草稿时，更新标题、修改用户、修改时间，删除行数据、附件、标签数据，后面再重新插入 **/
                 if(oldKnowledgeDocumentVersionVo.getIsDelete() == 1){
                     knowledgeDocumentVersionVo.setFromVersion(0);
                 }
                 knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(knowledgeDocumentVersionVo);
-                knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(knowledgeDocumentVersionVo.getId());
-                knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(documentVo.getId(), knowledgeDocumentVersionVo.getId()));
-                knowledgeDocumentMapper.deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(documentVo.getId(), knowledgeDocumentVersionVo.getId()));
             }
         }
-        saveDocument(documentVo);
+        if(needSaveDocument){
+            saveDocument(documentVo);
+        }
+        if(status.equals(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())) {
+            knowledgeDocumentService.audit(documentVo.getId(), documentVo.getKnowledgeDocumentVersionId(), KnowledgeDocumentOperate.SUBMIT, null);
+        }
         return resultObj;
     }
     /**

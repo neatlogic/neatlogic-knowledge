@@ -1296,9 +1296,6 @@
             parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
         UPDATE `knowledge_document_version`
         SET
-        <if test="title != null and title != ''">
-            `title` = #{title},
-        </if>
         <if test="status != null and status != ''">
             `status` = #{status},
             <if test="status == 'draft'">

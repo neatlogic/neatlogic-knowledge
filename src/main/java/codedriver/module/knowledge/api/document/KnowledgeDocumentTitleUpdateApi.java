@@ -1,5 +1,6 @@
 package codedriver.module.knowledge.api.document;
 
+import codedriver.module.knowledge.exception.KnowledgeDocumentTitleRepeatException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +55,9 @@ public class KnowledgeDocumentTitleUpdateApi extends PrivateApiComponentBase {
         String title = jsonObj.getString("title");
         if(!knowledgeDocumentVo.getTitle().equals(title)) {
             knowledgeDocumentVo.setTitle(title);
+            if(knowledgeDocumentMapper.checkKnowledgeDocumentTitleIsRepeat(knowledgeDocumentVo) > 0){
+                throw new KnowledgeDocumentTitleRepeatException(knowledgeDocumentVo.getTitle());
+            }
             knowledgeDocumentMapper.updateKnowledgeDocumentTitleById(knowledgeDocumentVo);
         }
         return null;

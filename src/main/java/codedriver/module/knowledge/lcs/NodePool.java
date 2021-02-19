@@ -4,7 +4,7 @@ package codedriver.module.knowledge.lcs;
  * 
 * @Time:2020年11月2日
 * @ClassName: NodePool 
-* @Description: 节点池，用于代替原来的二维数组
+* @Description: 节点池
  */
 public class NodePool {
     private final int oldLength;

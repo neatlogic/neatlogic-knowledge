@@ -23,7 +23,7 @@ public class LCSUtil {
         NodePool nodePool = new NodePool(oldList.size(), newList.size());       
         for(int i = 0; i < oldList.size(); i++) {
             for(int j = 0; j < newList.size(); j++) {
-                Node currentNode = nodePool.getNewNode(i, j);
+                Node currentNode = new Node(i, j);
                 if(biPredicate.test(oldList.get(i), newList.get(j))) {
                     currentNode.setTotalMatchLength(1).setMatch(true);
                     Node upperLeftNode = nodePool.getOldNode(i - 1, j - 1);
@@ -67,7 +67,7 @@ public class LCSUtil {
         NodePool nodePool = new NodePool(oldStr.length(), newStr.length());       
         for(int i = 0; i < oldStr.length(); i++) {
             for(int j = 0; j < newStr.length(); j++) {
-                Node currentNode = nodePool.getNewNode(i, j);
+                Node currentNode = new Node(i, j);
                 if(oldStr.charAt(i) == newStr.charAt(j)) {
                     currentNode.setTotalMatchLength(1).setMatch(true);
                     Node upperLeftNode = nodePool.getOldNode(i - 1, j - 1);

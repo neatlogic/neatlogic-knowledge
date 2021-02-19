@@ -91,6 +91,8 @@ public class LCSUtil {
                         currentNode.setTotalMatchLength(left).setPrevious(leftNode);
                     }
                 }
+//                System.out.print(currentNode);
+//                System.out.print("\t");
                 nodePool.addNode(currentNode);
             }
 //            System.out.println();

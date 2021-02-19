@@ -1,5 +1,9 @@
 package codedriver.module.knowledge.lcs;
 
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 
 * @Time:2020年11月2日
@@ -9,16 +13,40 @@ package codedriver.module.knowledge.lcs;
 public class NodePool {
     private final int oldLength;
     private final int newLength;
+    private final int maxArrayLength = 1024;
+    private final boolean lessThanMaxArrayLength;
     /* 存储偶数行的对比结果 */
     private Node[] evenRowsArray;
+    private List<Node[]> evenRowsList;
     /* 存储奇数行的对比结果 */
     private Node[] oddRowsArray;
-
+    private List<Node[]> oddRowsList;
     public NodePool(int oldLength, int newLength) {
         this.oldLength = oldLength;
         this.newLength = newLength;
-        evenRowsArray = new Node[newLength];
-        oddRowsArray = new Node[newLength];
+        if(newLength <= this.maxArrayLength){
+            this.lessThanMaxArrayLength = true;
+            evenRowsArray = new Node[newLength];
+            oddRowsArray = new Node[newLength];
+        }else{
+            this.lessThanMaxArrayLength = false;
+            int remainder = newLength % this.maxArrayLength;
+            int quotient = newLength / this.maxArrayLength;
+            quotient = remainder == 0 ? quotient : quotient + 1;
+            evenRowsList = new ArrayList<>(quotient);
+            oddRowsList = new ArrayList<>(quotient);
+            for (int i = 0; i < quotient - 1; i++) {
+                evenRowsList.add(new Node[this.maxArrayLength]);
+                oddRowsList.add(new Node[this.maxArrayLength]);
+            }
+            if(remainder == 0){
+                evenRowsList.add(new Node[this.maxArrayLength]);
+                oddRowsList.add(new Node[this.maxArrayLength]);
+            }else{
+                evenRowsList.add(new Node[remainder]);
+                oddRowsList.add(new Node[remainder]);
+            }
+        }
     }
     private boolean rangeCheck(int oldIndex, int newIndex){
         if(oldIndex < 0 || oldIndex >= oldLength){
@@ -32,19 +60,45 @@ public class NodePool {
     public Node getOldNode(int oldIndex, int newIndex) {
         if(rangeCheck(oldIndex, newIndex)) {
             if(oldIndex % 2 == 0){
-                return evenRowsArray[newIndex];
+                if(lessThanMaxArrayLength){
+                    return evenRowsArray[newIndex];
+                }else{
+                    int remainder = newIndex % this.maxArrayLength;
+                    int quotient = newIndex / this.maxArrayLength;
+                    return evenRowsList.get(quotient)[remainder];
+                }
             }else{
-                return oddRowsArray[newIndex];
+                if(lessThanMaxArrayLength){
+                    return oddRowsArray[newIndex];
+                }else{
+                    int remainder = newIndex % this.maxArrayLength;
+                    int quotient = newIndex / this.maxArrayLength;
+                    return oddRowsList.get(quotient)[remainder];
+                }
             }
         }
         return null;
     }
     public void addNode(Node node) {
-        if(rangeCheck(node.getOldIndex(), node.getNewIndex())) {
-            if(node.getOldIndex() % 2 == 0){
-                evenRowsArray[node.getNewIndex()] = node;
+        int oldIndex = node.getOldIndex();
+        int newIndex = node.getNewIndex();
+        if(rangeCheck(oldIndex, newIndex)) {
+            if(oldIndex % 2 == 0){
+                if(lessThanMaxArrayLength){
+                    evenRowsArray[newIndex] = node;
+                }else{
+                    int remainder = newIndex % this.maxArrayLength;
+                    int quotient = newIndex / this.maxArrayLength;
+                    evenRowsList.get(quotient)[remainder] = node;
+                }
             }else{
-                oddRowsArray[node.getNewIndex()] = node;
+                if(lessThanMaxArrayLength){
+                    oddRowsArray[newIndex] = node;
+                }else{
+                    int remainder = newIndex % this.maxArrayLength;
+                    int quotient = newIndex / this.maxArrayLength;
+                    oddRowsList.get(quotient)[remainder] = node;
+                }
             }
         }
     }

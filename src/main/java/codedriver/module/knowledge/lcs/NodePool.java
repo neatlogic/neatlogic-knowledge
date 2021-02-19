@@ -1,6 +1,5 @@
 package codedriver.module.knowledge.lcs;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,9 +10,13 @@ import java.util.List;
 * @Description: 节点池，用于代替原来的二维数组，使得空间复杂度由O(mn)变成O(2n)，时间复杂度还是O(mn)
  */
 public class NodePool {
+    /** 旧字符串长度 **/
     private final int oldLength;
+    /** 新字符串长度 **/
     private final int newLength;
+    /** 数组最大长度 **/
     private final int maxArrayLength = 1024;
+    /** newLength是否小于数组最大长度maxArrayLength **/
     private final boolean lessThanMaxArrayLength;
     /* 存储偶数行的对比结果 */
     private Node[] evenRowsArray;

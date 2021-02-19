@@ -9,7 +9,9 @@ package codedriver.module.knowledge.lcs;
 public class NodePool {
     private final int oldLength;
     private final int newLength;
+    /* 存储偶数行的对比结果 */
     private Node[] evenRowsArray;
+    /* 存储奇数行的对比结果 */
     private Node[] oddRowsArray;
 
     public NodePool(int oldLength, int newLength) {

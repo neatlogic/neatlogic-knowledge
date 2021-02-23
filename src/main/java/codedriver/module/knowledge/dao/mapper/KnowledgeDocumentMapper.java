@@ -1,33 +1,27 @@
 package codedriver.module.knowledge.dao.mapper;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.elasticsearch.annotation.ESParam;
 import codedriver.framework.elasticsearch.annotation.ESSearch;
-import codedriver.module.knowledge.dto.KnowledgeDocumentCollectVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentHistoricalVersionVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentInvokeVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentLineConfigVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentLineContentVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentTagVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.module.knowledge.dto.*;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface KnowledgeDocumentMapper {
 
     public KnowledgeDocumentVo getKnowledgeDocumentById(Long id);
 
+    public List<Long> getKnowledgeDocumentByTitleAndContent(String contentKeyword);
+
+    public List<Long> getKnowledgeDocumentVersionByTitleAndContent(String contentKeyword);
+
     public KnowledgeDocumentVo getKnowledgeDocumentByTitle(String title);
     
-    public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdList(@Param("documentIdlist") List<Long> documentIdList);
+    public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdList(@Param("documentIdList") List<Long> documentIdList);
     
-    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionByIdList(@Param("documentVersionIdlist") List<Long> documentVersionIdList);
+    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionByIdList(@Param("documentVersionIdList") List<Long> documentVersionIdList);
     
     public List<Long> getKnowledgeDocumentIdList(KnowledgeDocumentVo knowledgeDocumentVo);
     
@@ -41,9 +35,9 @@ public interface KnowledgeDocumentMapper {
     
     public Integer getKnowledgeDocumentCount(KnowledgeDocumentVo knowledgeDocumentVo);
     
-    public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdListAndFcd(@Param("documentIdlist") List<Long> documentIdList,@Param("fromDate") String fromDate,@Param("toDate")String toDate);
+    public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdListAndFcd(@Param("documentIdList") List<Long> documentIdList,@Param("fromDate") String fromDate,@Param("toDate")String toDate);
     
-    public List<Long> getKnowledgeDocumentVersionIdListByLcd(@Param("documentVersionIdlist") List<Long> documentVersionIdList,@Param("fromDate") String fromDate,@Param("toDate")String toDate);
+    public List<Long> getKnowledgeDocumentVersionIdListByLcd(@Param("documentVersionIdList") List<Long> documentVersionIdList,@Param("fromDate") String fromDate,@Param("toDate")String toDate);
     
     public KnowledgeDocumentVersionVo getKnowledgeDocumentVersionById(Long id);
     

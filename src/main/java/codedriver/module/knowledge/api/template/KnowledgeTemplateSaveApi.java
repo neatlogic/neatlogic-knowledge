@@ -3,14 +3,17 @@ package codedriver.module.knowledge.api.template;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_TEMPLATE_MODIFY;
 import codedriver.module.knowledge.dao.mapper.KnowledgeTemplateMapper;
 import codedriver.module.knowledge.dto.KnowledgeTemplateVo;
 import codedriver.module.knowledge.exception.KnowledgeTemplateNameRepeatException;
 import codedriver.module.knowledge.exception.KnowledgeTemplateNotFoundException;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -76,6 +79,16 @@ public class KnowledgeTemplateSaveApi extends PrivateApiComponentBase{
 		JSONObject result = new JSONObject();
 		result.put("id",knowledgeTemplateVo.getId());
 		return result;
+	}
+
+	public IValid name(){
+		return value -> {
+			KnowledgeTemplateVo knowledgeTemplateVo = JSON.toJavaObject(value, KnowledgeTemplateVo.class);
+			if(knowledgeTemplateMapper.checkNameIsRepeat(knowledgeTemplateVo) > 0) {
+				return new FieldValidResultVo(new KnowledgeTemplateNameRepeatException(knowledgeTemplateVo.getName()));
+			}
+			return new FieldValidResultVo();
+		};
 	}
 
 }

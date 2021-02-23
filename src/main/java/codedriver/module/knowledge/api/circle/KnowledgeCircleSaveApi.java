@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import codedriver.framework.dto.FieldValidResultVo;
+import codedriver.framework.restful.core.IValid;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_CIRCLE_MODIFY;
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -129,6 +132,16 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 		JSONObject result = new JSONObject();
 		result.put("id",knowledgeCircleVo.getId());
 		return result;
+	}
+
+	public IValid name(){
+		return value -> {
+			KnowledgeCircleVo knowledgeCircleVo = JSON.toJavaObject(value, KnowledgeCircleVo.class);
+			if(knowledgeCircleMapper.checkNameIsRepeat(knowledgeCircleVo) > 0) {
+				return new FieldValidResultVo(new KnowledgeCircleNameRepeatException(knowledgeCircleVo.getName()));
+			}
+			return new FieldValidResultVo();
+		};
 	}
 
 	/**

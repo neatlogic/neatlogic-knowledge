@@ -17,8 +17,9 @@
         WHERE `id` = #{value}
     </select>
 
-    <select id="getKnowledgeDocumentByTitleAndContent" parameterType="java.lang.String" resultType="java.lang.Long">
-        SELECT DISTINCT kd.id
+    <select id="getKnowledgeDocumentByTitleAndContent" parameterType="java.lang.String"
+            resultMap="knowledgeDocumentMap">
+        SELECT DISTINCT kd.id, kdl.`line_number` AS lineNumber, kdl.`handler`
         FROM `knowledge_document` kd
                  LEFT JOIN `knowledge_document_line` kdl ON kd.`id` = kdl.`knowledge_document_id` AND
                                                             kd.`knowledge_document_version_id` =
@@ -30,18 +31,22 @@
                 OR
                 MATCH(kd.title) AGAINST(#{value} IN BOOLEAN MODE)
             )
+        ORDER BY kd.id, MATCH(kd.title) AGAINST(#{value} IN BOOLEAN MODE),
+                 MATCH(kdlc.content) AGAINST(#{value} IN BOOLEAN MODE) DESC
     </select>
 
     <select id="getKnowledgeDocumentVersionByTitleAndContent" parameterType="java.lang.String"
-            resultType="java.lang.Long">
-        SELECT DISTINCT kdv.id
+            resultMap="knowledgeDocumentVersionMap">
+        SELECT DISTINCT kdv.id, kdl.`line_number` AS lineNumber
         FROM `knowledge_document_version` kdv
                  LEFT JOIN `knowledge_document_line` kdl
                            ON kdv.`knowledge_document_id` = kdl.`knowledge_document_id` AND
                               kdv.`id` = kdl.`knowledge_document_version_id`
                  LEFT JOIN `knowledge_document_line_content` kdlc ON kdl.`content_hash` = kdlc.`hash`
-        WHERE MATCH(kdlc.content) AGAINST(#{value} IN BOOLEAN MODE)
-           OR MATCH(kdv.title) AGAINST(#{value} IN BOOLEAN MODE)
+        WHERE (MATCH(kdlc.content) AGAINST(#{value} IN BOOLEAN MODE)
+            OR MATCH(kdv.title) AGAINST(#{value} IN BOOLEAN MODE))
+        ORDER BY kdv.id, MATCH(kdv.title) AGAINST(#{value} IN BOOLEAN MODE),
+                 MATCH(kdlc.content) AGAINST(#{value} IN BOOLEAN MODE) DESC
     </select>
 
     <select id="getKnowledgeDocumentByTitle" parameterType="java.lang.String"
@@ -81,7 +86,7 @@
         </association>
         <association property="knowledgeDocumentLineList"
                      javaType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
-            <result column="lineContent" property="content"/>
+            <result column="lineNumber" property="lineNumber"/>
         </association>
     </resultMap>
 
@@ -102,17 +107,13 @@
         (SELECT `user_name` FROM `user` WHERE `uuid` = kdv.`lcu`) AS lcuName,
         ktg.`id` AS tagId,
         ktg.`name` AS tagName,
-        kdv.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
-        kdlc.`content` AS lineContent
+        kdv.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid
         FROM `knowledge_document_version` kdv
         LEFT JOIN `knowledge_document` kd ON kd.`id` = kdv.`knowledge_document_id`
         LEFT JOIN `knowledge_circle` kc ON kd.`knowledge_circle_id` = kc.`id`
         LEFT JOIN `knowledge_document_tag` kdt ON kdt.`knowledge_document_id` = kdv.`knowledge_document_id` AND
         kdt.`knowledge_document_version_id` = kdv.`id`
         LEFT JOIN `knowledge_tag` ktg ON kdt.`tag_id` = ktg.`id`
-        LEFT JOIN `knowledge_document_line` kdl ON kdl.`knowledge_document_id` = kd.`id` AND
-        kdl.`knowledge_document_version_id` = kdl.`knowledge_document_version_id`
-        LEFT JOIN `knowledge_document_line_content` kdlc ON kdl.`content_hash` = kdlc.`hash`
         where kdv.`id` in
         <foreach collection="documentVersionIdList" item="id" open="(" separator="," close=")">
             #{id}
@@ -377,6 +378,8 @@
         </association>
         <association property="lineList" javaType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
             <result column="lineContent" property="content"/>
+            <result column="lineNumber" property="lineNumber"/>
+            <result column="handler" property="handler"/>
         </association>
 
     </resultMap>
@@ -724,6 +727,28 @@
                  LEFT JOIN `knowledge_document_line_config` c ON c.`hash` = a.`config_hash`
         WHERE a.`knowledge_document_version_id` = #{value}
         ORDER BY a.`line_number`
+    </select>
+
+    <select id="getKnowledgeDocumentLineListByKnowledgeDocumentVersionIdAndLineNumberList"
+            resultType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
+        SELECT a.`uuid`,
+        a.`handler`,
+        a.`knowledge_document_id` AS knowledgeDocumentId,
+        a.`knowledge_document_version_id` AS knowledgeDocumentVersionId,
+        a.`content_hash` AS contentHash,
+        b.`content`,
+        a.`config_hash` AS configHash,
+        c.`config`,
+        a.`line_number` AS lineNumber
+        FROM `knowledge_document_line` a
+        LEFT JOIN `knowledge_document_line_content` b ON b.`hash` = a.`content_hash`
+        LEFT JOIN `knowledge_document_line_config` c ON c.`hash` = a.`config_hash`
+        WHERE a.`knowledge_document_version_id` = #{versionId}
+        AND a.`line_number` in
+        <foreach collection="lineNumberList" item="lineNumber" separator="," open="(" close=")">
+            #{lineNumber}
+        </foreach>
+        ORDER BY a.`line_number` ASC
     </select>
 
     <select id="getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId"

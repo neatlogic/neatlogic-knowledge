@@ -23,15 +23,15 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -146,10 +146,14 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         }*/
 
         //仅根据keyword,从mysql搜索标题和内容
-        if (StringUtils.isNotBlank(documentVoParam.getKeyword())) {
+        Map<Long,KnowledgeDocumentVo> documentFtMap = new HashMap<>();
+        if (StringUtils.isNotBlank(documentVoParam.getKeyword())&&documentVoParam.getKeyword().trim().length() > 1) {
             String keywordStr = documentVoParam.getKeyword().replaceAll(" ", "\" \"");
-            List<Long> documentIdList = knowledgeDocumentMapper.getKnowledgeDocumentByTitleAndContent(String.format("\"%s\"", keywordStr));
-            documentVoParam.setKnowledgeDocumentIdList(documentIdList);
+            List<KnowledgeDocumentVo> documentFtList = knowledgeDocumentMapper.getKnowledgeDocumentByTitleAndContent(String.format("\"%s\"", keywordStr));
+            for(KnowledgeDocumentVo knowledgeDocumentVo : documentFtList){
+                documentFtMap.put(knowledgeDocumentVo.getId(),knowledgeDocumentVo);
+            }
+            documentVoParam.setKnowledgeDocumentIdList(documentFtList.stream().map(KnowledgeDocumentVo::getId).collect(Collectors.toList()));
         }
 
         //补充查看权限条件参数（圈子成员or圈子审批人）
@@ -245,18 +249,61 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                 }
                
             }*/
-            //拼接content
+            //拼接content，并高亮搜索keyword
             StringBuilder contentSb = new StringBuilder();
-            List<KnowledgeDocumentLineVo> documentLineList = knowledgeDocumentVo.getLineList();
-            if (CollectionUtils.isNotEmpty(documentLineList)) {
-                for (KnowledgeDocumentLineVo line : documentLineList) {
-                    contentSb.append(line.getContent());
+            List<Integer> lineNumberList = new ArrayList<>();
+            int startIndex = 1;
+            int endIndex = 6;
+            if(MapUtils.isNotEmpty(documentFtMap)&&documentFtMap.containsKey(knowledgeDocumentVo.getId())) {
+                KnowledgeDocumentVo keywordDocumentVo = documentFtMap.get(knowledgeDocumentVo.getId());
+                List<KnowledgeDocumentLineVo> lineVoList = keywordDocumentVo.getLineList();
+                if(CollectionUtils.isNotEmpty(lineVoList)){
+                    KnowledgeDocumentLineVo lineVo = lineVoList.get(0);
+                    //获取目标line的上下两行
+                    endIndex = lineVo.getLineNumber() + 3;
+                    if (lineVo.getLineNumber() > 1) {
+                        startIndex = lineVo.getLineNumber() - 2;
+                    }
                 }
-                String content = HtmlUtil.removeHtml(HtmlUtil.decodeHtml(contentSb.toString()), null);
-                content = content.replaceAll("[^0-9a-zA-Z\u4e00-\u9fa5.，,。？“”-]+","");
-                knowledgeDocumentVo.setContent(content.substring(0, Math.min(content.length(), 250))+(content.length() >250?"...":""));
-                knowledgeDocumentVo.setLineList(null);
+
             }
+            for(int i = startIndex; i< endIndex;i++){
+                lineNumberList.add(i);
+            }
+
+            List<KnowledgeDocumentLineVo> documentLineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionIdAndLineNumberList(knowledgeDocumentVo.getKnowledgeDocumentVersionId(),lineNumberList);
+            for(KnowledgeDocumentLineVo lineVo : documentLineList){
+                contentSb.append(HtmlUtil.removeHtml(HtmlUtil.decodeHtml(lineVo.getContent()), null).replaceAll("[^0-9a-zA-Z\u4e00-\u9fa5.，,。？“”-]+", ""));
+            }
+            int startSubIndex = 0;
+            int endSubIndex = 1000;
+            if (MapUtils.isNotEmpty(documentFtMap) && documentFtMap.containsKey(knowledgeDocumentVo.getId())) {
+                String[] keywordArray = documentVoParam.getKeyword().split(" ");
+                for (String keyword : keywordArray) {
+                    int index = contentSb.indexOf(keyword);
+                    if (index > 0) {
+                        endSubIndex = index + keyword.length() + endSubIndex / 2;
+                        if (index > endSubIndex / 2) {
+                            startSubIndex = index - endSubIndex / 2;
+                        }
+                        break;
+                    }
+                }
+            }
+            String content = contentSb.substring(startSubIndex, Math.min(endSubIndex,contentSb.length()));
+            //高亮
+            if(MapUtils.isNotEmpty(documentFtMap)&&documentFtMap.containsKey(knowledgeDocumentVo.getId())) {
+                String[] keywordArray = documentVoParam.getKeyword().split(" ");
+                for (String keyword : keywordArray) {
+                    //高亮内容
+                    content = content.replaceAll(keyword, String.format("<em>%s</em>", keyword));
+                    //高亮标题
+                    knowledgeDocumentVo.setTitle(knowledgeDocumentVo.getTitle().replaceAll(keyword, String.format("<em>%s</em>", keyword)));
+                }
+            }
+            knowledgeDocumentVo.setContent(content);
+            knowledgeDocumentVo.setLineList(null);
+
 
             //组装返回数据
             JSONObject returnData = JSONObject.parseObject(JSON.toJSONString(knowledgeDocumentVo));
@@ -314,10 +361,14 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             //将从es搜索符合的知识送到数据库做二次过滤
             documentVersionVoParam.setKnowledgeDocumentVersionIdList(documentVersionIdList);
         }*/
+        Map<Long,KnowledgeDocumentVersionVo> documentVersionFtMap = new HashMap<>();
         if (StringUtils.isNotBlank(documentVersionVoParam.getKeyword())) {
             String keywordStr = documentVersionVoParam.getKeyword().replaceAll(" ", "\" \"");
-            List<Long> documentIdList = knowledgeDocumentMapper.getKnowledgeDocumentVersionByTitleAndContent(String.format("\"%s\"", keywordStr));
-            documentVersionVoParam.setKnowledgeDocumentVersionIdList(documentIdList);
+            List<KnowledgeDocumentVersionVo> documentVersionFtList = knowledgeDocumentMapper.getKnowledgeDocumentVersionByTitleAndContent(String.format("\"%s\"", keywordStr));
+            for(KnowledgeDocumentVersionVo knowledgeDocumentVersion : documentVersionFtList){
+                documentVersionFtMap.put(knowledgeDocumentVersion.getId(),knowledgeDocumentVersion);
+            }
+            documentVersionVoParam.setKnowledgeDocumentVersionIdList(documentVersionFtList.stream().map(KnowledgeDocumentVersionVo::getId).collect(Collectors.toList()));
         }
 
         //拼装 “审批人”条件 
@@ -368,17 +419,61 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                 }
             }*/
             //拼接内容
+            List<Integer> lineNumberList = new ArrayList<>();
+            Integer keywordLineNum = null;
+            int startIndex = 1;
+            int endIndex = 4;
             StringBuilder contentSb = new StringBuilder();
-            List<KnowledgeDocumentLineVo> documentLineList = knowledgeDocumentVersionVo.getKnowledgeDocumentLineList();
-            if (CollectionUtils.isNotEmpty(documentLineList)) {
-                for (KnowledgeDocumentLineVo line : documentLineList) {
-                    contentSb.append(line.getContent());
+            if(MapUtils.isNotEmpty(documentVersionFtMap)&&documentVersionFtMap.containsKey(knowledgeDocumentVersionVo.getId())) {
+                KnowledgeDocumentVersionVo keywordDocumentVersionVo = documentVersionFtMap.get(knowledgeDocumentVersionVo.getId());
+                List<KnowledgeDocumentLineVo> lineVoList = keywordDocumentVersionVo.getKnowledgeDocumentLineList();
+                if(CollectionUtils.isNotEmpty(lineVoList)){
+                    KnowledgeDocumentLineVo lineVo = lineVoList.get(0);
+                    keywordLineNum = lineVo.getLineNumber();
+                    //获取目标line的上下两行
+                    endIndex = keywordLineNum + 3;
+                    if(keywordLineNum-3 >0) {
+                        startIndex = keywordLineNum - 3;
+                    }
                 }
-                String content = HtmlUtil.removeHtml(HtmlUtil.decodeHtml(contentSb.toString()), null);
-                content = content.replaceAll("[^0-9a-zA-Z\u4e00-\u9fa5.，,。？“”-]+","");
-                knowledgeDocumentVersionVo.setContent(content.substring(0, Math.min(content.length(), 250))+(content.length() >250?"...":""));
-                knowledgeDocumentVersionVo.setKnowledgeDocumentLineList(null);
             }
+            for(int i = startIndex; i<= endIndex;i++){
+                lineNumberList.add(i);
+            }
+
+            List<KnowledgeDocumentLineVo> documentLineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionIdAndLineNumberList(knowledgeDocumentVersionVo.getId(),lineNumberList);
+            for(KnowledgeDocumentLineVo lineVo : documentLineList){
+                contentSb.append(HtmlUtil.removeHtml(HtmlUtil.decodeHtml(lineVo.getContent()), null).replaceAll("[^0-9a-zA-Z\u4e00-\u9fa5.，,。？“”-]+", ""));
+            }
+            int startSubIndex = 0;
+            int endSubIndex = 1000;
+            if (MapUtils.isNotEmpty(documentVersionFtMap) && documentVersionFtMap.containsKey(knowledgeDocumentVersionVo.getId())) {
+                String[] keywordArray = documentVersionVoParam.getKeyword().split(" ");
+                for (String keyword : keywordArray) {
+                    int index = contentSb.indexOf(keyword);
+                    if (index > 0) {
+                        endSubIndex = index + keyword.length() + endSubIndex / 2;
+                        if (index > endSubIndex / 2) {
+                            startSubIndex = index - endSubIndex / 2;
+                        }
+                        break;
+                    }
+                }
+            }
+            String content = contentSb.substring(startSubIndex, Math.min(endSubIndex,contentSb.length()));
+            //高亮
+            if(MapUtils.isNotEmpty(documentVersionFtMap)&&documentVersionFtMap.containsKey(knowledgeDocumentVersionVo.getId())) {
+                String[] keywordArray = documentVersionVoParam.getKeyword().split(" ");
+                for (String keyword : keywordArray) {
+                    //高亮内容
+                    content = content.replaceAll(keyword, String.format("<em>%s</em>", keyword));
+                    //高亮标题
+                    knowledgeDocumentVersionVo.setTitle(knowledgeDocumentVersionVo.getTitle().replaceAll(keyword, String.format("<em>%s</em>", keyword)));
+                }
+            }
+            knowledgeDocumentVersionVo.setContent(content);
+            knowledgeDocumentVersionVo.setKnowledgeDocumentLineList(null);
+
             //如果审核不通过，则补充原因
             if (KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
                 KnowledgeDocumentAuditVo rejectAudit = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditListByDocumentIdAndVersionIdAndOperate(new KnowledgeDocumentAuditVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionVo.getId(), KnowledgeDocumentOperate.REJECT.getValue()));

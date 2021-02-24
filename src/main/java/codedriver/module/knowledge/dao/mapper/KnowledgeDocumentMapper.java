@@ -13,9 +13,9 @@ public interface KnowledgeDocumentMapper {
 
     public KnowledgeDocumentVo getKnowledgeDocumentById(Long id);
 
-    public List<Long> getKnowledgeDocumentByTitleAndContent(String contentKeyword);
+    public List<KnowledgeDocumentVo> getKnowledgeDocumentByTitleAndContent(String contentKeyword);
 
-    public List<Long> getKnowledgeDocumentVersionByTitleAndContent(String contentKeyword);
+    public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionByTitleAndContent(String contentKeyword);
 
     public KnowledgeDocumentVo getKnowledgeDocumentByTitle(String title);
     
@@ -52,6 +52,8 @@ public interface KnowledgeDocumentMapper {
     public int getKnowledgeDocumentVersionMyVersionCount(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 
     public List<KnowledgeDocumentLineVo> getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
+
+    public List<KnowledgeDocumentLineVo> getKnowledgeDocumentLineListByKnowledgeDocumentVersionIdAndLineNumberList(@Param("versionId") Long knowledgeDocumentVersionId,@Param("lineNumberList")List<Integer> lineNumberList);
 
     public List<Long> getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId(KnowledgeDocumentFileVo knowledgeDocumentFileVo);
 

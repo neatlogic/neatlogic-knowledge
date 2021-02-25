@@ -22,7 +22,7 @@
         SELECT DISTINCT kd.id,
                         kdl.`line_number` AS lineNumber,
                         kdl.`handler`,
-                        MATCH(kdv.title) AGAINST(#{value} IN BOOLEAN MODE),
+                        MATCH(kd.title) AGAINST(#{value} IN BOOLEAN MODE),
                         MATCH(kdlc.content) AGAINST(#{value} IN BOOLEAN MODE)
         FROM `knowledge_document` kd
                  LEFT JOIN `knowledge_document_line` kdl ON kd.`id` = kdl.`knowledge_document_id` AND

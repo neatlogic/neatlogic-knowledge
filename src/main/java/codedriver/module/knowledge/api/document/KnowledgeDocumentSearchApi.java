@@ -252,7 +252,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
 
             List<Integer> lineNumberList = new ArrayList<>();
             int startIndex = 1;
-            int endIndex = 6;
+            int endIndex = 10;//默认十行 数据
             if(MapUtils.isNotEmpty(documentFtMap)&&documentFtMap.containsKey(knowledgeDocumentVo.getId())) {
                 KnowledgeDocumentVo keywordDocumentVo = (KnowledgeDocumentVo)documentFtMap.get(knowledgeDocumentVo.getId());
                 List<KnowledgeDocumentLineVo> lineVoList = keywordDocumentVo.getLineList();
@@ -441,7 +441,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             List<Integer> lineNumberList = new ArrayList<>();
             Integer keywordLineNum = null;
             int startIndex = 1;
-            int endIndex = 4;
+            int endIndex = 10;//默认十行 数据
             StringBuilder contentSb = new StringBuilder();
             if(MapUtils.isNotEmpty(documentVersionFtMap)&&documentVersionFtMap.containsKey(knowledgeDocumentVersionVo.getId())) {
                 KnowledgeDocumentVersionVo keywordDocumentVersionVo = (KnowledgeDocumentVersionVo)documentVersionFtMap.get(knowledgeDocumentVersionVo.getId());

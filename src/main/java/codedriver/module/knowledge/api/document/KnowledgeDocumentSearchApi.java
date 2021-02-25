@@ -299,6 +299,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             contentSb.append(HtmlUtil.removeHtml(HtmlUtil.decodeHtml(lineVo.getContent()), null));
         }
         int startSubIndex = 0;
+        int needLen = 1000;
         int endSubIndex = 1000;
         long targetId = target instanceof  KnowledgeDocumentVo?((KnowledgeDocumentVo)target).getId():((KnowledgeDocumentVersionVo)target).getId();
         if (MapUtils.isNotEmpty(ftMap) && ftMap.containsKey(targetId)) {
@@ -306,9 +307,9 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             for (String keyword : keywordArray) {
                 int index = contentSb.indexOf(keyword);
                 if (index > 0) {
-                    endSubIndex = index + keyword.length() + endSubIndex / 2;
-                    if (index > endSubIndex / 2) {
-                        startSubIndex = index - endSubIndex / 2;
+                    endSubIndex = index + keyword.length() + needLen / 3;
+                    if (index > needLen / 3) {
+                        startSubIndex = index - needLen / 3;
                     }
                     break;
                 }

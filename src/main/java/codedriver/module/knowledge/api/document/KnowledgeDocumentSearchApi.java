@@ -296,7 +296,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     private void setKnowledgeDocumentContentAndHighlight(List<KnowledgeDocumentLineVo> documentLineList,Map<Long,Object> ftMap,Object target,Object targetParam){
         StringBuilder contentSb = new StringBuilder();
         for(KnowledgeDocumentLineVo lineVo : documentLineList){
-            contentSb.append(HtmlUtil.removeHtml(HtmlUtil.decodeHtml(lineVo.getContent()), null).replaceAll("[^0-9a-zA-Z\u4e00-\u9fa5.，,。？“”-]+", ""));
+            contentSb.append(HtmlUtil.removeHtml(HtmlUtil.decodeHtml(lineVo.getContent()), null));
         }
         int startSubIndex = 0;
         int endSubIndex = 1000;

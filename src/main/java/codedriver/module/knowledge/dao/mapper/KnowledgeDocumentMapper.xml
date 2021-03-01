@@ -129,14 +129,25 @@
     </select>
 
     <sql id="searchDocumentVersionSql">
-        <if test="keyword != null and ( knowledgeDocumentVersionIdList == null or knowledgeDocumentVersionIdList.size() == 0)">
-            and 1 != 1
-        </if>
-        <if test="keyword != null and knowledgeDocumentVersionIdList != null and knowledgeDocumentVersionIdList.size() > 0">
-            and kdv.`id` in
-            <foreach collection="knowledgeDocumentVersionIdList" item="id" open="(" separator="," close=")">
-                #{id}
+        <!-- <if test="keyword != null and ( knowledgeDocumentVersionIdList == null or knowledgeDocumentVersionIdList.size() == 0)">
+             and 1 != 1
+         </if>
+         <if test="keyword != null and knowledgeDocumentVersionIdList != null and knowledgeDocumentVersionIdList.size() > 0">
+             and kdv.`id` in
+             <foreach collection="knowledgeDocumentVersionIdList" item="id" open="(" separator="," close=")">
+                 #{id}
+             </foreach>
+         </if>-->
+        <if test="keywordList != null and keywordList.size() > 0">
+            AND EXISTS (SELECT
+            1
+            FROM
+            `fulltextindex_word` fw JOIN fulltextindex_field ff ON fw.id = ff.`word_id`
+            WHERE ff.`target_id` = kdv.id AND fw.word IN
+            <foreach collection="keywordList" item="k" open="("
+                     separator="," close=")">#{k}
             </foreach>
+            )
         </if>
         <if test="lcuList != null and lcuList.size()>0 ">
             and kdv.`lcu` in
@@ -300,7 +311,7 @@
         )a
     </select>
 
-    <select id="getKnowledgeDocumentVersionIdList"
+    <select id="searchKnowledgeDocumentVersionId"
             parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="java.lang.Long">
         SELECT
         kdv.id
@@ -334,7 +345,7 @@
         </if>
     </select>
 
-    <select id="getKnowledgeDocumentVersionCount"
+    <select id="searchKnowledgeDocumentVersionIdCount"
             parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="java.lang.Integer">
         select count(distinct kdv.id)
         FROM `knowledge_document_version` kdv
@@ -434,7 +445,7 @@
     </select>
 
     <sql id="searchDocumentSql">
-        <if test="keyword != null and ( knowledgeDocumentIdList == null or knowledgeDocumentIdList.size() == 0)">
+        <!--<if test="keyword != null and ( knowledgeDocumentIdList == null or knowledgeDocumentIdList.size() == 0)">
             and 1 != 1
         </if>
         <if test="keyword != null and knowledgeDocumentIdList != null and knowledgeDocumentIdList.size() > 0">
@@ -442,6 +453,17 @@
             <foreach collection="knowledgeDocumentIdList" item="id" open="(" separator="," close=")">
                 #{id}
             </foreach>
+        </if>-->
+        <if test="keywordList != null and keywordList.size() > 0">
+            AND EXISTS (SELECT
+            1
+            FROM
+            `fulltextindex_word` fw JOIN fulltextindex_field ff ON fw.id = ff.`word_id`
+            WHERE ff.`target_id` = kdv.id AND fw.word IN
+            <foreach collection="keywordList" item="k" open="("
+                     separator="," close=")">#{k}
+            </foreach>
+            )
         </if>
         <if test="lcuList != null and lcuList.size()>0 ">
             and kdv.`lcu` in
@@ -516,10 +538,10 @@
         )
     </sql>
 
-    <select id="getKnowledgeDocumentIdList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo"
+    <select id="searchKnowledgeDocumentId" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo"
             resultType="java.lang.Long">
         SELECT
-        kd.id
+        DISTINCT kd.id
         FROM `knowledge_document` kd
         JOIN `knowledge_document_version` kdv ON kd.`id` = kdv.`knowledge_document_id` AND
         kd.`knowledge_document_version_id` = kdv.`id`

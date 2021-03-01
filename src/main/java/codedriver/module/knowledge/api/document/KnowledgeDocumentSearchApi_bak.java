@@ -26,15 +26,15 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
-@Service
+//@Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
+public class KnowledgeDocumentSearchApi_bak extends PrivateApiComponentBase {
 
     @Resource
     KnowledgeDocumentMapper knowledgeDocumentMapper;
@@ -144,7 +144,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         }*/
 
         //仅根据keyword,从mysql搜索标题和内容
-        /*Map<Long, Object> documentFtMap = new HashMap<>();
+        Map<Long, Object> documentFtMap = new HashMap<>();
         if (StringUtils.isNotBlank(documentVoParam.getKeyword()) && documentVoParam.getKeyword().trim().length() > 1) {
             String keywordStr = documentVoParam.getKeyword().replaceAll(" ", "\" \"");
             List<KnowledgeDocumentVo> documentFtList = knowledgeDocumentMapper.getKnowledgeDocumentByTitleAndContent(String.format("\"%s\"", keywordStr));
@@ -152,7 +152,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                 documentFtMap.put(knowledgeDocumentVo.getId(), knowledgeDocumentVo);
             }
             documentVoParam.setKnowledgeDocumentIdList(documentFtList.stream().map(KnowledgeDocumentVo::getId).collect(Collectors.toList()));
-        }*/
+        }
 
         //补充查看权限条件参数（圈子成员or圈子审批人）
         getDocumentViewParam(documentVoParam);
@@ -249,7 +249,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             }*/
             //拼接content，并高亮搜索keyword
 
-           /* List<Integer> lineNumberList = new ArrayList<>();
+            List<Integer> lineNumberList = new ArrayList<>();
             int startIndex = 1;
             int endIndex = 10;//默认十行 数据
             if (MapUtils.isNotEmpty(documentFtMap) && documentFtMap.containsKey(knowledgeDocumentVo.getId())) {
@@ -267,10 +267,10 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             }
             for (int i = startIndex; i < endIndex; i++) {
                 lineNumberList.add(i);
-            }*/
+            }
 
-            // List<KnowledgeDocumentLineVo> documentLineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionIdAndLineNumberList(knowledgeDocumentVo.getKnowledgeDocumentVersionId(), lineNumberList);
-            // setKnowledgeDocumentContentAndHighlight(documentLineList, documentFtMap, knowledgeDocumentVo, documentVoParam);
+            List<KnowledgeDocumentLineVo> documentLineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionIdAndLineNumberList(knowledgeDocumentVo.getKnowledgeDocumentVersionId(), lineNumberList);
+            setKnowledgeDocumentContentAndHighlight(documentLineList, documentFtMap, knowledgeDocumentVo, documentVoParam);
             //组装返回数据
             JSONObject returnData = JSONObject.parseObject(JSON.toJSONString(knowledgeDocumentVo));
             returnData.put("knowledgeDocumentId", returnData.getLong("id"));
@@ -380,7 +380,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             //将从es搜索符合的知识送到数据库做二次过滤
             documentVersionVoParam.setKnowledgeDocumentVersionIdList(documentVersionIdList);
         }*/
-       /* Map<Long, Object> documentVersionFtMap = new HashMap<>();
+        Map<Long, Object> documentVersionFtMap = new HashMap<>();
         if (StringUtils.isNotBlank(documentVersionVoParam.getKeyword())) {
             String keywordStr = documentVersionVoParam.getKeyword().replaceAll(" ", "\" \"");
             List<KnowledgeDocumentVersionVo> documentVersionFtList = knowledgeDocumentMapper.getKnowledgeDocumentVersionByTitleAndContent(String.format("\"%s\"", keywordStr));
@@ -388,7 +388,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                 documentVersionFtMap.put(knowledgeDocumentVersion.getId(), knowledgeDocumentVersion);
             }
             documentVersionVoParam.setKnowledgeDocumentVersionIdList(documentVersionFtList.stream().map(KnowledgeDocumentVersionVo::getId).collect(Collectors.toList()));
-        }*/
+        }
 
         //拼装 “审批人”条件 
         knowledgeDocumentService.getReviewerParam(documentVersionVoParam);
@@ -438,7 +438,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                 }
             }*/
             //拼接内容
-           /* List<Integer> lineNumberList = new ArrayList<>();
+            List<Integer> lineNumberList = new ArrayList<>();
             Integer keywordLineNum = null;
             int startIndex = 1;
             int endIndex = 10;//默认十行 数据
@@ -458,10 +458,10 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             }
             for (int i = startIndex; i <= endIndex; i++) {
                 lineNumberList.add(i);
-            }*/
+            }
 
-            // List<KnowledgeDocumentLineVo> documentLineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionIdAndLineNumberList(knowledgeDocumentVersionVo.getId(), lineNumberList);
-            // setKnowledgeDocumentContentAndHighlight(documentLineList, documentVersionFtMap, knowledgeDocumentVersionVo, documentVersionVoParam);
+            List<KnowledgeDocumentLineVo> documentLineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionIdAndLineNumberList(knowledgeDocumentVersionVo.getId(), lineNumberList);
+            setKnowledgeDocumentContentAndHighlight(documentLineList, documentVersionFtMap, knowledgeDocumentVersionVo, documentVersionVoParam);
 
             //如果审核不通过，则补充原因
             if (KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {

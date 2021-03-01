@@ -18,29 +18,29 @@ public interface KnowledgeDocumentMapper {
     public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionByTitleAndContent(String contentKeyword);
 
     public KnowledgeDocumentVo getKnowledgeDocumentByTitle(String title);
-    
+
     public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdList(@Param("documentIdList") List<Long> documentIdList);
-    
+
     public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentVersionByIdList(@Param("documentVersionIdList") List<Long> documentVersionIdList);
-    
-    public List<Long> getKnowledgeDocumentIdList(KnowledgeDocumentVo knowledgeDocumentVo);
-    
-    public List<Long> getKnowledgeDocumentVersionIdList(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
-    
+
+    public List<Long> searchKnowledgeDocumentId(KnowledgeDocumentVo knowledgeDocumentVo);
+
+    public List<Long> searchKnowledgeDocumentVersionId(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+
     public List<Long> getMyAllReviewKnowledgeDocumentVersionIdList(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
-    
+
     public int getMyAllReviewKnowledgeDocumentVersionCount(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
-    
-    public Integer getKnowledgeDocumentVersionCount(KnowledgeDocumentVersionVo KnowledgeDocumentVersionVo);
-    
+
+    public Integer searchKnowledgeDocumentVersionIdCount(KnowledgeDocumentVersionVo KnowledgeDocumentVersionVo);
+
     public Integer getKnowledgeDocumentCount(KnowledgeDocumentVo knowledgeDocumentVo);
-    
-    public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdListAndFcd(@Param("documentIdList") List<Long> documentIdList,@Param("fromDate") String fromDate,@Param("toDate")String toDate);
-    
-    public List<Long> getKnowledgeDocumentVersionIdListByLcd(@Param("documentVersionIdList") List<Long> documentVersionIdList,@Param("fromDate") String fromDate,@Param("toDate")String toDate);
-    
+
+    public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdListAndFcd(@Param("documentIdList") List<Long> documentIdList, @Param("fromDate") String fromDate, @Param("toDate") String toDate);
+
+    public List<Long> getKnowledgeDocumentVersionIdListByLcd(@Param("documentVersionIdList") List<Long> documentVersionIdList, @Param("fromDate") String fromDate, @Param("toDate") String toDate);
+
     public KnowledgeDocumentVersionVo getKnowledgeDocumentVersionById(Long id);
-    
+
     public int checkKnowledgeDocumentLineConfigHashIsExists(String hash);
 
     public int checkKnowledgeDocumentLineContentHashIsExists(String hash);
@@ -53,7 +53,7 @@ public interface KnowledgeDocumentMapper {
 
     public List<KnowledgeDocumentLineVo> getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId);
 
-    public List<KnowledgeDocumentLineVo> getKnowledgeDocumentLineListByKnowledgeDocumentVersionIdAndLineNumberList(@Param("versionId") Long knowledgeDocumentVersionId,@Param("lineNumberList")List<Integer> lineNumberList);
+    public List<KnowledgeDocumentLineVo> getKnowledgeDocumentLineListByKnowledgeDocumentVersionIdAndLineNumberList(@Param("versionId") Long knowledgeDocumentVersionId, @Param("lineNumberList") List<Integer> lineNumberList);
 
     public List<Long> getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId(KnowledgeDocumentFileVo knowledgeDocumentFileVo);
 
@@ -62,66 +62,66 @@ public interface KnowledgeDocumentMapper {
     public Integer getKnowledgeDocumentVersionMaxVerionByKnowledgeDocumentId(Long knowledgeDocumentId);
 
     public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentWaitingForReviewList(
-        @Param("basePageVo") BasePageVo basePageVo,
-        @Param("userUuid") String userUuid, 
-        @Param("teamUuidList") List<String> teamUuidList, 
-        @Param("roleUuidList") List<String> roleUuidList
-        );
+            @Param("basePageVo") BasePageVo basePageVo,
+            @Param("userUuid") String userUuid,
+            @Param("teamUuidList") List<String> teamUuidList,
+            @Param("roleUuidList") List<String> roleUuidList
+    );
 
     public int getKnowledgeDocumentWaitingForReviewCount(
-        @Param("basePageVo") BasePageVo basePageVo,
-        @Param("userUuid") String userUuid, 
-        @Param("teamUuidList") List<String> teamUuidList, 
-        @Param("roleUuidList") List<String> roleUuidList
-        );
+            @Param("basePageVo") BasePageVo basePageVo,
+            @Param("userUuid") String userUuid,
+            @Param("teamUuidList") List<String> teamUuidList,
+            @Param("roleUuidList") List<String> roleUuidList
+    );
 
     public List<KnowledgeDocumentHistoricalVersionVo> getKnowledgeDocumentHistorialVersionListByKnowledgeDocumentId(Long knowledgeDocumentId);
 
     public List<Long> getKnowledgeDocumentHistorialVersionIdListByKnowledgeDocumentId(Long knowledgeDocumentId);
-    
+
     public int getKnowledgeDocumentHistorialVersionCountByKnowledgeDocumentId(Long knowledgeDocumentId);
-    
+
     public List<ValueTextVo> getKnowledgeDocumentHistorialVersionListForSelectByKnowledgeDocumentId(Long knowledgeDocumentId);
 
     public List<ValueTextVo> getKnowledgeDocumentListForInternalLink(BasePageVo basePageVo);
-    
+
     public int getKnowledgeDocumentCountForInternalLink(BasePageVo basePageVo);
 
     public int getCurrentUserKnowledgeDocumentCount(
-        @Param("userUuid")String userUuid, 
-        @Param("teamUuidList")List<String> teamUuidList, 
-        @Param("roleUuidList")List<String> roleUuidList
+            @Param("userUuid") String userUuid,
+            @Param("teamUuidList") List<String> teamUuidList,
+            @Param("roleUuidList") List<String> roleUuidList
     );
 
     public int checkUserIsApprover(
-        @Param("knowledgeCircleId") Long knowledgeCircleId, 
-        @Param("userUuid") String userUuid, 
-        @Param("teamUuidList") List<String> teamUuidList, 
-        @Param("roleUuidList") List<String> roleUuidList
-        );
-    
+            @Param("knowledgeCircleId") Long knowledgeCircleId,
+            @Param("userUuid") String userUuid,
+            @Param("teamUuidList") List<String> teamUuidList,
+            @Param("roleUuidList") List<String> roleUuidList
+    );
+
     public List<Long> getUserAllApproverCircleIdList(
-        @Param("userUuid") String userUuid, 
-        @Param("teamUuidList") List<String> teamUuidList, 
-        @Param("roleUuidList") List<String> roleUuidList
-        );
-    
+            @Param("userUuid") String userUuid,
+            @Param("teamUuidList") List<String> teamUuidList,
+            @Param("roleUuidList") List<String> roleUuidList
+    );
+
     public int checkUserIsMember(
-        @Param("knowledgeCircleId") Long knowledgeCircleId, 
-        @Param("userUuid") String userUuid, 
-        @Param("teamUuidList") List<String> teamUuidList, 
-        @Param("roleUuidList") List<String> roleUuidList 
-        );
+            @Param("knowledgeCircleId") Long knowledgeCircleId,
+            @Param("userUuid") String userUuid,
+            @Param("teamUuidList") List<String> teamUuidList,
+            @Param("roleUuidList") List<String> roleUuidList
+    );
 
     public List<KnowledgeDocumentVersionVo> getKnowledgeDocumentListByKnowledgeDocumentTypeUuid(KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int getKnowledgeDocumentCountByKnowledgeDocumentTypeUuid(KnowledgeDocumentVo knowledgeDocumentVo);
 
-    public int checkDocumentHasBeenFavored(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+    public int checkDocumentHasBeenFavored(@Param("documentId") Long documentId, @Param("userUuid") String userUuid);
 
     public int getDocumentFavorCount(Long documentId);
 
-    public int checkDocumentHasBeenCollected(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+    public int checkDocumentHasBeenCollected(@Param("documentId") Long documentId, @Param("userUuid") String userUuid);
 
     public int getDocumentCollectCount(Long documentId);
 
@@ -130,7 +130,7 @@ public interface KnowledgeDocumentMapper {
     public int getDocumentViewCount(Long documentId);
 
 //    public int checkIFThereIsSubmittedDraftByKnowDocumentIdAndFromVersion(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("fromVersion")Integer fromVersion);
-    
+
     public int checkIFThereIsSubmittedDraftByKnowDocumentId(Long knowledgeDocumentId);
 
     public int checkIfTheVersionIsTheCurrentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
@@ -140,7 +140,7 @@ public interface KnowledgeDocumentMapper {
     public int getKnowledgeDocumentVersionMyCollectCount(KnowledgeDocumentCollectVo knowledgeDocumentCollectVo);
 
     public List<Long> getKnowledgeDocumentCollectDocumentIdListByUserUuidAndDocumentIdList(@Param("userUuid") String userUuid, @Param("knowledgeDocumentIdList") List<Long> knowledgeDocumentIdList);
-    
+
     public List<Long> getKnowledgeDocumentFavorDocumentIdListByUserUuidAndDocumentIdList(@Param("userUuid") String userUuid, @Param("knowledgeDocumentIdList") List<Long> knowledgeDocumentIdList);
 
     public Long getKnowledgeDocumentIdByInvokeIdAndSource(KnowledgeDocumentInvokeVo knowledgeDocumentInvokeVo);
@@ -150,7 +150,7 @@ public interface KnowledgeDocumentMapper {
     public int checkKnowledgeDocumentTitleIsRepeat(KnowledgeDocumentVo documentVo);
 
     @ESSearch
-    public int insertKnowledgeDocument(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
+    public int insertKnowledgeDocument(@ESParam("knowledge") KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int insertKnowledgeDocumentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 
@@ -159,17 +159,19 @@ public interface KnowledgeDocumentMapper {
     public int insertKnowledgeDocumentTag(KnowledgeDocumentTagVo knowledgeDocumentTagVo);
 
     public int insertKnowledgeDocumentLineConfig(KnowledgeDocumentLineConfigVo knowledgeDocumentLineConfigVo);
-    
+
+
     public int insertKnowledgeDocumentLineContent(KnowledgeDocumentLineContentVo knowledgeDocumentLineContentVo);
 
+
     @ESSearch
-    public int insertKnowledgeDocumentLineList(@ESParam("knowledgeversion")List<KnowledgeDocumentLineVo> knowledgeDocumentLineList);
+    public int insertKnowledgeDocumentLineList(@ESParam("knowledgeversion") List<KnowledgeDocumentLineVo> knowledgeDocumentLineList);
 
-    public int insertKnowledgeDocumentFavor(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+    public int insertKnowledgeDocumentFavor(@Param("documentId") Long documentId, @Param("userUuid") String userUuid);
 
-    public int insertKnowledgeDocumentCollect(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+    public int insertKnowledgeDocumentCollect(@Param("documentId") Long documentId, @Param("userUuid") String userUuid);
 
-    public int insertKnowledgeDocumentViewCount(@Param("documentId") Long documentId,@Param("count") int count);
+    public int insertKnowledgeDocumentViewCount(@Param("documentId") Long documentId, @Param("count") int count);
 
     public int insertKnowledgeDocumentInvoke(KnowledgeDocumentInvokeVo knowledgeDocumentInvokeVo);
 
@@ -178,18 +180,18 @@ public interface KnowledgeDocumentMapper {
     public int updateKnowledgeDocumentVersionById(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 
     public int updateKnowledgeDocumentVersionStatusByKnowledgeDocumentIdAndVersionAndStatus(
-        @Param("knowledgeDocumentId") Long knowledgeDocumentId, 
-        @Param("fromVersion") Integer fromVersion, 
-        @Param("oldStatus") String oldStatus, 
-        @Param("newStatus") String newStatus
+            @Param("knowledgeDocumentId") Long knowledgeDocumentId,
+            @Param("fromVersion") Integer fromVersion,
+            @Param("oldStatus") String oldStatus,
+            @Param("newStatus") String newStatus
     );
 
     @ESSearch
-    public int updateKnowledgeDocumentById(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
+    public int updateKnowledgeDocumentById(@ESParam("knowledge") KnowledgeDocumentVo knowledgeDocumentVo);
 
-    public int updateKnowledgeDocumentTitleById(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
+    public int updateKnowledgeDocumentTitleById(@ESParam("knowledge") KnowledgeDocumentVo knowledgeDocumentVo);
 
-    public int updateKnowledgeDocumentTypeUuidById(@ESParam("knowledge")KnowledgeDocumentVo knowledgeDocumentVo);
+    public int updateKnowledgeDocumentTypeUuidById(@ESParam("knowledge") KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int updateKnowledgeViewCountIncrementOne(Long documentId);
 
@@ -211,11 +213,11 @@ public interface KnowledgeDocumentMapper {
 
     public int deleteKnowledgeDocumentById(Long id);
 
-    public int deleteKnowledgeDocumentFavor(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+    public int deleteKnowledgeDocumentFavor(@Param("documentId") Long documentId, @Param("userUuid") String userUuid);
 
-    public int deleteKnowledgeDocumentCollect(@Param("documentId") Long documentId,@Param("userUuid") String userUuid);
+    public int deleteKnowledgeDocumentCollect(@Param("documentId") Long documentId, @Param("userUuid") String userUuid);
 
-    public int deleteKnowledgeDocumentDraftByKnowledgeDocumentIdAndLcu(@Param("knowledgeDocumentId")Long knowledgeDocumentId, @Param("lcu")String userUuid);
+    public int deleteKnowledgeDocumentDraftByKnowledgeDocumentIdAndLcu(@Param("knowledgeDocumentId") Long knowledgeDocumentId, @Param("lcu") String userUuid);
 
     public int deleteKnowledgeDocumentInvokeByKnowledgeDocumentId(Long knowledgeDocumentId);
 

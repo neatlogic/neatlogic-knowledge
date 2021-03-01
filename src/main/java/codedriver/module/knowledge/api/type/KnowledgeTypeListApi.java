@@ -48,7 +48,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             documentVersionVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.SUBMITTED.getValue()));
             documentVersionVoParam.setReviewerList(Collections.singletonList(GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid(true)));
             knowledgeDocumentService.getReviewerParam(documentVersionVoParam);
-            return knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam);
+            return knowledgeDocumentMapper.searchKnowledgeDocumentVersionIdCount(documentVersionVoParam);
         });
         map.put(KnowledgeType.SHARE, () -> {
             KnowledgeDocumentVersionVo documentVersionVoParam = new KnowledgeDocumentVersionVo();
@@ -72,7 +72,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             documentVersionVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.DRAFT.getValue()));
             documentVersionVoParam.setLcuList(Collections.singletonList(GroupSearch.USER.getValuePlugin()+UserContext.get().getUserUuid(true)));
             knowledgeDocumentService.getReviewerParam(documentVersionVoParam);
-            return knowledgeDocumentMapper.getKnowledgeDocumentVersionCount(documentVersionVoParam);
+            return knowledgeDocumentMapper.searchKnowledgeDocumentVersionIdCount(documentVersionVoParam);
         });
     }
     @Autowired

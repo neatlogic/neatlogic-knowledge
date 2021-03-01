@@ -25,6 +25,11 @@ public class DocumentLineFullTextIndexHandler extends FullTextIndexHandlerBase {
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
 
     @Override
+    protected String getModuleId() {
+        return "knowledge";
+    }
+
+    @Override
     protected void myCreateIndex(FullTextIndexVo fullTextIndexVo) {
         List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(fullTextIndexVo.getTargetId());
         StringBuilder sb = new StringBuilder();

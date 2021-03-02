@@ -5,11 +5,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
-import codedriver.framework.fulltextindex.dao.mapper.FullTextIndexMapper;
-import codedriver.framework.fulltextindex.dto.FullTextIndexContentVo;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
-import codedriver.framework.fulltextindex.dto.FullTextIndexWordOffsetVo;
-import codedriver.framework.fulltextindex.utils.FullTextIndexUtil;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -47,9 +43,6 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
 
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
-
-    @Resource
-    private FullTextIndexMapper fullTextIndexMapper;
 
     @Override
     public String getToken() {
@@ -145,20 +138,12 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         }
         //一次性获取知识搜索关键字最匹配下标信息,提供给后续循环截取内容和高亮关键字
         List<String> keywordList = new ArrayList<>();
-        if(StringUtils.isNotBlank(documentVoParam.getKeyword())){
+        Map<Long, FullTextIndexVo> versionIndexVoMap = new HashMap<>();
+        Map<Long,String> versionContentMap = new HashMap<>();
+        if (StringUtils.isNotBlank(documentVoParam.getKeyword())) {
             keywordList = Arrays.asList(documentVoParam.getKeyword().split(" "));
         }
-        Map<Long, FullTextIndexVo> versionIndexVoMap = new HashMap<>();
-        Map<Long,String> versionContentVoMap = new HashMap<>();
-        knowledgeDocumentService.initVersionWordOffsetAndContentMap(keywordList,activeVersionIdList,versionIndexVoMap,versionContentVoMap);
-        //一次性查出所有activeVersionIdList Content
-        Map<Long,String> contentMap = new HashMap<>();
-        List<FullTextIndexContentVo> contentVoList = fullTextIndexMapper.getContentByTargetIdList(activeVersionIdList);
-        for(FullTextIndexContentVo contentVo : contentVoList){
-            if("content".equals(contentVo.getTargetField())) {
-                contentMap.put(contentVo.getTargetId(), contentVo.getContent());
-            }
-        }
+        knowledgeDocumentService.setVersionContentMap(keywordList,activeVersionIdList, versionIndexVoMap, versionContentMap);
         //循环知识，补充额外信息
         for (KnowledgeDocumentVo knowledgeDocumentVo : documentList) {
             knowledgeDocumentVo.setIsEditable(1);
@@ -178,29 +163,8 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             if (favorKnowledgeDocumentIdList.contains(knowledgeDocumentVo.getId())) {
                 knowledgeDocumentVo.setIsFavor(1);
             }
-            //补充content，如果有关键字则高亮
-            int contentLen = 100;
-            //如果有关键字则需高亮，否则直接截取即可
-            if (StringUtils.isNotBlank(documentVoParam.getKeyword())) {
-                FullTextIndexVo indexVo = versionIndexVoMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId());
-                FullTextIndexWordOffsetVo wordOffsetVo = indexVo.getWordOffsetVoList().get(0);
-                String content = StringUtils.EMPTY;
-                if("content".equals(indexVo.getTargetField())) {
-                    content = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(), wordOffsetVo.getEnd(), contentLen, versionContentVoMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId()));
-                }else{
-                    content = contentMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId());
-                }
-                String title = knowledgeDocumentVo.getTitle();
-                for (String keyword : keywordList) {
-                    //高亮内容
-                    title = title.replaceAll(keyword, String.format("<em>%s</em>", keyword));
-                    content = content.replaceAll(keyword, String.format("<em>%s</em>", keyword));
-                }
-                knowledgeDocumentVo.setTitle(title);
-                knowledgeDocumentVo.setContent(content);
-            } else {
-                knowledgeDocumentVo.setContent(FullTextIndexUtil.getShortcut(0,0,contentLen,contentMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId())));
-            }
+            //设置标题、截取内容，并高亮
+            knowledgeDocumentService.setTitleAndShortcutContentHighlight( keywordList, knowledgeDocumentVo.getKnowledgeDocumentVersionId(),knowledgeDocumentVo, versionIndexVoMap, versionContentMap);
             //组装返回数据
             JSONObject returnData = JSONObject.parseObject(JSON.toJSONString(knowledgeDocumentVo));
             returnData.put("knowledgeDocumentId", returnData.getLong("id"));

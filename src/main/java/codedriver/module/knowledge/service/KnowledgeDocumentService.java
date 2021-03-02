@@ -57,4 +57,22 @@ public interface KnowledgeDocumentService {
      * @Returns: void
      **/
     public void initVersionWordOffsetAndContentMap(List<String> keywordList, List<Long> activeVersionIdList, Map<Long, FullTextIndexVo> versionWordOffsetVoMap, Map<Long, String> versionContentVoMap);
+
+    /**
+     * @Description: 统计非草稿的版本状态数量
+     * @Author: 89770
+     * @Date: 2021/3/2 12:04
+     * @Params: [documentVersionVoParam, resultJson]
+     * @Returns: void
+     **/
+    public void setTitleAndShortcutContentHighlight(List<String> keywordList, Long versionId,Object documentObj,Map<Long, FullTextIndexVo> versionIndexVoMap,Map<Long, String> versionContentVoMap);
+
+    /**
+     * @Description: 一次性获取知识搜索关键字最匹配下标信息,提供给后续循环截取内容和高亮关键字
+     * @Author: 89770
+     * @Date: 2021/3/2 17:47
+     * @Params: [keywordList, activeVersionIdList]
+     * @Returns: void
+     **/
+    public void setVersionContentMap(List<String> keywordList,List<Long> activeVersionIdList,Map<Long, FullTextIndexVo> versionIndexVoMap,Map<Long, String> versionContentMap);
 }

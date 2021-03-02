@@ -15,6 +15,8 @@ import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.fulltextindex.dao.mapper.FullTextIndexMapper;
 import codedriver.framework.fulltextindex.dto.FullTextIndexContentVo;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
+import codedriver.framework.fulltextindex.dto.FullTextIndexWordOffsetVo;
+import codedriver.framework.fulltextindex.utils.FullTextIndexUtil;
 import codedriver.framework.util.HtmlUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
@@ -349,5 +351,70 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             }
         }
 
+    }
+
+    /**
+     * @Description: 设置标题、截取内容，并高亮
+     * @Author: 89770
+     * @Date: 2021/3/2 16:58
+     * @Params: []
+     * @Returns: void
+     **/
+    public void setTitleAndShortcutContentHighlight(List<String> keywordList, Long versionId,Object documentObj,Map<Long, FullTextIndexVo> versionIndexVoMap,Map<Long, String> versionContentMap){
+        KnowledgeDocumentVo documentVo = null;
+        KnowledgeDocumentVersionVo documentVersionVo = null;
+        String title = StringUtils.EMPTY;
+        String content = StringUtils.EMPTY;
+        //补充content，如果有关键字则高亮
+        int contentLen = 100;
+        //如果有关键字则需高亮，否则直接截取即可
+        if (CollectionUtils.isNotEmpty(keywordList)) {
+            FullTextIndexVo indexVo = versionIndexVoMap.get(versionId);
+            FullTextIndexWordOffsetVo wordOffsetVo = indexVo.getWordOffsetVoList().get(0);
+            content = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(), wordOffsetVo.getEnd(), contentLen, versionContentMap.get(versionId));
+            title = documentObj instanceof KnowledgeDocumentVo?((KnowledgeDocumentVo) documentObj).getTitle():((KnowledgeDocumentVersionVo)documentObj).getTitle();
+            for (String keyword : keywordList) {
+                //高亮内容(不区分大小写)
+                String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
+                String upperKeyword = keyword.toUpperCase(Locale.ROOT);
+                title = title.replaceAll(lowerKeyword, String.format("<em>%s</em>", lowerKeyword));
+                title = title.replaceAll(upperKeyword, String.format("<em>%s</em>", upperKeyword));
+                content = content.replaceAll(lowerKeyword, String.format("<em>%s</em>", lowerKeyword));
+                content = content.replaceAll(upperKeyword, String.format("<em>%s</em>", upperKeyword));
+            }
+        } else {
+            content = FullTextIndexUtil.getShortcut(0,0, contentLen, versionContentMap.get(versionId));
+        }
+
+        if(documentObj instanceof KnowledgeDocumentVo){
+            documentVo = (KnowledgeDocumentVo) documentObj;
+            documentVo.setTitle(title);
+            documentVo.setContent(content);
+        }else{
+            documentVersionVo = (KnowledgeDocumentVersionVo) documentObj;
+            documentVersionVo.setTitle(title);
+            documentVersionVo.setContent(content);
+        }
+    }
+
+    /**
+     * @Description: 一次性获取知识搜索关键字最匹配下标信息,提供给后续循环截取内容和高亮关键字
+     * @Author: 89770
+     * @Date: 2021/3/2 17:47
+     * @Params: [keywordList, activeVersionIdList]
+     * @Returns: void
+     **/
+    @Override
+    public void setVersionContentMap(List<String> keywordList,List<Long> activeVersionIdList,Map<Long, FullTextIndexVo> versionIndexVoMap,Map<Long, String> versionContentMap){
+        if(CollectionUtils.isNotEmpty(keywordList)){
+            initVersionWordOffsetAndContentMap(keywordList,activeVersionIdList,versionIndexVoMap,versionContentMap);
+        }
+        //一次性查出所有activeVersionIdList Content
+        List<FullTextIndexContentVo> contentVoList = ftIndexMapper.getContentByTargetIdList(activeVersionIdList);
+        for(FullTextIndexContentVo contentVo : contentVoList){
+            if("content".equals(contentVo.getTargetField())&& !versionContentMap.containsKey(contentVo.getTargetId())) {
+                versionContentMap.put(contentVo.getTargetId(), contentVo.getContent());
+            }
+        }
     }
 }

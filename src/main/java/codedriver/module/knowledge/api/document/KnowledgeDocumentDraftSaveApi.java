@@ -81,6 +81,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             @Param(name = "isReviewable", type = ApiParamType.INTEGER, desc = "是否能审批"),
     })
     @Description(desc = "保存文档草稿")
+    @ResubmitInterval(value = 5)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");

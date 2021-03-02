@@ -135,7 +135,7 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
         }
         //一次性获取知识搜索关键字最匹配下标信息,提供给后续循环截取内容和高亮关键字
         Map<Long, FullTextIndexVo> versionIndexVoMap = new HashMap<>();
-        Map<String, String> versionContentVoMap = new HashMap<>();
+        Map<Long, String> versionContentVoMap = new HashMap<>();
         List<String> keywordList = new ArrayList<>();
         if (StringUtils.isNotBlank(documentVersionVoParam.getKeyword())) {
             keywordList = Arrays.asList(documentVersionVoParam.getKeyword().split(" "));
@@ -170,7 +170,12 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
             if (StringUtils.isNotBlank(documentVersionVoParam.getKeyword())) {
                 FullTextIndexVo indexVo = versionIndexVoMap.get(knowledgeDocumentVersionVo.getId());
                 FullTextIndexWordOffsetVo wordOffsetVo = indexVo.getWordOffsetVoList().get(0);
-                String content = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(),wordOffsetVo.getEnd(), contentLen, versionContentVoMap.get(knowledgeDocumentVersionVo.getId()+"_"+indexVo.getTargetField()));
+                String content = StringUtils.EMPTY;
+                if("content".equals(indexVo.getTargetField())) {
+                    content = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(), wordOffsetVo.getEnd(), contentLen, versionContentVoMap.get(knowledgeDocumentVersionVo.getId()));
+                }else{
+                    content = contentMap.get(knowledgeDocumentVersionVo.getId());
+                }
                 String title = knowledgeDocumentVersionVo.getTitle();
                 for (String keyword : keywordList) {
                     //高亮内容

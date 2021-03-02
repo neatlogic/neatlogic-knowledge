@@ -56,5 +56,5 @@ public interface KnowledgeDocumentService {
      * @Params: [keyword, activeVersionIdList, versionWordOffsetVoMap, versionContentVoMap]
      * @Returns: void
      **/
-    public void initVersionWordOffsetAndContentMap(List<String> keywordList, List<Long> activeVersionIdList, Map<Long, FullTextIndexVo> versionWordOffsetVoMap, Map<String, String> versionContentVoMap);
+    public void initVersionWordOffsetAndContentMap(List<String> keywordList, List<Long> activeVersionIdList, Map<Long, FullTextIndexVo> versionWordOffsetVoMap, Map<Long, String> versionContentVoMap);
 }

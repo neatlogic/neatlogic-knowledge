@@ -28,7 +28,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -334,7 +333,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
      * @Returns: void
      **/
     @Override
-    public void initVersionWordOffsetAndContentMap(List<String> keywordList, List<Long> activeVersionIdList, Map<Long, FullTextIndexVo> versionWordOffsetVoMap, Map<String, String> versionContentVoMap) {
+    public void initVersionWordOffsetAndContentMap(List<String> keywordList, List<Long> activeVersionIdList, Map<Long, FullTextIndexVo> versionWordOffsetVoMap, Map<Long, String> versionContentVoMap) {
         if (CollectionUtils.isNotEmpty(activeVersionIdList) && CollectionUtils.isNotEmpty(keywordList)) {
             List<Long> targetIdList = new ArrayList<>();
             List<FullTextIndexVo> ftIndexVoList = ftIndexMapper.getFullTextIndexListByKeywordListAndTargetList(keywordList, activeVersionIdList);
@@ -344,7 +343,9 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             }
             List<FullTextIndexContentVo> contentVoList = ftIndexMapper.getContentByTargetIdList(targetIdList);
             for (FullTextIndexContentVo contentVo : contentVoList) {
-                versionContentVoMap.put(contentVo.getTargetId()+"_"+contentVo.getTargetField(), contentVo.getContent());
+                if("content".equals(contentVo.getTargetField())) {
+                    versionContentVoMap.put(contentVo.getTargetId(), contentVo.getContent());
+                }
             }
         }
 

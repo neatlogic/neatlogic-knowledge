@@ -149,7 +149,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             keywordList = Arrays.asList(documentVoParam.getKeyword().split(" "));
         }
         Map<Long, FullTextIndexVo> versionIndexVoMap = new HashMap<>();
-        Map<String,String> versionContentVoMap = new HashMap<>();
+        Map<Long,String> versionContentVoMap = new HashMap<>();
         knowledgeDocumentService.initVersionWordOffsetAndContentMap(keywordList,activeVersionIdList,versionIndexVoMap,versionContentVoMap);
         //一次性查出所有activeVersionIdList Content
         Map<Long,String> contentMap = new HashMap<>();
@@ -184,7 +184,12 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             if (StringUtils.isNotBlank(documentVoParam.getKeyword())) {
                 FullTextIndexVo indexVo = versionIndexVoMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId());
                 FullTextIndexWordOffsetVo wordOffsetVo = indexVo.getWordOffsetVoList().get(0);
-                String content  = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(),wordOffsetVo.getEnd(),contentLen,versionContentVoMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId()+"_"+indexVo.getTargetField()));
+                String content = StringUtils.EMPTY;
+                if("content".equals(indexVo.getTargetField())) {
+                    content = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(), wordOffsetVo.getEnd(), contentLen, versionContentVoMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId()));
+                }else{
+                    content = contentMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId());
+                }
                 String title = knowledgeDocumentVo.getTitle();
                 for (String keyword : keywordList) {
                     //高亮内容

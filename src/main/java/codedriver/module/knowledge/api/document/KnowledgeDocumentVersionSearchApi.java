@@ -3,6 +3,8 @@ package codedriver.module.knowledge.api.document;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
+import codedriver.framework.fulltextindex.dao.mapper.FullTextIndexMapper;
+import codedriver.framework.fulltextindex.dto.FullTextIndexContentVo;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
 import codedriver.framework.fulltextindex.dto.FullTextIndexWordOffsetVo;
 import codedriver.framework.fulltextindex.utils.FullTextIndexUtil;
@@ -38,6 +40,9 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
 
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
+
+    @Resource
+    private FullTextIndexMapper fullTextIndexMapper;
 
     @Override
     public String getToken() {
@@ -136,6 +141,14 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
             keywordList = Arrays.asList(documentVersionVoParam.getKeyword().split(" "));
         }
         knowledgeDocumentService.initVersionWordOffsetAndContentMap(keywordList, versionIdList, versionIndexVoMap, versionContentVoMap);
+        //一次性查出所有activeVersionIdList Content
+        Map<Long,String> contentMap = new HashMap<>();
+        List<FullTextIndexContentVo> contentVoList = fullTextIndexMapper.getContentByTargetIdList(versionIdList);
+        for(FullTextIndexContentVo contentVo : contentVoList){
+            if("content".equals(contentVo.getTargetField())) {
+                contentMap.put(contentVo.getTargetId(), contentVo.getContent());
+            }
+        }
         //循环知识版本，补充额外信息
         for (KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : documentVersionList) {
             //跟新操作（如果是草稿,可以删除或编辑）
@@ -152,12 +165,12 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
                 }
             }
             //补充content，如果有关键字则高亮
-            int contentLen = 500;
+            int contentLen = 100;
             //如果有关键字则需高亮，否则直接截取即可
             if (StringUtils.isNotBlank(documentVersionVoParam.getKeyword())) {
                 FullTextIndexVo indexVo = versionIndexVoMap.get(knowledgeDocumentVersionVo.getId());
                 FullTextIndexWordOffsetVo wordOffsetVo = indexVo.getWordOffsetVoList().get(0);
-                String content = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(), contentLen, versionContentVoMap.get(knowledgeDocumentVersionVo.getId()+"_"+indexVo.getTargetField()));
+                String content = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(),wordOffsetVo.getEnd(), contentLen, versionContentVoMap.get(knowledgeDocumentVersionVo.getId()+"_"+indexVo.getTargetField()));
                 String title = knowledgeDocumentVersionVo.getTitle();
                 for (String keyword : keywordList) {
                     //高亮内容
@@ -167,7 +180,7 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
                 knowledgeDocumentVersionVo.setTitle(title);
                 knowledgeDocumentVersionVo.setContent(content);
             } else {
-                knowledgeDocumentVersionVo.setContent(FullTextIndexUtil.getShortcut(0, contentLen, knowledgeDocumentService.getContent(knowledgeDocumentVersionVo.getKnowledgeDocumentLineList())));
+                knowledgeDocumentVersionVo.setContent(FullTextIndexUtil.getShortcut(0,0, contentLen, contentMap.get(knowledgeDocumentVersionVo.getId())));
             }
             //去掉未提交status，前端不需要展示
             KnowledgeDocumentVersionStatusVo statusVo = knowledgeDocumentVersionVo.getStatusVo();

@@ -90,10 +90,6 @@
             <result column="tagId" property="id"/>
             <result column="tagName" property="name"/>
         </association>
-        <association property="knowledgeDocumentLineList"
-                     javaType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
-            <result column="lineNumber" property="lineNumber"/>
-        </association>
     </resultMap>
 
     <select id="getKnowledgeDocumentVersionByIdList" parameterType="java.util.List"
@@ -384,12 +380,6 @@
             <result column="tagId" property="id"/>
             <result column="tagName" property="name"/>
         </association>
-        <association property="lineList" javaType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
-            <result column="lineContent" property="content"/>
-            <result column="lineNumber" property="lineNumber"/>
-            <result column="handler" property="handler"/>
-        </association>
-
     </resultMap>
 
     <select id="getKnowledgeDocumentByIdList" parameterType="java.util.List" resultMap="knowledgeDocumentMap">
@@ -415,8 +405,7 @@
         AND
         rht > (SELECT a.rht FROM `knowledge_document_type` a WHERE a.uuid = kdv.knowledge_document_type_uuid)
         ) AS documentTypePath,
-        kdv.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
-        kdlc.`content` as lineContent
+        kdv.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid
         FROM `knowledge_document` kd
         LEFT JOIN `knowledge_document_version` kdv ON kd.`id` = kdv.`knowledge_document_id` AND
         kd.`knowledge_document_version_id` = kdv.`id`
@@ -424,14 +413,11 @@
         LEFT JOIN `knowledge_document_tag` kdt ON kdt.`knowledge_document_id` = kdv.`knowledge_document_id` AND
         kdt.`knowledge_document_version_id` = kdv.`id`
         LEFT JOIN `knowledge_tag` ktg ON kdt.`tag_id` = ktg.`id`
-        LEFT JOIN `knowledge_document_line` kdl ON kdl.`knowledge_document_id` = kd.`id` AND
-        kdl.`knowledge_document_version_id` = kd.`knowledge_document_version_id`
-        LEFT JOIN `knowledge_document_line_content` kdlc ON kdl.`content_hash` = kdlc.`hash`
         where kd.`id` in
         <foreach collection="documentIdList" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
-        ORDER BY kdv.lcd DESC,kdl.`line_number` ASC
+        ORDER BY kdv.lcd DESC
     </select>
 
     <sql id="searchDocumentSql">

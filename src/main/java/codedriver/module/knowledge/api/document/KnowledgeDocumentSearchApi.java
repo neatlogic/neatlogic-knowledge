@@ -5,6 +5,8 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.fulltextindex.dao.mapper.FullTextIndexMapper;
+import codedriver.framework.fulltextindex.dto.FullTextIndexContentVo;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
 import codedriver.framework.fulltextindex.dto.FullTextIndexWordOffsetVo;
 import codedriver.framework.fulltextindex.utils.FullTextIndexUtil;
@@ -45,6 +47,9 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
 
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
+
+    @Resource
+    private FullTextIndexMapper fullTextIndexMapper;
 
     @Override
     public String getToken() {
@@ -146,6 +151,14 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         Map<Long, FullTextIndexVo> versionIndexVoMap = new HashMap<>();
         Map<String,String> versionContentVoMap = new HashMap<>();
         knowledgeDocumentService.initVersionWordOffsetAndContentMap(keywordList,activeVersionIdList,versionIndexVoMap,versionContentVoMap);
+        //一次性查出所有activeVersionIdList Content
+        Map<Long,String> contentMap = new HashMap<>();
+        List<FullTextIndexContentVo> contentVoList = fullTextIndexMapper.getContentByTargetIdList(activeVersionIdList);
+        for(FullTextIndexContentVo contentVo : contentVoList){
+            if("content".equals(contentVo.getTargetField())) {
+                contentMap.put(contentVo.getTargetId(), contentVo.getContent());
+            }
+        }
         //循环知识，补充额外信息
         for (KnowledgeDocumentVo knowledgeDocumentVo : documentList) {
             knowledgeDocumentVo.setIsEditable(1);
@@ -166,12 +179,12 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                 knowledgeDocumentVo.setIsFavor(1);
             }
             //补充content，如果有关键字则高亮
-            int contentLen = 500;
+            int contentLen = 100;
             //如果有关键字则需高亮，否则直接截取即可
             if (StringUtils.isNotBlank(documentVoParam.getKeyword())) {
                 FullTextIndexVo indexVo = versionIndexVoMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId());
                 FullTextIndexWordOffsetVo wordOffsetVo = indexVo.getWordOffsetVoList().get(0);
-                String content  = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(),contentLen,versionContentVoMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId()+"_"+indexVo.getTargetField()));
+                String content  = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(),wordOffsetVo.getEnd(),contentLen,versionContentVoMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId()+"_"+indexVo.getTargetField()));
                 String title = knowledgeDocumentVo.getTitle();
                 for (String keyword : keywordList) {
                     //高亮内容
@@ -181,7 +194,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                 knowledgeDocumentVo.setTitle(title);
                 knowledgeDocumentVo.setContent(content);
             } else {
-                knowledgeDocumentVo.setContent(FullTextIndexUtil.getShortcut(0,contentLen,knowledgeDocumentService.getContent(knowledgeDocumentVo.getLineList())));
+                knowledgeDocumentVo.setContent(FullTextIndexUtil.getShortcut(0,0,contentLen,contentMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId())));
             }
             //组装返回数据
             JSONObject returnData = JSONObject.parseObject(JSON.toJSONString(knowledgeDocumentVo));

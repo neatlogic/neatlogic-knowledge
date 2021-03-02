@@ -5,7 +5,6 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
-import codedriver.framework.fulltextindex.dao.mapper.FullTextIndexMapper;
 import codedriver.framework.fulltextindex.dto.FullTextIndexWordOffsetVo;
 import codedriver.framework.fulltextindex.utils.FullTextIndexUtil;
 import codedriver.framework.restful.annotation.*;
@@ -49,10 +48,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
 
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
-
-    @Resource
-    private FullTextIndexMapper ftIndexMapper;
-
+    
     @Override
     public String getToken() {
         return "knowledge/document/search";

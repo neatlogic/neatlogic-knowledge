@@ -3,8 +3,6 @@ package codedriver.module.knowledge.api.document;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
-import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.fulltextindex.dto.FullTextIndexWordOffsetVo;
 import codedriver.framework.fulltextindex.utils.FullTextIndexUtil;
 import codedriver.framework.restful.annotation.*;
@@ -14,7 +12,6 @@ import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionStatusVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
@@ -37,15 +34,6 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
 
     @Resource
     KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
-
-    @Resource
-    TeamMapper teamMapper;
-
-    @Resource
-    UserMapper userMapper;
-
-    @Resource
-    private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
 
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;

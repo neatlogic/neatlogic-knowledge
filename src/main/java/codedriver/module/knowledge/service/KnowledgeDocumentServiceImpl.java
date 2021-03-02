@@ -32,39 +32,40 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 @Service
 public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
 
-    @Autowired
+    @Resource
     private KnowledgeTagMapper knowledgeTagMapper;
 
-    @Autowired
+    @Resource
     private FileMapper fileMapper;
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMappper;
 
-    @Autowired
+    @Resource
     private KnowledgeCircleMapper knowledgeCircleMapper;
 
-    @Autowired
+    @Resource
     private UserMapper userMapper;
 
-    @Autowired
+    @Resource
     private TeamMapper teamMapper;
 
-    @Autowired
+    @Resource
     private RoleMapper roleMapper;
 
-    @Autowired
+    @Resource
     private FullTextIndexMapper ftIndexMapper;
 
     @Override
@@ -87,6 +88,9 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
 
     @Override
     public int isEditable(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo) {
+        if(isMember(knowledgeDocumentVersionVo.getKnowledgeCircleId()) == 0){
+            return 0;
+        }
         if (KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             if (knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
                 return 1;
@@ -102,9 +106,18 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     }
 
     @Override
-    public int isReviewer(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo) {
+    public int isReviewer(Long knowledgeCircleId) {
         List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        if (knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVersionVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) > 0) {
+        if (knowledgeDocumentMapper.checkUserIsApprover(knowledgeCircleId, UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) > 0) {
+            return 1;
+        }
+        return 0;
+    }
+
+    @Override
+    public int isMember(Long knowledgeCircleId) {
+        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        if (knowledgeDocumentMapper.checkUserIsMember(knowledgeCircleId, UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) > 0) {
             return 1;
         }
         return 0;
@@ -121,7 +134,8 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
         knowledgeDocumentVersionVo.setKnowledgeCircleId(knowledgeDocumentVo.getKnowledgeCircleId());
-        knowledgeDocumentVo.setIsReviewer(isReviewer(knowledgeDocumentVersionVo));
+        knowledgeDocumentVo.setIsReviewer(isReviewer(knowledgeDocumentVo.getKnowledgeCircleId()));
+        knowledgeDocumentVo.setIsMember(isMember(knowledgeDocumentVo.getKnowledgeCircleId()));
         knowledgeDocumentVo.setIsReviewable(0);
         knowledgeDocumentVo.setIsEditable(isEditable(knowledgeDocumentVersionVo));
         knowledgeDocumentVo.setIsDeletable(isDeletable(knowledgeDocumentVersionVo));

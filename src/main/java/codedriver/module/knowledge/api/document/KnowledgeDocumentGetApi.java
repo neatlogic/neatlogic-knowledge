@@ -1,17 +1,12 @@
 package codedriver.module.knowledge.api.document;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import codedriver.framework.dto.WorkAssignmentUnitVo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
@@ -20,24 +15,22 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
+
+import javax.annotation.Resource;
+
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
-    
-    @Autowired
-    private TeamMapper teamMapper;
 
     @Override
     public String getToken() {
@@ -71,8 +64,7 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
         }
 
-        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        if(knowledgeDocumentMapper.checkUserIsMember(documentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+        if(knowledgeDocumentService.isMember(documentVo.getKnowledgeCircleId()) == 0) {
             throw new PermissionDeniedException();
         }
 

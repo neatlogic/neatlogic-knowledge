@@ -88,6 +88,8 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private WorkAssignmentUnitVo reviewerVo;
     @EntityField(name = "当前用户是否是审核人", type = ApiParamType.INTEGER)
     private Integer isReviewer;
+    @EntityField(name = "当前用户是否是成员", type = ApiParamType.INTEGER)
+    private Integer isMember;
     @JSONField(serialize=false)
     private transient Integer isDelete;
     @JSONField(serialize=false)
@@ -453,5 +455,13 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
 
     public void setContentShortCut(String contentShortCut) {
         this.contentShortCut = contentShortCut;
+    }
+
+    public Integer getIsMember() {
+        return isMember;
+    }
+
+    public void setIsMember(Integer isMember) {
+        this.isMember = isMember;
     }
 }

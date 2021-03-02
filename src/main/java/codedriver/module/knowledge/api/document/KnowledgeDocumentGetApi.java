@@ -1,6 +1,9 @@
 package codedriver.module.knowledge.api.document;
 
 import java.util.Objects;
+
+import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
+import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
@@ -64,16 +67,27 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
         }
 
-        if(knowledgeDocumentService.isMember(documentVo.getKnowledgeCircleId()) == 0) {
-            throw new PermissionDeniedException();
-        }
-
+        boolean isLcu = false;
+        Integer isReadOnly = jsonObj.getInteger("isReadOnly");
         Long currentVersionId = documentVo.getKnowledgeDocumentVersionId();
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
         if(knowledgeDocumentVersionId != null) {
             currentVersionId = knowledgeDocumentVersionId;
+            if(Objects.equals(isReadOnly, 1)){
+                KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
+                if (knowledgeDocumentVersionVo == null) {
+                    throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
+                }
+                if(knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))){
+                    isLcu = true;
+                }
+            }
         }
-        Integer isReadOnly = jsonObj.getInteger("isReadOnly");
+        /** 如果当前用户不是成员，但是该版本的作者，可以有查看权限 **/
+        if(!isLcu && knowledgeDocumentService.isMember(documentVo.getKnowledgeCircleId()) == 0) {
+            throw new PermissionDeniedException();
+        }
+
         if(Objects.equals(isReadOnly, 1)) {
             knowledgeDocumentMapper.updateKnowledgeViewCountIncrementOne(knowledgeDocumentId);
         }

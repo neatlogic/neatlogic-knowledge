@@ -368,11 +368,11 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         //补充content，如果有关键字则高亮
         int contentLen = 100;
         //如果有关键字则需高亮，否则直接截取即可
+        title = documentObj instanceof KnowledgeDocumentVo?((KnowledgeDocumentVo) documentObj).getTitle():((KnowledgeDocumentVersionVo)documentObj).getTitle();
         if (CollectionUtils.isNotEmpty(keywordList)) {
             FullTextIndexVo indexVo = versionIndexVoMap.get(versionId);
             FullTextIndexWordOffsetVo wordOffsetVo = indexVo.getWordOffsetVoList().get(0);
             content = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(), wordOffsetVo.getEnd(), contentLen, versionContentMap.get(versionId));
-            title = documentObj instanceof KnowledgeDocumentVo?((KnowledgeDocumentVo) documentObj).getTitle():((KnowledgeDocumentVersionVo)documentObj).getTitle();
             for (String keyword : keywordList) {
                 //高亮内容(不区分大小写)
                 String lowerKeyword = keyword.toLowerCase(Locale.ROOT);

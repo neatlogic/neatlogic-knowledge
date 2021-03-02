@@ -4,16 +4,14 @@ import java.util.List;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.label.NO_AUTH;
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONObject;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
@@ -26,16 +24,19 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
 import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotReviewerException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
+
+import javax.annotation.Resource;
+
 @Service
 @AuthAction(action = NO_AUTH.class)
 @OperationType(type = OperationTypeEnum.DELETE)
 @Transactional
 public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    @Autowired
-    private TeamMapper teamMapper;
+    @Resource
+    private KnowledgeDocumentService knowledgeDocumentService;
     @Override
     public String getToken() {
         return "knowledge/document/delete";
@@ -62,8 +63,7 @@ public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
         }
-        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        if(knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+        if(knowledgeDocumentService.isReviewer(knowledgeDocumentVo.getKnowledgeCircleId()) == 0) {
             throw new KnowledgeDocumentCurrentUserNotReviewerException();
         }
         knowledgeDocumentMapper.updateKnowledgeDocumentToDeleteById(knowledgeDocumentId);

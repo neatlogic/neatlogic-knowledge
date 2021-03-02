@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
@@ -49,19 +49,19 @@ import codedriver.module.knowledge.service.KnowledgeDocumentService;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
     
-    @Autowired
+    @Resource
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
     
-    @Autowired
+    @Resource
     private UserMapper userMapper;
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
 
-    @Autowired
+    @Resource
     private TeamMapper teamMapper;
 
     private Map<String, Function<JSONObject, JSONObject>> map = new HashMap<>();
@@ -77,11 +77,10 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             if(knowledgeDocumentTypeVo == null) {
                 throw new KnowledgeDocumentTypeNotFoundException(searchVo.getKnowledgeDocumentTypeUuid());
             }
-            List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-            if(knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+            if(knowledgeDocumentService.isMember(knowledgeDocumentTypeVo.getKnowledgeCircleId()) == 0) {
                 throw new KnowledgeDocumentCurrentUserNotMemberException();
             }
-            int isApprover = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+            int isApprover = knowledgeDocumentService.isReviewer(knowledgeDocumentTypeVo.getKnowledgeCircleId());
             JSONObject resultObj = new JSONObject();
             resultObj.put("theadList", getTheadList());
             resultObj.put("tbodyList", new ArrayList<>());

@@ -2,15 +2,13 @@ package codedriver.module.knowledge.api.document;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.ValueTextVo;
-import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
@@ -23,14 +21,16 @@ import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 
+import javax.annotation.Resource;
+
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentHistoricalVersionListForSelectApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    @Autowired
-    private TeamMapper teamMapper;
+    @Resource
+    private KnowledgeDocumentService knowledgeDocumentService;
 
     @Override
     public String getToken() {
@@ -62,8 +62,7 @@ public class KnowledgeDocumentHistoricalVersionListForSelectApi extends PrivateA
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
         }
-        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        if(knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+        if(knowledgeDocumentService.isMember(knowledgeDocumentVo.getKnowledgeCircleId()) == 0) {
             throw new PermissionDeniedException();
         }
         List<ValueTextVo> list = knowledgeDocumentMapper.getKnowledgeDocumentHistorialVersionListForSelectByKnowledgeDocumentId(knowledgeDocumentId);

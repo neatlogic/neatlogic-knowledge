@@ -33,7 +33,9 @@ public interface KnowledgeDocumentMapper {
 
     public Integer searchKnowledgeDocumentVersionIdCount(KnowledgeDocumentVersionVo KnowledgeDocumentVersionVo);
 
-    public Integer getKnowledgeDocumentCount(KnowledgeDocumentVo knowledgeDocumentVo);
+    public Integer searchKnowledgeDocumentIdCount(KnowledgeDocumentVo knowledgeDocumentVo);
+
+    public List<Long> getKnowledgeDocumentVersionIdList();
 
     public List<KnowledgeDocumentVo> getKnowledgeDocumentByIdListAndFcd(@Param("documentIdList") List<Long> documentIdList, @Param("fromDate") String fromDate, @Param("toDate") String toDate);
 

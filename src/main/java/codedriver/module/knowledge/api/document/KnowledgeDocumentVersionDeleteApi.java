@@ -1,6 +1,5 @@
 package codedriver.module.knowledge.api.document;
 
-import java.util.List;
 import java.util.Objects;
 
 import codedriver.framework.auth.core.AuthAction;
@@ -14,7 +13,6 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -44,8 +42,6 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
-    @Resource
-    private TeamMapper teamMapper;
     
     @Override
     public String getToken() {
@@ -89,8 +85,7 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
             return null;
         }
         if(knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.PASSED.getValue())) {
-            List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-            if(knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+            if(knowledgeDocumentService.isReviewer(knowledgeDocumentVo.getKnowledgeCircleId()) == 0) {
                 throw new KnowledgeDocumentCurrentUserNotReviewerException();
             }
             knowledgeDocumentMapper.updateKnowledgeDocumentVersionToDeleteById(knowledgeDocumentVersionVo.getId());

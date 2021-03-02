@@ -77,7 +77,6 @@
         <id column="id" property="id"/>
         <result column="version" property="version"/>
         <result column="knowledgeDocumentId" property="knowledgeDocumentId"/>
-        <result column="knowledgeDocumentVersionId" property="knowledgeDocumentVersionId"/>
         <result column="knowledgeDocumentTypeUuid" property="knowledgeDocumentTypeUuid"/>
         <result column="knowledgeCircleId" property="knowledgeCircleId"/>
         <result column="title" property="title"/>
@@ -90,10 +89,6 @@
         <association property="tagVoList" javaType="codedriver.module.knowledge.dto.KnowledgeTagVo">
             <result column="tagId" property="id"/>
             <result column="tagName" property="name"/>
-        </association>
-        <association property="knowledgeDocumentLineList"
-                     javaType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
-            <result column="lineNumber" property="lineNumber"/>
         </association>
     </resultMap>
 
@@ -129,15 +124,6 @@
     </select>
 
     <sql id="searchDocumentVersionSql">
-        <!-- <if test="keyword != null and ( knowledgeDocumentVersionIdList == null or knowledgeDocumentVersionIdList.size() == 0)">
-             and 1 != 1
-         </if>
-         <if test="keyword != null and knowledgeDocumentVersionIdList != null and knowledgeDocumentVersionIdList.size() > 0">
-             and kdv.`id` in
-             <foreach collection="knowledgeDocumentVersionIdList" item="id" open="(" separator="," close=")">
-                 #{id}
-             </foreach>
-         </if>-->
         <if test="keywordList != null and keywordList.size() > 0">
             AND EXISTS (SELECT
             1
@@ -394,12 +380,6 @@
             <result column="tagId" property="id"/>
             <result column="tagName" property="name"/>
         </association>
-        <association property="lineList" javaType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
-            <result column="lineContent" property="content"/>
-            <result column="lineNumber" property="lineNumber"/>
-            <result column="handler" property="handler"/>
-        </association>
-
     </resultMap>
 
     <select id="getKnowledgeDocumentByIdList" parameterType="java.util.List" resultMap="knowledgeDocumentMap">
@@ -425,8 +405,7 @@
         AND
         rht > (SELECT a.rht FROM `knowledge_document_type` a WHERE a.uuid = kdv.knowledge_document_type_uuid)
         ) AS documentTypePath,
-        kdv.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
-        kdlc.`content` as lineContent
+        kdv.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid
         FROM `knowledge_document` kd
         LEFT JOIN `knowledge_document_version` kdv ON kd.`id` = kdv.`knowledge_document_id` AND
         kd.`knowledge_document_version_id` = kdv.`id`
@@ -434,26 +413,14 @@
         LEFT JOIN `knowledge_document_tag` kdt ON kdt.`knowledge_document_id` = kdv.`knowledge_document_id` AND
         kdt.`knowledge_document_version_id` = kdv.`id`
         LEFT JOIN `knowledge_tag` ktg ON kdt.`tag_id` = ktg.`id`
-        LEFT JOIN `knowledge_document_line` kdl ON kdl.`knowledge_document_id` = kd.`id` AND
-        kdl.`knowledge_document_version_id` = kd.`knowledge_document_version_id`
-        LEFT JOIN `knowledge_document_line_content` kdlc ON kdl.`content_hash` = kdlc.`hash`
         where kd.`id` in
         <foreach collection="documentIdList" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
-        ORDER BY kdv.lcd DESC,kdl.`line_number` ASC
+        ORDER BY kdv.lcd DESC
     </select>
 
     <sql id="searchDocumentSql">
-        <!--<if test="keyword != null and ( knowledgeDocumentIdList == null or knowledgeDocumentIdList.size() == 0)">
-            and 1 != 1
-        </if>
-        <if test="keyword != null and knowledgeDocumentIdList != null and knowledgeDocumentIdList.size() > 0">
-            and kd.`id` in
-            <foreach collection="knowledgeDocumentIdList" item="id" open="(" separator="," close=")">
-                #{id}
-            </foreach>
-        </if>-->
         <if test="keywordList != null and keywordList.size() > 0">
             AND EXISTS (SELECT
             1
@@ -561,7 +528,7 @@
         </if>
     </select>
 
-    <select id="getKnowledgeDocumentCount" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo"
+    <select id="searchKnowledgeDocumentIdCount" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo"
             resultType="java.lang.Integer">
         select count(distinct kd.id)
         FROM `knowledge_document` kd
@@ -625,6 +592,10 @@
         </where>
     </select>
 
+    <select id="getKnowledgeDocumentVersionIdList" resultType="java.lang.Long">
+        SELECT id FROM `knowledge_document_version`
+    </select>
+
     <select id="getKnowledgeDocumentVersionIdListByLcd" resultType="java.lang.Long">
         SELECT id FROM `knowledge_document_version`
         <where>
@@ -646,6 +617,7 @@
     <select id="getKnowledgeDocumentVersionById" parameterType="java.lang.Long"
             resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
         SELECT `id`,
+               `title`,
                `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
                `knowledge_document_id`        AS knowledgeDocumentId,
                `from_version`                 AS fromVersion,

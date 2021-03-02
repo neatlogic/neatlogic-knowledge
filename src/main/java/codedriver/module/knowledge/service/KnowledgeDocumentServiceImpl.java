@@ -12,6 +12,12 @@ import codedriver.framework.dto.WorkAssignmentUnitVo;
 import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
+import codedriver.framework.fulltextindex.dao.mapper.FullTextIndexMapper;
+import codedriver.framework.fulltextindex.dto.FullTextIndexContentVo;
+import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
+import codedriver.framework.fulltextindex.dto.FullTextIndexWordOffsetVo;
+import codedriver.framework.fulltextindex.utils.FullTextIndexUtil;
+import codedriver.framework.util.HtmlUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.*;
@@ -24,56 +30,56 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import javax.annotation.Resource;
+import java.util.*;
 
 @Service
 public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
 
-    @Autowired
+    @Resource
     private KnowledgeTagMapper knowledgeTagMapper;
-    
-    @Autowired
+
+    @Resource
     private FileMapper fileMapper;
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMappper;
-    
-    @Autowired
+
+    @Resource
     private KnowledgeCircleMapper knowledgeCircleMapper;
-    
-    @Autowired
+
+    @Resource
     private UserMapper userMapper;
-    
-    @Autowired
+
+    @Resource
     private TeamMapper teamMapper;
 
-    @Autowired
+    @Resource
     private RoleMapper roleMapper;
+
+    @Resource
+    private FullTextIndexMapper ftIndexMapper;
 
     @Override
     public int isDeletable(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo) {
-        if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+        if (KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             return 0;
-        }else if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            if(knowledgeDocumentVersionVo.getReviewer().equals(UserContext.get().getUserUuid())) {
-                if(knowledgeDocumentMapper.checkIfTheVersionIsTheCurrentVersion(knowledgeDocumentVersionVo) == 0) {
+        } else if (KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+            if (knowledgeDocumentVersionVo.getReviewer().equals(UserContext.get().getUserUuid())) {
+                if (knowledgeDocumentMapper.checkIfTheVersionIsTheCurrentVersion(knowledgeDocumentVersionVo) == 0) {
                     return 1;
                 }
             }
-        }else {
-            if(knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
+        } else {
+            if (knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
                 return 1;
             }
         }
@@ -82,14 +88,17 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
 
     @Override
     public int isEditable(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo) {
-        if(KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            if(knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
+        if(isMember(knowledgeDocumentVersionVo.getKnowledgeCircleId()) == 0){
+            return 0;
+        }
+        if (KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+            if (knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
                 return 1;
             }
-        }else if(KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+        } else if (KnowledgeDocumentVersionStatus.PASSED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
             return knowledgeDocumentMapper.checkIfTheVersionIsTheCurrentVersion(knowledgeDocumentVersionVo);
-        }else if(KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
-            if(knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
+        } else if (KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+            if (knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
                 return 1;
             }
         }
@@ -97,9 +106,18 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     }
 
     @Override
-    public int isReviewer(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo) {
+    public int isReviewer(Long knowledgeCircleId) {
         List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        if(knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVersionVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) > 0) {
+        if (knowledgeDocumentMapper.checkUserIsApprover(knowledgeCircleId, UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) > 0) {
+            return 1;
+        }
+        return 0;
+    }
+
+    @Override
+    public int isMember(Long knowledgeCircleId) {
+        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        if (knowledgeDocumentMapper.checkUserIsMember(knowledgeCircleId, UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) > 0) {
             return 1;
         }
         return 0;
@@ -108,78 +126,79 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     @Override
     public KnowledgeDocumentVo getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId) throws PermissionDeniedException {
         KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-        if(knowledgeDocumentVersionVo == null) {
+        if (knowledgeDocumentVersionVo == null) {
             throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
         }
         KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-        if(knowledgeDocumentVo == null) {
+        if (knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
         knowledgeDocumentVersionVo.setKnowledgeCircleId(knowledgeDocumentVo.getKnowledgeCircleId());
-        knowledgeDocumentVo.setIsReviewer(isReviewer(knowledgeDocumentVersionVo));
+        knowledgeDocumentVo.setIsReviewer(isReviewer(knowledgeDocumentVo.getKnowledgeCircleId()));
+        knowledgeDocumentVo.setIsMember(isMember(knowledgeDocumentVo.getKnowledgeCircleId()));
         knowledgeDocumentVo.setIsReviewable(0);
         knowledgeDocumentVo.setIsEditable(isEditable(knowledgeDocumentVersionVo));
         knowledgeDocumentVo.setIsDeletable(isDeletable(knowledgeDocumentVersionVo));
-        if(KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())){
-            if(knowledgeDocumentVo.getIsReviewer() == 0){
-                if(!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
+        if (KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+            if (knowledgeDocumentVo.getIsReviewer() == 0) {
+                if (!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
                     throw new PermissionDeniedException();
                 }
-            }else {
+            } else {
                 knowledgeDocumentVo.setIsReviewable(1);
             }
             /** 查出审核人 **/
             List<WorkAssignmentUnitVo> reviewerVoList = new ArrayList<>();
             List<KnowledgeCircleUserVo> reviewerList = knowledgeCircleMapper.getKnowledgeCircleUserListByIdAndAuthType(knowledgeDocumentVo.getKnowledgeCircleId(), KnowledgeCircleUserVo.AuthType.APPROVER.getValue());
-            for(KnowledgeCircleUserVo reviewer : reviewerList){
-                if(reviewer.getType().equals(GroupSearch.USER.getValue())){
+            for (KnowledgeCircleUserVo reviewer : reviewerList) {
+                if (reviewer.getType().equals(GroupSearch.USER.getValue())) {
                     UserVo userVo = userMapper.getUserBaseInfoByUuid(reviewer.getUuid());
-                    if(userVo != null && userVo.getIsActive() == 1){
+                    if (userVo != null && userVo.getIsActive() == 1) {
                         reviewerVoList.add(new WorkAssignmentUnitVo(userVo));
                     }
-                }else if(reviewer.getType().equals(GroupSearch.TEAM.getValue())){
+                } else if (reviewer.getType().equals(GroupSearch.TEAM.getValue())) {
                     TeamVo teamVo = teamMapper.getTeamByUuid(reviewer.getUuid());
-                    if(teamVo != null){
+                    if (teamVo != null) {
                         reviewerVoList.add(new WorkAssignmentUnitVo(teamVo));
                     }
-                }else if(reviewer.getType().equals(GroupSearch.ROLE.getValue())){
+                } else if (reviewer.getType().equals(GroupSearch.ROLE.getValue())) {
                     RoleVo roleVo = roleMapper.getRoleByUuid(reviewer.getUuid());
-                    if(roleVo != null){
+                    if (roleVo != null) {
                         reviewerVoList.add(new WorkAssignmentUnitVo(roleVo));
                     }
                 }
             }
             knowledgeDocumentVo.setReviewerVoList(reviewerVoList);
-        }else if(knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.DRAFT.getValue())){
-            if(!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
+        } else if (knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.DRAFT.getValue())) {
+            if (!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
                 throw new PermissionDeniedException();
             }
-        }else if(knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.REJECTED.getValue())){
-            if(!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
+        } else if (knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.REJECTED.getValue())) {
+            if (!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
                 throw new PermissionDeniedException();
-            }else {
-                KnowledgeDocumentAuditVo  rejectAudit = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditListByDocumentIdAndVersionIdAndOperate(new KnowledgeDocumentAuditVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(),knowledgeDocumentVersionVo.getId(), KnowledgeDocumentOperate.REJECT.getValue()));
-                if(rejectAudit != null) {
-                    String rejectReason =knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditConfigStringByHash(rejectAudit.getConfigHash());
-                    if(StringUtils.isNotBlank(rejectReason)) {
-                        knowledgeDocumentVo.setRejectReason((String) JSONPath.read(rejectReason,"content"));
+            } else {
+                KnowledgeDocumentAuditVo rejectAudit = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditListByDocumentIdAndVersionIdAndOperate(new KnowledgeDocumentAuditVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionVo.getId(), KnowledgeDocumentOperate.REJECT.getValue()));
+                if (rejectAudit != null) {
+                    String rejectReason = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditConfigStringByHash(rejectAudit.getConfigHash());
+                    if (StringUtils.isNotBlank(rejectReason)) {
+                        knowledgeDocumentVo.setRejectReason((String) JSONPath.read(rejectReason, "content"));
                     }
                 }
-                if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getReviewer())){
+                if (StringUtils.isNotBlank(knowledgeDocumentVersionVo.getReviewer())) {
                     UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getReviewer());
-                    if(userVo != null && userVo.getIsActive() == 1){
+                    if (userVo != null && userVo.getIsActive() == 1) {
                         knowledgeDocumentVo.setReviewerVo(new WorkAssignmentUnitVo(userVo));
                     }
                 }
             }
         }
-        if(Objects.equals(knowledgeDocumentVersionId, knowledgeDocumentVo.getKnowledgeDocumentVersionId())) {
-            if(Objects.equals(knowledgeDocumentVo.getIsDelete(), 0) && Objects.equals(knowledgeDocumentVersionVo.getIsDelete(), 0)){
+        if (Objects.equals(knowledgeDocumentVersionId, knowledgeDocumentVo.getKnowledgeDocumentVersionId())) {
+            if (Objects.equals(knowledgeDocumentVo.getIsDelete(), 0) && Objects.equals(knowledgeDocumentVersionVo.getIsDelete(), 0)) {
                 knowledgeDocumentVo.setIsCurrentVersion(1);
-            }else {
+            } else {
                 knowledgeDocumentVo.setIsCurrentVersion(0);
             }
-        }else {
+        } else {
             knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             knowledgeDocumentVo.setIsCurrentVersion(0);
         }
@@ -187,10 +206,10 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         knowledgeDocumentVo.setLcu(knowledgeDocumentVersionVo.getLcu());
         knowledgeDocumentVo.setLcd(knowledgeDocumentVersionVo.getLcd());
         UserVo lcuUserVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
-        if(lcuUserVo != null) {
+        if (lcuUserVo != null) {
             //使用新对象，防止缓存
             UserVo vo = new UserVo();
-            BeanUtils.copyProperties(lcuUserVo,vo);
+            BeanUtils.copyProperties(lcuUserVo, vo);
             knowledgeDocumentVo.setLcuVo(vo);
 //            knowledgeDocumentVo.setLcuName(lcuUserVo.getUserName());
 //            knowledgeDocumentVo.setLcuInfo(lcuUserVo.getUserInfo());
@@ -198,25 +217,25 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentVo.setLineList(lineList);
         List<Long> fileIdList = knowledgeDocumentMapper.getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentVo.getId(), knowledgeDocumentVersionId));
-        if(CollectionUtils.isNotEmpty(fileIdList)) {
+        if (CollectionUtils.isNotEmpty(fileIdList)) {
             List<FileVo> fileList = fileMapper.getFileListByIdList(fileIdList);
             knowledgeDocumentVo.setFileIdList(fileIdList);
             knowledgeDocumentVo.setFileList(fileList);
         }
         List<Long> tagIdList = knowledgeDocumentMapper.getKnowledgeDocumentTagIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(knowledgeDocumentVo.getId(), knowledgeDocumentVersionId));
-        if(CollectionUtils.isNotEmpty(tagIdList)) {
+        if (CollectionUtils.isNotEmpty(tagIdList)) {
             List<String> tagNameList = knowledgeTagMapper.getKnowledgeTagNameListByIdList(tagIdList);
             knowledgeDocumentVo.setTagList(tagNameList);
         }
-        
+
         KnowledgeCircleVo knowledgeCircleVo = knowledgeCircleMapper.getKnowledgeCircleById(knowledgeDocumentVo.getKnowledgeCircleId());
-        if(knowledgeCircleVo != null) {
+        if (knowledgeCircleVo != null) {
             knowledgeDocumentVo.getPath().add(knowledgeCircleVo.getName());
         }
         KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMappper.getTypeByUuid(knowledgeDocumentVo.getKnowledgeDocumentTypeUuid());
-        if(knowledgeDocumentTypeVo != null) {
+        if (knowledgeDocumentTypeVo != null) {
             List<String> typeNameList = knowledgeDocumentTypeMappper.getAncestorsAndSelfNameByLftRht(knowledgeDocumentTypeVo.getLft(), knowledgeDocumentTypeVo.getRht(), knowledgeDocumentTypeVo.getKnowledgeCircleId());
-            if(CollectionUtils.isNotEmpty(typeNameList)) {
+            if (CollectionUtils.isNotEmpty(typeNameList)) {
                 knowledgeDocumentVo.getPath().addAll(typeNameList);
             }
         }
@@ -228,23 +247,23 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     public void getReviewerParam(KnowledgeDocumentVersionVo documentVersionVoParam) {
         documentVersionVoParam.getReviewerRoleUuidList().clear();
         documentVersionVoParam.getReviewerTeamUuidList().clear();
-        if(CollectionUtils.isNotEmpty(documentVersionVoParam.getReviewerList()) && CollectionUtils.isNotEmpty(documentVersionVoParam.getStatusList())) {
+        if (CollectionUtils.isNotEmpty(documentVersionVoParam.getReviewerList()) && CollectionUtils.isNotEmpty(documentVersionVoParam.getStatusList())) {
             //如果是“待审批”，则搜 knowledge_circle_user中 auth_type 为 “approver” 数据鉴权
-            if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.ALL.getValue())||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())) {
+            if (documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.ALL.getValue()) || documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())) {
                 documentVersionVoParam.setIsReviewer(0);
                 Iterator<String> reviewerIterator = documentVersionVoParam.getReviewerList().iterator();
                 List<String> reviewerList = new ArrayList<String>();
-                while(reviewerIterator.hasNext()) {
+                while (reviewerIterator.hasNext()) {
                     String reviewer = reviewerIterator.next();
-                    if(reviewer.startsWith(GroupSearch.USER.getValuePlugin())||(!reviewer.startsWith(GroupSearch.TEAM.getValuePlugin())&&!reviewer.startsWith(GroupSearch.ROLE.getValuePlugin()))){
+                    if (reviewer.startsWith(GroupSearch.USER.getValuePlugin()) || (!reviewer.startsWith(GroupSearch.TEAM.getValuePlugin()) && !reviewer.startsWith(GroupSearch.ROLE.getValuePlugin()))) {
                         reviewer = reviewer.replaceAll(GroupSearch.USER.getValuePlugin(), StringUtils.EMPTY);
                         documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
                         documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
                         reviewerList.add(reviewer);
-                    }else if(reviewer.startsWith(GroupSearch.TEAM.getValuePlugin())) {
+                    } else if (reviewer.startsWith(GroupSearch.TEAM.getValuePlugin())) {
                         reviewer = reviewer.replaceAll(GroupSearch.TEAM.getValuePlugin(), StringUtils.EMPTY);
                         documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
-                    }else {
+                    } else {
                         reviewer = reviewer.replaceAll(GroupSearch.ROLE.getValuePlugin(), StringUtils.EMPTY);
                         documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
                     }
@@ -252,11 +271,11 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
                 documentVersionVoParam.setReviewerList(reviewerList);
             }
 
-            if(documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.ALL.getValue())||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.REJECTED.getValue())//否则查询 knowledge_document_version中的 “reviewer”
-                    ||documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.PASSED.getValue())){
+            if (documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.ALL.getValue()) || documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.REJECTED.getValue())//否则查询 knowledge_document_version中的 “reviewer”
+                    || documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.PASSED.getValue())) {
                 List<String> reviewerList = documentVersionVoParam.getReviewerList();
-                if(CollectionUtils.isNotEmpty(reviewerList)) {
-                    for(int i = 0;i<reviewerList.size();i++) {
+                if (CollectionUtils.isNotEmpty(reviewerList)) {
+                    for (int i = 0; i < reviewerList.size(); i++) {
                         reviewerList.set(i, reviewerList.get(i).replaceAll(GroupSearch.USER.getValuePlugin(), ""));
                     }
                 }
@@ -265,6 +284,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             }
         }
     }
+
     /**
      * @Description: 记录对文档操作（如提交，审核，切换版本，删除版本）
      * @Author: linbq
@@ -279,11 +299,122 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         knowledgeDocumentAuditVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
         knowledgeDocumentAuditVo.setOperate(operate.getValue());
-        if(MapUtils.isNotEmpty(config)){
+        if (MapUtils.isNotEmpty(config)) {
             KnowledgeDocumentAuditConfigVo knowledgeDocumentAuditConfigVo = new KnowledgeDocumentAuditConfigVo(config.toJSONString());
             knowledgeDocumentAuditMapper.insertKnowledgeDocumentAuditConfig(knowledgeDocumentAuditConfigVo);
             knowledgeDocumentAuditVo.setConfigHash(knowledgeDocumentAuditConfigVo.getHash());
         }
         knowledgeDocumentAuditMapper.insertKnowledgeDocumentAudit(knowledgeDocumentAuditVo);
+    }
+
+
+    /**
+     * @Description: 获取截取后的内容
+     * @Author: 89770
+     * @Date: 2021/3/1 16:47
+     * @Params: [knowledgeDocumentVo, contentSb, contentLen]
+     * @Returns: void
+     **/
+    @Override
+    public String getContent(List<KnowledgeDocumentLineVo> lineVoList) {
+        StringBuilder contentSb = new StringBuilder();
+        if (CollectionUtils.isNotEmpty(lineVoList)) {
+            for (KnowledgeDocumentLineVo lineVo : lineVoList) {
+                String contentTmp = HtmlUtil.removeHtml(lineVo.getContent());
+                contentSb.append(contentTmp);
+            }
+        }
+        return contentSb.toString();
+    }
+
+    /**
+     * @Description: 一次性获取知识搜索关键字最匹配下标信息,提供给后续循环截取内容和高亮关键字
+     * @Author: 89770
+     * @Date: 2021/3/2 12:18
+     * @Params: [keyword, activeVersionIdList, versionWordOffsetVoMap, versionContentVoMap]
+     * @Returns: void
+     **/
+    @Override
+    public void initVersionWordOffsetAndContentMap(List<String> keywordList, List<Long> activeVersionIdList, Map<Long, FullTextIndexVo> versionWordOffsetVoMap, Map<Long, String> versionContentVoMap) {
+        if (CollectionUtils.isNotEmpty(activeVersionIdList) && CollectionUtils.isNotEmpty(keywordList)) {
+            List<Long> targetIdList = new ArrayList<>();
+            List<FullTextIndexVo> ftIndexVoList = ftIndexMapper.getFullTextIndexListByKeywordListAndTargetList(keywordList, activeVersionIdList);
+            for (FullTextIndexVo indexVo : ftIndexVoList) {
+                targetIdList.add(indexVo.getTargetId());
+                versionWordOffsetVoMap.put(indexVo.getTargetId(), indexVo);
+            }
+            List<FullTextIndexContentVo> contentVoList = ftIndexMapper.getContentByTargetIdList(targetIdList);
+            for (FullTextIndexContentVo contentVo : contentVoList) {
+                if("content".equals(contentVo.getTargetField())) {
+                    versionContentVoMap.put(contentVo.getTargetId(), contentVo.getContent());
+                }
+            }
+        }
+
+    }
+
+    /**
+     * @Description: 设置标题、截取内容，并高亮
+     * @Author: 89770
+     * @Date: 2021/3/2 16:58
+     * @Params: []
+     * @Returns: void
+     **/
+    public void setTitleAndShortcutContentHighlight(List<String> keywordList, Long versionId,Object documentObj,Map<Long, FullTextIndexVo> versionIndexVoMap,Map<Long, String> versionContentMap){
+        KnowledgeDocumentVo documentVo = null;
+        KnowledgeDocumentVersionVo documentVersionVo = null;
+        String title = StringUtils.EMPTY;
+        String content = StringUtils.EMPTY;
+        //补充content，如果有关键字则高亮
+        int contentLen = 100;
+        //如果有关键字则需高亮，否则直接截取即可
+        title = documentObj instanceof KnowledgeDocumentVo?((KnowledgeDocumentVo) documentObj).getTitle():((KnowledgeDocumentVersionVo)documentObj).getTitle();
+        if (CollectionUtils.isNotEmpty(keywordList)) {
+            FullTextIndexVo indexVo = versionIndexVoMap.get(versionId);
+            FullTextIndexWordOffsetVo wordOffsetVo = indexVo.getWordOffsetVoList().get(0);
+            content = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(), wordOffsetVo.getEnd(), contentLen, versionContentMap.get(versionId));
+            for (String keyword : keywordList) {
+                //高亮内容(不区分大小写)
+                String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
+                String upperKeyword = keyword.toUpperCase(Locale.ROOT);
+                title = title.replaceAll(lowerKeyword, String.format("<em>%s</em>", lowerKeyword));
+                title = title.replaceAll(upperKeyword, String.format("<em>%s</em>", upperKeyword));
+                content = content.replaceAll(lowerKeyword, String.format("<em>%s</em>", lowerKeyword));
+                content = content.replaceAll(upperKeyword, String.format("<em>%s</em>", upperKeyword));
+            }
+        } else {
+            content = FullTextIndexUtil.getShortcut(0,0, contentLen, versionContentMap.get(versionId));
+        }
+
+        if(documentObj instanceof KnowledgeDocumentVo){
+            documentVo = (KnowledgeDocumentVo) documentObj;
+            documentVo.setTitle(title);
+            documentVo.setContent(content);
+        }else{
+            documentVersionVo = (KnowledgeDocumentVersionVo) documentObj;
+            documentVersionVo.setTitle(title);
+            documentVersionVo.setContent(content);
+        }
+    }
+
+    /**
+     * @Description: 一次性获取知识搜索关键字最匹配下标信息,提供给后续循环截取内容和高亮关键字
+     * @Author: 89770
+     * @Date: 2021/3/2 17:47
+     * @Params: [keywordList, activeVersionIdList]
+     * @Returns: void
+     **/
+    @Override
+    public void setVersionContentMap(List<String> keywordList,List<Long> activeVersionIdList,Map<Long, FullTextIndexVo> versionIndexVoMap,Map<Long, String> versionContentMap){
+        if(CollectionUtils.isNotEmpty(keywordList)){
+            initVersionWordOffsetAndContentMap(keywordList,activeVersionIdList,versionIndexVoMap,versionContentMap);
+        }
+        //一次性查出所有activeVersionIdList Content
+        List<FullTextIndexContentVo> contentVoList = ftIndexMapper.getContentByTargetIdList(activeVersionIdList);
+        for(FullTextIndexContentVo contentVo : contentVoList){
+            if("content".equals(contentVo.getTargetField())&& !versionContentMap.containsKey(contentVo.getTargetId())) {
+                versionContentMap.put(contentVo.getTargetId(), contentVo.getContent());
+            }
+        }
     }
 }

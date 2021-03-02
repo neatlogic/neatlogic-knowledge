@@ -17,7 +17,9 @@ public interface KnowledgeDocumentService {
     
     public int isEditable(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
     
-    public int isReviewer(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
+    public int isReviewer(Long knowledgeCircleId);
+
+    public int isMember(Long knowledgeCircleId);
     
     public KnowledgeDocumentVo getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId) throws PermissionDeniedException;
 

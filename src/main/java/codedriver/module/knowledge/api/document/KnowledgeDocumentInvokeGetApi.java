@@ -2,17 +2,15 @@ package codedriver.module.knowledge.api.document;
 
 import java.util.List;
 
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dto.UserVo;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -32,19 +30,22 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
+
+import javax.annotation.Resource;
+
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentInvokeGetApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    @Autowired
-    private TeamMapper teamMapper;   
-    @Autowired
+    @Resource
+    private KnowledgeDocumentService knowledgeDocumentService;
+    @Resource
     private UserMapper userMapper;   
-    @Autowired
+    @Resource
     private KnowledgeCircleMapper knowledgeCircleMapper;
-    @Autowired
+    @Resource
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMappper;
 
     @Override
@@ -120,8 +121,7 @@ public class KnowledgeDocumentInvokeGetApi extends PrivateApiComponentBase {
                 resultObj.put("knowledgeDocumentVersion", knowledgeDocumentVersionVo);               
             }
         }else {
-            List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-            if(knowledgeDocumentMapper.checkUserIsMember(null, UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+            if(knowledgeDocumentService.isMember(null) == 0) {
                 resultObj.put("isTransferKnowledge", 0);
             }else {
                 resultObj.put("isTransferKnowledge", 1);

@@ -13,7 +13,6 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -40,9 +39,6 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
 
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
-
-    @Resource
-    private TeamMapper teamMapper;
     
     @Override
     public String getToken() {
@@ -101,9 +97,8 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
             updateStatusVo.setFromVersion(0);
         }
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateStatusVo);
-        
-        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+
+        int isReviewable = knowledgeDocumentService.isReviewer(knowledgeDocumentVo.getKnowledgeCircleId());
         JSONObject resultObj = new JSONObject();
         resultObj.put("isReviewable", isReviewable);
 

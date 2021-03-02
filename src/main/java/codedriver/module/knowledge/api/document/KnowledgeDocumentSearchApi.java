@@ -10,7 +10,6 @@ import codedriver.framework.fulltextindex.utils.FullTextIndexUtil;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
@@ -35,9 +34,6 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     KnowledgeDocumentMapper knowledgeDocumentMapper;
 
     @Resource
-    KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
-
-    @Resource
     TeamMapper teamMapper;
 
     @Resource
@@ -48,7 +44,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
 
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
-    
+
     @Override
     public String getToken() {
         return "knowledge/document/search";

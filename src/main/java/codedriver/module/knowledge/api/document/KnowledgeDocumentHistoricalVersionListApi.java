@@ -4,16 +4,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dto.UserVo;
 import codedriver.framework.exception.type.PermissionDeniedException;
@@ -29,16 +27,18 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentHistoricalVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 
+import javax.annotation.Resource;
+
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiComponentBase {
 
-    @Autowired
-    private KnowledgeDocumentMapper knowledgeDocumentMapper;   
-    @Autowired
+    @Resource
+    private KnowledgeDocumentMapper knowledgeDocumentMapper;
+    @Resource
+    private KnowledgeDocumentService knowledgeDocumentService;
+    @Resource
     private UserMapper userMapper;
-    @Autowired
-    private TeamMapper teamMapper;
 
     @Override
     public String getToken() {
@@ -72,11 +72,10 @@ public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiCompone
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
         }
-        List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        if(knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+        if(knowledgeDocumentService.isMember(knowledgeDocumentVo.getKnowledgeCircleId()) == 0) {
             throw new PermissionDeniedException();
         }
-        int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+        int isReviewable = knowledgeDocumentService.isReviewer(knowledgeDocumentVo.getKnowledgeCircleId());
         List<KnowledgeDocumentHistoricalVersionVo> historicalVersionList = knowledgeDocumentMapper.getKnowledgeDocumentHistorialVersionListByKnowledgeDocumentId(knowledgeDocumentId);
         Iterator<KnowledgeDocumentHistoricalVersionVo> iterator = historicalVersionList.iterator();
         while(iterator.hasNext()) {

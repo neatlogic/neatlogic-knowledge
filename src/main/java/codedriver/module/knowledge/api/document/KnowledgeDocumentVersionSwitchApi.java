@@ -1,10 +1,8 @@
 package codedriver.module.knowledge.api.document;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.label.NO_AUTH;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -23,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -37,9 +34,6 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
 
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
-
-    @Resource
-    private TeamMapper teamMapper;
     
     @Override
     public String getToken() {
@@ -84,8 +78,7 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentNotHistoricalVersionException(knowledgeDocumentVersionId);
         }
         int oldVersion = knowledgeDocumentVo.getVersion();
-        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        if(knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) == 0) {
+        if(knowledgeDocumentService.isReviewer(knowledgeDocumentVo.getKnowledgeCircleId()) == 0) {
             throw new KnowledgeDocumentCurrentUserNotReviewerException();
         }
 

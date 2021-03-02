@@ -18,17 +18,17 @@ import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.dto.KnowledgeTypeVo;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.function.Supplier;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeTypeListApi extends PrivateApiComponentBase {
-    @Autowired
+    @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
 
     private final Map<KnowledgeType, Supplier<Integer>> map = new HashMap<>();
@@ -75,13 +75,13 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             return knowledgeDocumentMapper.searchKnowledgeDocumentVersionIdCount(documentVersionVoParam);
         });
     }
-    @Autowired
+    @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
 
-    @Autowired
+    @Resource
     TeamMapper teamMapper;
 
-    @Autowired
+    @Resource
     UserMapper userMapper;
 
     @Override
@@ -105,8 +105,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
     @Description(desc = "查询知识分类列表")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        int isReviewable = knowledgeDocumentMapper.checkUserIsApprover(null, UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+        int isReviewable = knowledgeDocumentService.isReviewer(null);
         List<KnowledgeTypeVo> resultList = new ArrayList<>();
         for(KnowledgeType type : KnowledgeType.values()) {
             if(KnowledgeType.WAITINGFORREVIEW == type && isReviewable == 0) {

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @Title: TestApi
@@ -40,18 +41,22 @@ public class TestApi extends PrivateApiComponentBase {
 
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        JSONArray versionIdList = jsonObj.getJSONArray("versionIdList");
+        JSONArray versionIdArray = jsonObj.getJSONArray("versionIdList");
+        List<Long> versionIdList = null;
         //创建全文检索索引
         IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(FullTextIndexType.KNOW_DOCUMENT_VERSION);
         if (handler != null) {
             if(jsonObj.containsKey("versionId")) {
                 handler.createIndex(jsonObj.getLong("versionId"));
-            }else if(CollectionUtils.isNotEmpty(versionIdList)){
-                for(Object versionIdObj : versionIdList ){
-                    handler.createIndex(Long.valueOf(versionIdObj.toString()));
+            }else {
+                if(CollectionUtils.isNotEmpty(versionIdArray)){
+                    versionIdList = JSONObject.parseArray(versionIdArray.toJSONString(), Long.class);
+                }else{
+                    versionIdList = knowledgeDocumentMapper.getKnowledgeDocumentVersionIdList();
                 }
-            }else{
-                knowledgeDocumentMapper.getKnowledgeDocumentVersionIdList();
+                for(Long versionIdObj : versionIdList ){
+                    handler.createIndex(versionIdObj);
+                }
             }
         }
         return null;

@@ -19,7 +19,10 @@ public class Node {
     private boolean match;
     /** 上一个节点 **/
     private Node previous;
+    /** 上一个节点 **/
+    private Node anotherPrevious;
     /** 下一个节点 **/
+    @Deprecated
     private Node next;
     /** 下一个节点数量 **/
     private int nextCount;
@@ -67,12 +70,34 @@ public class Node {
         }
         return this;
     }
+
+    public Node getAnotherPrevious() {
+        return anotherPrevious;
+    }
+
+    public Node setAnotherPrevious(Node anotherPrevious) {
+        this.anotherPrevious = anotherPrevious;
+        if(anotherPrevious != null) {
+            ++anotherPrevious.nextCount;
+        }
+        return this;
+    }
+    @Deprecated
+    public Node getNext() {
+        return next;
+    }
+    @Deprecated
+    public void setNext(Node next) {
+        this.next = next;
+    }
+
     public void nextCountDecrement() {
         --this.nextCount;
     }
     public int getNextCount() {
         return nextCount;
     }
+    @Deprecated
     public List<SegmentPair> getSegmentPairList(){
         List<SegmentPair> resultList = new ArrayList<>();
         Node node = this;
@@ -80,7 +105,7 @@ public class Node {
 //            System.out.println(node);
             Node current = node;
             node = node.previous;
-            node.next = current;          
+            node.next = current;
         }
 //        System.out.println(node);
 
@@ -96,7 +121,7 @@ public class Node {
             }
         }
         SegmentPair segmentMapping = new SegmentPair(oldPrevMatchIndex, newPrevMatchIndex, node.match);
-        do {               
+        do {
             if(node.match) {
                 oldPrevMatchIndex = node.oldIndex;
                 newPrevMatchIndex = node.newIndex;

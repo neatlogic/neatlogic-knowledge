@@ -126,7 +126,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
             }
             return false;
         });
-        for(SegmentPair segmentPair : node.getSegmentPairList()) {
+        for(SegmentPair segmentPair : LCSUtil.getSegmentPairList(node)) {
             regroupLineList(oldLineList, newLineList, oldResultList, newResultList, segmentPair);
         }
         oldDocumentVo.setLineList(oldResultList);
@@ -231,15 +231,18 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                       }else if(StringUtils.length(newMainBody) == 0) {
                           KnowledgeDocumentLineHandler.setMainBody(oldLine, "<span class='delete'>" + oldMainBody + "</span>");
                       }else {
-                          List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
-                          List<SegmentRange> newSegmentRangeList = new ArrayList<>();
-                          Node node = LCSUtil.LCSCompare(oldMainBody, newMainBody);
-                          for(SegmentPair segmentpair : node.getSegmentPairList()) {
-                              oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
-                              newSegmentRangeList.add(segmentpair.getNewSegmentRange());
-                          }
-                          KnowledgeDocumentLineHandler.setMainBody(oldLine, LCSUtil.wrapChangePlace(oldMainBody, oldSegmentRangeList, "<span class='delete'>", "</span>"));
-                          KnowledgeDocumentLineHandler.setMainBody(newLine, LCSUtil.wrapChangePlace(newMainBody, newSegmentRangeList, "<span class='insert'>", "</span>"));
+//                          List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
+//                          List<SegmentRange> newSegmentRangeList = new ArrayList<>();
+//                          Node node = LCSUtil.LCSCompare(oldMainBody, newMainBody);
+//                          for(SegmentPair segmentpair : node.getSegmentPairList()) {
+//                              oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
+//                              newSegmentRangeList.add(segmentpair.getNewSegmentRange());
+//                          }
+//                          KnowledgeDocumentLineHandler.setMainBody(oldLine, LCSUtil.wrapChangePlace(oldMainBody, oldSegmentRangeList, "<span class='delete'>", "</span>"));
+//                          KnowledgeDocumentLineHandler.setMainBody(newLine, LCSUtil.wrapChangePlace(newMainBody, newSegmentRangeList, "<span class='insert'>", "</span>"));
+                          String[] resultArray = LCSUtil.LCSCompare(oldMainBody, newMainBody);
+                          KnowledgeDocumentLineHandler.setMainBody(oldLine, oldMainBody);
+                          KnowledgeDocumentLineHandler.setMainBody(newLine, newMainBody);
                       }
                   }
                   oldResultList.add(oldLine);
@@ -308,9 +311,9 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                         int oldLineContentLength = StringUtils.length(oldMainBody);
                         int newLineContentLength = StringUtils.length(newMainBody);
                         if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && oldLineContentLength > 0 && newLineContentLength > 0) {
-                            Node node = LCSUtil.LCSCompare(oldMainBody, newMainBody);
+                            int totalMatchLength = LCSUtil.getTotalMatchLength(oldMainBody, newMainBody);
                             int maxLength = Math.max(oldLineContentLength, newLineContentLength);
-                            matchPercentage = (node.getTotalMatchLength() * 1000) / maxLength;
+                            matchPercentage = (totalMatchLength * 1000) / maxLength;
                             currentNode.setTotalMatchLength(matchPercentage);
                         }
                 }

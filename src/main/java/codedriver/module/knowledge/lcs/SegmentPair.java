@@ -19,6 +19,12 @@ public class SegmentPair {
         this.match = match;
     }
 
+    public SegmentPair(int oldBeginIndex, int oldEndIndex, int newBeginIndex, int newEndIndex, boolean match) {
+        this.oldSegmentRange = new SegmentRange(oldBeginIndex, oldEndIndex, match);
+        this.newSegmentRange = new SegmentRange(newBeginIndex, newEndIndex, match);
+        this.match = match;
+    }
+
     public SegmentRange getOldSegmentRange() {
         return oldSegmentRange;
     }
@@ -38,9 +44,26 @@ public class SegmentPair {
         oldSegmentRange.setEndIndex(oldEndIndex);
         newSegmentRange.setEndIndex(newEndIndex);
     }
+
     @Override
     public String toString() {
         return "[oldSegmentRange=" + oldSegmentRange + ", newSegmentRange=" + newSegmentRange
             + ", match=" + match + "]";
+    }
+
+    public int getOldBeginIndex() {
+        return oldSegmentRange.getBeginIndex();
+    }
+
+    public int getOldEndIndex() {
+        return oldSegmentRange.getEndIndex();
+    }
+
+    public int getNewBeginIndex() {
+        return newSegmentRange.getBeginIndex();
+    }
+
+    public int getNewEndIndex() {
+        return newSegmentRange.getEndIndex();
     }
 }

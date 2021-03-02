@@ -1,7 +1,7 @@
 package codedriver.module.knowledge.service;
 
 import codedriver.framework.exception.type.PermissionDeniedException;
-import codedriver.framework.fulltextindex.dto.FullTextIndexWordOffsetVo;
+import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
@@ -54,5 +54,5 @@ public interface KnowledgeDocumentService {
      * @Params: [keyword, activeVersionIdList, versionWordOffsetVoMap, versionContentVoMap]
      * @Returns: void
      **/
-    public void initVersionWordOffsetAndContentMap(List<String> keywordList, List<Long> activeVersionIdList, Map<Long, FullTextIndexWordOffsetVo> versionWordOffsetVoMap, Map<Long, String> versionContentVoMap);
+    public void initVersionWordOffsetAndContentMap(List<String> keywordList, List<Long> activeVersionIdList, Map<Long, FullTextIndexVo> versionWordOffsetVoMap, Map<String, String> versionContentVoMap);
 }

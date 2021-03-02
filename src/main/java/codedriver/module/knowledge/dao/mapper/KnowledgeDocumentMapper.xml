@@ -77,7 +77,6 @@
         <id column="id" property="id"/>
         <result column="version" property="version"/>
         <result column="knowledgeDocumentId" property="knowledgeDocumentId"/>
-        <result column="knowledgeDocumentVersionId" property="knowledgeDocumentVersionId"/>
         <result column="knowledgeDocumentTypeUuid" property="knowledgeDocumentTypeUuid"/>
         <result column="knowledgeCircleId" property="knowledgeCircleId"/>
         <result column="title" property="title"/>

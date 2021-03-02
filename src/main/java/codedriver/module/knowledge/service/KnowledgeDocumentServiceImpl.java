@@ -15,7 +15,6 @@ import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.fulltextindex.dao.mapper.FullTextIndexMapper;
 import codedriver.framework.fulltextindex.dto.FullTextIndexContentVo;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
-import codedriver.framework.fulltextindex.dto.FullTextIndexWordOffsetVo;
 import codedriver.framework.util.HtmlUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
@@ -321,17 +320,17 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
      * @Returns: void
      **/
     @Override
-    public void initVersionWordOffsetAndContentMap(List<String> keywordList, List<Long> activeVersionIdList, Map<Long, FullTextIndexWordOffsetVo> versionWordOffsetVoMap, Map<Long, String> versionContentVoMap) {
+    public void initVersionWordOffsetAndContentMap(List<String> keywordList, List<Long> activeVersionIdList, Map<Long, FullTextIndexVo> versionWordOffsetVoMap, Map<String, String> versionContentVoMap) {
         if (CollectionUtils.isNotEmpty(activeVersionIdList) && CollectionUtils.isNotEmpty(keywordList)) {
             List<Long> targetIdList = new ArrayList<>();
             List<FullTextIndexVo> ftIndexVoList = ftIndexMapper.getFullTextIndexListByKeywordListAndTargetList(keywordList, activeVersionIdList);
             for (FullTextIndexVo indexVo : ftIndexVoList) {
                 targetIdList.add(indexVo.getTargetId());
-                versionWordOffsetVoMap.put(indexVo.getTargetId(), indexVo.getWordOffsetVoList().get(0));
+                versionWordOffsetVoMap.put(indexVo.getTargetId(), indexVo);
             }
             List<FullTextIndexContentVo> contentVoList = ftIndexMapper.getContentByTargetIdList(targetIdList);
             for (FullTextIndexContentVo contentVo : contentVoList) {
-                versionContentVoMap.put(contentVo.getTargetId(), contentVo.getContent());
+                versionContentVoMap.put(contentVo.getTargetId()+"_"+contentVo.getTargetField(), contentVo.getContent());
             }
         }
 

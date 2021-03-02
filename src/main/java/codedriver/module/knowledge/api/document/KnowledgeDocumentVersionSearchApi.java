@@ -3,6 +3,7 @@ package codedriver.module.knowledge.api.document;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
+import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
 import codedriver.framework.fulltextindex.dto.FullTextIndexWordOffsetVo;
 import codedriver.framework.fulltextindex.utils.FullTextIndexUtil;
 import codedriver.framework.restful.annotation.*;
@@ -128,13 +129,13 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
             failAuditList = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditListByDocumentVersionIdListAndOperate(failVersionIdList, KnowledgeDocumentOperate.REJECT.getValue());
         }
         //一次性获取知识搜索关键字最匹配下标信息,提供给后续循环截取内容和高亮关键字
-        Map<Long, FullTextIndexWordOffsetVo> versionWordOffsetVoMap = new HashMap<>();
-        Map<Long, String> versionContentVoMap = new HashMap<>();
+        Map<Long, FullTextIndexVo> versionIndexVoMap = new HashMap<>();
+        Map<String, String> versionContentVoMap = new HashMap<>();
         List<String> keywordList = new ArrayList<>();
         if (StringUtils.isNotBlank(documentVersionVoParam.getKeyword())) {
             keywordList = Arrays.asList(documentVersionVoParam.getKeyword().split(" "));
         }
-        knowledgeDocumentService.initVersionWordOffsetAndContentMap(keywordList, versionIdList, versionWordOffsetVoMap, versionContentVoMap);
+        knowledgeDocumentService.initVersionWordOffsetAndContentMap(keywordList, versionIdList, versionIndexVoMap, versionContentVoMap);
         //循环知识版本，补充额外信息
         for (KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : documentVersionList) {
             //跟新操作（如果是草稿,可以删除或编辑）
@@ -154,8 +155,9 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
             int contentLen = 500;
             //如果有关键字则需高亮，否则直接截取即可
             if (StringUtils.isNotBlank(documentVersionVoParam.getKeyword())) {
-                FullTextIndexWordOffsetVo wordOffsetVo = versionWordOffsetVoMap.get(knowledgeDocumentVersionVo.getId());
-                String content = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(), contentLen, versionContentVoMap.get(knowledgeDocumentVersionVo.getId()));
+                FullTextIndexVo indexVo = versionIndexVoMap.get(knowledgeDocumentVersionVo.getId());
+                FullTextIndexWordOffsetVo wordOffsetVo = indexVo.getWordOffsetVoList().get(0);
+                String content = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(), contentLen, versionContentVoMap.get(knowledgeDocumentVersionVo.getId()+"_"+indexVo.getTargetField()));
                 String title = knowledgeDocumentVersionVo.getTitle();
                 for (String keyword : keywordList) {
                     //高亮内容

@@ -5,6 +5,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
 import codedriver.framework.fulltextindex.dto.FullTextIndexWordOffsetVo;
 import codedriver.framework.fulltextindex.utils.FullTextIndexUtil;
 import codedriver.framework.restful.annotation.*;
@@ -142,9 +143,9 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         if(StringUtils.isNotBlank(documentVoParam.getKeyword())){
             keywordList = Arrays.asList(documentVoParam.getKeyword().split(" "));
         }
-        Map<Long,FullTextIndexWordOffsetVo> versionWordOffsetVoMap = new HashMap<>();
-        Map<Long,String> versionContentVoMap = new HashMap<>();
-        knowledgeDocumentService.initVersionWordOffsetAndContentMap(keywordList,activeVersionIdList,versionWordOffsetVoMap,versionContentVoMap);
+        Map<Long, FullTextIndexVo> versionIndexVoMap = new HashMap<>();
+        Map<String,String> versionContentVoMap = new HashMap<>();
+        knowledgeDocumentService.initVersionWordOffsetAndContentMap(keywordList,activeVersionIdList,versionIndexVoMap,versionContentVoMap);
         //循环知识，补充额外信息
         for (KnowledgeDocumentVo knowledgeDocumentVo : documentList) {
             knowledgeDocumentVo.setIsEditable(1);
@@ -168,8 +169,9 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             int contentLen = 500;
             //如果有关键字则需高亮，否则直接截取即可
             if (StringUtils.isNotBlank(documentVoParam.getKeyword())) {
-                FullTextIndexWordOffsetVo wordOffsetVo = versionWordOffsetVoMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId());
-                String content  = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(),contentLen,versionContentVoMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId()));
+                FullTextIndexVo indexVo = versionIndexVoMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId());
+                FullTextIndexWordOffsetVo wordOffsetVo = indexVo.getWordOffsetVoList().get(0);
+                String content  = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(),contentLen,versionContentVoMap.get(knowledgeDocumentVo.getKnowledgeDocumentVersionId()+"_"+indexVo.getTargetField()));
                 String title = knowledgeDocumentVo.getTitle();
                 for (String keyword : keywordList) {
                     //高亮内容

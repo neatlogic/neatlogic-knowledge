@@ -53,7 +53,7 @@
         FROM knowledge_document_audit b
         LEFT JOIN knowledge_document_audit_config c ON b.config_hash = c.hash
         WHERE b.knowledge_document_version_id = a.knowledge_document_version_id
-        AND b.fcd = MAX(a.`fcd`)) AS config
+        AND b.fcd = MAX(a.`fcd`)) AS configStr
         FROM `knowledge_document_audit` a
         WHERE `knowledge_document_version_id` IN
         <foreach collection="versionIdList" item="versionId" open="(" close=")" separator=",">

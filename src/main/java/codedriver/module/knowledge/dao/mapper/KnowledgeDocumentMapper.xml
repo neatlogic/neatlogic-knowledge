@@ -632,6 +632,7 @@
     <select id="getKnowledgeDocumentVersionById" parameterType="java.lang.Long"
             resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
         SELECT `id`,
+               `title`,
                `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
                `knowledge_document_id`        AS knowledgeDocumentId,
                `from_version`                 AS fromVersion,

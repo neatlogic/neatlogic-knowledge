@@ -3,10 +3,15 @@ package codedriver.module.knowledge.api.test;
 import codedriver.framework.fulltextindex.core.FullTextIndexHandlerFactory;
 import codedriver.framework.fulltextindex.core.IFullTextIndexHandler;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.fulltextindex.FullTextIndexType;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 
 /**
  * @Title: TestApi
@@ -20,6 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class TestApi extends PrivateApiComponentBase {
+    @Resource
+    KnowledgeDocumentMapper knowledgeDocumentMapper;
+
     @Override
     public String getName() {
         return "测试";
@@ -32,10 +40,19 @@ public class TestApi extends PrivateApiComponentBase {
 
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        JSONArray versionIdList = jsonObj.getJSONArray("versionIdList");
         //创建全文检索索引
         IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(FullTextIndexType.KNOW_DOCUMENT_VERSION);
         if (handler != null) {
-            handler.createIndex(jsonObj.getLong("versionId"));
+            if(jsonObj.containsKey("versionId")) {
+                handler.createIndex(jsonObj.getLong("versionId"));
+            }else if(CollectionUtils.isNotEmpty(versionIdList)){
+                for(Object versionIdObj : versionIdList ){
+                    handler.createIndex(Long.valueOf(versionIdObj.toString()));
+                }
+            }else{
+                knowledgeDocumentMapper.getKnowledgeDocumentVersionIdList();
+            }
         }
         return null;
     }

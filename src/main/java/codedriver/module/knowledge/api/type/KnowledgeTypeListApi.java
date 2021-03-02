@@ -41,7 +41,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             documentVoParam.setCircleTeamUuidList(teamMapper.getTeamUuidListByUserUuid(userUuid));
             documentVoParam.setCircleRoleUuidList(userMapper.getRoleUuidListByUserUuid(userUuid));
             documentVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.PASSED.getValue()));
-            return knowledgeDocumentMapper.getKnowledgeDocumentCount(documentVoParam);
+            return knowledgeDocumentMapper.searchKnowledgeDocumentIdCount(documentVoParam);
         });
         map.put(KnowledgeType.WAITINGFORREVIEW, () -> {
             KnowledgeDocumentVersionVo documentVersionVoParam = new KnowledgeDocumentVersionVo();
@@ -65,7 +65,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             documentVoParam.setCircleRoleUuidList(userMapper.getRoleUuidListByUserUuid(userUuid));
             documentVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.PASSED.getValue()));
             documentVoParam.setCollector(userUuid);
-            return knowledgeDocumentMapper.getKnowledgeDocumentCount(documentVoParam);
+            return knowledgeDocumentMapper.searchKnowledgeDocumentIdCount(documentVoParam);
         });
         map.put(KnowledgeType.DRAFT, () -> {
             KnowledgeDocumentVersionVo documentVersionVoParam = new KnowledgeDocumentVersionVo();

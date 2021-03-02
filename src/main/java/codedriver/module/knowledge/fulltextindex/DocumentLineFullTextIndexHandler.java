@@ -5,6 +5,7 @@ import codedriver.framework.fulltextindex.core.IFullTextIndexType;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -37,6 +38,8 @@ public class DocumentLineFullTextIndexHandler extends FullTextIndexHandlerBase {
             sb.append(line.getContent());
         }
         fullTextIndexVo.addFieldContent("content", sb.toString());
+        KnowledgeDocumentVersionVo versionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(fullTextIndexVo.getTargetId());
+        fullTextIndexVo.addFieldContent("title",versionVo.getTitle());
     }
 
     @Override

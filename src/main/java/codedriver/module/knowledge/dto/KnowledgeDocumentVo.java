@@ -1,17 +1,9 @@
 package codedriver.module.knowledge.dto;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import codedriver.framework.dto.WorkAssignmentUnitVo;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import com.alibaba.fastjson.annotation.JSONField;
-
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.common.dto.BaseEditorVo;
+import codedriver.framework.dto.WorkAssignmentUnitVo;
 import codedriver.framework.elasticsearch.annotation.ESKey;
 import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.file.dto.FileVo;
@@ -19,6 +11,14 @@ import codedriver.framework.knowledge.dto.SyncSourceVo;
 import codedriver.framework.knowledge.source.SyncSourceFactory;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
+import codedriver.framework.util.TimeUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.annotation.JSONField;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import java.util.ArrayList;
+import java.util.List;
 
 public class KnowledgeDocumentVo extends BaseEditorVo {
     @ESKey(type = ESKeyType.PKEY, name = "documentId")
@@ -64,6 +64,8 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private int viewCount;
     @EntityField(name = "知识内容", type = ApiParamType.STRING)
     private String content;
+    @EntityField(name = "知识内容（已截取）", type = ApiParamType.STRING)
+    private String contentShortCut;
     @EntityField(name = "路径", type = ApiParamType.JSONARRAY)
     private List<String> path = new ArrayList<>();
     @EntityField(name = "是否是当前版本", type = ApiParamType.INTEGER)
@@ -114,7 +116,26 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     private List<String> circleTeamUuidList;
     @JSONField(serialize=false)
     private List<String> circleRoleUuidList;
-    
+
+    public KnowledgeDocumentVo() {}
+
+    public KnowledgeDocumentVo(JSONObject paramJson) {
+        JSONObject lcd = paramJson.getJSONObject("lcd");
+        paramJson.remove("lcd");
+        KnowledgeDocumentVo tmpVo = JSON.toJavaObject(paramJson, KnowledgeDocumentVo.class);
+        this.setCurrentPage(tmpVo.getCurrentPage());
+        this.setKeyword(tmpVo.getKeyword());
+        this.knowledgeDocumentTypeUuid = tmpVo.getKnowledgeDocumentTypeUuid();
+        this.lcuList = tmpVo.getLcuList();
+        this.tagList = tmpVo.getTagList();
+        this.sourceList = tmpVo.getSourceList();
+        if (lcd != null) {
+            JSONObject lcdJson = TimeUtil.getStartTimeAndEndTimeByDateJson(lcd);
+            this.lcdStartTime = lcdJson.getString("startTime");
+            this.lcdEndTime = lcdJson.getString("endTime");
+        }
+    }
+
     public String getType() {
         return type;
     }
@@ -424,5 +445,13 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
 
     public void setIsReviewer(Integer isReviewer) {
         this.isReviewer = isReviewer;
+    }
+
+    public String getContentShortCut() {
+        return contentShortCut;
+    }
+
+    public void setContentShortCut(String contentShortCut) {
+        this.contentShortCut = contentShortCut;
     }
 }

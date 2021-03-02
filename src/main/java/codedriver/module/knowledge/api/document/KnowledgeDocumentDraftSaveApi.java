@@ -7,6 +7,8 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.exception.type.PermissionDeniedException;
+import codedriver.framework.fulltextindex.core.FullTextIndexHandlerFactory;
+import codedriver.framework.fulltextindex.core.IFullTextIndexHandler;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -19,6 +21,7 @@ import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
 import codedriver.module.knowledge.dto.*;
 import codedriver.module.knowledge.exception.*;
+import codedriver.module.knowledge.fulltextindex.FullTextIndexType;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -202,6 +205,11 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         }
         if (status.equals(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())) {
             knowledgeDocumentService.audit(documentVo.getId(), documentVo.getKnowledgeDocumentVersionId(), KnowledgeDocumentOperate.SUBMIT, null);
+        }
+        //创建全文检索索引
+        IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(FullTextIndexType.KNOW_DOCUMENT_VERSION);
+        if (handler != null) {
+            handler.createIndex(documentVo.getKnowledgeDocumentVersionId());
         }
         return resultObj;
     }

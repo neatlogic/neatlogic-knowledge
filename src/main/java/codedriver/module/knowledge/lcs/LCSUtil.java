@@ -382,6 +382,164 @@ public class LCSUtil {
 //        System.out.println("===============================================================================");
         return nodePool.getOldNode(sourceCount - 1, targetCount - 1);
     }
+
+    /**
+     *
+     * @Time:2020年11月02日
+     * @Description: LCS算法比较字符串
+     * @param source 旧字符串
+     * @param target 新字符串
+     * @return Node 返回最后一次比较结果信息
+     */
+    public static String[] LCSCompare2(String source, String target) {
+        PrintSingeColorFormatUtil.println("-----------------------------------");
+        /** 先判断，至少有一个字符串为空的情况 **/
+        if(StringUtils.isEmpty(source) && StringUtils.isEmpty(target)){
+            PrintSingeColorFormatUtil.println(source);
+            PrintSingeColorFormatUtil.println(target);
+            return new String[]{source, target};
+        }
+        if(StringUtils.isEmpty(source)){
+            PrintSingeColorFormatUtil.println(source);
+            return new String[]{source, wrapChangePlace(target, SPAN_CLASS_INSERT, SPAN_END)};
+        }
+        if(StringUtils.isEmpty(target)){
+            String sourceResult = wrapChangePlace(source, SPAN_CLASS_DELETE, SPAN_END);
+            PrintSingeColorFormatUtil.println(target);
+            return new String[]{sourceResult, target};
+        }
+        /** 两个字符串是否相同 **/
+        if(Objects.equals(source, target)){
+            PrintSingeColorFormatUtil.println(source);
+            PrintSingeColorFormatUtil.println(target);
+            return new String[]{source, target};
+        }
+        /** 再判断，两个字符串是否有公共前缀和后缀 **/
+        int prefixLength = getPrefixLength(source, target);
+        if(prefixLength == source.length()){
+            /** source是target的子字符串 **/
+            PrintSingeColorFormatUtil.println(source);
+            return new String[]{source, wrapChangePlace(target, prefixLength, SPAN_CLASS_INSERT, SPAN_END)};
+        }else if(prefixLength == target.length()){
+            /** target是source的子字符串 **/
+            String sourceResult = wrapChangePlace(source, prefixLength, SPAN_CLASS_DELETE, SPAN_END);
+            PrintSingeColorFormatUtil.println(target);
+            return new String[]{sourceResult, target};
+        }
+        int suffixLength = getSuffixLength(source, target);
+        int sourceCount = source.length() - prefixLength - suffixLength;
+        int targetCount = target.length() - prefixLength - suffixLength;
+        if(sourceCount == 0){
+            PrintSingeColorFormatUtil.println(source);
+            return new String[]{source, wrapChangePlace(target, prefixLength, suffixLength, SPAN_CLASS_INSERT, SPAN_END)};
+        }
+        if(targetCount == 0){
+            String sourceResult = wrapChangePlace(source, prefixLength, suffixLength, SPAN_CLASS_DELETE, SPAN_END);
+            PrintSingeColorFormatUtil.println(target);
+            return new String[]{sourceResult, target};
+        }
+        /** 再判断，两个字符串去掉公共前缀和后缀后，是否是包含关系 **/
+        if(sourceCount > targetCount){
+            int index = indexOf(source, prefixLength, sourceCount, target, prefixLength, targetCount);
+            if(index != -1){
+                String sourceResult = wrapChangePlace(source, prefixLength, index, targetCount, suffixLength, SPAN_CLASS_DELETE, SPAN_END);
+                PrintSingeColorFormatUtil.println(target);
+                return new String[]{sourceResult, target};
+            }
+        }else if(sourceCount < targetCount){
+            int index = indexOf(target, prefixLength, targetCount, source, prefixLength, sourceCount);
+            if(index != -1){
+                PrintSingeColorFormatUtil.println(source);
+                return new String[]{source, wrapChangePlace(target, prefixLength, index, sourceCount, suffixLength, SPAN_CLASS_INSERT, SPAN_END)};
+            }
+        }
+//        System.out.println("执行LCS");
+        /** 没有包含关系的情况下，通过LCS算法对两个字符串去掉公共前缀和后缀后进行匹配 **/
+        Node node = LCSCompare2(source, prefixLength, sourceCount, target, prefixLength, targetCount);
+
+        List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
+        List<SegmentRange> newSegmentRangeList = new ArrayList<>();
+        for(SegmentPair segmentpair : getSegmentPairList2(node, sourceCount, targetCount)) {
+            oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
+            newSegmentRangeList.add(segmentpair.getNewSegmentRange());
+        }
+
+        String oldResult = wrapChangePlace(source, prefixLength, sourceCount, oldSegmentRangeList, SPAN_CLASS_DELETE, SPAN_END);
+        String newResult = wrapChangePlace(target, prefixLength, targetCount, newSegmentRangeList, SPAN_CLASS_INSERT, SPAN_END);
+        return new String[]{oldResult, newResult};
+    }
+
+    private static Node LCSCompare2(String source, int sourceOffset, int sourceCount, String target, int targetOffset, int targetCount) {
+        System.out.println(source.substring(sourceOffset, sourceOffset + sourceCount));
+        System.out.println(target.substring(targetOffset, targetOffset + targetCount));
+        Node[][] nodes = new Node[sourceCount][targetCount];
+        System.out.println("--------------------------------------------------------------------------");
+        NodePool nodePool = new NodePool(sourceCount, targetCount);
+        for(int i = sourceCount - 1; i >= 0; i--) {
+            for(int j = targetCount - 1; j >= 0; j--) {
+                Node currentNode = new Node(i, j);
+                if(source.charAt(sourceOffset + i) == target.charAt(targetOffset + j)) {
+                    int totalMatchLength = 1;
+                    currentNode.setMatch(true);
+                    Node upperLeftNode = nodePool.getOldNode(i + 1, j + 1);
+                    if(upperLeftNode != null) {
+                        totalMatchLength = upperLeftNode.getTotalMatchLength() + 1;
+                        currentNode.setNext(upperLeftNode);
+                    }
+                    currentNode.setTotalMatchLength(totalMatchLength);
+                    Node leftNode = nodePool.getOldNode(i, j + 1);
+                    if(leftNode != null) {
+                        if(totalMatchLength == leftNode.getTotalMatchLength()){
+                            currentNode.setAnotherNext(leftNode);
+                        }
+                    }else {
+                        Node topNode = nodePool.getOldNode(i + 1, j);
+                        if(topNode != null) {
+                            if(totalMatchLength == topNode.getTotalMatchLength()){
+                                currentNode.setAnotherNext(topNode);
+                            }
+                        }
+                    }
+                }else {
+                    int left = 0;
+                    int top = 0;
+                    Node leftNode = nodePool.getOldNode(i, j + 1);
+                    if(leftNode != null) {
+                        left = leftNode.getTotalMatchLength();
+                    }
+                    Node topNode = nodePool.getOldNode(i + 1, j);
+                    if(topNode != null) {
+                        top = topNode.getTotalMatchLength();
+                    }
+                    if(top > left) {
+                        currentNode.setTotalMatchLength(top).setNext(topNode);
+                    }else if(left > top) {
+                        currentNode.setTotalMatchLength(left).setNext(leftNode);
+                    }else {
+                        currentNode.setTotalMatchLength(left).setNext(leftNode);
+//                        if(top > 0 ){
+//                            currentNode.setAnotherPrevious(topNode);
+//                        }
+                    }
+                }
+                nodes[currentNode.getOldIndex()][currentNode.getNewIndex()] = currentNode;
+//                System.out.print(currentNode);
+//                System.out.print("\t");
+                nodePool.addNode(currentNode);
+            }
+//            System.out.println();
+        }
+//        for (int i = 0; i < sourceCount; i++) {
+//            for (int j = 0; j < targetCount; j++) {
+//                System.out.print(nodes[i][j]);
+//                System.out.print("\t");
+//            }
+//            System.out.println();
+//        }
+        System.out.println("===============================================================================");
+        return nodePool.getOldNode(0, 0);
+    }
+
     /**
      *
      * @Time:2020年10月22日
@@ -628,7 +786,7 @@ public class LCSUtil {
         Node node = lastNode;
         while(true){
             do{
-//                System.out.println(node);
+                System.out.println(node);
                 if(node.isMatch()){
                     matchNodeList.add(node);
                 }
@@ -658,7 +816,7 @@ public class LCSUtil {
     }
 
     private static List<SegmentPair> getSegmentPairList(List<Node> matchNodeList, int maxOldIndex, int maxNewIndex){
-//        System.out.println("++++++++++++++++++++++++++++++++");
+        System.out.println("++++++++++++++++++++++++++++++++");
         List<SegmentPair> trueSegmentPairList = new ArrayList<>();
         int prevMatchOldIndex = -1;
         int prevMatchNewIndex = -1;
@@ -698,8 +856,196 @@ public class LCSUtil {
         if(CollectionUtils.isEmpty(resultList) || oldBeginIndex != maxOldIndex + 1 || newBeginIndex != maxNewIndex + 1){
             resultList.add(new SegmentPair(oldBeginIndex, maxOldIndex + 1, newBeginIndex, maxNewIndex + 1, false));
         }
+        resultList.forEach(System.out::println);
+        System.out.println("++++++++++++++++++++++++++++++++");
+        return resultList;
+    }
+
+    public static List<SegmentPair> getSegmentPairList2(Node firstNode, int sourceCount, int targetCount){
+        /** 在保证公共子序列匹配度最高的情况下，找出所有匹配方案 **/
+        List<Node> matchNodeList = new ArrayList<>();
+        Stack<Node> nodeStack = new Stack<>();
+        Stack<Node> previousNodeStack = new Stack<>();
+        Stack<List<Node>> matchNodeListStack = new Stack<>();
+        Stack<Integer> segmentCountStack = new Stack<>();
+        Node node = firstNode;
+        Node previousNode = null;
+        int minSegmentCount = Integer.MAX_VALUE;
+        List<Node> minMatchNodeList = new ArrayList<>();
+        int segmentCount = 0;
+        int count = 0;
+        while(true){
+            do{
+                if(node.isMatch()){
+                    if(matchNodeList.isEmpty() || matchNodeList.get(matchNodeList.size() - 1).getTotalMatchLength() > node.getTotalMatchLength()){
+                        matchNodeList.add(node);
+                    }
+                }
+                if(previousNode == null){
+                    segmentCount++;
+                }else if(node.isMatch()){
+                    if(previousNode.isMatch()){
+                        if(matchNodeList.contains(previousNode) ^ matchNodeList.contains(node)){
+                            segmentCount++;
+                        }
+                    }else{
+                        if(matchNodeList.contains(node)){
+                            segmentCount++;
+                        }
+                    }
+                }else{
+                    if(previousNode.isMatch()){
+                        if(matchNodeList.contains(previousNode)){
+                            segmentCount++;
+                        }
+                    }
+                }
+                if(segmentCount >= minSegmentCount){
+                    break;
+                }
+                if(node.getAnotherNext() != null){
+                    nodeStack.push(node.getAnotherNext());
+                    previousNodeStack.push(node);
+                    matchNodeListStack.push(new ArrayList<>(matchNodeList));
+                    segmentCountStack.push(segmentCount);
+                }
+                previousNode = node;
+                node = node.getNext();
+            }while(node != null);
+//            System.out.println("matchSegmentCount=" + matchSegmentCount);
+//            System.out.println("mismatchSegmentCount=" + mismatchSegmentCount);
+//            System.out.println("-------------------");
+            if(segmentCount < minSegmentCount){
+                minSegmentCount = segmentCount;
+                minMatchNodeList = matchNodeList;
+            }
+            if(nodeStack.empty()){
+                break;
+            }
+            count++;
+            node = nodeStack.pop();
+            previousNode = previousNodeStack.pop();
+            matchNodeList = matchNodeListStack.pop();
+            segmentCount = segmentCountStack.pop();
+//            System.out.print("previousNode=" + previousNode);
+//            System.out.print("\tnode=" + node);
+//            System.out.print("\tmatchSegmentCount=" + matchSegmentCount);
+//            System.out.println("\tmismatchSegmentCount=" + mismatchSegmentCount);
+        }
+        System.out.println("count = " + count);
+        /** 所有匹配方案中，找出分隔段数最小的方案作为最终匹配方案 **/
+//        System.out.println("++++++++++++++++++++++++++++++++");
+//        minMatchNodeList.forEach(System.out::println);
+        int prevMatchOldIndex = 0;
+        int prevMatchNewIndex = 0;
+        SegmentPair segmentPair = null;
+        int size = minMatchNodeList.size();
+        List<SegmentPair> resultList = new ArrayList<>();
+        for(int i = 0; i < size; i++){
+            node = minMatchNodeList.get(i);
+            if(segmentPair == null){
+                if(prevMatchOldIndex != node.getOldIndex() || prevMatchNewIndex != node.getNewIndex()){
+                    resultList.add(new SegmentPair(prevMatchOldIndex, node.getOldIndex(), prevMatchNewIndex, node.getNewIndex(), false));
+                }
+                segmentPair = new SegmentPair(node.getOldIndex(), node.getOldIndex() + 1, node.getNewIndex(), node.getNewIndex() + 1, true);
+            }else if(node.getOldIndex() == prevMatchOldIndex && node.getNewIndex() == prevMatchNewIndex){
+                segmentPair.setEndIndex(node.getOldIndex() + 1, node.getNewIndex() + 1);
+            }else{
+                resultList.add(segmentPair);
+                resultList.add(new SegmentPair(prevMatchOldIndex, node.getOldIndex(), prevMatchNewIndex, node.getNewIndex(), false));
+                segmentPair = new SegmentPair(node.getOldIndex(), node.getOldIndex() + 1, node.getNewIndex(), node.getNewIndex() + 1, true);
+            }
+            prevMatchOldIndex = node.getOldIndex() + 1;
+            prevMatchNewIndex = node.getNewIndex() + 1;
+        }
+        if(segmentPair != null){
+            resultList.add(segmentPair);
+        }
+        if(CollectionUtils.isEmpty(resultList) || prevMatchOldIndex != sourceCount || prevMatchNewIndex != targetCount){
+            resultList.add(new SegmentPair(prevMatchOldIndex, sourceCount, prevMatchNewIndex, targetCount, false));
+        }
+
 //        resultList.forEach(System.out::println);
 //        System.out.println("++++++++++++++++++++++++++++++++");
+        return resultList;
+    }
+
+    private static List<SegmentPair> getSegmentPairList2(List<Node> matchNodeList, int sourceCount, int targetCount){
+//        System.out.println("++++++++++++++++++++++++++++++++");
+//        matchNodeList.forEach(System.out::println);
+//        List<SegmentPair> trueSegmentPairList = new ArrayList<>();
+//        int prevMatchOldIndex = -1;
+//        int prevMatchNewIndex = -1;
+//        SegmentPair segmentPair = null;
+//        int size = matchNodeList.size();
+//        for(int i = 0; i < size; i++){
+//            Node node = matchNodeList.get(i);
+//            if(segmentPair == null){
+//                segmentPair = new SegmentPair(node.getOldIndex(), node.getOldIndex() + 1, node.getNewIndex(), node.getNewIndex() + 1, true);
+//            }else if(node.getOldIndex() == prevMatchOldIndex + 1 && node.getNewIndex() == prevMatchNewIndex + 1){
+//                segmentPair.setEndIndex(node.getOldIndex() + 1, node.getNewIndex() + 1);
+//            }else{
+//                trueSegmentPairList.add(segmentPair);
+//                segmentPair = new SegmentPair(node.getOldIndex(), node.getOldIndex() + 1, node.getNewIndex(), node.getNewIndex() + 1, true);
+//            }
+//            prevMatchOldIndex = node.getOldIndex();
+//            prevMatchNewIndex = node.getNewIndex();
+//        }
+//        if(segmentPair != null){
+//            trueSegmentPairList.add(segmentPair);
+//        }
+//        trueSegmentPairList.forEach(System.out::println);
+//        System.out.println("————————————————————————————");
+//        List<SegmentPair> resultList = new ArrayList<>();
+//        int oldBeginIndex = 0;
+//        int newBeginIndex = 0;
+//        for(SegmentPair trueSegmentPair : trueSegmentPairList){
+//            if(oldBeginIndex != trueSegmentPair.getOldBeginIndex() || newBeginIndex != trueSegmentPair.getNewBeginIndex()){
+//                resultList.add(new SegmentPair(oldBeginIndex, trueSegmentPair.getOldBeginIndex(), newBeginIndex, trueSegmentPair.getNewBeginIndex(), false));
+//            }
+//            oldBeginIndex = trueSegmentPair.getOldEndIndex();
+//            newBeginIndex = trueSegmentPair.getNewEndIndex();
+//            resultList.add(trueSegmentPair);
+//        }
+//        if(CollectionUtils.isEmpty(resultList) || oldBeginIndex != sourceCount || newBeginIndex != targetCount){
+//            resultList.add(new SegmentPair(oldBeginIndex, sourceCount, newBeginIndex, targetCount, false));
+//        }
+//        resultList.forEach(System.out::println);
+//        System.out.println("++++++++++++++++++++++++++++++++");
+//        return resultList;
+        System.out.println("++++++++++++++++++++++++++++++++");
+        matchNodeList.forEach(System.out::println);
+        int prevMatchOldIndex = 0;
+        int prevMatchNewIndex = 0;
+        SegmentPair segmentPair = null;
+        int size = matchNodeList.size();
+        List<SegmentPair> resultList = new ArrayList<>();
+        for(int i = 0; i < size; i++){
+            Node node = matchNodeList.get(i);
+            if(segmentPair == null){
+                if(prevMatchOldIndex != node.getOldIndex() || prevMatchNewIndex != node.getNewIndex()){
+                    resultList.add(new SegmentPair(prevMatchOldIndex, node.getOldIndex(), prevMatchNewIndex, node.getNewIndex(), false));
+                }
+                segmentPair = new SegmentPair(node.getOldIndex(), node.getOldIndex() + 1, node.getNewIndex(), node.getNewIndex() + 1, true);
+            }else if(node.getOldIndex() == prevMatchOldIndex && node.getNewIndex() == prevMatchNewIndex){
+                segmentPair.setEndIndex(node.getOldIndex() + 1, node.getNewIndex() + 1);
+            }else{
+                resultList.add(segmentPair);
+                resultList.add(new SegmentPair(prevMatchOldIndex, node.getOldIndex(), prevMatchNewIndex, node.getNewIndex(), false));
+                segmentPair = new SegmentPair(node.getOldIndex(), node.getOldIndex() + 1, node.getNewIndex(), node.getNewIndex() + 1, true);
+            }
+            prevMatchOldIndex = node.getOldIndex() + 1;
+            prevMatchNewIndex = node.getNewIndex() + 1;
+        }
+        if(segmentPair != null){
+            resultList.add(segmentPair);
+        }
+        if(CollectionUtils.isEmpty(resultList) || prevMatchOldIndex != sourceCount || prevMatchNewIndex != targetCount){
+            resultList.add(new SegmentPair(prevMatchOldIndex, sourceCount, prevMatchNewIndex, targetCount, false));
+        }
+
+        resultList.forEach(System.out::println);
+        System.out.println("++++++++++++++++++++++++++++++++");
         return resultList;
     }
 
@@ -808,6 +1154,6 @@ public class LCSUtil {
 //        String target = "aghijkld";
 //        System.out.println(indexOf(source, 0, source.length(), target, 1, target.length() - 2));
 //
-
+System.out.println(true ^ false);
     }
 }

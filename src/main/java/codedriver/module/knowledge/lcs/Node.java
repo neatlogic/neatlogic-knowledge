@@ -24,6 +24,8 @@ public class Node {
     /** 下一个节点 **/
     @Deprecated
     private Node next;
+
+    private Node anotherNext;
     /** 下一个节点数量 **/
     private int nextCount;
     public Node(int oldIndex, int newIndex) {
@@ -89,6 +91,14 @@ public class Node {
     @Deprecated
     public void setNext(Node next) {
         this.next = next;
+    }
+
+    public Node getAnotherNext() {
+        return anotherNext;
+    }
+
+    public void setAnotherNext(Node anotherNext) {
+        this.anotherNext = anotherNext;
     }
 
     public void nextCountDecrement() {

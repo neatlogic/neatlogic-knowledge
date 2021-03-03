@@ -3,7 +3,8 @@ package codedriver.module.knowledge.api.document;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
-import codedriver.framework.fulltextindex.dao.mapper.FullTextIndexMapper;
+import codedriver.framework.dao.mapper.TeamMapper;
+import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -39,7 +40,10 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
     private KnowledgeDocumentService knowledgeDocumentService;
 
     @Resource
-    private FullTextIndexMapper fullTextIndexMapper;
+    TeamMapper teamMapper;
+
+    @Resource
+    UserMapper userMapper;
 
     @Override
     public String getToken() {
@@ -137,12 +141,18 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
         if (StringUtils.isNotBlank(documentVersionVoParam.getKeyword())) {
             keywordList = Arrays.asList(documentVersionVoParam.getKeyword().split(" "));
         }
-        knowledgeDocumentService.setVersionContentMap(keywordList,versionIdList, versionIndexVoMap, versionContentMap);
+        if (CollectionUtils.isNotEmpty(versionIdList)) {
+            knowledgeDocumentService.setVersionContentMap(keywordList, versionIdList, versionIndexVoMap, versionContentMap);
+        }
         //循环知识版本，补充额外信息
         for (KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : documentVersionList) {
             //跟新操作（如果是草稿,可以删除或编辑）
             if (documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.DRAFT.getValue()) && knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
-                knowledgeDocumentVersionVo.setIsEditable(1);
+                //如果不在圈子内则不允许编辑
+                if (knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVersionVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true)),
+                        userMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid(true))) > 0) {
+                    knowledgeDocumentVersionVo.setIsEditable(1);
+                }
                 knowledgeDocumentVersionVo.setIsDeletable(1);
             }
             //如果审核不通过，则补充原因
@@ -154,7 +164,7 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
                 }
             }
             //设置标题、截取内容，并高亮
-            knowledgeDocumentService.setTitleAndShortcutContentHighlight( keywordList, knowledgeDocumentVersionVo.getId(),knowledgeDocumentVersionVo, versionIndexVoMap, versionContentMap);
+            knowledgeDocumentService.setTitleAndShortcutContentHighlight(keywordList, knowledgeDocumentVersionVo.getId(), knowledgeDocumentVersionVo, versionIndexVoMap, versionContentMap);
             //去掉未提交status，前端不需要展示
             KnowledgeDocumentVersionStatusVo statusVo = knowledgeDocumentVersionVo.getStatusVo();
             if (knowledgeDocumentVersionVo.getStatusVo() != null && KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(statusVo.getValue())) {

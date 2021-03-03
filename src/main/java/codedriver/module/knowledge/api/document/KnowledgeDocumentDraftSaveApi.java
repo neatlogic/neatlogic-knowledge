@@ -201,15 +201,16 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         }
         if (needSaveDocument) {
             saveDocument(documentVo);
+            //创建全文检索索引
+            IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(FullTextIndexType.KNOW_DOCUMENT_VERSION);
+            if (handler != null) {
+                handler.createIndex(documentVo.getKnowledgeDocumentVersionId());
+            }
         }
         if (status.equals(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())) {
             knowledgeDocumentService.audit(documentVo.getId(), documentVo.getKnowledgeDocumentVersionId(), KnowledgeDocumentOperate.SUBMIT, null);
         }
-        //创建全文检索索引
-        IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(FullTextIndexType.KNOW_DOCUMENT_VERSION);
-        if (handler != null) {
-            handler.createIndex(documentVo.getKnowledgeDocumentVersionId());
-        }
+
         return resultObj;
     }
 

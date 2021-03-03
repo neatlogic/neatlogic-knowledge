@@ -143,7 +143,9 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         if (StringUtils.isNotBlank(documentVoParam.getKeyword())) {
             keywordList = Arrays.asList(documentVoParam.getKeyword().split(" "));
         }
-        knowledgeDocumentService.setVersionContentMap(keywordList,activeVersionIdList, versionIndexVoMap, versionContentMap);
+        if(CollectionUtils.isNotEmpty(activeVersionIdList)) {
+            knowledgeDocumentService.setVersionContentMap(keywordList, activeVersionIdList, versionIndexVoMap, versionContentMap);
+        }
         //循环知识，补充额外信息
         for (KnowledgeDocumentVo knowledgeDocumentVo : documentList) {
             knowledgeDocumentVo.setIsEditable(1);

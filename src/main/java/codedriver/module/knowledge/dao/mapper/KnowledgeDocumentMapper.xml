@@ -124,9 +124,6 @@
     </select>
 
     <sql id="searchDocumentVersionSql">
-        <if test="keyword != '' and  keyword != null and (keywordList == null or keywordList.size() == 0)">
-            1!=1
-        </if>
         <if test="keywordList != null and keywordList.size() > 0">
             AND EXISTS (SELECT
             1
@@ -424,9 +421,6 @@
     </select>
 
     <sql id="searchDocumentSql">
-        <if test="keyword != '' and  keyword != null and (keywordList == null or keywordList.size() == 0)">
-            AND 1!=1
-        </if>
         <if test="keywordList != null and keywordList.size() > 0">
             AND EXISTS (SELECT
             1

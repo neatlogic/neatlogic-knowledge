@@ -1,10 +1,8 @@
-
-<span class='delete'>abcdefjhijklmnopqrstuvwxyz</span>
-abcdefjhijklmnopqrstuvwxyz
-abcdefjhijklmnopqrstuvwxyz
-abcdefjhijklmnopqrstuvwxyz
-abcdefjhijklmnopqrstuvwxyz
-abcdefjhijklmnopqrstuvwxyz
-abcdefjhijklmnopqrstuvwxyz
-abcdefjhijk<span class='delete'>45</span>lmnopqrstuvwxyz
+<span class='delete'>abctest123测试@@@@</span>
+abctest123测试@@<span class='delete'>@@</span>
+abctest123<span class='delete'>测试</span>@@@@
+abctest123测试@@@@
+abctest123测试@@@@
+abctest123测试@@@@
+abctest123测试@@@@
 

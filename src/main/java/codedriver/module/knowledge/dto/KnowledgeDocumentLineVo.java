@@ -1,5 +1,6 @@
 package codedriver.module.knowledge.dto;
 
+import codedriver.module.knowledge.constvalue.KnowledgeDocumentLineHandler;
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSON;
@@ -9,6 +10,8 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.elasticsearch.annotation.ESKey;
 import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.restful.annotation.EntityField;
+
+import java.util.Objects;
 
 public class KnowledgeDocumentLineVo {
 
@@ -98,7 +101,31 @@ public class KnowledgeDocumentLineVo {
         }
         return configStr;
     }
-    
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((handler == null) ? 0 : handler.hashCode());
+        String mainBody = KnowledgeDocumentLineHandler.getMainBody(this);
+        result = prime * result + ((mainBody == null) ? 0 : mainBody.hashCode());
+        return result;
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        KnowledgeDocumentLineVo other = (KnowledgeDocumentLineVo)obj;
+        if (handler == null) {
+            if (other.handler != null)
+                return false;
+        } else if (!handler.equals(other.handler))
+            return false;
+        return Objects.equals(KnowledgeDocumentLineHandler.getMainBody(this), KnowledgeDocumentLineHandler.getMainBody(other));
+    }
 //    @Override
 //    public String toString() {
 //        return "oldLineList.add(new LineVo(" + lineNumber + ", \""+ type +"\", \"" + content + "\"));";

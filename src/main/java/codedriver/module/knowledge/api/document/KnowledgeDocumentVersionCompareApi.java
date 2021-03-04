@@ -120,13 +120,14 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         List<KnowledgeDocumentLineVo> newLineList = newDocumentVo.getLineList();
         List<KnowledgeDocumentLineVo> oldResultList = new ArrayList<>();
         List<KnowledgeDocumentLineVo> newResultList = new ArrayList<>();
-        Node node = LCSUtil.LCSCompare(oldLineList, newLineList, (e1, e2) -> {
-            if(e1.getHandler().equals(e2.getHandler())) {
-                return Objects.equals(KnowledgeDocumentLineHandler.getMainBody(e1), KnowledgeDocumentLineHandler.getMainBody(e2));
-            }
-            return false;
-        });
-        for(SegmentPair segmentPair : LCSUtil.getSegmentPairList(node)) {
+//        Node node = LCSUtil.LCSCompare(oldLineList, newLineList, (e1, e2) -> {
+//            if(e1.getHandler().equals(e2.getHandler())) {
+//                return Objects.equals(KnowledgeDocumentLineHandler.getMainBody(e1), KnowledgeDocumentLineHandler.getMainBody(e2));
+//            }
+//            return false;
+//        });
+        List<SegmentPair> segmentPairList = LCSUtil.LCSCompare(oldLineList, newResultList);
+        for(SegmentPair segmentPair : segmentPairList) {
             regroupLineList(oldLineList, newLineList, oldResultList, newResultList, segmentPair);
         }
         oldDocumentVo.setLineList(oldResultList);
@@ -191,10 +192,10 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
     * @return void
      */
     private void regroupLineList(List<KnowledgeDocumentLineVo> oldDataList, List<KnowledgeDocumentLineVo> newDataList, List<KnowledgeDocumentLineVo> oldResultList, List<KnowledgeDocumentLineVo> newResultList, SegmentPair segmentPair) {
-      SegmentRange oldSegmentRange = segmentPair.getOldSegmentRange();
-      SegmentRange newSegmentRange = segmentPair.getNewSegmentRange();
-      List<KnowledgeDocumentLineVo> oldSubList = oldDataList.subList(oldSegmentRange.getBeginIndex(), oldSegmentRange.getEndIndex());
-      List<KnowledgeDocumentLineVo> newSubList = newDataList.subList(newSegmentRange.getBeginIndex(), newSegmentRange.getEndIndex());
+//      SegmentRange oldSegmentRange = segmentPair.getOldSegmentRange();
+//      SegmentRange newSegmentRange = segmentPair.getNewSegmentRange();
+      List<KnowledgeDocumentLineVo> oldSubList = oldDataList.subList(segmentPair.getOldBeginIndex(), segmentPair.getOldEndIndex());
+      List<KnowledgeDocumentLineVo> newSubList = newDataList.subList(segmentPair.getNewBeginIndex(), segmentPair.getNewEndIndex());
       if(segmentPair.isMatch()) {
           /** 分段对匹配时，行数据不能做标记，直接添加到重组后的数据列表中 **/
           oldResultList.addAll(oldSubList);
@@ -231,18 +232,18 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                       }else if(StringUtils.length(newMainBody) == 0) {
                           KnowledgeDocumentLineHandler.setMainBody(oldLine, "<span class='delete'>" + oldMainBody + "</span>");
                       }else {
-//                          List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
-//                          List<SegmentRange> newSegmentRangeList = new ArrayList<>();
-//                          Node node = LCSUtil.LCSCompare(oldMainBody, newMainBody);
-//                          for(SegmentPair segmentpair : node.getSegmentPairList()) {
-//                              oldSegmentRangeList.add(segmentpair.getOldSegmentRange());
-//                              newSegmentRangeList.add(segmentpair.getNewSegmentRange());
-//                          }
-//                          KnowledgeDocumentLineHandler.setMainBody(oldLine, LCSUtil.wrapChangePlace(oldMainBody, oldSegmentRangeList, "<span class='delete'>", "</span>"));
-//                          KnowledgeDocumentLineHandler.setMainBody(newLine, LCSUtil.wrapChangePlace(newMainBody, newSegmentRangeList, "<span class='insert'>", "</span>"));
-                          String[] resultArray = LCSUtil.LCSCompare(oldMainBody, newMainBody);
-                          KnowledgeDocumentLineHandler.setMainBody(oldLine, oldMainBody);
-                          KnowledgeDocumentLineHandler.setMainBody(newLine, newMainBody);
+                          List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
+                          List<SegmentRange> newSegmentRangeList = new ArrayList<>();
+                          List<SegmentPair> segmentPairList = LCSUtil.LCSCompare(oldMainBody, newMainBody);
+                          for(SegmentPair segmentpair : segmentPairList) {
+                              oldSegmentRangeList.add(new SegmentRange(segmentpair.getOldBeginIndex(), segmentpair.getOldEndIndex(), segmentpair.isMatch()));
+                              newSegmentRangeList.add(new SegmentRange(segmentpair.getNewBeginIndex(), segmentpair.getNewEndIndex(), segmentpair.isMatch()));
+                          }
+                          KnowledgeDocumentLineHandler.setMainBody(oldLine, LCSUtil.wrapChangePlace(oldMainBody, oldSegmentRangeList, "<span class='delete'>", "</span>"));
+                          KnowledgeDocumentLineHandler.setMainBody(newLine, LCSUtil.wrapChangePlace(newMainBody, newSegmentRangeList, "<span class='insert'>", "</span>"));
+//                          String[] resultArray = LCSUtil.LCSCompare(oldMainBody, newMainBody);
+//                          KnowledgeDocumentLineHandler.setMainBody(oldLine, oldMainBody);
+//                          KnowledgeDocumentLineHandler.setMainBody(newLine, newMainBody);
                       }
                   }
                   oldResultList.add(oldLine);

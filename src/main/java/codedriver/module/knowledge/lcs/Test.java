@@ -33,26 +33,36 @@ public class Test {
 //        List<String> newDataList = readFileData(BASE_PATH + "target.txt");
 //        List<String> oldDataList = readFileData(BASE_PATH + "A.txt");
 //        List<String> newDataList = readFileData(BASE_PATH + "B.txt");
-//        List<String> oldDataList = readFileData(BASE_PATH + "对比A.txt");
-//        List<String> newDataList = readFileData(BASE_PATH + "对比B.txt");
-        List<String> oldDataList = readFileData(BASE_PATH + "oldData1.txt");
-        List<String> newDataList = readFileData(BASE_PATH + "newData1.txt");
+        List<String> oldDataList = readFileData(BASE_PATH + "对比A.txt");
+        List<String> newDataList = readFileData(BASE_PATH + "对比B.txt");
+//        List<String> oldDataList = readFileData(BASE_PATH + "oldData1.txt");
+//        List<String> newDataList = readFileData(BASE_PATH + "newData1.txt");
         List<String> oldResultList = new ArrayList<>();
         List<String> newResultList = new ArrayList<>();
         int min = Math.min(oldDataList.size(), newDataList.size());
-        min = min > 10 ? 10 : min;
+        min = min > 20 ? 20 : min;
         for(int i = 0; i < min; i++){
             String source = oldDataList.get(i);
             String target =newDataList.get(i);
             long startTime = System.currentTimeMillis();
-            String[] resultArray = LCSUtil.LCSCompare2(source, target);
+//            String[] resultArray = LCSUtil.LCSCompare(source, target);
+            List<SegmentPair> segmentPairList = LCSUtil.LCSCompare(source, target);
+            List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
+            List<SegmentRange> newSegmentRangeList = new ArrayList<>();
+            for(SegmentPair segmentpair : segmentPairList) {
+                System.out.println(segmentpair);
+                oldSegmentRangeList.add(new SegmentRange(segmentpair.getOldBeginIndex(), segmentpair.getOldEndIndex(), segmentpair.isMatch()));
+                newSegmentRangeList.add(new SegmentRange(segmentpair.getNewBeginIndex(), segmentpair.getNewEndIndex(), segmentpair.isMatch()));
+            }
+            String oldResult = LCSUtil.wrapChangePlace(source, oldSegmentRangeList, LCSUtil.SPAN_CLASS_DELETE, LCSUtil.SPAN_END);
+            String newResult = LCSUtil.wrapChangePlace(target, newSegmentRangeList, LCSUtil.SPAN_CLASS_INSERT, LCSUtil.SPAN_END);
             long cost = System.currentTimeMillis() - startTime;
             System.out.println(source.length() + "*" + target.length() + "=" + (source.length() * target.length()) + "-耗时：" + cost);
 //            sum += cost;
 //            System.out.println(resultArray[0]);
 //            System.out.println(resultArray[1]);
-            oldResultList.add(resultArray[0]);
-            newResultList.add(resultArray[1]);
+            oldResultList.add(oldResult);
+            newResultList.add(newResult);
 //            freeMemory = runTime.freeMemory();//200313272(191M)
 //            totalMemory = runTime.totalMemory();//795344896(758M)
 //            System.out.println("所分配的剩余内存大小：" + freeMemory + "(" + (freeMemory / M) + "M)");

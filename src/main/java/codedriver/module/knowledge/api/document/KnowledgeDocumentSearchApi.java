@@ -5,6 +5,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.dto.UserVo;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -168,6 +169,9 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             //设置标题、截取内容，并高亮
             knowledgeDocumentService.setTitleAndShortcutContentHighlight( keywordList, knowledgeDocumentVo.getKnowledgeDocumentVersionId(),knowledgeDocumentVo, versionIndexVoMap, versionContentMap);
             //组装返回数据
+            UserVo vo = new UserVo();
+            vo.setUuid(UserContext.get().getUserUuid(true));
+            knowledgeDocumentVo.setLcuVo(vo);
             JSONObject returnData = JSONObject.parseObject(JSON.toJSONString(knowledgeDocumentVo));
             returnData.put("knowledgeDocumentId", returnData.getLong("id"));
             returnData.put("id", returnData.getLong("knowledgeDocumentVersionId"));

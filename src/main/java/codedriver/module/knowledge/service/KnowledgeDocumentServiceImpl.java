@@ -369,7 +369,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         String content = StringUtils.EMPTY;
         //补充content，如果有关键字则高亮
         int contentLen = 100;
-        if (CollectionUtils.isNotEmpty(keywordList)) {
+        if (CollectionUtils.isEmpty(keywordList)) {
             contentLen = 300;
         }
         //如果有关键字则需高亮，否则直接截取即可

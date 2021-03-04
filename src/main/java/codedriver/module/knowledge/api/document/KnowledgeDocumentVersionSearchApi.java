@@ -5,6 +5,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.dto.UserVo;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -171,6 +172,10 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
                 knowledgeDocumentVersionVo.setStatus(null);
                 knowledgeDocumentVersionVo.setStatusVo(null);
             }
+
+            UserVo vo = new UserVo();
+            vo.setUuid(UserContext.get().getUserUuid(true));
+            knowledgeDocumentVersionVo.setLcuVo(vo);
         }
         //补充状态
         setStatusCount(documentVersionVoParam, resultJson);

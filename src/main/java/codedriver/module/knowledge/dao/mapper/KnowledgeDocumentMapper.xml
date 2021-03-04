@@ -124,6 +124,9 @@
     </select>
 
     <sql id="searchDocumentVersionSql">
+        <if test="keyword != '' and  keyword != null and (keywordList == null or keywordList.size() == 0)">
+            1!=1
+        </if>
         <if test="keywordList != null and keywordList.size() > 0">
             AND EXISTS (SELECT
             1
@@ -523,6 +526,7 @@
         <include refid="searchDocumentSql"/>
         <include refid="circleUserSql"/>
         GROUP BY kd.id
+        order by kdv.lcd desc
         <if test="needPage">
             limit #{startNum}, #{pageSize}
         </if>
@@ -593,7 +597,8 @@
     </select>
 
     <select id="getKnowledgeDocumentVersionIdList" resultType="java.lang.Long">
-        SELECT id FROM `knowledge_document_version`
+        SELECT id
+        FROM `knowledge_document_version`
     </select>
 
     <select id="getKnowledgeDocumentVersionIdListByLcd" resultType="java.lang.Long">

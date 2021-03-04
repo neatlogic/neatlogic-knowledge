@@ -131,6 +131,7 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
         this.lcuList = tmpVo.getLcuList();
         this.tagList = tmpVo.getTagList();
         this.sourceList = tmpVo.getSourceList();
+        this.collector = tmpVo.getCollector();
         if (lcd != null) {
             JSONObject lcdJson = TimeUtil.getStartTimeAndEndTimeByDateJson(lcd);
             this.lcdStartTime = lcdJson.getString("startTime");

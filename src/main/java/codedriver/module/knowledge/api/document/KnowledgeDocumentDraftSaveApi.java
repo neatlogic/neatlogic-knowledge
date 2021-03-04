@@ -81,6 +81,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             @Param(name = "isReviewable", type = ApiParamType.INTEGER, desc = "是否能审批"),
     })
     @Description(desc = "保存文档草稿")
+    @ResubmitInterval(value = 5)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
@@ -201,15 +202,16 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         }
         if (needSaveDocument) {
             saveDocument(documentVo);
+            //创建全文检索索引
+            IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(FullTextIndexType.KNOW_DOCUMENT_VERSION);
+            if (handler != null) {
+                handler.createIndex(documentVo.getKnowledgeDocumentVersionId());
+            }
         }
         if (status.equals(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())) {
             knowledgeDocumentService.audit(documentVo.getId(), documentVo.getKnowledgeDocumentVersionId(), KnowledgeDocumentOperate.SUBMIT, null);
         }
-        //创建全文检索索引
-        IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(FullTextIndexType.KNOW_DOCUMENT_VERSION);
-        if (handler != null) {
-            handler.createIndex(documentVo.getKnowledgeDocumentVersionId());
-        }
+
         return resultObj;
     }
 

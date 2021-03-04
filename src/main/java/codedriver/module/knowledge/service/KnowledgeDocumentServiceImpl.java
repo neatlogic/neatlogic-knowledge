@@ -88,7 +88,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
 
     @Override
     public int isEditable(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo) {
-        if(isMember(knowledgeDocumentVersionVo.getKnowledgeCircleId()) == 0){
+        if (isMember(knowledgeDocumentVersionVo.getKnowledgeCircleId()) == 0) {
             return 0;
         }
         if (KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
@@ -328,7 +328,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     }
 
     /**
-     * @Description: 一次性获取知识搜索关键字最匹配下标信息,提供给后续循环截取内容和高亮关键字
+     * @Description: 一次性获取知识搜索关键字最匹配下标信息, 提供给后续循环截取内容和高亮关键字
      * @Author: 89770
      * @Date: 2021/3/2 12:18
      * @Params: [keyword, activeVersionIdList, versionWordOffsetVoMap, versionContentVoMap]
@@ -343,10 +343,12 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
                 targetIdList.add(indexVo.getTargetId());
                 versionWordOffsetVoMap.put(indexVo.getTargetId(), indexVo);
             }
-            List<FullTextIndexContentVo> contentVoList = ftIndexMapper.getContentByTargetIdList(targetIdList);
-            for (FullTextIndexContentVo contentVo : contentVoList) {
-                if("content".equals(contentVo.getTargetField())) {
-                    versionContentVoMap.put(contentVo.getTargetId(), contentVo.getContent());
+            if (CollectionUtils.isNotEmpty(targetIdList)) {
+                List<FullTextIndexContentVo> contentVoList = ftIndexMapper.getContentByTargetIdList(targetIdList);
+                for (FullTextIndexContentVo contentVo : contentVoList) {
+                    if ("content".equals(contentVo.getTargetField())) {
+                        versionContentVoMap.put(contentVo.getTargetId(), contentVo.getContent());
+                    }
                 }
             }
         }
@@ -360,37 +362,43 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
      * @Params: []
      * @Returns: void
      **/
-    public void setTitleAndShortcutContentHighlight(List<String> keywordList, Long versionId,Object documentObj,Map<Long, FullTextIndexVo> versionIndexVoMap,Map<Long, String> versionContentMap){
+    public void setTitleAndShortcutContentHighlight(List<String> keywordList, Long versionId, Object documentObj, Map<Long, FullTextIndexVo> versionIndexVoMap, Map<Long, String> versionContentMap) {
         KnowledgeDocumentVo documentVo = null;
         KnowledgeDocumentVersionVo documentVersionVo = null;
         String title = StringUtils.EMPTY;
         String content = StringUtils.EMPTY;
         //补充content，如果有关键字则高亮
         int contentLen = 100;
+        if (CollectionUtils.isNotEmpty(keywordList)) {
+            contentLen = 300;
+        }
         //如果有关键字则需高亮，否则直接截取即可
-        title = documentObj instanceof KnowledgeDocumentVo?((KnowledgeDocumentVo) documentObj).getTitle():((KnowledgeDocumentVersionVo)documentObj).getTitle();
+        title = documentObj instanceof KnowledgeDocumentVo ? ((KnowledgeDocumentVo) documentObj).getTitle() : ((KnowledgeDocumentVersionVo) documentObj).getTitle();
         if (CollectionUtils.isNotEmpty(keywordList)) {
             FullTextIndexVo indexVo = versionIndexVoMap.get(versionId);
-            FullTextIndexWordOffsetVo wordOffsetVo = indexVo.getWordOffsetVoList().get(0);
-            content = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(), wordOffsetVo.getEnd(), contentLen, versionContentMap.get(versionId));
-            for (String keyword : keywordList) {
-                //高亮内容(不区分大小写)
-                String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
-                String upperKeyword = keyword.toUpperCase(Locale.ROOT);
-                title = title.replaceAll(lowerKeyword, String.format("<em>%s</em>", lowerKeyword));
-                title = title.replaceAll(upperKeyword, String.format("<em>%s</em>", upperKeyword));
-                content = content.replaceAll(lowerKeyword, String.format("<em>%s</em>", lowerKeyword));
-                content = content.replaceAll(upperKeyword, String.format("<em>%s</em>", upperKeyword));
+            if (indexVo != null) {
+                List<FullTextIndexWordOffsetVo> wordOffsetVoList = indexVo.getWordOffsetVoList();
+                FullTextIndexWordOffsetVo wordOffsetVo = wordOffsetVoList.get(0);
+                content = FullTextIndexUtil.getShortcut(wordOffsetVo.getStart(), wordOffsetVo.getEnd(), contentLen, versionContentMap.get(versionId));
+                for (String keyword : keywordList) {
+                    //高亮内容(不区分大小写)
+                    String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
+                    String upperKeyword = keyword.toUpperCase(Locale.ROOT);
+                    title = title.replaceAll(lowerKeyword, String.format("<em>%s</em>", lowerKeyword));
+                    title = title.replaceAll(upperKeyword, String.format("<em>%s</em>", upperKeyword));
+                    content = content.replaceAll(lowerKeyword, String.format("<em>%s</em>", lowerKeyword));
+                    content = content.replaceAll(upperKeyword, String.format("<em>%s</em>", upperKeyword));
+                }
             }
         } else {
-            content = FullTextIndexUtil.getShortcut(0,0, contentLen, versionContentMap.get(versionId));
+            content = FullTextIndexUtil.getShortcut(0, 0, contentLen, versionContentMap.get(versionId));
         }
 
-        if(documentObj instanceof KnowledgeDocumentVo){
+        if (documentObj instanceof KnowledgeDocumentVo) {
             documentVo = (KnowledgeDocumentVo) documentObj;
             documentVo.setTitle(title);
             documentVo.setContent(content);
-        }else{
+        } else {
             documentVersionVo = (KnowledgeDocumentVersionVo) documentObj;
             documentVersionVo.setTitle(title);
             documentVersionVo.setContent(content);
@@ -398,21 +406,21 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     }
 
     /**
-     * @Description: 一次性获取知识搜索关键字最匹配下标信息,提供给后续循环截取内容和高亮关键字
+     * @Description: 一次性获取知识搜索关键字最匹配下标信息, 提供给后续循环截取内容和高亮关键字
      * @Author: 89770
      * @Date: 2021/3/2 17:47
      * @Params: [keywordList, activeVersionIdList]
      * @Returns: void
      **/
     @Override
-    public void setVersionContentMap(List<String> keywordList,List<Long> activeVersionIdList,Map<Long, FullTextIndexVo> versionIndexVoMap,Map<Long, String> versionContentMap){
-        if(CollectionUtils.isNotEmpty(keywordList)){
-            initVersionWordOffsetAndContentMap(keywordList,activeVersionIdList,versionIndexVoMap,versionContentMap);
+    public void setVersionContentMap(List<String> keywordList, List<Long> activeVersionIdList, Map<Long, FullTextIndexVo> versionIndexVoMap, Map<Long, String> versionContentMap) {
+        if (CollectionUtils.isNotEmpty(keywordList)) {
+            initVersionWordOffsetAndContentMap(keywordList, activeVersionIdList, versionIndexVoMap, versionContentMap);
         }
         //一次性查出所有activeVersionIdList Content
         List<FullTextIndexContentVo> contentVoList = ftIndexMapper.getContentByTargetIdList(activeVersionIdList);
-        for(FullTextIndexContentVo contentVo : contentVoList){
-            if("content".equals(contentVo.getTargetField())&& !versionContentMap.containsKey(contentVo.getTargetId())) {
+        for (FullTextIndexContentVo contentVo : contentVoList) {
+            if ("content".equals(contentVo.getTargetField()) && !versionContentMap.containsKey(contentVo.getTargetId())) {
                 versionContentMap.put(contentVo.getTargetId(), contentVo.getContent());
             }
         }

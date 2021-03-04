@@ -6,6 +6,7 @@ import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -35,7 +36,9 @@ public class DocumentLineFullTextIndexHandler extends FullTextIndexHandlerBase {
         List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(fullTextIndexVo.getTargetId());
         StringBuilder sb = new StringBuilder();
         for (KnowledgeDocumentLineVo line : lineList) {
-            sb.append(line.getContent());
+            if(StringUtils.isNotBlank(line.getContent())) {
+                sb.append(line.getContent());
+            }
         }
         fullTextIndexVo.addFieldContent("content", sb.toString());
         KnowledgeDocumentVersionVo versionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(fullTextIndexVo.getTargetId());

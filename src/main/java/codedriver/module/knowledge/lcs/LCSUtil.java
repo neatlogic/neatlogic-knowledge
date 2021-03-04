@@ -105,6 +105,20 @@ public class LCSUtil {
             return resultList;
         }
         int suffixLength = getSuffixLength(source, target);
+        int prefixSuffixLength = prefixLength + suffixLength;
+        if(prefixSuffixLength > source.size()){
+            if(prefixLength < suffixLength){
+                prefixLength = source.size() - suffixLength;
+            }else{
+                suffixLength = source.size() - prefixLength;;
+            }
+        }else if(prefixSuffixLength > target.size()){
+            if(prefixLength < suffixLength){
+                prefixLength = target.size() - suffixLength;
+            }else{
+                suffixLength = target.size() - prefixLength;;
+            }
+        }
         int sourceCount = source.size() - prefixLength - suffixLength;
         int targetCount = target.size() - prefixLength - suffixLength;
         if(sourceCount == 0){
@@ -325,6 +339,20 @@ public class LCSUtil {
             return prefixLength;
         }
         int suffixLength = getSuffixLength(source, target);
+        int prefixSuffixLength = prefixLength + suffixLength;
+        if(prefixSuffixLength > source.length()){
+            if(prefixLength < suffixLength){
+                prefixLength = source.length() - suffixLength;
+            }else{
+                suffixLength = source.length() - prefixLength;;
+            }
+        }else if(prefixSuffixLength > target.length()){
+            if(prefixLength < suffixLength){
+                prefixLength = target.length() - suffixLength;
+            }else{
+                suffixLength = target.length() - prefixLength;;
+            }
+        }
         int sourceCount = source.length() - prefixLength - suffixLength;
         int targetCount = target.length() - prefixLength - suffixLength;
         if(sourceCount == 0){
@@ -395,6 +423,20 @@ public class LCSUtil {
 //            return new String[]{sourceResult, target};
 //        }
 //        int suffixLength = getSuffixLength(source, target);
+//int prefixSuffixLength = prefixLength + suffixLength;
+//        if(prefixSuffixLength > source.length()){
+//        if(prefixLength < suffixLength){
+//            prefixLength = source.length() - suffixLength;
+//        }else{
+//            suffixLength = source.length() - prefixLength;;
+//        }
+//    }else if(prefixSuffixLength > target.length()){
+//        if(prefixLength < suffixLength){
+//            prefixLength = target.length() - suffixLength;
+//        }else{
+//            suffixLength = target.length() - prefixLength;;
+//        }
+//    }
 //        int sourceCount = source.length() - prefixLength - suffixLength;
 //        int targetCount = target.length() - prefixLength - suffixLength;
 //        if(sourceCount == 0){
@@ -480,6 +522,20 @@ public class LCSUtil {
             return resultList;
         }
         int suffixLength = getSuffixLength(source, target);
+        int prefixSuffixLength = prefixLength + suffixLength;
+        if(prefixSuffixLength > source.length()){
+            if(prefixLength < suffixLength){
+                prefixLength = source.length() - suffixLength;
+            }else{
+                suffixLength = source.length() - prefixLength;;
+            }
+        }else if(prefixSuffixLength > target.length()){
+            if(prefixLength < suffixLength){
+                prefixLength = target.length() - suffixLength;
+            }else{
+                suffixLength = target.length() - prefixLength;;
+            }
+        }
         int sourceCount = source.length() - prefixLength - suffixLength;
         int targetCount = target.length() - prefixLength - suffixLength;
         if(sourceCount == 0){
@@ -1245,14 +1301,119 @@ public class LCSUtil {
 //        String target = "aghijkld";
 //        System.out.println(indexOf(source, 0, source.length(), target, 1, target.length() - 2));
 //
-        String source = "china";
-        String target = "chinow";
+//        String source = "china";
+//        String target = "chinow";
+        String source = "abcdefjhijklmnopqrstuvwxyz";
+        String target = "bbcdef4j4h4i4j4k4l4mnopqrstuvwxyz";
         int min = minEdit_distance(source,target);
+        System.out.println("最小编辑距离是：" + min);
+        int min2 = minEditDistance(source, 0, source.length(), target, 0, target.length());
         System.out.println("最小编辑距离是：" + min);
     }
 
-    private static int cost = 0;
-
+    public static int minEditDistance(String source, String target) {
+        /** 先判断，至少有一个字符串为空的情况 **/
+        if(StringUtils.isEmpty(source) && StringUtils.isEmpty(target)){
+            return 0;
+        }
+        if(StringUtils.isEmpty(source)){
+            return target.length();
+        }
+        if(StringUtils.isEmpty(target)){
+            return source.length();
+        }
+        /** 两个字符串是否相同 **/
+        if(Objects.equals(source, target)){
+            return 0;
+        }
+        /** 再判断，两个字符串是否有公共前缀和后缀 **/
+        int prefixLength = getPrefixLength(source, target);
+        if(prefixLength == source.length()){
+            /** source是target的子字符串 **/
+            return target.length() - prefixLength;
+        }else if(prefixLength == target.length()){
+            /** target是source的子字符串 **/
+            return source.length() - prefixLength;
+        }
+        int suffixLength = getSuffixLength(source, target);
+        int prefixSuffixLength = prefixLength + suffixLength;
+        if(prefixSuffixLength > source.length()){
+            if(prefixLength < suffixLength){
+                prefixLength = source.length() - suffixLength;
+            }else{
+                suffixLength = source.length() - prefixLength;;
+            }
+        }else if(prefixSuffixLength > target.length()){
+            if(prefixLength < suffixLength){
+                prefixLength = target.length() - suffixLength;
+            }else{
+                suffixLength = target.length() - prefixLength;;
+            }
+        }
+        int sourceCount = source.length() - prefixLength - suffixLength;
+        int targetCount = target.length() - prefixLength - suffixLength;
+        if(sourceCount == 0){
+            return targetCount;
+        }
+        if(targetCount == 0){
+            return sourceCount;
+        }
+        /** 再判断，两个字符串去掉公共前缀和后缀后，是否是包含关系 **/
+        if(sourceCount > targetCount){
+            int index = indexOf(source, prefixLength, sourceCount, target, prefixLength, targetCount);
+            if(index != -1){
+                return source.length() - target.length();
+            }
+        }else if(sourceCount < targetCount){
+            int index = indexOf(target, prefixLength, targetCount, source, prefixLength, sourceCount);
+            if(index != -1){
+                return target.length() - source.length();
+            }
+        }
+//        System.out.println("执行LCS");
+        /** 没有包含关系的情况下，通过LCS算法对两个字符串去掉公共前缀和后缀后进行匹配 **/
+        return minEditDistance(source, prefixLength, sourceCount, target, prefixLength, targetCount);
+    }
+    private static int minEditDistance(String source, int sourceOffset, int sourceCount, String target, int targetOffset, int targetCount) {
+        /* 存储偶数行的对比结果 */
+        int[] evenRowsArray = new int[targetCount];
+        /* 存储奇数行的对比结果 */
+        int[] oddRowsArray = new int[targetCount];
+        for (int i = 0; i < targetCount; i++) {
+            oddRowsArray[i] = i + 1;
+        }
+        int cost = 0;
+//        System.out.println("-------------------------------------------");
+        for (int i = 0; i < sourceCount; i++) {
+            for (int j = 0; j < targetCount; j++) {
+                if(source.charAt(sourceOffset + i) == target.charAt(targetOffset + j)){
+                    cost = 0;
+                }else{
+                    cost = 2;
+                }
+                if(i % 2 == 0){
+                    int left = j == 0 ? i + 1 : evenRowsArray[j-1];
+                    int top = oddRowsArray[j];
+                    int leftTop = j == 0 ? i : oddRowsArray[j-1];
+                    evenRowsArray[j] = Math.min(leftTop + cost, Math.min(left + 1, top + 1));
+//                    System.out.print("[" + i + "][" + j + "]" + evenRowsArray[j]);
+                }else{
+                    int left = j == 0 ? i + 1 : oddRowsArray[j-1];
+                    int top = evenRowsArray[j];
+                    int leftTop = j == 0 ? i : evenRowsArray[j-1];
+                    oddRowsArray[j] = Math.min(leftTop + cost, Math.min(left + 1, top + 1));
+//                    System.out.print("[" + i + "][" + j + "]" + oddRowsArray[j]);
+                }
+//                System.out.print("\t");
+            }
+//            System.out.println();
+        }
+        if(sourceCount % 2 == 0){
+            return oddRowsArray[targetCount - 1];
+        }else{
+            return evenRowsArray[targetCount - 1];
+        }
+    }
     private static int minEdit_distance(String source, String target) {
         final int n = target.length();
         final int m = source.length();
@@ -1269,7 +1430,8 @@ public class LCSUtil {
         for(int j=0;j <= m;j++){
             distance_matrix[j][0] = j;
         }
-
+        int cost = 0;
+        System.out.println("-------------------------------------------");
         for(int i=1;i <= m;i++){
             for(int j=1;j <= n;j++){
                 char ci = source.charAt(i - 1);
@@ -1280,8 +1442,8 @@ public class LCSUtil {
                 }else{
                     cost = 2;
                 }
-                int left = distance_matrix[i-1][j];
-                int top = distance_matrix[i][j-1];
+                int top = distance_matrix[i-1][j];
+                int left = distance_matrix[i][j-1];
                 int leftTop = distance_matrix[i-1][j-1];
                 distance_matrix[i][j] = Math.min(leftTop + cost, Math.min(left + 1, top + 1));
                 System.out.print("[" + i + "][" + j + "]" + distance_matrix[i][j]);

@@ -312,11 +312,11 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                         int oldLineContentLength = StringUtils.length(oldMainBody);
                         int newLineContentLength = StringUtils.length(newMainBody);
                         if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && oldLineContentLength > 0 && newLineContentLength > 0) {
-                            int totalMatchLength = LCSUtil.getTotalMatchLength(oldMainBody, newMainBody);
+                            int minEditDistance = LCSUtil.minEditDistance(oldMainBody, newMainBody);
 //                            int maxLength = Math.max(oldLineContentLength, newLineContentLength);
 //                            matchPercentage = (totalMatchLength * 1000) / maxLength;
 //                            currentNode.setTotalMatchLength(matchPercentage);
-                            currentNode.setTotalMatchLength(totalMatchLength);
+                            currentNode.setTotalMatchLength(minEditDistance);
                         }
                 }
 //                currentNode.setTotalMatchLength(matchPercentage);

@@ -10,7 +10,7 @@ package codedriver.module.knowledge.lcs;
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  **/
 public class PrintSingeColorFormatUtil {
-    private static boolean SWITCH = true;
+    private static boolean SWITCH = false;
     public static void print(char c){
         if(SWITCH){
             System.out.format("\33[39;2m%c", c);

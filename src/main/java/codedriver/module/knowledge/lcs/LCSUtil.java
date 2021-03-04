@@ -345,9 +345,10 @@ public class LCSUtil {
                 return prefixLength + sourceCount + suffixLength;
             }
         }
+        return prefixLength + suffixLength;
         /** 没有包含关系的情况下，通过LCS算法对两个字符串去掉公共前缀和后缀后进行匹配 **/
-        Node node = LCSCompare(source, prefixLength, sourceCount, target, prefixLength, targetCount);
-        return prefixLength + node.getTotalMatchLength() + suffixLength;
+//        Node node = LCSCompare(source, prefixLength, sourceCount, target, prefixLength, targetCount);
+//        return prefixLength + node.getTotalMatchLength() + suffixLength;
     }
 
 //    /**
@@ -547,8 +548,8 @@ public class LCSUtil {
     }
 
     private static Node LCSCompare(String source, int sourceOffset, int sourceCount, String target, int targetOffset, int targetCount) {
-        System.out.println(source.substring(sourceOffset, sourceOffset + sourceCount));
-        System.out.println(target.substring(targetOffset, targetOffset + targetCount));
+//        System.out.println(source.substring(sourceOffset, sourceOffset + sourceCount));
+//        System.out.println(target.substring(targetOffset, targetOffset + targetCount));
 //        Node[][] nodes = new Node[sourceCount][targetCount];
 //        System.out.println("--------------------------------------------------------------------------");
         NodePool nodePool = new NodePool(sourceCount, targetCount);
@@ -928,7 +929,7 @@ public class LCSUtil {
 //            System.out.print("\tmatchSegmentCount=" + matchSegmentCount);
 //            System.out.println("\tmismatchSegmentCount=" + mismatchSegmentCount);
         }
-        System.out.println("count = " + count);
+//        System.out.println("count = " + count);
         /** 所有匹配方案中，找出分隔段数最小的方案作为最终匹配方案 **/
 //        System.out.println("++++++++++++++++++++++++++++++++");
 //        minMatchNodeList.forEach(System.out::println);
@@ -1041,7 +1042,7 @@ public class LCSUtil {
             resultList.add(new SegmentPair(prevMatchOldIndex, sourceCount, prevMatchNewIndex, targetCount, false));
         }
 
-        resultList.forEach(System.out::println);
+//        resultList.forEach(System.out::println);
         System.out.println("++++++++++++++++++++++++++++++++");
         return resultList;
     }
@@ -1244,6 +1245,51 @@ public class LCSUtil {
 //        String target = "aghijkld";
 //        System.out.println(indexOf(source, 0, source.length(), target, 1, target.length() - 2));
 //
-System.out.println(true ^ false);
+        String source = "china";
+        String target = "chinow";
+        int min = minEdit_distance(source,target);
+        System.out.println("最小编辑距离是：" + min);
+    }
+
+    private static int cost = 0;
+
+    private static int minEdit_distance(String source, String target) {
+        final int n = target.length();
+        final int m = source.length();
+
+        if(m == 0 ) return m;
+        if(n == 0) return n;
+
+        int[][] distance_matrix = new int[m + 1][n + 1];
+        distance_matrix[0][0] = 0;
+
+        for(int i=0;i <= n;i++){
+            distance_matrix[0][i] = i;
+        }
+        for(int j=0;j <= m;j++){
+            distance_matrix[j][0] = j;
+        }
+
+        for(int i=1;i <= m;i++){
+            for(int j=1;j <= n;j++){
+                char ci = source.charAt(i - 1);
+                char cj = target.charAt(j - 1);
+
+                if(ci == cj){
+                    cost = 0;
+                }else{
+                    cost = 2;
+                }
+                int left = distance_matrix[i-1][j];
+                int top = distance_matrix[i][j-1];
+                int leftTop = distance_matrix[i-1][j-1];
+                distance_matrix[i][j] = Math.min(leftTop + cost, Math.min(left + 1, top + 1));
+                System.out.print("[" + i + "][" + j + "]" + distance_matrix[i][j]);
+                System.out.print("\t");
+            }
+            System.out.println();
+        }
+
+        return distance_matrix[m][n];
     }
 }

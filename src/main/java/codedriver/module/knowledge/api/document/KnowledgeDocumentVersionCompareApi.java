@@ -126,7 +126,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
 //            }
 //            return false;
 //        });
-        List<SegmentPair> segmentPairList = LCSUtil.LCSCompare(oldLineList, newResultList);
+        List<SegmentPair> segmentPairList = LCSUtil.LCSCompare(oldLineList, newLineList);
         for(SegmentPair segmentPair : segmentPairList) {
             regroupLineList(oldLineList, newLineList, oldResultList, newResultList, segmentPair);
         }
@@ -305,7 +305,7 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                 Node currentNode = new Node(i, j);
                 KnowledgeDocumentLineVo oldLine = oldList.get(i);
                 KnowledgeDocumentLineVo newLine = newList.get(j);
-                int matchPercentage = 0;
+//                int matchPercentage = 0;
                 if(oldLine.getHandler().equals(newLine.getHandler())) {
                         String oldMainBody = KnowledgeDocumentLineHandler.getMainBody(oldLine);
                         String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
@@ -313,15 +313,19 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                         int newLineContentLength = StringUtils.length(newMainBody);
                         if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && oldLineContentLength > 0 && newLineContentLength > 0) {
                             int totalMatchLength = LCSUtil.getTotalMatchLength(oldMainBody, newMainBody);
-                            int maxLength = Math.max(oldLineContentLength, newLineContentLength);
-                            matchPercentage = (totalMatchLength * 1000) / maxLength;
-                            currentNode.setTotalMatchLength(matchPercentage);
+//                            int maxLength = Math.max(oldLineContentLength, newLineContentLength);
+//                            matchPercentage = (totalMatchLength * 1000) / maxLength;
+//                            currentNode.setTotalMatchLength(matchPercentage);
+                            currentNode.setTotalMatchLength(totalMatchLength);
                         }
                 }
-                currentNode.setTotalMatchLength(matchPercentage);
+//                currentNode.setTotalMatchLength(matchPercentage);
                 priorityQueue.add(currentNode);
             }
         }
+        System.out.println("differenceBestMatch...start");
+        priorityQueue.forEach(System.out::println);
+        System.out.println("differenceBestMatch...end");
         Node e = null;
         while((e = priorityQueue.poll()) != null) {
             boolean flag = true;

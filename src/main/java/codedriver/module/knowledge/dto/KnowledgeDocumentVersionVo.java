@@ -114,6 +114,7 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
         JSONObject lcd = paramJson.getJSONObject("lcd");
         paramJson.remove("lcd");
         KnowledgeDocumentVersionVo tmpVo = JSON.toJavaObject(paramJson, KnowledgeDocumentVersionVo.class);
+        this.setPageSize(tmpVo.getPageSize());
         this.setCurrentPage(tmpVo.getCurrentPage());
         this.setKeyword(tmpVo.getKeyword());
         this.knowledgeDocumentTypeUuid = tmpVo.getKnowledgeDocumentTypeUuid();

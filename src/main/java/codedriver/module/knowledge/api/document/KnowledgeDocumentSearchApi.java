@@ -170,7 +170,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             knowledgeDocumentService.setTitleAndShortcutContentHighlight( keywordList, knowledgeDocumentVo.getKnowledgeDocumentVersionId(),knowledgeDocumentVo, versionIndexVoMap, versionContentMap);
             //组装返回数据
             UserVo vo = new UserVo();
-            vo.setUuid(UserContext.get().getUserUuid(true));
+            vo.setUuid(knowledgeDocumentVo.getLcu());
             knowledgeDocumentVo.setLcuVo(vo);
             JSONObject returnData = JSONObject.parseObject(JSON.toJSONString(knowledgeDocumentVo));
             returnData.put("knowledgeDocumentId", returnData.getLong("id"));

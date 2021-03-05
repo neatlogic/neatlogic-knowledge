@@ -31,6 +31,13 @@ public class PrintSingeColorFormatUtil {
             System.out.format("\33[39;2m%n");
         }
     }
+    public static void printt(int count){
+        if(SWITCH) {
+            for (int i = 0; i < count; i++) {
+                System.out.format("\33[39;2m\t");
+            }
+        }
+    }
     public static void print(char c, String startMark){
         if(SWITCH) {
             if (startMark.equals(LCSUtil.SPAN_CLASS_INSERT)) {

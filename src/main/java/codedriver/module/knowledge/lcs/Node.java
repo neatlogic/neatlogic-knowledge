@@ -15,6 +15,8 @@ public class Node {
     private int newIndex;
     /** 统计最大匹配长度 **/
     private int totalMatchLength;
+    /** 最小编辑距离 **/
+    private int minEditDistance;
     /** 记录这次比较是否匹配 **/
     private boolean match;
     /** 上一个节点 **/
@@ -53,6 +55,15 @@ public class Node {
         this.totalMatchLength = totalMatchLength;
         return this;
     }
+
+    public int getMinEditDistance() {
+        return minEditDistance;
+    }
+
+    public void setMinEditDistance(int minEditDistance) {
+        this.minEditDistance = minEditDistance;
+    }
+
     public boolean isMatch() {
         return match;
     }
@@ -165,6 +176,6 @@ public class Node {
     }
     @Override
     public String toString() {
-        return "[" + oldIndex + "][" + newIndex + "]=" + totalMatchLength + "," + (match ? "T" : "F");
+        return "[" + oldIndex + "][" + newIndex + "]=" + totalMatchLength + "," + (match ? "T" : "F" + "," + minEditDistance);
     }
 }

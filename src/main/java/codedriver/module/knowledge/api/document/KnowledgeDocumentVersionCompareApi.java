@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.PriorityQueue;
 
+import codedriver.module.knowledge.lcs.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +27,6 @@ import codedriver.module.knowledge.constvalue.KnowledgeDocumentLineHandler;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.lcs.LCSUtil;
-import codedriver.module.knowledge.lcs.Node;
-import codedriver.module.knowledge.lcs.SegmentPair;
-import codedriver.module.knowledge.lcs.SegmentRange;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -120,12 +117,6 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         List<KnowledgeDocumentLineVo> newLineList = newDocumentVo.getLineList();
         List<KnowledgeDocumentLineVo> oldResultList = new ArrayList<>();
         List<KnowledgeDocumentLineVo> newResultList = new ArrayList<>();
-//        Node node = LCSUtil.LCSCompare(oldLineList, newLineList, (e1, e2) -> {
-//            if(e1.getHandler().equals(e2.getHandler())) {
-//                return Objects.equals(KnowledgeDocumentLineHandler.getMainBody(e1), KnowledgeDocumentLineHandler.getMainBody(e2));
-//            }
-//            return false;
-//        });
         List<SegmentPair> segmentPairList = LCSUtil.LCSCompare(oldLineList, newLineList);
         for(SegmentPair segmentPair : segmentPairList) {
             regroupLineList(oldLineList, newLineList, oldResultList, newResultList, segmentPair);
@@ -192,8 +183,6 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
     * @return void
      */
     private void regroupLineList(List<KnowledgeDocumentLineVo> oldDataList, List<KnowledgeDocumentLineVo> newDataList, List<KnowledgeDocumentLineVo> oldResultList, List<KnowledgeDocumentLineVo> newResultList, SegmentPair segmentPair) {
-//      SegmentRange oldSegmentRange = segmentPair.getOldSegmentRange();
-//      SegmentRange newSegmentRange = segmentPair.getNewSegmentRange();
       List<KnowledgeDocumentLineVo> oldSubList = oldDataList.subList(segmentPair.getOldBeginIndex(), segmentPair.getOldEndIndex());
       List<KnowledgeDocumentLineVo> newSubList = newDataList.subList(segmentPair.getNewBeginIndex(), segmentPair.getNewEndIndex());
       if(segmentPair.isMatch()) {
@@ -241,9 +230,6 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                           }
                           KnowledgeDocumentLineHandler.setMainBody(oldLine, LCSUtil.wrapChangePlace(oldMainBody, oldSegmentRangeList, "<span class='delete'>", "</span>"));
                           KnowledgeDocumentLineHandler.setMainBody(newLine, LCSUtil.wrapChangePlace(newMainBody, newSegmentRangeList, "<span class='insert'>", "</span>"));
-//                          String[] resultArray = LCSUtil.LCSCompare(oldMainBody, newMainBody);
-//                          KnowledgeDocumentLineHandler.setMainBody(oldLine, oldMainBody);
-//                          KnowledgeDocumentLineHandler.setMainBody(newLine, newMainBody);
                       }
                   }
                   oldResultList.add(oldLine);
@@ -296,7 +282,8 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
     * @param newList 新数据列表
     * @return List<SegmentPair>
      */
-    private List<SegmentPair> differenceBestMatch(List<KnowledgeDocumentLineVo> oldList, List<KnowledgeDocumentLineVo> newList) {
+    @Deprecated
+    private List<SegmentPair> differenceBestMatch_old(List<KnowledgeDocumentLineVo> oldList, List<KnowledgeDocumentLineVo> newList) {
         List<SegmentPair> segmentMappingList = new ArrayList<>();
         List<Node> resultList = new ArrayList<>();
         PriorityQueue<Node> priorityQueue = new PriorityQueue<>(oldList.size() * newList.size(), (e1, e2) -> Integer.compare(e2.getTotalMatchLength(), e1.getTotalMatchLength()));
@@ -305,7 +292,6 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                 Node currentNode = new Node(i, j);
                 KnowledgeDocumentLineVo oldLine = oldList.get(i);
                 KnowledgeDocumentLineVo newLine = newList.get(j);
-//                int matchPercentage = 0;
                 if(oldLine.getHandler().equals(newLine.getHandler())) {
                         String oldMainBody = KnowledgeDocumentLineHandler.getMainBody(oldLine);
                         String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
@@ -313,19 +299,12 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                         int newLineContentLength = StringUtils.length(newMainBody);
                         if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && oldLineContentLength > 0 && newLineContentLength > 0) {
                             int minEditDistance = LCSUtil.minEditDistance(oldMainBody, newMainBody);
-//                            int maxLength = Math.max(oldLineContentLength, newLineContentLength);
-//                            matchPercentage = (totalMatchLength * 1000) / maxLength;
-//                            currentNode.setTotalMatchLength(matchPercentage);
                             currentNode.setTotalMatchLength(minEditDistance);
                         }
                 }
-//                currentNode.setTotalMatchLength(matchPercentage);
                 priorityQueue.add(currentNode);
             }
         }
-        System.out.println("differenceBestMatch...start");
-        priorityQueue.forEach(System.out::println);
-        System.out.println("differenceBestMatch...end");
         Node e = null;
         while((e = priorityQueue.poll()) != null) {
             boolean flag = true;
@@ -378,5 +357,109 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
             segmentMappingList.add(segmentMapping);
         }
         return segmentMappingList;
+    }
+    private List<SegmentPair> differenceBestMatch(List<KnowledgeDocumentLineVo> source, List<KnowledgeDocumentLineVo> target) {
+            int sourceCount = source.size();
+            int targetCount = target.size();
+            NodePool nodePool = new NodePool(sourceCount, targetCount);
+            for(int i = sourceCount - 1; i >= 0; i--) {
+                for(int j = targetCount - 1; j >= 0; j--) {
+                    Node currentNode = new Node(i, j);
+                    KnowledgeDocumentLineVo oldLine = source.get(i);
+                    KnowledgeDocumentLineVo newLine = target.get(j);
+                    String oldMainBody = KnowledgeDocumentLineHandler.getMainBody(oldLine);
+                    String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
+                    int oldLineContentLength = StringUtils.length(oldMainBody);
+                    int newLineContentLength = StringUtils.length(newMainBody);
+                    int minEditDistance = 0;
+                    if(oldLine.getHandler().equals(newLine.getHandler())) {
+                        if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && oldLineContentLength > 0 && newLineContentLength > 0) {
+                            minEditDistance = LCSUtil.minEditDistance(oldMainBody, newMainBody);
+                        }else{
+                            minEditDistance = oldLineContentLength + newLineContentLength;
+                        }
+                    }else{
+                        minEditDistance = oldLineContentLength + newLineContentLength;
+                    }
+                    currentNode.setMinEditDistance(minEditDistance);
+                    int left = 0;
+                    int top = 0;
+                    int upperLeft = 0;
+                    Node upperLeftNode = nodePool.getOldNode(i + 1, j + 1);
+                    if(upperLeftNode != null) {
+                        upperLeft = upperLeftNode.getTotalMatchLength();
+                    }
+                    Node leftNode = nodePool.getOldNode(i, j + 1);
+                    if(leftNode != null) {
+                        left = leftNode.getTotalMatchLength();
+                    }
+                    Node topNode = nodePool.getOldNode(i + 1, j);
+                    if(topNode != null) {
+                        top = topNode.getTotalMatchLength();
+                    }
+                    if(i + 1 == sourceCount && j + 1 == targetCount){
+                        currentNode.setTotalMatchLength(minEditDistance);
+                    }else if(i + 1 == sourceCount){
+                        currentNode.setTotalMatchLength(minEditDistance + left);
+                        currentNode.setNext(leftNode);
+                    }else if(j + 1 == targetCount){
+                        currentNode.setTotalMatchLength(minEditDistance + top);
+                        currentNode.setNext(topNode);
+                    }else{
+                        if(upperLeft <= left){
+                            if(upperLeft <= top){
+                                currentNode.setTotalMatchLength(minEditDistance + upperLeft);
+                                currentNode.setNext(upperLeftNode);
+                            }else{
+                                currentNode.setTotalMatchLength(minEditDistance + top);
+                                currentNode.setNext(topNode);
+                            }
+                        }else if(top <= left){
+                            currentNode.setTotalMatchLength(minEditDistance + top);
+                            currentNode.setNext(topNode);
+                        }else{
+                            currentNode.setTotalMatchLength(minEditDistance + left);
+                            currentNode.setNext(leftNode);
+                        }
+                    }
+
+                    nodePool.addNode(currentNode);
+                }
+            }
+            List<Node> nodeList = new ArrayList<>();
+            Node firstNode = nodePool.getOldNode(0, 0);
+            Node node = firstNode;
+            Node previous = null;
+            while(node != null){
+                if(previous != null){
+                    if(previous.getOldIndex() == node.getOldIndex() || previous.getNewIndex() == node.getNewIndex()){
+                        if(previous.getMinEditDistance() > node.getMinEditDistance()){
+                            previous = node;
+                        }
+                    }else{
+                        nodeList.add(previous);
+                        previous = node;
+                    }
+                }else {
+                    previous = node;
+                }
+                node = node.getNext();
+            }
+            nodeList.add(previous);
+            List<SegmentPair> segmentPairList = new ArrayList<>();
+            int lastOldEndIndex = 0;
+            int lastNewEndIndex = 0;
+            for(Node n : nodeList){
+                if(n.getOldIndex() != lastOldEndIndex || n.getNewIndex() != lastNewEndIndex){
+                    segmentPairList.add(new SegmentPair(lastOldEndIndex, n.getOldIndex(), lastNewEndIndex, n.getNewIndex(), false));
+                }
+                lastOldEndIndex = n.getOldIndex() + 1;
+                lastNewEndIndex = n.getNewIndex() + 1;
+                segmentPairList.add(new SegmentPair(n.getOldIndex(), lastOldEndIndex, n.getNewIndex(), lastNewEndIndex, false));
+            }
+            if(lastOldEndIndex != sourceCount || lastNewEndIndex != targetCount){
+                segmentPairList.add(new SegmentPair(lastOldEndIndex, sourceCount, lastNewEndIndex, targetCount, false));
+            }
+            return segmentPairList;
     }
 }

@@ -20,8 +20,9 @@ import java.util.List;
 public class Test {
     private final static String BASE_PATH = "codedriver-knowledge/src/main/java/codedriver/module/knowledge/lcs/";
     private final static long M = 1024 * 1024;
-    public static void main(String[] args) {
-//        Runtime runTime = Runtime.getRuntime();
+
+    public static void test1(){
+        //        Runtime runTime = Runtime.getRuntime();
 //        long maxMemory = runTime.maxMemory();//1888485376(1801M)
 //        long freeMemory = runTime.freeMemory();//119349000(113M)
 //        long totalMemory = runTime.totalMemory();//128974848(123M)
@@ -33,50 +34,51 @@ public class Test {
 //        List<String> newDataList = readFileData(BASE_PATH + "target.txt");
 //        List<String> oldDataList = readFileData(BASE_PATH + "A.txt");
 //        List<String> newDataList = readFileData(BASE_PATH + "B.txt");
-        List<String> oldDataList = readFileData(BASE_PATH + "对比A.txt");
-        List<String> newDataList = readFileData(BASE_PATH + "对比B.txt");
+        List<String> oldDataList = readFileData(BASE_PATH + "A_edit.txt");
+        List<String> newDataList = readFileData(BASE_PATH + "B_edit.txt");
+//        List<String> oldDataList = readFileData(BASE_PATH + "对比A.txt");
+//        List<String> newDataList = readFileData(BASE_PATH + "对比B.txt");
 //        List<String> oldDataList = readFileData(BASE_PATH + "oldData1.txt");
 //        List<String> newDataList = readFileData(BASE_PATH + "newData1.txt");
-        List<String> oldResultList = new ArrayList<>();
-        List<String> newResultList = new ArrayList<>();
-        int min = Math.min(oldDataList.size(), newDataList.size());
-        min = min > 20 ? 20 : min;
-        for(int i = 0; i < min; i++){
-            String source = oldDataList.get(i);
-            String target =newDataList.get(i);
-            long startTime = System.currentTimeMillis();
-//            String[] resultArray = LCSUtil.LCSCompare(source, target);
-            List<SegmentPair> segmentPairList = LCSUtil.LCSCompare(source, target);
-            List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
-            List<SegmentRange> newSegmentRangeList = new ArrayList<>();
-            for(SegmentPair segmentpair : segmentPairList) {
-                System.out.println(segmentpair);
-                oldSegmentRangeList.add(new SegmentRange(segmentpair.getOldBeginIndex(), segmentpair.getOldEndIndex(), segmentpair.isMatch()));
-                newSegmentRangeList.add(new SegmentRange(segmentpair.getNewBeginIndex(), segmentpair.getNewEndIndex(), segmentpair.isMatch()));
-            }
-            String oldResult = LCSUtil.wrapChangePlace(source, oldSegmentRangeList, LCSUtil.SPAN_CLASS_DELETE, LCSUtil.SPAN_END);
-            String newResult = LCSUtil.wrapChangePlace(target, newSegmentRangeList, LCSUtil.SPAN_CLASS_INSERT, LCSUtil.SPAN_END);
-            long cost = System.currentTimeMillis() - startTime;
-            System.out.println(source.length() + "*" + target.length() + "=" + (source.length() * target.length()) + "-耗时：" + cost);
-//            sum += cost;
-//            System.out.println(resultArray[0]);
-//            System.out.println(resultArray[1]);
-            oldResultList.add(oldResult);
-            newResultList.add(newResult);
-//            freeMemory = runTime.freeMemory();//200313272(191M)
-//            totalMemory = runTime.totalMemory();//795344896(758M)
-//            System.out.println("所分配的剩余内存大小：" + freeMemory + "(" + (freeMemory / M) + "M)");
-//            System.out.println("已经分配内存的大小：" + totalMemory + "(" + (totalMemory / M) + "M)");
-        }
-//        System.out.println("总耗时：" + sum);
+        LCSUtil.differenceBestMatch(oldDataList, newDataList);
+//        List<String> oldResultList = new ArrayList<>();
+//        List<String> newResultList = new ArrayList<>();
+//        int min = Math.min(oldDataList.size(), newDataList.size());
+//        min = min > 20 ? 20 : min;
+//        for(int i = 0; i < min; i++){
+//            String source = oldDataList.get(i);
+//            String target =newDataList.get(i);
+//            long startTime = System.currentTimeMillis();
+//            List<SegmentPair> segmentPairList = LCSUtil.LCSCompare(source, target);
+//            List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
+//            List<SegmentRange> newSegmentRangeList = new ArrayList<>();
+//            for(SegmentPair segmentpair : segmentPairList) {
+//                System.out.println(segmentpair);
+//                oldSegmentRangeList.add(new SegmentRange(segmentpair.getOldBeginIndex(), segmentpair.getOldEndIndex(), segmentpair.isMatch()));
+//                newSegmentRangeList.add(new SegmentRange(segmentpair.getNewBeginIndex(), segmentpair.getNewEndIndex(), segmentpair.isMatch()));
+//            }
+//            String oldResult = LCSUtil.wrapChangePlace(source, oldSegmentRangeList, LCSUtil.SPAN_CLASS_DELETE, LCSUtil.SPAN_END);
+//            String newResult = LCSUtil.wrapChangePlace(target, newSegmentRangeList, LCSUtil.SPAN_CLASS_INSERT, LCSUtil.SPAN_END);
+//            long cost = System.currentTimeMillis() - startTime;
+//            System.out.println(source.length() + "*" + target.length() + "=" + (source.length() * target.length()) + "-耗时：" + cost);
+////            sum += cost;
+//            oldResultList.add(oldResult);
+//            newResultList.add(newResult);
+////            freeMemory = runTime.freeMemory();//200313272(191M)
+////            totalMemory = runTime.totalMemory();//795344896(758M)
+////            System.out.println("所分配的剩余内存大小：" + freeMemory + "(" + (freeMemory / M) + "M)");
+////            System.out.println("已经分配内存的大小：" + totalMemory + "(" + (totalMemory / M) + "M)");
+//        }
+////        System.out.println("总耗时：" + sum);
+//        writeFileData(oldResultList, BASE_PATH + "oldResult.txt");
+//        writeFileData(newResultList, BASE_PATH + "newResult.txt");
+
 //        maxMemory = runTime.maxMemory();//1888485376(1801M)
 //        freeMemory = runTime.freeMemory();//200313272(191M)
 //        totalMemory = runTime.totalMemory();//795344896(758M)
 //        System.out.println("可以获得的最大内存：" + maxMemory + "(" + (maxMemory / M) + "M)");
 //        System.out.println("所分配的剩余内存大小：" + freeMemory + "(" + (freeMemory / M) + "M)");
 //        System.out.println("已经分配内存的大小：" + totalMemory + "(" + (totalMemory / M) + "M)");
-        writeFileData(oldResultList, BASE_PATH + "oldResult.txt");
-        writeFileData(newResultList, BASE_PATH + "newResult.txt");
 //        可以获得的最大内存：1888485376(1801M)
 //        所分配的剩余内存大小：119349000(113M)
 //        已经分配内存的大小：128974848(123M)
@@ -114,7 +116,48 @@ public class Test {
 //        可以获得的最大内存：1888485376(1801M)
 //        所分配的剩余内存大小：199634960(190M)
 //        已经分配内存的大小：794820608(758M)
-
+    }
+    public static void main(String[] args) {
+//        List<String> oldDataList = readFileData(BASE_PATH + "source.txt");
+//        List<String> newDataList = readFileData(BASE_PATH + "target.txt");
+//        List<String> oldDataList = readFileData(BASE_PATH + "A.txt");
+//        List<String> newDataList = readFileData(BASE_PATH + "B.txt");
+        List<String> oldDataList = readFileData(BASE_PATH + "A_edit.txt");
+        List<String> newDataList = readFileData(BASE_PATH + "B_edit.txt");
+//        List<String> oldDataList = readFileData(BASE_PATH + "对比A.txt");
+//        List<String> newDataList = readFileData(BASE_PATH + "对比B.txt");
+//        List<String> oldDataList = readFileData(BASE_PATH + "oldData1.txt");
+//        List<String> newDataList = readFileData(BASE_PATH + "newData1.txt");
+        List<SegmentPair> segmentPairList2 = LCSUtil.differenceBestMatch(oldDataList, newDataList);
+        for(SegmentPair segmentPair : segmentPairList2){
+            if(segmentPair.getOldEndIndex() == segmentPair.getOldBeginIndex()){
+                for(int i = segmentPair.getNewBeginIndex(); i < segmentPair.getNewEndIndex(); i++){
+                    PrintSingeColorFormatUtil.printt(5);
+                    PrintSingeColorFormatUtil.println(newDataList.get(i), LCSUtil.SPAN_CLASS_INSERT);
+                }
+            }else if(segmentPair.getNewEndIndex() == segmentPair.getNewBeginIndex()){
+                for(int i = segmentPair.getOldBeginIndex(); i < segmentPair.getOldEndIndex(); i++){
+                    PrintSingeColorFormatUtil.print(oldDataList.get(i), LCSUtil.SPAN_CLASS_DELETE);
+                    PrintSingeColorFormatUtil.printt(5);
+                    PrintSingeColorFormatUtil.println();
+                }
+            }else {
+                String source = oldDataList.get(segmentPair.getOldBeginIndex());
+                String target =newDataList.get(segmentPair.getNewBeginIndex());
+                List<SegmentPair> segmentPairList = LCSUtil.LCSCompare(source, target);
+                List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
+                List<SegmentRange> newSegmentRangeList = new ArrayList<>();
+                for(SegmentPair segmentpair : segmentPairList) {
+//                    System.out.println(segmentpair);
+                    oldSegmentRangeList.add(new SegmentRange(segmentpair.getOldBeginIndex(), segmentpair.getOldEndIndex(), segmentpair.isMatch()));
+                    newSegmentRangeList.add(new SegmentRange(segmentpair.getNewBeginIndex(), segmentpair.getNewEndIndex(), segmentpair.isMatch()));
+                }
+                String oldResult = LCSUtil.wrapChangePlace(source, oldSegmentRangeList, LCSUtil.SPAN_CLASS_DELETE, LCSUtil.SPAN_END);
+                PrintSingeColorFormatUtil.printt(5);
+                String newResult = LCSUtil.wrapChangePlace(target, newSegmentRangeList, LCSUtil.SPAN_CLASS_INSERT, LCSUtil.SPAN_END);
+                PrintSingeColorFormatUtil.println();
+            }
+        }
     }
 
     private static List<String> readFileData(String filePath) {

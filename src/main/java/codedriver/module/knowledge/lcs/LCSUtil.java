@@ -1,5 +1,7 @@
 package codedriver.module.knowledge.lcs;
 
+import codedriver.module.knowledge.constvalue.KnowledgeDocumentLineHandler;
+import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.formula.functions.T;
@@ -489,7 +491,7 @@ public class LCSUtil {
      * @return Node 返回最后一次比较结果信息
      */
     public static List<SegmentPair> LCSCompare(String source, String target) {
-        PrintSingeColorFormatUtil.println("-----------------------------------");
+//        PrintSingeColorFormatUtil.println("-----------------------------------");
         List<SegmentPair> resultList = new ArrayList<>();
         /** 先判断，至少有一个字符串为空的情况 **/
         if(StringUtils.isEmpty(source) && StringUtils.isEmpty(target)){
@@ -711,7 +713,7 @@ public class LCSUtil {
                 }
             }
         }
-        PrintSingeColorFormatUtil.println();
+//        PrintSingeColorFormatUtil.println();
         String result = stringBuilder.toString();
         if(result.length() != capacity){
             System.out.println("wrapChangePlace:result.length()" + result.length() + " != " + capacity + "capacity");
@@ -1290,6 +1292,138 @@ public class LCSUtil {
             }
         }
         return -1;
+    }
+
+    public static List<SegmentPair> differenceBestMatch(List<String> source, List<String> target) {
+        int sourceCount = source.size();
+        int targetCount = target.size();
+        Node[][] nodes = new Node[sourceCount][targetCount];
+        NodePool nodePool = new NodePool(sourceCount, targetCount);
+//        int[] sourceLengthArray = new int[sourceCount];
+//        for(int i = 0; i < sourceCount; i++){
+//            sourceLengthArray[i] = StringUtils.length(source.get(i));
+//        }
+//        int[] targetLengthArray = new int[targetCount];
+//        for (int i = 0; i < targetCount; i++) {
+//            targetLengthArray[i] = StringUtils.length(target.get(i));
+//        }
+        for(int i = sourceCount - 1; i >= 0; i--) {
+            for(int j = targetCount - 1; j >= 0; j--) {
+                Node currentNode = new Node(i, j);
+                String oldLine = source.get(i);
+                String newLine = target.get(j);
+//                int oldLineContentLength = StringUtils.length(oldLine);
+//                int newLineContentLength = StringUtils.length(newLine);
+                int minEditDistance = LCSUtil.minEditDistance(oldLine, newLine);
+                currentNode.setMinEditDistance(minEditDistance);
+
+                int left = 0;
+                int top = 0;
+                int upperLeft = 0;
+                Node upperLeftNode = nodePool.getOldNode(i + 1, j + 1);
+                if(upperLeftNode != null) {
+                    upperLeft = upperLeftNode.getTotalMatchLength();
+                }
+//                else{
+//                    if(i + 1 < sourceCount){
+//                        upperLeft = sourceLengthArray[i + 1];
+//                    }else if(j + 1 < targetCount){
+//                        upperLeft = targetLengthArray[j + 1];
+//                    }
+//                }
+                Node leftNode = nodePool.getOldNode(i, j + 1);
+                if(leftNode != null) {
+                    left = leftNode.getTotalMatchLength();
+                }
+//                else{
+//                    left = oldLineContentLength;
+//                }
+                Node topNode = nodePool.getOldNode(i + 1, j);
+                if(topNode != null) {
+                    top = topNode.getTotalMatchLength();
+                }
+//                else{
+//                    top = newLineContentLength;
+//                }
+                if(i + 1 == sourceCount && j + 1 == targetCount){
+                    currentNode.setTotalMatchLength(minEditDistance);
+                }else if(i + 1 == sourceCount){
+                    currentNode.setTotalMatchLength(minEditDistance + left);
+                    currentNode.setNext(leftNode);
+                }else if(j + 1 == targetCount){
+                    currentNode.setTotalMatchLength(minEditDistance + top);
+                    currentNode.setNext(topNode);
+                }else{
+                    if(upperLeft <= left){
+                        if(upperLeft <= top){
+                            currentNode.setTotalMatchLength(minEditDistance + upperLeft);
+                            currentNode.setNext(upperLeftNode);
+                        }else{
+                            currentNode.setTotalMatchLength(minEditDistance + top);
+                            currentNode.setNext(topNode);
+                        }
+                    }else if(top <= left){
+                        currentNode.setTotalMatchLength(minEditDistance + top);
+                        currentNode.setNext(topNode);
+                    }else{
+                        currentNode.setTotalMatchLength(minEditDistance + left);
+                        currentNode.setNext(leftNode);
+                    }
+                }
+
+                nodePool.addNode(currentNode);
+                nodes[currentNode.getOldIndex()][currentNode.getNewIndex()] = currentNode;
+//                System.out.print(currentNode + "," + minEditDistance + "\t");
+            }
+//            System.out.println();
+        }
+        for (int i = 0; i < sourceCount; i++) {
+            for (int j = 0; j < targetCount; j++) {
+                System.out.print(nodes[i][j]);
+                System.out.print("\t");
+            }
+            System.out.println();
+        }
+        System.out.println("------------------------------------------------------------------------------------------");
+        List<Node> nodeList = new ArrayList<>();
+        Node firstNode = nodePool.getOldNode(0, 0);
+        Node node = firstNode;
+        Node previous = null;
+        while(node != null){
+            if(previous != null){
+                if(previous.getOldIndex() == node.getOldIndex() || previous.getNewIndex() == node.getNewIndex()){
+                    if(previous.getMinEditDistance() > node.getMinEditDistance()){
+                        previous = node;
+                    }
+                }else{
+                    nodeList.add(previous);
+                    previous = node;
+                }
+            }else {
+                previous = node;
+            }
+            System.out.println(node);
+            node = node.getNext();
+        }
+        nodeList.add(previous);
+        System.out.println("------------------------------------------------------------------------------------------");
+        nodeList.forEach(System.out::println);
+        List<SegmentPair> segmentPairList = new ArrayList<>();
+        int lastOldEndIndex = 0;
+        int lastNewEndIndex = 0;
+        for(Node n : nodeList){
+            if(n.getOldIndex() != lastOldEndIndex || n.getNewIndex() != lastNewEndIndex){
+                segmentPairList.add(new SegmentPair(lastOldEndIndex, n.getOldIndex(), lastNewEndIndex, n.getNewIndex(), false));
+            }
+            lastOldEndIndex = n.getOldIndex() + 1;
+            lastNewEndIndex = n.getNewIndex() + 1;
+            segmentPairList.add(new SegmentPair(n.getOldIndex(), lastOldEndIndex, n.getNewIndex(), lastNewEndIndex, false));
+        }
+        if(lastOldEndIndex != sourceCount || lastNewEndIndex != targetCount){
+            segmentPairList.add(new SegmentPair(lastOldEndIndex, sourceCount, lastNewEndIndex, targetCount, false));
+        }
+        segmentPairList.forEach(System.out::println);
+        return segmentPairList;
     }
     public static void main(String[] args){
 //        String source = "sasdfweghjklr";

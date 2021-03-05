@@ -822,6 +822,13 @@ public class LCSUtil {
         return segmentPairList;
     }
 
+    /**
+     * @Description: 求字符串source转变成target的最小编辑操作次数，许可的编辑操作包括将一个字符替换成另一个字符（算2次操作），插入一个字符算1次操作，删除一个字符算1次操作。
+     * @Author: linbq
+     * @Date: 2021/3/5 18:15
+     * @Params:[source, target]
+     * @Returns:int
+     **/
     public static int minEditDistance(String source, String target) {
         /** 先判断，至少有一个字符串为空的情况 **/
         if(StringUtils.isEmpty(source) && StringUtils.isEmpty(target)){
@@ -884,6 +891,13 @@ public class LCSUtil {
         /** 没有包含关系的情况下，通过LCS算法对两个字符串去掉公共前缀和后缀后进行匹配 **/
         return minEditDistance(source, prefixLength, sourceCount, target, prefixLength, targetCount);
     }
+    /**
+     * @Description: 求字符串source转变成target的最小编辑操作次数
+     * @Author: linbq
+     * @Date: 2021/3/5 18:18
+     * @Params:[source, sourceOffset, sourceCount, target, targetOffset, targetCount]
+     * @Returns:int
+     **/
     private static int minEditDistance(String source, int sourceOffset, int sourceCount, String target, int targetOffset, int targetCount) {
         /* 存储偶数行的对比结果 */
         int[] evenRowsArray = new int[targetCount];

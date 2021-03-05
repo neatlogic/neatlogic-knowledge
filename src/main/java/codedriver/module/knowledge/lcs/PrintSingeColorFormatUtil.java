@@ -3,7 +3,7 @@ package codedriver.module.knowledge.lcs;
 /**
  * @Title: PrintSingeColorFormatUtil
  * @Package codedriver.module.knowledge.lcs
- * @Description: TODO
+ * @Description: 控制台打印输出，可以设置字体颜色
  * @Author: linbq
  * @Date: 2021/3/1 10:55
  * Copyright(c) 2021 TechSureCo.,Ltd.AllRightsReserved.

@@ -126,8 +126,4 @@ public class KnowledgeDocumentLineVo {
             return false;
         return Objects.equals(KnowledgeDocumentLineHandler.getMainBody(this), KnowledgeDocumentLineHandler.getMainBody(other));
     }
-//    @Override
-//    public String toString() {
-//        return "oldLineList.add(new LineVo(" + lineNumber + ", \""+ type +"\", \"" + content + "\"));";
-//    }
 }

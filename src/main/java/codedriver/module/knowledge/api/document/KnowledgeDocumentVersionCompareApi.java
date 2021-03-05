@@ -274,192 +274,117 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
         fillBlankLine.setContent(line.getContent());
         return fillBlankLine;
     }
+
     /**
-     * 
-    * @Time:2020年10月22日
-    * @Description: 不匹配段的最佳匹配结果 
-    * @param oldList 旧数据列表
-    * @param newList 新数据列表
-    * @return List<SegmentPair>
-     */
-    @Deprecated
-    private List<SegmentPair> differenceBestMatch_old(List<KnowledgeDocumentLineVo> oldList, List<KnowledgeDocumentLineVo> newList) {
-        List<SegmentPair> segmentMappingList = new ArrayList<>();
-        List<Node> resultList = new ArrayList<>();
-        PriorityQueue<Node> priorityQueue = new PriorityQueue<>(oldList.size() * newList.size(), (e1, e2) -> Integer.compare(e2.getTotalMatchLength(), e1.getTotalMatchLength()));
-        for(int i = 0; i < oldList.size(); i++) {
-            for(int j = 0; j < newList.size(); j++) {
-                Node currentNode = new Node(i, j);
-                KnowledgeDocumentLineVo oldLine = oldList.get(i);
-                KnowledgeDocumentLineVo newLine = newList.get(j);
-                if(oldLine.getHandler().equals(newLine.getHandler())) {
-                        String oldMainBody = KnowledgeDocumentLineHandler.getMainBody(oldLine);
-                        String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
-                        int oldLineContentLength = StringUtils.length(oldMainBody);
-                        int newLineContentLength = StringUtils.length(newMainBody);
-                        if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && oldLineContentLength > 0 && newLineContentLength > 0) {
-                            int minEditDistance = LCSUtil.minEditDistance(oldMainBody, newMainBody);
-                            currentNode.setTotalMatchLength(minEditDistance);
-                        }
-                }
-                priorityQueue.add(currentNode);
-            }
-        }
-        Node e = null;
-        while((e = priorityQueue.poll()) != null) {
-            boolean flag = true;
-            for(Node n : resultList) {
-                if(n.getTotalMatchLength() == 0) {
-                    flag = false;
-                    break;
-                }
-                if(e.getOldIndex() >= n.getOldIndex() && e.getNewIndex() <= n.getNewIndex()) {
-                    flag = false;
-                    break;
-                }
-                if(e.getOldIndex() <= n.getOldIndex() && e.getNewIndex() >= n.getNewIndex()) {
-                    flag = false;
-                    break;
-                }
-            }
-            if(flag) {
-                resultList.add(e);           
-            }
-        }
-        resultList.sort((e1, e2) -> Integer.compare(e1.getOldIndex(), e2.getOldIndex()));
-        int oldIndex = 0;
-        int newIndex = 0;
-        for(Node node : resultList) {
-            if(node.getOldIndex() > oldIndex) {
-                SegmentPair segmentMapping = new SegmentPair(oldIndex, 0, false);
-                segmentMapping.setEndIndex(node.getOldIndex(), 0);
-                segmentMappingList.add(segmentMapping);
-            }
-            if(node.getNewIndex() > newIndex) {
-                SegmentPair segmentMapping = new SegmentPair(0, newIndex, false);
-                segmentMapping.setEndIndex(0, node.getNewIndex());
-                segmentMappingList.add(segmentMapping);
-            }
-            oldIndex = node.getOldIndex() + 1;
-            newIndex = node.getNewIndex() + 1;
-            SegmentPair segmentMapping = new SegmentPair(node.getOldIndex(), node.getNewIndex(), false);
-            segmentMapping.setEndIndex(oldIndex, newIndex);
-            segmentMappingList.add(segmentMapping);
-        }
-        if(oldList.size() > oldIndex) {
-            SegmentPair segmentMapping = new SegmentPair(oldIndex, 0, false);
-            segmentMapping.setEndIndex(oldList.size(), 0);
-            segmentMappingList.add(segmentMapping);
-        }
-        if(newList.size() > newIndex) {
-            SegmentPair segmentMapping = new SegmentPair(0, newIndex, false);
-            segmentMapping.setEndIndex(0, newList.size());
-            segmentMappingList.add(segmentMapping);
-        }
-        return segmentMappingList;
-    }
+     * @Description: 通过最短编辑距离算法，对不匹配段之间进行最佳匹配
+     * @Author: linbq
+     * @Date: 2021/3/5 17:32
+     * @Params:[source, target]
+     * @Returns:java.util.List<codedriver.module.knowledge.lcs.SegmentPair>
+     **/
     private List<SegmentPair> differenceBestMatch(List<KnowledgeDocumentLineVo> source, List<KnowledgeDocumentLineVo> target) {
-            int sourceCount = source.size();
-            int targetCount = target.size();
-            NodePool nodePool = new NodePool(sourceCount, targetCount);
-            for(int i = sourceCount - 1; i >= 0; i--) {
-                for(int j = targetCount - 1; j >= 0; j--) {
-                    Node currentNode = new Node(i, j);
-                    KnowledgeDocumentLineVo oldLine = source.get(i);
-                    KnowledgeDocumentLineVo newLine = target.get(j);
-                    String oldMainBody = KnowledgeDocumentLineHandler.getMainBody(oldLine);
-                    String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
-                    int oldLineContentLength = StringUtils.length(oldMainBody);
-                    int newLineContentLength = StringUtils.length(newMainBody);
-                    int minEditDistance = 0;
-                    if(oldLine.getHandler().equals(newLine.getHandler())) {
-                        if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && oldLineContentLength > 0 && newLineContentLength > 0) {
-                            minEditDistance = LCSUtil.minEditDistance(oldMainBody, newMainBody);
-                        }else{
-                            minEditDistance = oldLineContentLength + newLineContentLength;
-                        }
+        int sourceCount = source.size();
+        int targetCount = target.size();
+        NodePool nodePool = new NodePool(sourceCount, targetCount);
+        for(int i = sourceCount - 1; i >= 0; i--) {
+            for(int j = targetCount - 1; j >= 0; j--) {
+                Node currentNode = new Node(i, j);
+                KnowledgeDocumentLineVo oldLine = source.get(i);
+                KnowledgeDocumentLineVo newLine = target.get(j);
+                String oldMainBody = KnowledgeDocumentLineHandler.getMainBody(oldLine);
+                String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
+                int oldLineContentLength = StringUtils.length(oldMainBody);
+                int newLineContentLength = StringUtils.length(newMainBody);
+                int minEditDistance = 0;
+                if(oldLine.getHandler().equals(newLine.getHandler())) {
+                    if(KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && oldLineContentLength > 0 && newLineContentLength > 0) {
+                        minEditDistance = LCSUtil.minEditDistance(oldMainBody, newMainBody);
                     }else{
                         minEditDistance = oldLineContentLength + newLineContentLength;
                     }
-                    currentNode.setMinEditDistance(minEditDistance);
-                    int left = 0;
-                    int top = 0;
-                    int upperLeft = 0;
-                    Node upperLeftNode = nodePool.getOldNode(i + 1, j + 1);
-                    if(upperLeftNode != null) {
-                        upperLeft = upperLeftNode.getTotalMatchLength();
-                    }
-                    Node leftNode = nodePool.getOldNode(i, j + 1);
-                    if(leftNode != null) {
-                        left = leftNode.getTotalMatchLength();
-                    }
-                    Node topNode = nodePool.getOldNode(i + 1, j);
-                    if(topNode != null) {
-                        top = topNode.getTotalMatchLength();
-                    }
-                    if(i + 1 == sourceCount && j + 1 == targetCount){
-                        currentNode.setTotalMatchLength(minEditDistance);
-                    }else if(i + 1 == sourceCount){
-                        currentNode.setTotalMatchLength(minEditDistance + left);
-                        currentNode.setNext(leftNode);
-                    }else if(j + 1 == targetCount){
+                }else{
+                    minEditDistance = oldLineContentLength + newLineContentLength;
+                }
+                currentNode.setMinEditDistance(minEditDistance);
+                int left = 0;
+                int top = 0;
+                int upperLeft = 0;
+                Node upperLeftNode = nodePool.getOldNode(i + 1, j + 1);
+                if(upperLeftNode != null) {
+                    upperLeft = upperLeftNode.getTotalMatchLength();
+                }
+                Node leftNode = nodePool.getOldNode(i, j + 1);
+                if(leftNode != null) {
+                    left = leftNode.getTotalMatchLength();
+                }
+                Node topNode = nodePool.getOldNode(i + 1, j);
+                if(topNode != null) {
+                    top = topNode.getTotalMatchLength();
+                }
+                if(i + 1 == sourceCount && j + 1 == targetCount){
+                    currentNode.setTotalMatchLength(minEditDistance);
+                }else if(i + 1 == sourceCount){
+                    currentNode.setTotalMatchLength(minEditDistance + left);
+                    currentNode.setNext(leftNode);
+                }else if(j + 1 == targetCount){
+                    currentNode.setTotalMatchLength(minEditDistance + top);
+                    currentNode.setNext(topNode);
+                }else{
+                    if(upperLeft <= left){
+                        if(upperLeft <= top){
+                            currentNode.setTotalMatchLength(minEditDistance + upperLeft);
+                            currentNode.setNext(upperLeftNode);
+                        }else{
+                            currentNode.setTotalMatchLength(minEditDistance + top);
+                            currentNode.setNext(topNode);
+                        }
+                    }else if(top <= left){
                         currentNode.setTotalMatchLength(minEditDistance + top);
                         currentNode.setNext(topNode);
                     }else{
-                        if(upperLeft <= left){
-                            if(upperLeft <= top){
-                                currentNode.setTotalMatchLength(minEditDistance + upperLeft);
-                                currentNode.setNext(upperLeftNode);
-                            }else{
-                                currentNode.setTotalMatchLength(minEditDistance + top);
-                                currentNode.setNext(topNode);
-                            }
-                        }else if(top <= left){
-                            currentNode.setTotalMatchLength(minEditDistance + top);
-                            currentNode.setNext(topNode);
-                        }else{
-                            currentNode.setTotalMatchLength(minEditDistance + left);
-                            currentNode.setNext(leftNode);
-                        }
+                        currentNode.setTotalMatchLength(minEditDistance + left);
+                        currentNode.setNext(leftNode);
                     }
-
-                    nodePool.addNode(currentNode);
                 }
+
+                nodePool.addNode(currentNode);
             }
-            List<Node> nodeList = new ArrayList<>();
-            Node firstNode = nodePool.getOldNode(0, 0);
-            Node node = firstNode;
-            Node previous = null;
-            while(node != null){
-                if(previous != null){
-                    if(previous.getOldIndex() == node.getOldIndex() || previous.getNewIndex() == node.getNewIndex()){
-                        if(previous.getMinEditDistance() > node.getMinEditDistance()){
-                            previous = node;
-                        }
-                    }else{
-                        nodeList.add(previous);
+        }
+        List<Node> nodeList = new ArrayList<>();
+        Node previous = null;
+        Node node = nodePool.getOldNode(0, 0);
+        while(node != null){
+            if(previous != null){
+                if(previous.getOldIndex() == node.getOldIndex() || previous.getNewIndex() == node.getNewIndex()){
+                    if(previous.getMinEditDistance() > node.getMinEditDistance()){
                         previous = node;
                     }
-                }else {
+                }else{
+                    nodeList.add(previous);
                     previous = node;
                 }
-                node = node.getNext();
+            }else {
+                previous = node;
             }
+            node = node.getNext();
+        }
+        if(previous != null){
             nodeList.add(previous);
-            List<SegmentPair> segmentPairList = new ArrayList<>();
-            int lastOldEndIndex = 0;
-            int lastNewEndIndex = 0;
-            for(Node n : nodeList){
-                if(n.getOldIndex() != lastOldEndIndex || n.getNewIndex() != lastNewEndIndex){
-                    segmentPairList.add(new SegmentPair(lastOldEndIndex, n.getOldIndex(), lastNewEndIndex, n.getNewIndex(), false));
-                }
-                lastOldEndIndex = n.getOldIndex() + 1;
-                lastNewEndIndex = n.getNewIndex() + 1;
-                segmentPairList.add(new SegmentPair(n.getOldIndex(), lastOldEndIndex, n.getNewIndex(), lastNewEndIndex, false));
+        }
+        List<SegmentPair> segmentPairList = new ArrayList<>();
+        int lastOldEndIndex = 0;
+        int lastNewEndIndex = 0;
+        for(Node n : nodeList){
+            if(n.getOldIndex() != lastOldEndIndex || n.getNewIndex() != lastNewEndIndex){
+                segmentPairList.add(new SegmentPair(lastOldEndIndex, n.getOldIndex(), lastNewEndIndex, n.getNewIndex(), false));
             }
-            if(lastOldEndIndex != sourceCount || lastNewEndIndex != targetCount){
-                segmentPairList.add(new SegmentPair(lastOldEndIndex, sourceCount, lastNewEndIndex, targetCount, false));
-            }
-            return segmentPairList;
+            lastOldEndIndex = n.getOldIndex() + 1;
+            lastNewEndIndex = n.getNewIndex() + 1;
+            segmentPairList.add(new SegmentPair(n.getOldIndex(), lastOldEndIndex, n.getNewIndex(), lastNewEndIndex, false));
+        }
+        if(lastOldEndIndex != sourceCount || lastNewEndIndex != targetCount){
+            segmentPairList.add(new SegmentPair(lastOldEndIndex, sourceCount, lastNewEndIndex, targetCount, false));
+        }
+        return segmentPairList;
     }
 }

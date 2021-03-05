@@ -3,7 +3,6 @@ package codedriver.module.knowledge.api.document;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.PriorityQueue;
 
 import codedriver.module.knowledge.lcs.*;
 import org.apache.commons.collections4.CollectionUtils;

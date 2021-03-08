@@ -1,5 +1,7 @@
 package codedriver.module.knowledge.api.document;
 
+import codedriver.framework.dto.FieldValidResultVo;
+import codedriver.framework.restful.core.IValid;
 import codedriver.module.knowledge.exception.KnowledgeDocumentTitleRepeatException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,6 +63,20 @@ public class KnowledgeDocumentTitleUpdateApi extends PrivateApiComponentBase {
             knowledgeDocumentMapper.updateKnowledgeDocumentTitleById(knowledgeDocumentVo);
         }
         return null;
+    }
+
+    public IValid title() {
+        return value -> {
+            Long knowledgeDocumentId = value.getLong("knowledgeDocumentId");
+            String title = value.getString("title");
+            KnowledgeDocumentVo knowledgeDocumentVo = new KnowledgeDocumentVo();
+            knowledgeDocumentVo.setId(knowledgeDocumentId);
+            knowledgeDocumentVo.setTitle(title);
+            if(knowledgeDocumentMapper.checkKnowledgeDocumentTitleIsRepeat(knowledgeDocumentVo) > 0){
+                throw new KnowledgeDocumentTitleRepeatException(knowledgeDocumentVo.getTitle());
+            }
+            return new FieldValidResultVo();
+        };
     }
 
 }

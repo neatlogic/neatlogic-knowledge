@@ -1364,7 +1364,7 @@
         SET
         <if test="status != null and status != ''">
             `status` = #{status},
-            <if test="status == 'draft'">
+            <if test="status == 'draft' or status == 'submitted'">
                 `lcd` = NOW(3),
             </if>
             <if test="status == 'passed' or status == 'rejected'">

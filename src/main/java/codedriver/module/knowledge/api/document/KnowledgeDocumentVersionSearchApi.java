@@ -174,7 +174,7 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
             }
 
             UserVo vo = new UserVo();
-            vo.setUuid(UserContext.get().getUserUuid(true));
+            vo.setUuid(knowledgeDocumentVersionVo.getLcu());
             knowledgeDocumentVersionVo.setLcuVo(vo);
         }
         //补充状态

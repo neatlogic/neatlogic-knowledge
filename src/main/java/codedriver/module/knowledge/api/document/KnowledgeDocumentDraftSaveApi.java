@@ -9,6 +9,8 @@ import java.util.Objects;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.label.NO_AUTH;
+import codedriver.framework.dto.FieldValidResultVo;
+import codedriver.framework.restful.core.IValid;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.exception.*;
 import org.apache.commons.collections4.CollectionUtils;
@@ -224,6 +226,16 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             knowledgeDocumentService.audit(documentVo.getId(), documentVo.getKnowledgeDocumentVersionId(), KnowledgeDocumentOperate.SUBMIT, null);
         }
         return resultObj;
+    }
+
+    public IValid title() {
+        return value -> {
+            String title = value.getString("title");
+            if (knowledgeDocumentMapper.getKnowledgeDocumentByTitle(title) != null) {
+                throw new KnowledgeDocumentTitleRepeatException(title);
+            }
+            return new FieldValidResultVo();
+        };
     }
     /**
      * @Description: 保存文档内容

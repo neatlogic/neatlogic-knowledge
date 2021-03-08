@@ -17,6 +17,11 @@ public class SegmentRange {
         this.beginIndex = beginIndex;
         this.match = match;
     }
+    public SegmentRange(int beginIndex, int endIndex, boolean match) {
+        this.beginIndex = beginIndex;
+        this.endIndex = endIndex;
+        this.match = match;
+    }
     public int getBeginIndex() {
         return beginIndex;
     }

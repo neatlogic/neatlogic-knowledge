@@ -4,12 +4,14 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.label.NO_AUTH;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.fulltextindex.core.FullTextIndexHandlerFactory;
 import codedriver.framework.fulltextindex.core.IFullTextIndexHandler;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.UuidUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentLineHandler;
@@ -213,6 +215,16 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         }
 
         return resultObj;
+    }
+
+    public IValid title() {
+        return value -> {
+            String title = value.getString("title");
+            if (knowledgeDocumentMapper.getKnowledgeDocumentByTitle(title) != null) {
+                return new FieldValidResultVo(new KnowledgeDocumentTitleRepeatException(title));
+            }
+            return new FieldValidResultVo();
+        };
     }
 
     /**

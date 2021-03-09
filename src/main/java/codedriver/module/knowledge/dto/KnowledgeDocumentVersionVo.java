@@ -7,7 +7,9 @@ import codedriver.framework.knowledge.dto.SyncSourceVo;
 import codedriver.framework.knowledge.source.SyncSourceFactory;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
+import codedriver.framework.util.TimeUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 import org.apache.commons.collections4.CollectionUtils;
@@ -104,6 +106,36 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
     private List<String> reviewerTeamUuidList = new ArrayList<>();
     @JSONField(serialize = false)
     private Integer isReviewer;
+
+    public KnowledgeDocumentVersionVo() {
+    }
+
+    public KnowledgeDocumentVersionVo(JSONObject paramJson) {
+        JSONObject lcd = paramJson.getJSONObject("lcd");
+        paramJson.remove("lcd");
+        KnowledgeDocumentVersionVo tmpVo = JSON.toJavaObject(paramJson, KnowledgeDocumentVersionVo.class);
+        this.setPageSize(tmpVo.getPageSize());
+        this.setCurrentPage(tmpVo.getCurrentPage());
+        this.setKeyword(tmpVo.getKeyword());
+        this.knowledgeDocumentTypeUuid = tmpVo.getKnowledgeDocumentTypeUuid();
+        this.lcuList = tmpVo.getLcuList();
+        this.tagList = tmpVo.getTagList();
+        this.sourceList = tmpVo.getSourceList();
+        this.reviewerList = tmpVo.getReviewerList();
+        this.statusList = tmpVo.getStatusList();
+        if (lcd != null) {
+            JSONObject lcdJson = TimeUtil.getStartTimeAndEndTimeByDateJson(lcd);
+            this.lcdStartTime = lcdJson.getString("startTime");
+            this.lcdEndTime = lcdJson.getString("endTime");
+        }
+        JSONObject reviewDate = paramJson.getJSONObject("reviewDate");
+        if (reviewDate != null) {
+            JSONObject reviewDateJson = TimeUtil.getStartTimeAndEndTimeByDateJson(reviewDate);
+            this.reviewDateStartTime = reviewDateJson.getString("startTime");
+            this.reviewDateEndTime = reviewDateJson.getString("endTime");
+        }
+    }
+
 
     public boolean isAutoGenerateId() {
         return isAutoGenerateId;

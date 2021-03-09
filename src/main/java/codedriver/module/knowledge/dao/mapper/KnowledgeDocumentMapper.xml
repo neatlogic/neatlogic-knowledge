@@ -17,6 +17,45 @@
         WHERE `id` = #{value}
     </select>
 
+    <select id="getKnowledgeDocumentByTitleAndContent" parameterType="java.lang.String"
+            resultMap="knowledgeDocumentMap">
+        SELECT DISTINCT kd.id,
+                        kdl.`line_number` AS lineNumber,
+                        kdl.`handler`,
+                        MATCH(kd.title) AGAINST(#{value} IN BOOLEAN MODE),
+                        MATCH(kdlc.content) AGAINST(#{value} IN BOOLEAN MODE)
+        FROM `knowledge_document` kd
+                 LEFT JOIN `knowledge_document_line` kdl ON kd.`id` = kdl.`knowledge_document_id` AND
+                                                            kd.`knowledge_document_version_id` =
+                                                            kdl.`knowledge_document_version_id`
+                 LEFT JOIN `knowledge_document_line_content` kdlc ON kdlc.`hash` = kdl.`content_hash`
+        WHERE is_delete = 0
+          AND (
+                MATCH(kdlc.content) AGAINST(#{value} IN BOOLEAN MODE)
+                OR
+                MATCH(kd.title) AGAINST(#{value} IN BOOLEAN MODE)
+            )
+        ORDER BY kd.id, MATCH(kd.title) AGAINST(#{value} IN BOOLEAN MODE),
+                 MATCH(kdlc.content) AGAINST(#{value} IN BOOLEAN MODE) DESC
+    </select>
+
+    <select id="getKnowledgeDocumentVersionByTitleAndContent" parameterType="java.lang.String"
+            resultMap="knowledgeDocumentVersionMap">
+        SELECT DISTINCT kdv.id,
+                        kdl.`line_number` AS lineNumber,
+                        MATCH(kdv.title) AGAINST(#{value} IN BOOLEAN MODE),
+                        MATCH(kdlc.content) AGAINST(#{value} IN BOOLEAN MODE)
+        FROM `knowledge_document_version` kdv
+                 LEFT JOIN `knowledge_document_line` kdl
+                           ON kdv.`knowledge_document_id` = kdl.`knowledge_document_id` AND
+                              kdv.`id` = kdl.`knowledge_document_version_id`
+                 LEFT JOIN `knowledge_document_line_content` kdlc ON kdl.`content_hash` = kdlc.`hash`
+        WHERE (MATCH(kdlc.content) AGAINST(#{value} IN BOOLEAN MODE)
+            OR MATCH(kdv.title) AGAINST(#{value} IN BOOLEAN MODE))
+        ORDER BY kdv.id, MATCH(kdv.title) AGAINST(#{value} IN BOOLEAN MODE),
+                 MATCH(kdlc.content) AGAINST(#{value} IN BOOLEAN MODE) DESC
+    </select>
+
     <select id="getKnowledgeDocumentByTitle" parameterType="java.lang.String"
             resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
         SELECT `id`,
@@ -38,7 +77,6 @@
         <id column="id" property="id"/>
         <result column="version" property="version"/>
         <result column="knowledgeDocumentId" property="knowledgeDocumentId"/>
-        <result column="knowledgeDocumentVersionId" property="knowledgeDocumentVersionId"/>
         <result column="knowledgeDocumentTypeUuid" property="knowledgeDocumentTypeUuid"/>
         <result column="knowledgeCircleId" property="knowledgeCircleId"/>
         <result column="title" property="title"/>
@@ -51,10 +89,6 @@
         <association property="tagVoList" javaType="codedriver.module.knowledge.dto.KnowledgeTagVo">
             <result column="tagId" property="id"/>
             <result column="tagName" property="name"/>
-        </association>
-        <association property="knowledgeDocumentLineList"
-                     javaType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
-            <result column="lineContent" property="content"/>
         </association>
     </resultMap>
 
@@ -75,33 +109,31 @@
         (SELECT `user_name` FROM `user` WHERE `uuid` = kdv.`lcu`) AS lcuName,
         ktg.`id` AS tagId,
         ktg.`name` AS tagName,
-        kdv.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
-        kdlc.`content` AS lineContent
+        kdv.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid
         FROM `knowledge_document_version` kdv
         LEFT JOIN `knowledge_document` kd ON kd.`id` = kdv.`knowledge_document_id`
         LEFT JOIN `knowledge_circle` kc ON kd.`knowledge_circle_id` = kc.`id`
         LEFT JOIN `knowledge_document_tag` kdt ON kdt.`knowledge_document_id` = kdv.`knowledge_document_id` AND
         kdt.`knowledge_document_version_id` = kdv.`id`
         LEFT JOIN `knowledge_tag` ktg ON kdt.`tag_id` = ktg.`id`
-        LEFT JOIN `knowledge_document_line` kdl ON kdl.`knowledge_document_id` = kd.`id` AND
-        kdl.`knowledge_document_version_id` = kdl.`knowledge_document_version_id`
-        LEFT JOIN `knowledge_document_line_content` kdlc ON kdl.`content_hash` = kdlc.`hash`
         where kdv.`id` in
-        <foreach collection="documentVersionIdlist" item="id" open="(" separator="," close=")">
+        <foreach collection="documentVersionIdList" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
         order by kdv.`lcd` desc
     </select>
 
     <sql id="searchDocumentVersionSql">
-        <if test="keyword != null and ( knowledgeDocumentVersionIdList == null or knowledgeDocumentVersionIdList.size() == 0)">
-            and 1 != 1
-        </if>
-        <if test="keyword != null and knowledgeDocumentVersionIdList != null and knowledgeDocumentVersionIdList.size() > 0">
-            and kdv.`id` in
-            <foreach collection="knowledgeDocumentVersionIdList" item="id" open="(" separator="," close=")">
-                #{id}
+        <if test="keywordList != null and keywordList.size() > 0">
+            AND EXISTS (SELECT
+            1
+            FROM
+            `fulltextindex_word` fw JOIN fulltextindex_field ff ON fw.id = ff.`word_id`
+            WHERE ff.`target_id` = kdv.id AND fw.word IN
+            <foreach collection="keywordList" item="k" open="("
+                     separator="," close=")">#{k}
             </foreach>
+            )
         </if>
         <if test="lcuList != null and lcuList.size()>0 ">
             and kdv.`lcu` in
@@ -141,6 +173,13 @@
             )
             AND kc.`id` = (SELECT knowledge_circle_id FROM `knowledge_document_type` WHERE `uuid` =
             #{knowledgeDocumentTypeUuid})
+        </if>
+
+        <if test="reviewDateStartTime != null and  reviewDateStartTime != ''">
+            and kdv.`review_time` >= #{reviewDateStartTime}
+        </if>
+        <if test="reviewDateEndTime != null and  reviewDateEndTime != ''">
+            and kdv.`review_time` &lt;= #{reviewDateEndTime}
         </if>
     </sql>
 
@@ -265,7 +304,7 @@
         )a
     </select>
 
-    <select id="getKnowledgeDocumentVersionIdList"
+    <select id="searchKnowledgeDocumentVersionId"
             parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="java.lang.Long">
         SELECT
         kdv.id
@@ -299,7 +338,7 @@
         </if>
     </select>
 
-    <select id="getKnowledgeDocumentVersionCount"
+    <select id="searchKnowledgeDocumentVersionIdCount"
             parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo" resultType="java.lang.Integer">
         select count(distinct kdv.id)
         FROM `knowledge_document_version` kdv
@@ -348,10 +387,6 @@
             <result column="tagId" property="id"/>
             <result column="tagName" property="name"/>
         </association>
-        <association property="lineList" javaType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
-            <result column="lineContent" property="content"/>
-        </association>
-
     </resultMap>
 
     <select id="getKnowledgeDocumentByIdList" parameterType="java.util.List" resultMap="knowledgeDocumentMap">
@@ -377,8 +412,7 @@
         AND
         rht > (SELECT a.rht FROM `knowledge_document_type` a WHERE a.uuid = kdv.knowledge_document_type_uuid)
         ) AS documentTypePath,
-        kdv.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
-        kdlc.`content` as lineContent
+        kdv.`knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid
         FROM `knowledge_document` kd
         LEFT JOIN `knowledge_document_version` kdv ON kd.`id` = kdv.`knowledge_document_id` AND
         kd.`knowledge_document_version_id` = kdv.`id`
@@ -386,25 +420,24 @@
         LEFT JOIN `knowledge_document_tag` kdt ON kdt.`knowledge_document_id` = kdv.`knowledge_document_id` AND
         kdt.`knowledge_document_version_id` = kdv.`id`
         LEFT JOIN `knowledge_tag` ktg ON kdt.`tag_id` = ktg.`id`
-        LEFT JOIN `knowledge_document_line` kdl ON kdl.`knowledge_document_id` = kd.`id` AND
-        kdl.`knowledge_document_version_id` = kdl.`knowledge_document_version_id`
-        LEFT JOIN `knowledge_document_line_content` kdlc ON kdl.`content_hash` = kdlc.`hash`
         where kd.`id` in
-        <foreach collection="documentIdlist" item="id" open="(" separator="," close=")">
+        <foreach collection="documentIdList" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
-        order by kdv.lcd desc
+        ORDER BY kdv.lcd DESC
     </select>
 
     <sql id="searchDocumentSql">
-        <if test="keyword != null and ( knowledgeDocumentIdList == null or knowledgeDocumentIdList.size() == 0)">
-            and 1 != 1
-        </if>
-        <if test="keyword != null and knowledgeDocumentIdList != null and knowledgeDocumentIdList.size() > 0">
-            and kd.`id` in
-            <foreach collection="knowledgeDocumentIdList" item="id" open="(" separator="," close=")">
-                #{id}
+        <if test="keywordList != null and keywordList.size() > 0">
+            AND EXISTS (SELECT
+            1
+            FROM
+            `fulltextindex_word` fw JOIN fulltextindex_field ff ON fw.id = ff.`word_id`
+            WHERE ff.`target_id` = kdv.id AND fw.word IN
+            <foreach collection="keywordList" item="k" open="("
+                     separator="," close=")">#{k}
             </foreach>
+            )
         </if>
         <if test="lcuList != null and lcuList.size()>0 ">
             and kdv.`lcu` in
@@ -479,10 +512,10 @@
         )
     </sql>
 
-    <select id="getKnowledgeDocumentIdList" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo"
+    <select id="searchKnowledgeDocumentId" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo"
             resultType="java.lang.Long">
         SELECT
-        kd.id
+        DISTINCT kd.id
         FROM `knowledge_document` kd
         JOIN `knowledge_document_version` kdv ON kd.`id` = kdv.`knowledge_document_id` AND
         kd.`knowledge_document_version_id` = kdv.`id`
@@ -503,7 +536,7 @@
         </if>
     </select>
 
-    <select id="getKnowledgeDocumentCount" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo"
+    <select id="searchKnowledgeDocumentIdCount" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo"
             resultType="java.lang.Integer">
         select count(distinct kd.id)
         FROM `knowledge_document` kd
@@ -552,9 +585,9 @@
         kdt.`knowledge_document_version_id` = kdv.`id`
         LEFT JOIN `knowledge_tag` ktg ON kdt.`tag_id` = ktg.`id`
         <where>
-            <if test="documentIdlist != null and documentIdlist.size() > 0">
+            <if test="documentIdList != null and documentIdList.size() > 0">
                 kd.`id` in
-                <foreach collection="documentIdlist" item="id" open="(" separator="," close=")">
+                <foreach collection="documentIdList" item="id" open="(" separator="," close=")">
                     #{id}
                 </foreach>
             </if>
@@ -567,12 +600,17 @@
         </where>
     </select>
 
+    <select id="getKnowledgeDocumentVersionIdList" resultType="java.lang.Long">
+        SELECT id
+        FROM `knowledge_document_version`
+    </select>
+
     <select id="getKnowledgeDocumentVersionIdListByLcd" resultType="java.lang.Long">
         SELECT id FROM `knowledge_document_version`
         <where>
-            <if test="documentVersionIdlist != null and documentVersionIdlist.size() > 0">
+            <if test="documentVersionIdList != null and documentVersionIdList.size() > 0">
                 `id` in
-                <foreach collection="documentVersionIdlist" item="id" open="(" separator="," close=")">
+                <foreach collection="documentVersionIdList" item="id" open="(" separator="," close=")">
                     #{id}
                 </foreach>
             </if>
@@ -588,6 +626,7 @@
     <select id="getKnowledgeDocumentVersionById" parameterType="java.lang.Long"
             resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
         SELECT `id`,
+               `title`,
                `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
                `knowledge_document_id`        AS knowledgeDocumentId,
                `from_version`                 AS fromVersion,
@@ -598,7 +637,7 @@
                `size`,
                `reviewer`,
                `review_time`                  AS reviewTime,
-               `is_delete`                  AS isDelete
+               `is_delete`                    AS isDelete
         FROM `knowledge_document_version`
         WHERE `id` = #{value}
     </select>
@@ -615,7 +654,8 @@
         WHERE `hash` = #{value}
     </select>
 
-    <select id="getKnowledgeDocumentLockById" parameterType="java.lang.Long" resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
+    <select id="getKnowledgeDocumentLockById" parameterType="java.lang.Long"
+            resultType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
         SELECT `id`,
                `title`,
                `knowledge_document_version_id` AS knowledgeDocumentVersionId,
@@ -626,7 +666,8 @@
                `fcu`,
                `fcd`
         FROM `knowledge_document`
-        WHERE `id` = #{value} FOR UPDATE
+        WHERE `id` = #{value} FOR
+        UPDATE
     </select>
 
     <select id="getKnowledgeDocumentVersionMyVersionList"
@@ -696,6 +737,28 @@
                  LEFT JOIN `knowledge_document_line_config` c ON c.`hash` = a.`config_hash`
         WHERE a.`knowledge_document_version_id` = #{value}
         ORDER BY a.`line_number`
+    </select>
+
+    <select id="getKnowledgeDocumentLineListByKnowledgeDocumentVersionIdAndLineNumberList"
+            resultType="codedriver.module.knowledge.dto.KnowledgeDocumentLineVo">
+        SELECT a.`uuid`,
+        a.`handler`,
+        a.`knowledge_document_id` AS knowledgeDocumentId,
+        a.`knowledge_document_version_id` AS knowledgeDocumentVersionId,
+        a.`content_hash` AS contentHash,
+        b.`content`,
+        a.`config_hash` AS configHash,
+        c.`config`,
+        a.`line_number` AS lineNumber
+        FROM `knowledge_document_line` a
+        LEFT JOIN `knowledge_document_line_content` b ON b.`hash` = a.`content_hash`
+        LEFT JOIN `knowledge_document_line_config` c ON c.`hash` = a.`config_hash`
+        WHERE a.`knowledge_document_version_id` = #{versionId}
+        AND a.`line_number` in
+        <foreach collection="lineNumberList" item="lineNumber" separator="," open="(" close=")">
+            #{lineNumber}
+        </foreach>
+        ORDER BY a.`line_number` ASC
     </select>
 
     <select id="getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId"
@@ -778,7 +841,8 @@
         COUNT(DISTINCT c.id)
         FROM `knowledge_circle_user` a
         JOIN `knowledge_document` b ON b.`knowledge_circle_id` = a.`knowledge_circle_id` AND b.`is_delete` = 0
-        JOIN `knowledge_document_version` c ON c.`knowledge_document_id` = b.`id` AND c.`status` = 'submitted' AND c.`is_delete` = 0
+        JOIN `knowledge_document_version` c ON c.`knowledge_document_id` = b.`id` AND c.`status` = 'submitted' AND
+        c.`is_delete` = 0
         <include refid="getKnowledgeDocumentWaitingForReviewSql"/>
     </select>
 
@@ -1150,10 +1214,12 @@
                `reviewer`,
                `review_time`                  AS reviewTime
         FROM `knowledge_document_version`
-        WHERE `knowledge_document_id` = #{value} LIMIT 1
+        WHERE `knowledge_document_id` = #{value}
+        LIMIT 1
     </select>
 
-    <select id="checkKnowledgeDocumentTitleIsRepeat" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo" resultType="int">
+    <select id="checkKnowledgeDocumentTitleIsRepeat" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo"
+            resultType="int">
         SELECT COUNT(1)
         FROM `knowledge_document`
         WHERE `title` = #{title}
@@ -1222,19 +1288,19 @@
     <insert id="insertKnowledgeDocumentLineConfig"
             parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentLineConfigVo">
         INSERT
-        IGNORE INTO `knowledge_document_line_config` (`hash`, `config`) VALUES (
-        #{hash},
-        #{config}
-        )
+            IGNORE
+        INTO `knowledge_document_line_config` (`hash`, `config`)
+        VALUES (#{hash},
+                #{config})
     </insert>
 
     <insert id="insertKnowledgeDocumentLineContent"
             parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentLineContentVo">
         INSERT
-        IGNORE INTO `knowledge_document_line_content` (`hash`, `content`) VALUES (
-        #{hash},
-        #{content}
-        )
+            IGNORE
+        INTO `knowledge_document_line_content` (`hash`, `content`)
+        VALUES (#{hash},
+                #{content})
     </insert>
 
     <insert id="insertKnowledgeDocumentLineList"
@@ -1298,7 +1364,7 @@
         SET
         <if test="status != null and status != ''">
             `status` = #{status},
-            <if test="status == 'draft'">
+            <if test="status == 'draft' or status == 'submitted'">
                 `lcd` = NOW(3),
             </if>
             <if test="status == 'passed' or status == 'rejected'">
@@ -1331,24 +1397,22 @@
 
     <update id="updateKnowledgeDocumentById" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
         UPDATE `knowledge_document`
-        SET
-            `knowledge_document_version_id` = #{knowledgeDocumentVersionId},
-            `version` = #{version},
-            `is_delete` = 0
+        SET `knowledge_document_version_id` = #{knowledgeDocumentVersionId},
+            `version`                       = #{version},
+            `is_delete`                     = 0
         WHERE `id` = #{id}
     </update>
 
     <update id="updateKnowledgeDocumentTitleById" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
         UPDATE `knowledge_document`
-        SET
-            `title` = #{title}
+        SET `title` = #{title}
         WHERE `id` = #{id}
     </update>
 
-    <update id="updateKnowledgeDocumentTypeUuidById" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
+    <update id="updateKnowledgeDocumentTypeUuidById"
+            parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVo">
         UPDATE `knowledge_document`
-        SET
-            `knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid}
+        SET `knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid}
         WHERE `id` = #{id}
     </update>
 
@@ -1370,14 +1434,16 @@
         WHERE `id` = #{value}
     </update>
 
-    <update id="updateKnowledgeDocumentVersionTypeByKnowledgeDocumentId" parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
-        UPDATE `knowledge_document_version` SET `knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid} WHERE `knowledge_document_id` = #{knowledgeDocumentId}
+    <update id="updateKnowledgeDocumentVersionTypeByKnowledgeDocumentId"
+            parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo">
+        UPDATE `knowledge_document_version`
+        SET `knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid}
+        WHERE `knowledge_document_id` = #{knowledgeDocumentId}
     </update>
 
     <update id="resetKnowledgeViewCountByDocumentId" parameterType="java.lang.Long">
         update `knowledge_document_view_count`
-        SET
-            `count`= 0
+        SET `count`= 0
         WHERE `knowledge_document_id` = #{value}
     </update>
 

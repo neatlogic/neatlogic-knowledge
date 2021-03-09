@@ -73,7 +73,7 @@ public class KnowledgeDocumentTitleUpdateApi extends PrivateApiComponentBase {
             knowledgeDocumentVo.setId(knowledgeDocumentId);
             knowledgeDocumentVo.setTitle(title);
             if(knowledgeDocumentMapper.checkKnowledgeDocumentTitleIsRepeat(knowledgeDocumentVo) > 0){
-                throw new KnowledgeDocumentTitleRepeatException(knowledgeDocumentVo.getTitle());
+                return new FieldValidResultVo(new KnowledgeDocumentTitleRepeatException(knowledgeDocumentVo.getTitle()));
             }
             return new FieldValidResultVo();
         };

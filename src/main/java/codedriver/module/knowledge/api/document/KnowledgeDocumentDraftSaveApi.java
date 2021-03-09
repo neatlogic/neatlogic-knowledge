@@ -232,7 +232,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         return value -> {
             String title = value.getString("title");
             if (knowledgeDocumentMapper.getKnowledgeDocumentByTitle(title) != null) {
-                throw new KnowledgeDocumentTitleRepeatException(title);
+                return new FieldValidResultVo(new KnowledgeDocumentTitleRepeatException(title));
             }
             return new FieldValidResultVo();
         };

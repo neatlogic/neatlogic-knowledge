@@ -1,39 +1,13 @@
 package codedriver.module.knowledge.elasticsearch.handler;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.alibaba.fastjson.JSONObject;
-import com.techsure.multiattrsearch.MultiAttrsObject;
-import com.techsure.multiattrsearch.QueryResultSet;
-import com.techsure.multiattrsearch.query.QueryResult;
-
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.common.constvalue.Expression;
-import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerBase;
-import codedriver.framework.file.dao.mapper.FileMapper;
-import codedriver.framework.file.dto.FileVo;
-import codedriver.framework.util.HtmlUtil;
-import codedriver.framework.util.TikaUtil;
-import codedriver.framework.util.TimeUtil;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentFileVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
+import com.alibaba.fastjson.JSONObject;
+import org.springframework.stereotype.Service;
 
 @Service
 public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocumentVo, JSONObject> {
-    Logger logger = LoggerFactory.getLogger(EsKnowledegeHandler.class);
+    /*Logger logger = LoggerFactory.getLogger(EsKnowledegeHandler.class);
     
     @Autowired
     KnowledgeDocumentMapper knowledgeDocumentMapper;
@@ -130,6 +104,6 @@ public class EsKnowledegeHandler extends ElasticSearchHandlerBase<KnowledgeDocum
         }
         esResultJson.put("knowledgeDocumentIdList", knowledgeDocumentIdList);
         return esResultJson;
-    }
+    }*/
 
 }

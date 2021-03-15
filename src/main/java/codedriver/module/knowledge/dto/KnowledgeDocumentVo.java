@@ -4,7 +4,6 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.common.dto.BaseEditorVo;
 import codedriver.framework.dto.WorkAssignmentUnitVo;
-import codedriver.framework.elasticsearch.annotation.ESKey;
 import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.knowledge.dto.SyncSourceVo;
@@ -21,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KnowledgeDocumentVo extends BaseEditorVo {
-    @ESKey(type = ESKeyType.PKEY, name = "documentId")
+//    @ESKey(type = ESKeyType.PKEY, name = "documentId")
     @EntityField(name = "文档id", type = ApiParamType.LONG)
     private Long id;
     @EntityField(name = "版本id", type = ApiParamType.LONG)

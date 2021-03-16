@@ -6,6 +6,9 @@ import java.util.function.Function;
 //import com.alibaba.fastjson.JSON;
 
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.MapUtils;
 
 public enum KnowledgeDocumentLineHandler {
 
@@ -67,5 +70,50 @@ public enum KnowledgeDocumentLineHandler {
                 return;
             }
         }
+    }
+
+    public static String convertContentToHtml(KnowledgeDocumentLineVo line){
+        for(KnowledgeDocumentLineHandler handler : values()) {
+            if(handler.value.equals(line.getHandler())) {
+                if(P.value.equals(line.getHandler()) || H1.value.equals((line.getHandler()))
+                || H2.value.equals(line.getHandler()) || UL.value.equals(line.getHandler())
+                || OL.value.equals(line.getHandler())){
+                    return "<" + handler.value + ">"
+                            + (line.getContent() != null ? line.getContent() : "")
+                            + "</" + handler.value + ">";
+                }else if(CODE.value.equals(line.getHandler())){
+                    String code = line.getContent();
+                    if(code != null){
+                        code = code.replace("\\r","</br>");
+                    }
+                    return "<div>"
+                            + (code != null ? code : "")
+                            + "</div>";
+                }else if(FORMTABLE.value.equals(line.getHandler())){
+                    return line.getContent();
+                }else if(TABLE.value.equals(line.getHandler())){
+                    JSONObject config = line.getConfig();
+                    if(MapUtils.isNotEmpty(config)){
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" " +
+                                "style=\"border: 1px solid #DBDBDB;border-collapse: collapse;\">");
+                        sb.append("<tbody>");
+                        JSONArray tableList = config.getJSONArray("tableList");
+                        for(int i = 0;i < tableList.size();i++){
+                            sb.append("<tr>");
+                            JSONArray row = tableList.getJSONArray(i);
+                            for(int j = 0;j < row.size();j++){
+                                sb.append("<td>" + row.getString(j) + "</td>");
+                            }
+                            sb.append("</tr>");
+                        }
+                        sb.append("</tbody>");
+                        sb.append("</table>");
+                        return sb.toString();
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

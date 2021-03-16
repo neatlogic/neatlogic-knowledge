@@ -2,8 +2,6 @@ package codedriver.module.knowledge.dao.mapper;
 
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.dto.ValueTextVo;
-import codedriver.framework.elasticsearch.annotation.ESParam;
-import codedriver.framework.elasticsearch.annotation.ESSearch;
 import codedriver.module.knowledge.dto.*;
 import org.apache.ibatis.annotations.Param;
 
@@ -151,8 +149,7 @@ public interface KnowledgeDocumentMapper {
 
     public int checkKnowledgeDocumentTitleIsRepeat(KnowledgeDocumentVo documentVo);
 
-    @ESSearch
-    public int insertKnowledgeDocument(@ESParam("knowledge") KnowledgeDocumentVo knowledgeDocumentVo);
+    public int insertKnowledgeDocument(KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int insertKnowledgeDocumentVersion(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo);
 
@@ -165,9 +162,7 @@ public interface KnowledgeDocumentMapper {
 
     public int insertKnowledgeDocumentLineContent(KnowledgeDocumentLineContentVo knowledgeDocumentLineContentVo);
 
-
-    @ESSearch
-    public int insertKnowledgeDocumentLineList(@ESParam("knowledgeversion") List<KnowledgeDocumentLineVo> knowledgeDocumentLineList);
+    public int insertKnowledgeDocumentLineList(List<KnowledgeDocumentLineVo> knowledgeDocumentLineList);
 
     public int insertKnowledgeDocumentFavor(@Param("documentId") Long documentId, @Param("userUuid") String userUuid);
 
@@ -188,12 +183,12 @@ public interface KnowledgeDocumentMapper {
             @Param("newStatus") String newStatus
     );
 
-    @ESSearch
-    public int updateKnowledgeDocumentById(@ESParam("knowledge") KnowledgeDocumentVo knowledgeDocumentVo);
 
-    public int updateKnowledgeDocumentTitleById(@ESParam("knowledge") KnowledgeDocumentVo knowledgeDocumentVo);
+    public int updateKnowledgeDocumentById(KnowledgeDocumentVo knowledgeDocumentVo);
 
-    public int updateKnowledgeDocumentTypeUuidById(@ESParam("knowledge") KnowledgeDocumentVo knowledgeDocumentVo);
+    public int updateKnowledgeDocumentTitleById(KnowledgeDocumentVo knowledgeDocumentVo);
+
+    public int updateKnowledgeDocumentTypeUuidById(KnowledgeDocumentVo knowledgeDocumentVo);
 
     public int updateKnowledgeViewCountIncrementOne(Long documentId);
 

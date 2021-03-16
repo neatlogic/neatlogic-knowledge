@@ -1,35 +1,13 @@
 package codedriver.module.knowledge.api.document.elasticsearch;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.alibaba.fastjson.JSONObject;
-import com.techsure.multiattrsearch.MultiAttrsObject;
-import com.techsure.multiattrsearch.MultiAttrsObjectPool;
-import com.techsure.multiattrsearch.MultiAttrsQuery;
-import com.techsure.multiattrsearch.QueryResultSet;
-import com.techsure.multiattrsearch.query.QueryParser;
-import com.techsure.multiattrsearch.query.QueryResult;
-
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
-import codedriver.framework.elasticsearch.core.ElasticSearchPoolManager;
+import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Output;
-import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.elasticsearch.constvalue.ESHandler;
+import com.alibaba.fastjson.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -68,7 +46,7 @@ public class EsKnowledgeDocumentSyncApi extends PrivateApiComponentBase {
     @Description(desc = "修改知识数据到es")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        List<Object> documentIdObjList = jsonObj.getJSONArray("documentIdList");
+        /*List<Object> documentIdObjList = jsonObj.getJSONArray("documentIdList");
         List<Object> documentVersionIdObjList = jsonObj.getJSONArray("documentVersionIdList");
         List<Long> documentIdList = null;
         List<Long> documentVersionIdList = null;
@@ -136,7 +114,7 @@ public class EsKnowledgeDocumentSyncApi extends PrivateApiComponentBase {
                     ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE_VERSION.getValue()).save(version);
                 }
             }
-        }
+        }*/
 
         return null;
     }

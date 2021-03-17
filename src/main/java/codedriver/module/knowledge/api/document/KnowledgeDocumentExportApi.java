@@ -1,29 +1,18 @@
 package codedriver.module.knowledge.api.document;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.FileUtil;
-import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import codedriver.framework.util.ExportUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentLineHandler;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentEmptyException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -37,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.net.URLEncoder;
 
 @Service
@@ -44,6 +34,114 @@ import java.net.URLEncoder;
 public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentBase {
 
     private static final Log logger = LogFactory.getLog(KnowledgeDocumentExportApi.class);
+
+    @Resource
+    private KnowledgeDocumentService knowledgeDocumentService;
+
+    @Resource
+    private FileMapper fileMapper;
+
+    @Override
+    public String getToken() {
+        return "knowledge/document/export";
+    }
+
+    @Override
+    public String getName() {
+        return "导出文档内容";
+    }
+
+    @Override
+    public String getConfig() {
+        return null;
+    }
+    
+    @Input({
+        @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, isRequired = true, desc = "文档id"),
+        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
+        @Param(name = "type", type = ApiParamType.ENUM, rule = "pdf,word", isRequired = true, desc = "文件类型")
+    })
+    @Description(desc = "导出文档内容")
+    @ResubmitInterval(value = 5)
+    @Override
+    public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+        String type = jsonObj.getString("type");
+        Long knowledgeDocumentId = jsonObj.getLong("knowledgeDocumentId");
+        Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
+        Long currentVersionId = knowledgeDocumentService.checkViewPermissionByDocumentIdAndVersionId(knowledgeDocumentId,knowledgeDocumentVersionId);
+
+        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentService.getKnowledgeDocumentContentByKnowledgeDocumentVersionId(currentVersionId);
+        OutputStream os = null;
+        try {
+            os = response.getOutputStream();
+            String content = getHtmlContent(knowledgeDocumentVo);
+            if("word".equals(type)){
+                response.setContentType("application/x-download");
+                response.setHeader("Content-Disposition",
+                        "attachment;filename=\"" + URLEncoder.encode(knowledgeDocumentVo.getTitle(), "utf-8") + ".docx\"");
+                ExportUtil.getWordFileByHtml(content, true, os);
+            }else if("pdf".equals(type)){
+                response.setContentType("application/pdf");
+                response.setHeader("Content-Disposition",
+                        "attachment;filename=\"" + URLEncoder.encode(knowledgeDocumentVo.getTitle(), "utf-8") + ".pdf\"");
+                ExportUtil.getPdfFileByHtml(content, true, os);
+            }
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), ex);
+        } finally {
+            if (os != null) {
+                os.flush();
+                os.close();
+            }
+        }
+
+        return null;
+    }
+
+    private String getHtmlContent(KnowledgeDocumentVo knowledgeDocumentVo) throws Exception {
+        InputStream in = null;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        StringWriter out = new StringWriter();
+        out.write("<html xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\" xmlns=\"http://www.w3.org/TR/REC-html40\">\n");
+        out.write("<head>\n");
+        out.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></meta>\n");
+        out.write("<style>\n" + style + "\n</style>\n");
+        out.write("</head>\n");
+        out.write("<body>\n");
+        out.write("<span></span>");
+        for(KnowledgeDocumentLineVo line : knowledgeDocumentVo.getLineList()){
+            if(!KnowledgeDocumentLineHandler.IMG.getValue().equals(line.getHandler())){
+                out.write(KnowledgeDocumentLineHandler.convertContentToHtml(line));
+            }else{
+                String url = line.getConfig().getString("url");
+                String value = line.getConfig().getString("value");
+                if(StringUtils.isNotEmpty(url)){
+                    String id = url.split("=")[1];
+                    FileVo fileVo = fileMapper.getFileById(Long.valueOf(id));
+                    if(fileVo != null){
+                        in = FileUtil.getData(fileVo.getPath());
+                        IOUtils.copyLarge(in,bos);
+                        out.write("<div><img src=\"data:image/png;base64," + Base64.encodeBase64String(bos.toByteArray()) + "\">");
+                        bos.reset();
+                        if(StringUtils.isNotBlank(value)){
+                            out.write("<p>备注：" + value + "</p>");
+                        }
+                        out.write("</div>");
+                    }
+                }
+            }
+        }
+        if(in != null){
+            in.close();
+        }
+        bos.close();
+        out.write("\n</body>\n</html>");
+        out.flush();
+        out.close();
+        return out.toString();
+    }
+
 
     private static final String style = ".tstable-container {\n" +
             "  position: relative;\n" +
@@ -56,15 +154,7 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
             ".tstable-container.tstable-small .tstable-body.table-top th {\n" +
             "  height: 28px;\n" +
             "}\n" +
-            ".tstable-container.tstable-small .tstable-body .tstable-action .tstable-action-ul {\n" +
-            "  margin-top: -10px;\n" +
-            "}\n" +
-            ".tstable-container.tstable-small .tstable-body .tstable-action .tstable-action-ul li {\n" +
-            "  padding: 2px;\n" +
-            "}\n" +
-            ".tstable-container.tstable-small .tstable-body .tstable-action .tstable-action-ul li:not(:last-of-type):after {\n" +
-            "  top: 4px;\n" +
-            "}\n" +
+            "\n" +
             ".tstable-container.tstable-card {\n" +
             "  border-top: 0 none;\n" +
             "}\n" +
@@ -202,94 +292,7 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
             ".tstable-container .tstable-body tbody tr {\n" +
             "  transition: opacity ease 0.3s;\n" +
             "}\n" +
-            ".tstable-container .tstable-body tbody tr .action-div {\n" +
-            "  position: absolute;\n" +
-            "  z-index: 2;\n" +
-            "  top: 0;\n" +
-            "  bottom: 0;\n" +
-            "  right: 24px;\n" +
-            "  display: none;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body tbody tr:hover .tstable-action {\n" +
-            "  z-index: 99;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body tbody tr:hover .tstable-action .tstable-action-ul {\n" +
-            "  opacity: 1;\n" +
-            "  right: 0;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body tbody tr:hover .action-tr {\n" +
-            "  z-index: 7;\n" +
-            "  position: relative;\n" +
-            "  opacity: 1;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body tbody tr:hover .action-bgimg {\n" +
-            "  display: block;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body tbody tr:hover .btn-hideaction {\n" +
-            "  display: block;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body tbody tr:hover .action-div {\n" +
-            "  display: block;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .action-tr {\n" +
-            "  opacity: 0;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .action-tr .action-bgimg {\n" +
-            "  display: none;\n" +
-            "  position: absolute;\n" +
-            "  top: 0;\n" +
-            "  bottom: 0;\n" +
-            "  right: -8px;\n" +
-            "  filter: blur(4px);\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .action-tr .action-bgimg:before {\n" +
-            "  content: '';\n" +
-            "  position: absolute;\n" +
-            "  top: 0;\n" +
-            "  left: 0;\n" +
-            "  bottom: 0;\n" +
-            "  right: 0;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .action-tr .btn-hideaction {\n" +
-            "  position: absolute;\n" +
-            "  top: 0;\n" +
-            "  height: 100%;\n" +
-            "  width: 24px;\n" +
-            "  left: 0;\n" +
-            "  display: none;\n" +
-            "  cursor: pointer;\n" +
-            "  overflow: hidden;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .action-tr .btn-hideaction:hover .btn-hideicon {\n" +
-            "  opacity: 1;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .action-tr .btn-hideaction .btn-hideicon {\n" +
-            "  position: absolute;\n" +
-            "  top: 50%;\n" +
-            "  right: 0;\n" +
-            "  height: 18px;\n" +
-            "  line-height: 18px;\n" +
-            "  margin-top: -9px;\n" +
-            "  width: 24px;\n" +
-            "  text-align: center;\n" +
-            "  font-size: 16px;\n" +
-            "  transition: all 0.3s;\n" +
-            "  opacity: 0.4;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .action-tr .btn-hideaction .btn-hideicon:before {\n" +
-            "  margin-right: 0;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .action-tr.hideAction .tstable-action-ul {\n" +
-            "  opacity: 0 !important;\n" +
-            "  width: 0;\n" +
-            "  overflow: hidden;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .action-tr.hideAction .btn-hideaction .btn-hideicon {\n" +
-            "  transform: rotate(180deg);\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .action-tr.hideAction .action-bgimg {\n" +
-            "  width: 0 !important;\n" +
-            "}\n" +
+            "\n" +
             ".tstable-container .tstable-body .tstable-selection {\n" +
             "  width: 16px;\n" +
             "  height: 16px;\n" +
@@ -332,107 +335,7 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
             "  border: 0 none;\n" +
             "  transform: none;\n" +
             "}\n" +
-            ".tstable-container .tstable-body .tstable-action {\n" +
-            "  width: 0;\n" +
-            "  position: absolute;\n" +
-            "  top: 0;\n" +
-            "  bottom: 0;\n" +
-            "  float: right;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .tstable-action .tstable-action-ul {\n" +
-            "  position: absolute;\n" +
-            "  top: 50%;\n" +
-            "  list-style: none;\n" +
-            "  margin-top: -18px;\n" +
-            "  display: block;\n" +
-            "  opacity: 0;\n" +
-            "  right: 0px;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .tstable-action .tstable-action-ul li {\n" +
-            "  list-style: none;\n" +
-            "  padding: 8px 16px;\n" +
-            "  display: inline-block;\n" +
-            "  cursor: pointer;\n" +
-            "  position: relative;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .tstable-action .tstable-action-ul li.disable {\n" +
-            "  cursor: not-allowed;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .tstable-action .tstable-action-ul li:before {\n" +
-            "  margin-right: 4px;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .tstable-action .tstable-action-ul li:not(:last-of-type):after {\n" +
-            "  content: '|';\n" +
-            "  position: absolute;\n" +
-            "  top: 9px;\n" +
-            "  right: 0;\n" +
-            "  opacity: 0.4;\n" +
-            "}\n" +
-            ".tstable-container .tstable-body .tstable-action .tstable-action-ul li .icon:before {\n" +
-            "  padding-right: 8px;\n" +
-            "}\n" +
-            ".tstable-page {\n" +
-            "  text-align: right;\n" +
-            "  padding-top: 10px;\n" +
-            "  background-color: transparent !important;\n" +
-            "}\n" +
-            ".sort-container {\n" +
-            "  position: relative;\n" +
-            "  padding-top: 30px;\n" +
-            "}\n" +
-            ".sort-container .sort-thead {\n" +
-            "  position: absolute;\n" +
-            "  top: 0;\n" +
-            "  left: 0;\n" +
-            "  width: 100%;\n" +
-            "}\n" +
-            ".sort-container .sort-item {\n" +
-            "  position: relative;\n" +
-            "}\n" +
-            ".sort-container .sort-item,\n" +
-            ".sort-container .sort-thead {\n" +
-            "  padding-left: 32px;\n" +
-            "  padding-right: 34px;\n" +
-            "  line-height: 30px;\n" +
-            "  height: 30px;\n" +
-            "}\n" +
-            ".sort-container .sort-item .sort-handle,\n" +
-            ".sort-container .sort-thead .sort-handle {\n" +
-            "  position: absolute;\n" +
-            "  left: 0;\n" +
-            "  top: 0;\n" +
-            "  width: 32px;\n" +
-            "  text-align: center;\n" +
-            "}\n" +
-            ".sort-container .sort-item .sort-show,\n" +
-            ".sort-container .sort-thead .sort-show {\n" +
-            "  position: absolute;\n" +
-            "  right: 0;\n" +
-            "  top: 0;\n" +
-            "  width: 34px;\n" +
-            "  text-align: center;\n" +
-            "}\n" +
-            ".sort-container .sort-item.disabled {\n" +
-            "  display: none;\n" +
-            "}\n" +
-            ".sort-container .sort-item .sort-handle {\n" +
-            "  cursor: ns-resize;\n" +
-            "}\n" +
-            ".sort-container .sort-group {\n" +
-            "  overflow: auto;\n" +
-            "  max-height: 300px;\n" +
-            "}\n" +
-            ".sort-drop .ivu-poptip-body {\n" +
-            "  padding: 4px;\n" +
-            "}\n" +
-            ".tstable-page .ivu-select-selection {\n" +
-            "  border: none !important;\n" +
-            "}\n" +
-            ".tstable-action .ivu-table-cell {\n" +
-            "  overflow: visible;\n" +
-            "  position: relative;\n" +
-            "  padding: 0;\n" +
-            "}\n" +
+            "\n" +
             ".tableaction-container {\n" +
             "  width: 0;\n" +
             "}\n" +
@@ -466,13 +369,6 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
             "}\n" +
             ".tableaction-container .table-dropdown .ivu-dropdown-menu .ivu-dropdown-item:hover {\n" +
             "  background: transparent;\n" +
-            "}\n" +
-            ".userselect-container .ivu-select-dropdown {\n" +
-            "  max-height: 200px;\n" +
-            "  overflow: auto;\n" +
-            "}\n" +
-            ".userselect-container .ivu-select-dropdown.ivu-select-dropdown-transfer {\n" +
-            "  max-height: auto;\n" +
             "}\n" +
             ".ck-content {\n" +
             "  min-height: 130px;\n" +
@@ -509,38 +405,7 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
             "  border-color: #DBDBDB !important;\n" +
             "  border: 1px solid;\n" +
             "}\n" +
-            "html.theme-dark .ck.ck-reset_all,\n" +
-            "html.theme-dark .ck.ck-reset_all * {\n" +
-            "  color: #E0E1E2;\n" +
-            "}\n" +
-            "html.theme-dark .ck.ck-button:not(.ck-disabled):hover,\n" +
-            "html.theme-dark a.ck.ck-button:not(.ck-disabled):hover {\n" +
-            "  background-color: #252833;\n" +
-            "}\n" +
-            "html.theme-dark .ck.ck-button.ck-on,\n" +
-            "html.theme-dark a.ck.ck-button.ck-on {\n" +
-            "  background-color: #252833;\n" +
-            "}\n" +
-            "html.theme-dark .ck.ck-list {\n" +
-            "  background-color: #252833;\n" +
-            "}\n" +
-            "html.theme-dark .ck.ck-list__item .ck-button:hover:not(.ck-disabled) {\n" +
-            "  background-color: #5B5D66;\n" +
-            "}\n" +
-            "html.theme-dark .ck.ck-list__item .ck-button.ck-on {\n" +
-            "  background: #5B5D66;\n" +
-            "  color: #00bcd4;\n" +
-            "}\n" +
-            "html.theme-dark .ck.ck-dropdown__panel {\n" +
-            "  background: #252833;\n" +
-            "  border-color: #363842;\n" +
-            "}\n" +
-            "html.theme-dark .ck-content .table table td,\n" +
-            "html.theme-dark .ck-content .table table th,\n" +
-            "html.theme-dark .ck-content .table table {\n" +
-            "  border-color: #363842 !important;\n" +
-            "  border: 1px solid;\n" +
-            "}\n" +
+            "\n" +
             "section {\n" +
             "  position: relative;\n" +
             "}\n" +
@@ -594,125 +459,30 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
             "  border-bottom: none !important;\n" +
             "  border-top: none !important;\n" +
             "  vertical-align: top;\n" +
+            "}\n" +
+            "\n" +
+            ".ck-content .table table td,\n" +
+            ".ck-content .table table th,\n" +
+            ".ck-content .table table {\n" +
+            "  border-color: #DBDBDB !important;\n" +
+            "  border: 1px solid;\n" +
+            "}\n" +
+            "\n" +
+            "ul li {\n" +
+            "  list-style: disc;\n" +
+            "}\n" +
+            " ol {\n" +
+            "  list-style: decimal inside;\n" +
+            "}\n" +
+            " ol li {\n" +
+            "  list-style: decimal;\n" +
+            "}\n" +
+            "ol.cjk-ideographic li {\n" +
+            "  list-style: cjk-ideographic;\n" +
+            "}\n" +
+            "span.line-through {\n" +
+            "  text-decoration: line-through;\n" +
+            "  vertical-align: baseline;\n" +
             "}\n";
-
-    @Resource
-    private KnowledgeDocumentMapper knowledgeDocumentMapper;
-
-    @Resource
-    private KnowledgeDocumentService knowledgeDocumentService;
-
-    @Resource
-    private FileMapper fileMapper;
-
-    @Override
-    public String getToken() {
-        return "knowledge/document/export";
-    }
-
-    @Override
-    public String getName() {
-        return "导出文档内容";
-    }
-
-    @Override
-    public String getConfig() {
-        return null;
-    }
-    
-    @Input({
-        @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, isRequired = true, desc = "文档id"),
-        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
-        @Param(name = "type", type = ApiParamType.ENUM, rule = "pdf,word", isRequired = true, desc = "文件类型")
-    })
-    @Description(desc = "导出文档内容")
-    @Override
-    public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        OutputStream os = null;
-        String userUuid = UserContext.get().getUserUuid(true);
-        Long knowledgeDocumentId = jsonObj.getLong("knowledgeDocumentId");
-        KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId);
-        if(documentVo == null) {
-            throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
-        }
-
-        boolean isLcu = false;
-        boolean isReviewer = false;
-        Long currentVersionId = documentVo.getKnowledgeDocumentVersionId();
-        Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
-        if(knowledgeDocumentVersionId != null) {
-            currentVersionId = knowledgeDocumentVersionId;
-            KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-            if (knowledgeDocumentVersionVo == null) {
-                throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
-            }
-            if(knowledgeDocumentVersionVo.getLcu().equals(userUuid)){
-                isLcu = true;
-            }
-            if(userUuid.equals(knowledgeDocumentVersionVo.getReviewer())){
-                isReviewer = true;
-            }
-        }
-        /** 如果当前用户不是成员，但是该版本的作者或者审核人，可以有查看权限 **/
-        if(!isLcu && !isReviewer && knowledgeDocumentService.isMember(documentVo.getKnowledgeCircleId()) == 0) {
-            throw new PermissionDeniedException();
-        }
-
-        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(currentVersionId);
-        if(knowledgeDocumentVo == null){
-            throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
-        }
-        if(CollectionUtils.isEmpty(knowledgeDocumentVo.getLineList())){
-            throw new KnowledgeDocumentEmptyException(knowledgeDocumentId);
-        }
-        try {
-            os = response.getOutputStream();
-            response.setContentType("application/x-download");
-            response.setHeader("Content-Disposition",
-                    "attachment;filename=\"" + URLEncoder.encode(knowledgeDocumentVo.getTitle(), "utf-8") + ".docx\"");
-            StringBuilder sb = new StringBuilder();
-            sb.append("<html xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\" xmlns=\"http://www.w3.org/TR/REC-html40\">\n");
-            sb.append("<head>\n");
-            sb.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></meta>\n");
-            sb.append("<style>" + style + "</style>");
-            sb.append("</head>\n");
-            sb.append("<body>\n");
-            sb.append("<span></span>");//暂时解决首行乱码
-            for(KnowledgeDocumentLineVo line : knowledgeDocumentVo.getLineList()){
-                if(KnowledgeDocumentLineHandler.IMG.getValue().equals(line.getHandler())){
-                    String url = line.getConfig().getString("url");
-                    String value = line.getConfig().getString("value");
-                    if(StringUtils.isNotEmpty(url)){
-                        String id = url.split("=")[1];
-                        FileVo fileVo = fileMapper.getFileById(Long.valueOf(id));
-                        if(fileVo != null){
-                            InputStream in = FileUtil.getData(fileVo.getPath());
-                            ByteArrayOutputStream out = new ByteArrayOutputStream();
-                            IOUtils.copyLarge(in,out);
-                            sb.append("<div><img src=\"data:image/png;base64," + Base64.encodeBase64String(out.toByteArray()) + "\">");
-                            if(StringUtils.isNotBlank(value)){
-                                sb.append("<p>备注：" + value + "</p>");
-                            }
-                            sb.append("</div>");
-                        }
-                    }
-
-                }else{
-                    sb.append(KnowledgeDocumentLineHandler.convertContentToHtml(line));
-                }
-            }
-            sb.append("\n</body>\n</html>");
-            ExportUtil.getWordFileByHtml(sb.toString(), true, os);
-        } catch (Exception ex) {
-            logger.error(ex.getMessage(), ex);
-        } finally {
-            if (os != null) {
-                os.flush();
-                os.close();
-            }
-        }
-
-        return null;
-    }
 
 }

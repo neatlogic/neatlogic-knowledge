@@ -23,6 +23,10 @@ public interface KnowledgeDocumentService {
     
     public KnowledgeDocumentVo getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId) throws PermissionDeniedException;
 
+    public KnowledgeDocumentVo getKnowledgeDocumentContentByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId) throws PermissionDeniedException;
+
+    public Long checkViewPermissionByDocumentIdAndVersionId(Long documentId,Long versionId) throws Exception;
+
     /**
      * @Author 89770
      * @Time 2020年12月3日

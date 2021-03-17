@@ -82,13 +82,12 @@ public enum KnowledgeDocumentLineHandler {
                             + (line.getContent() != null ? line.getContent() : "")
                             + "</" + handler.value + ">";
                 }else if(CODE.value.equals(line.getHandler())){
-                    String code = line.getContent();
+                    JSONObject config = line.getConfig();
+                    String code = config.getString("value");
                     if(code != null){
-                        code = code.replace("\\r","</br>");
+                        code = code.replaceAll("\\n","</br>");
                     }
-                    return "<div>"
-                            + (code != null ? code : "")
-                            + "</div>";
+                    return "<div>" + (code != null ? code : "") + "</div>";
                 }else if(FORMTABLE.value.equals(line.getHandler())){
                     return line.getContent();
                 }else if(TABLE.value.equals(line.getHandler())){

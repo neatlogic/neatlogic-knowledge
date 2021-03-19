@@ -8,7 +8,7 @@ import java.util.function.Function;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
 
 public enum KnowledgeDocumentLineHandler {
 
@@ -85,19 +85,20 @@ public enum KnowledgeDocumentLineHandler {
                     JSONObject config = line.getConfig();
                     String code = config.getString("value");
                     if(code != null){
-                        code = code.replaceAll("\\n","<br/>").replaceAll("\\t","    ");
+                        code = code.replaceAll("\\n","<br/>")
+                                .replaceAll("\\t","&nbsp;&nbsp;&nbsp;&nbsp;");
                     }
                     return "<div>" + (code != null ? code : "") + "</div>";
                 }else if(FORMTABLE.value.equals(line.getHandler())){
                     return line.getContent();
                 }else if(TABLE.value.equals(line.getHandler())){
                     JSONObject config = line.getConfig();
-                    if(MapUtils.isNotEmpty(config)){
-                        StringBuilder sb = new StringBuilder();
+                    JSONArray tableList = config.getJSONArray("tableList");
+                    StringBuilder sb = new StringBuilder();
+                    if(CollectionUtils.isNotEmpty(tableList)) {
                         sb.append("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" " +
                                 "style=\"border: 1px solid #DBDBDB;border-collapse: collapse;\">");
                         sb.append("<tbody>");
-                        JSONArray tableList = config.getJSONArray("tableList");
                         for(int i = 0;i < tableList.size();i++){
                             sb.append("<tr>");
                             JSONArray row = tableList.getJSONArray(i);
@@ -108,8 +109,8 @@ public enum KnowledgeDocumentLineHandler {
                         }
                         sb.append("</tbody>");
                         sb.append("</table>");
-                        return sb.toString();
                     }
+                    return sb.toString();
                 }
             }
         }

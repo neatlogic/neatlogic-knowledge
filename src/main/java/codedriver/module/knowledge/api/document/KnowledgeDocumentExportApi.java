@@ -62,7 +62,6 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
         @Param(name = "type", type = ApiParamType.ENUM, rule = "pdf,word", isRequired = true, desc = "文件类型")
     })
     @Description(desc = "导出文档内容")
-    @ResubmitInterval(value = 5)
     @Override
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -108,24 +107,23 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
         out.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></meta>\n");
         out.write("<style>\n" + style + "\n</style>\n");
         out.write("</head>\n");
-        out.write("<body>\n");
-        out.write("<span></span>");
+        out.write("<body>\n ");
         for(KnowledgeDocumentLineVo line : knowledgeDocumentVo.getLineList()){
             if(!KnowledgeDocumentLineHandler.IMG.getValue().equals(line.getHandler())){
                 out.write(KnowledgeDocumentLineHandler.convertContentToHtml(line));
             }else{
+                bos.reset();
                 String url = line.getConfig().getString("url");
                 String value = line.getConfig().getString("value");
-                if(StringUtils.isNotEmpty(url)){
+                if(StringUtils.isNotBlank(url)){
                     String id = url.split("=")[1];
                     FileVo fileVo = fileMapper.getFileById(Long.valueOf(id));
                     if(fileVo != null){
                         in = FileUtil.getData(fileVo.getPath());
                         IOUtils.copyLarge(in,bos);
                         out.write("<div><img src=\"data:image/png;base64," + Base64.encodeBase64String(bos.toByteArray()) + "\">");
-                        bos.reset();
                         if(StringUtils.isNotBlank(value)){
-                            out.write("<p>备注：" + value + "</p>");
+                            out.write("<br/><span>备注：" + value + "</span>");
                         }
                         out.write("</div>");
                     }
@@ -483,6 +481,20 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
             "span.line-through {\n" +
             "  text-decoration: line-through;\n" +
             "  vertical-align: baseline;\n" +
-            "}\n";
+            "}\n" +
+            "[class=line-through] * {\n" +
+            "  text-decoration: line-through;\n" +
+            "  vertical-align: baseline;\n" +
+            "}\n" +
+            "body{\n" +
+            "  font-size:14px;\n" +
+            "}\n" +
+            "h2{\n" +
+            "  font-size:14px;\n" +
+            "}\n" +
+            "h1{\n" +
+            "  font-size:16px;\n" +
+            "}"
+            ;
 
 }

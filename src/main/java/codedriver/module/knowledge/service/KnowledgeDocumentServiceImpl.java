@@ -242,6 +242,68 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         return knowledgeDocumentVo;
     }
 
+    @Override
+    public KnowledgeDocumentVo getKnowledgeDocumentContentByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId) throws PermissionDeniedException {
+        KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
+        if (knowledgeDocumentVersionVo == null) {
+            throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVersionId);
+        }
+        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        if (knowledgeDocumentVo == null) {
+            throw new KnowledgeDocumentNotFoundException(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        }
+        knowledgeDocumentVersionVo.setKnowledgeCircleId(knowledgeDocumentVo.getKnowledgeCircleId());
+        knowledgeDocumentVo.setIsReviewer(isReviewer(knowledgeDocumentVo.getKnowledgeCircleId()));
+        if (KnowledgeDocumentVersionStatus.SUBMITTED.getValue().equals(knowledgeDocumentVersionVo.getStatus())) {
+            if (knowledgeDocumentVo.getIsReviewer() == 0) {
+                if (!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
+                    throw new PermissionDeniedException();
+                }
+            }
+        } else if (knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.DRAFT.getValue())) {
+            if (!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
+                throw new PermissionDeniedException();
+            }
+        } else if (knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.REJECTED.getValue())) {
+            if (!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
+                throw new PermissionDeniedException();
+            }
+        }
+        List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+        knowledgeDocumentVo.setLineList(lineList);
+        return knowledgeDocumentVo;
+    }
+
+    @Override
+    public Long checkViewPermissionByDocumentIdAndVersionId(Long documentId,Long versionId) throws Exception{
+        String userUuid = UserContext.get().getUserUuid(true);
+        KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(documentId);
+        if(documentVo == null) {
+            throw new KnowledgeDocumentNotFoundException(documentId);
+        }
+
+        boolean isLcu = false;
+        boolean isReviewer = false;
+        Long currentVersionId = documentVo.getKnowledgeDocumentVersionId();
+        if(versionId != null) {
+            currentVersionId = versionId;
+            KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(versionId);
+            if (knowledgeDocumentVersionVo == null) {
+                throw new KnowledgeDocumentVersionNotFoundException(versionId);
+            }
+            if(knowledgeDocumentVersionVo.getLcu().equals(userUuid)){
+                isLcu = true;
+            }
+            if(userUuid.equals(knowledgeDocumentVersionVo.getReviewer())){
+                isReviewer = true;
+            }
+        }
+        /** 如果当前用户不是成员，但是该版本的作者或者审核人，可以有查看权限 **/
+        if(!isLcu && !isReviewer && isMember(documentVo.getKnowledgeCircleId()) == 0) {
+            throw new PermissionDeniedException();
+        }
+        return currentVersionId;
+    }
 
     @Override
     public void getReviewerParam(KnowledgeDocumentVersionVo documentVersionVoParam) {

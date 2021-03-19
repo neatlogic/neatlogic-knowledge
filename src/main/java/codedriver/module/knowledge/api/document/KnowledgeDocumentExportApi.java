@@ -7,6 +7,7 @@ import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
+import codedriver.framework.util.DocType;
 import codedriver.framework.util.ExportUtil;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentLineHandler;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
@@ -75,12 +76,12 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
         try {
             os = response.getOutputStream();
             String content = getHtmlContent(knowledgeDocumentVo);
-            if("word".equals(type)){
+            if(DocType.WORD.getValue().equals(type)){
                 response.setContentType("application/x-download");
                 response.setHeader("Content-Disposition",
                         "attachment;filename=\"" + URLEncoder.encode(knowledgeDocumentVo.getTitle(), "utf-8") + ".docx\"");
                 ExportUtil.getWordFileByHtml(content, true, os);
-            }else if("pdf".equals(type)){
+            }else if(DocType.PDF.getValue().equals(type)){
                 response.setContentType("application/pdf");
                 response.setHeader("Content-Disposition",
                         "attachment;filename=\"" + URLEncoder.encode(knowledgeDocumentVo.getTitle(), "utf-8") + ".pdf\"");
@@ -107,8 +108,7 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
         out.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></meta>\n");
         out.write("<style>\n" + style + "\n</style>\n");
         out.write("</head>\n");
-        //经实践发现，body下的第一个<h>标签，若是中文，在word中会乱码，故先以一个空格占位(环境:office 2007)
-        out.write("<body>\n ");
+        out.write("<body>\n");
         for(KnowledgeDocumentLineVo line : knowledgeDocumentVo.getLineList()){
             if(!KnowledgeDocumentLineHandler.IMG.getValue().equals(line.getHandler())){
                 out.write(KnowledgeDocumentLineHandler.convertContentToHtml(line));

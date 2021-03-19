@@ -85,10 +85,9 @@ public enum KnowledgeDocumentLineHandler {
                     JSONObject config = line.getConfig();
                     String code = config.getString("value");
                     if(code != null){
-                        code = code.replaceAll("\\n","<br/>")
-                                .replaceAll("\\t","&nbsp;&nbsp;&nbsp;&nbsp;");
+                        code = code.replaceAll("\\n","<br/>");
                     }
-                    return "<div>" + (code != null ? code : "") + "</div>";
+                    return "<div>\n" + (code != null ? code : "") + "</div>";
                 }else if(FORMTABLE.value.equals(line.getHandler())){
                     return line.getContent();
                 }else if(TABLE.value.equals(line.getHandler())){

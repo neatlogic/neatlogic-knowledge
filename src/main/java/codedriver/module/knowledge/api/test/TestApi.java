@@ -1,18 +1,15 @@
 package codedriver.module.knowledge.api.test;
 
-import codedriver.framework.fulltextindex.core.FullTextIndexHandlerFactory;
-import codedriver.framework.fulltextindex.core.IFullTextIndexHandler;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_CIRCLE_MODIFY;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_TEMPLATE_MODIFY;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.fulltextindex.FullTextIndexType;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * @Title: TestApi
@@ -24,6 +21,8 @@ import java.util.List;
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  **/
 @Service
+@AuthAction(action = KNOWLEDGE_CIRCLE_MODIFY.class)
+@AuthAction(action = KNOWLEDGE_TEMPLATE_MODIFY.class)
 @Transactional
 public class TestApi extends PrivateApiComponentBase {
     @Resource
@@ -41,24 +40,6 @@ public class TestApi extends PrivateApiComponentBase {
 
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        JSONArray versionIdArray = jsonObj.getJSONArray("versionIdList");
-        List<Long> versionIdList = null;
-        //创建全文检索索引
-        IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(FullTextIndexType.KNOW_DOCUMENT_VERSION);
-        if (handler != null) {
-            if(jsonObj.containsKey("versionId")) {
-                handler.createIndex(jsonObj.getLong("versionId"));
-            }else {
-                if(CollectionUtils.isNotEmpty(versionIdArray)){
-                    versionIdList = JSONObject.parseArray(versionIdArray.toJSONString(), Long.class);
-                }else{
-                    versionIdList = knowledgeDocumentMapper.getKnowledgeDocumentVersionIdList();
-                }
-                for(Long versionIdObj : versionIdList ){
-                    handler.createIndex(versionIdObj);
-                }
-            }
-        }
         return null;
     }
 

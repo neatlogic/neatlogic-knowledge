@@ -160,7 +160,7 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
             if (CollectionUtils.isNotEmpty(failAuditList)) {
                 for (KnowledgeDocumentAuditVo failAudit : failAuditList) {
                     if (failAudit.getKnowledgeDocumentVersionId().equals(knowledgeDocumentVersionVo.getId())) {
-                        knowledgeDocumentVersionVo.setRejectReason(failAudit.getConfig().getString("content"));
+                        knowledgeDocumentVersionVo.setRejectReason(failAudit.getConfig() == null ? StringUtils.EMPTY:failAudit.getConfig().getString("content"));
                     }
                 }
             }

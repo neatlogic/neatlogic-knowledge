@@ -10,12 +10,17 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotReviewerException;
+import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 @AuthAction(action = NO_AUTH.class)
@@ -48,7 +53,7 @@ public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
     @Description(desc = "删除文档")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        /*Long knowledgeDocumentId = jsonObj.getLong("knowledgeDocumentId");
+        Long knowledgeDocumentId = jsonObj.getLong("knowledgeDocumentId");
         KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId);
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
@@ -67,8 +72,8 @@ public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
             knowledgeDocumentMapper.updateKnowledgeDocumentVersionToDeleteByKnowledgeDocumentId(knowledgeDocumentId);
             knowledgeDocumentMapper.deleteKnowledgeDocumentAuditByKnowledgeDocumentVersionIdList(knowledgeDocumentVersionIdList);
         }
-        *//** 删除es对应知识 **//*
-        ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE.getValue()).delete(knowledgeDocumentId.toString());*/
+        //** 删除es对应知识 **//
+        //ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE.getValue()).delete(knowledgeDocumentId.toString());
         return null;
     }
 

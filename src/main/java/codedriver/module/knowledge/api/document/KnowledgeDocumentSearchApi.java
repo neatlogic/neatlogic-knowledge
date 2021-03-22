@@ -141,8 +141,8 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         List<String> keywordList = new ArrayList<>();
         Map<Long, FullTextIndexVo> versionIndexVoMap = new HashMap<>();
         Map<Long,String> versionContentMap = new HashMap<>();
-        if (StringUtils.isNotBlank(documentVoParam.getKeyword())) {
-            keywordList = Arrays.asList(documentVoParam.getKeyword().split(" "));
+        if (CollectionUtils.isNotEmpty(documentVoParam.getKeywordList())) {
+            keywordList = new ArrayList<>(documentVoParam.getKeywordList());
         }
         if(CollectionUtils.isNotEmpty(activeVersionIdList)) {
             knowledgeDocumentService.setVersionContentMap(keywordList, activeVersionIdList, versionIndexVoMap, versionContentMap);
@@ -167,7 +167,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
                 knowledgeDocumentVo.setIsFavor(1);
             }
             //设置标题、截取内容，并高亮
-            knowledgeDocumentService.setTitleAndShortcutContentHighlight( keywordList, knowledgeDocumentVo.getKnowledgeDocumentVersionId(),knowledgeDocumentVo, versionIndexVoMap, versionContentMap);
+            knowledgeDocumentService.setTitleAndShortcutContentHighlight(keywordList, knowledgeDocumentVo.getKnowledgeDocumentVersionId(),knowledgeDocumentVo, versionIndexVoMap, versionContentMap);
             //组装返回数据
             UserVo vo = new UserVo();
             vo.setUuid(knowledgeDocumentVo.getLcu());

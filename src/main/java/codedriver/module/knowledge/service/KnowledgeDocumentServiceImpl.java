@@ -275,31 +275,31 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     }
 
     @Override
-    public Long checkViewPermissionByDocumentIdAndVersionId(Long documentId,Long versionId) throws Exception{
+    public Long checkViewPermissionByDocumentIdAndVersionId(Long documentId, Long versionId) throws Exception {
         String userUuid = UserContext.get().getUserUuid(true);
         KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(documentId);
-        if(documentVo == null) {
+        if (documentVo == null) {
             throw new KnowledgeDocumentNotFoundException(documentId);
         }
 
         boolean isLcu = false;
         boolean isReviewer = false;
         Long currentVersionId = documentVo.getKnowledgeDocumentVersionId();
-        if(versionId != null) {
+        if (versionId != null) {
             currentVersionId = versionId;
             KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(versionId);
             if (knowledgeDocumentVersionVo == null) {
                 throw new KnowledgeDocumentVersionNotFoundException(versionId);
             }
-            if(knowledgeDocumentVersionVo.getLcu().equals(userUuid)){
+            if (knowledgeDocumentVersionVo.getLcu().equals(userUuid)) {
                 isLcu = true;
             }
-            if(userUuid.equals(knowledgeDocumentVersionVo.getReviewer())){
+            if (userUuid.equals(knowledgeDocumentVersionVo.getReviewer())) {
                 isReviewer = true;
             }
         }
         /** 如果当前用户不是成员，但是该版本的作者或者审核人，可以有查看权限 **/
-        if(!isLcu && !isReviewer && isMember(documentVo.getKnowledgeCircleId()) == 0) {
+        if (!isLcu && !isReviewer && isMember(documentVo.getKnowledgeCircleId()) == 0) {
             throw new PermissionDeniedException();
         }
         return currentVersionId;
@@ -390,7 +390,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     }
 
     /**
-     * @Description: 一次性获取知识搜索关键字最匹配下标信息, 提供给后续循环截取内容和高亮关键字
+     * @Description: 一次性获取知识搜索关键字分词后最匹配下标信息, 提供给后续循环截取内容和高亮关键字
      * @Author: 89770
      * @Date: 2021/3/2 12:18
      * @Params: [keyword, activeVersionIdList, versionWordOffsetVoMap, versionContentVoMap]

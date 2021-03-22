@@ -139,8 +139,8 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
         Map<Long, FullTextIndexVo> versionIndexVoMap = new HashMap<>();
         Map<Long, String> versionContentMap = new HashMap<>();
         List<String> keywordList = new ArrayList<>();
-        if (StringUtils.isNotBlank(documentVersionVoParam.getKeyword())) {
-            keywordList = Arrays.asList(documentVersionVoParam.getKeyword().split(" "));
+        if (CollectionUtils.isNotEmpty(documentVersionVoParam.getKeywordList())) {
+            keywordList = new ArrayList<>(documentVersionVoParam.getKeywordList());
         }
         if (CollectionUtils.isNotEmpty(versionIdList)) {
             knowledgeDocumentService.setVersionContentMap(keywordList, versionIdList, versionIndexVoMap, versionContentMap);

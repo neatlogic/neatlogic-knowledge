@@ -400,13 +400,13 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     public void initVersionWordOffsetAndContentMap(List<String> keywordList, List<Long> activeVersionIdList, Map<Long, FullTextIndexVo> versionWordOffsetVoMap, Map<Long, String> versionContentVoMap) {
         if (CollectionUtils.isNotEmpty(activeVersionIdList) && CollectionUtils.isNotEmpty(keywordList)) {
             List<Long> targetIdList = new ArrayList<>();
-            List<FullTextIndexVo> ftIndexVoList = ftIndexMapper.getFullTextIndexListByKeywordListAndTargetList(keywordList, activeVersionIdList);
+            List<FullTextIndexVo> ftIndexVoList = ftIndexMapper.getFullTextIndexListByKeywordListAndTargetList(keywordList, activeVersionIdList,"knowledge");
             for (FullTextIndexVo indexVo : ftIndexVoList) {
                 targetIdList.add(indexVo.getTargetId());
                 versionWordOffsetVoMap.put(indexVo.getTargetId(), indexVo);
             }
             if (CollectionUtils.isNotEmpty(targetIdList)) {
-                List<FullTextIndexContentVo> contentVoList = ftIndexMapper.getContentByTargetIdList(targetIdList);
+                List<FullTextIndexContentVo> contentVoList = ftIndexMapper.getContentByTargetIdList(targetIdList,"knowledge");
                 for (FullTextIndexContentVo contentVo : contentVoList) {
                     if ("content".equals(contentVo.getTargetField())) {
                         versionContentVoMap.put(contentVo.getTargetId(), contentVo.getContent());
@@ -480,7 +480,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             initVersionWordOffsetAndContentMap(keywordList, activeVersionIdList, versionIndexVoMap, versionContentMap);
         }
         //一次性查出所有activeVersionIdList Content
-        List<FullTextIndexContentVo> contentVoList = ftIndexMapper.getContentByTargetIdList(activeVersionIdList);
+        List<FullTextIndexContentVo> contentVoList = ftIndexMapper.getContentByTargetIdList(activeVersionIdList,"knowledge");
         for (FullTextIndexContentVo contentVo : contentVoList) {
             if ("content".equals(contentVo.getTargetField()) && !versionContentMap.containsKey(contentVo.getTargetId())) {
                 versionContentMap.put(contentVo.getTargetId(), contentVo.getContent());

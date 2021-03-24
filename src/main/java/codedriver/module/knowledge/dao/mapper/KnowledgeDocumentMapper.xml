@@ -128,7 +128,7 @@
             AND EXISTS (SELECT
             1
             FROM
-            `fulltextindex_word` fw JOIN fulltextindex_field ff ON fw.id = ff.`word_id`
+            `fulltextindex_word` fw JOIN fulltextindex_field_knowledge ff ON fw.id = ff.`word_id`
             WHERE ff.`target_id` = kdv.id AND fw.word IN
             <foreach collection="keywordList" item="k" open="("
                      separator="," close=")">#{k}
@@ -432,7 +432,7 @@
             AND EXISTS (SELECT
             1
             FROM
-            `fulltextindex_word` fw JOIN fulltextindex_field ff ON fw.id = ff.`word_id`
+            `fulltextindex_word` fw JOIN fulltextindex_field_knowledge ff ON fw.id = ff.`word_id`
             WHERE ff.`target_id` = kdv.id AND fw.word IN
             <foreach collection="keywordList" item="k" open="("
                      separator="," close=")">#{k}

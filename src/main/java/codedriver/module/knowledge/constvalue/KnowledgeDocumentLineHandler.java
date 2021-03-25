@@ -75,7 +75,8 @@ public enum KnowledgeDocumentLineHandler {
     public static String convertContentToHtml(KnowledgeDocumentLineVo line){
         /** editor不在标准handler之列，只在工单转知识时才有可能出现 **/
         if("editor".equals(line.getHandler())){
-            return line.getContent() != null ? line.getContent() : "</br>";
+            /** editor无论内容如何都要独占一行，加上P标签能保证始终独占一行 **/
+            return line.getContent() != null ? "<p>" + line.getContent() + "</p>" : "</br>";
         }
         for(KnowledgeDocumentLineHandler handler : values()) {
             if(handler.value.equals(line.getHandler())) {

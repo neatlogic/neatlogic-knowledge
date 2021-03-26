@@ -22,7 +22,6 @@ public enum KnowledgeDocumentLineHandler {
     CODE("code", "代码块", (line) -> line.getConfig().getString("value"), null),
     FORMTABLE("formtable", "表单", (line) -> line.getContent(), (line, mainBody) -> line.setContent(mainBody)),
     EDITOR("editor", "编辑器", (line) -> line.getContent(), (line, mainBody) -> line.setContent(mainBody)),
-    EDIT("edit", "编辑器", (line) -> line.getContent(), (line, mainBody) -> line.setContent(mainBody)),
     UL("ul", "无序列表", (line) -> line.getContent(), (line, mainBody) -> line.setContent(mainBody)),
     OL("ol", "有序列表", (line) -> line.getContent(), (line, mainBody) -> line.setContent(mainBody))
     ;

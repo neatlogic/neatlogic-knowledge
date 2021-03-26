@@ -91,7 +91,11 @@ public enum KnowledgeDocumentLineHandler {
                     return "<div>\n" + (code != null ? code : "") + "</div>";
                 }else if(FORMTABLE.value.equals(line.getHandler())){
                     return line.getContent();
-                }else if(TABLE.value.equals(line.getHandler())){
+                }else if(EDITOR.value.equals(line.getHandler())){
+                    /** editor无论内容如何都要独占一行，加上P标签能保证始终独占一行 **/
+                    return line.getContent() != null ? "<p>" + line.getContent() + "</p>" : "</br>";
+                }
+                else if(TABLE.value.equals(line.getHandler())){
                     JSONObject config = line.getConfig();
                     JSONArray tableList = config.getJSONArray("tableList");
                     StringBuilder sb = new StringBuilder();

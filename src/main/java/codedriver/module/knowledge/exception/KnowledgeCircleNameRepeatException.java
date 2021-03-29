@@ -1,8 +1,8 @@
 package codedriver.module.knowledge.exception;
 
-import codedriver.framework.exception.core.ApiFieldValidRuntimeException;
+import codedriver.framework.exception.core.ApiRuntimeException;
 
-public class KnowledgeCircleNameRepeatException extends ApiFieldValidRuntimeException {
+public class KnowledgeCircleNameRepeatException extends ApiRuntimeException {
 
 	private static final long serialVersionUID = -5574780571750812574L;
 

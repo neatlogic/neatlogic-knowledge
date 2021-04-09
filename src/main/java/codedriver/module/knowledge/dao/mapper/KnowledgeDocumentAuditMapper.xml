@@ -51,7 +51,7 @@
         `knowledge_document_version_id` AS knowledgeDocumentVersionId,
         (SELECT c.config
         FROM knowledge_document_audit b
-        LEFT JOIN knowledge_document_audit_config c ON b.config_hash = c.hash
+        LEFT JOIN knowledge_document_audit_detail c ON b.config_hash = c.hash
         WHERE b.knowledge_document_version_id = a.knowledge_document_version_id
         AND b.fcd = MAX(a.`fcd`)) AS configStr
         FROM `knowledge_document_audit` a
@@ -63,10 +63,10 @@
         GROUP BY knowledge_document_version_id
     </select>
 
-    <select id="getKnowledgeDocumentAuditConfigStringByHash" parameterType="java.lang.String"
+    <select id="getKnowledgeDocumentAuditDetailStringByHash" parameterType="java.lang.String"
             resultType="java.lang.String">
         SELECT `config`
-        FROM `knowledge_document_audit_config`
+        FROM `knowledge_document_audit_detail`
         WHERE `hash` = #{value}
     </select>
 
@@ -85,9 +85,9 @@
                 #{configHash})
     </insert>
 
-    <insert id="insertKnowledgeDocumentAuditConfig"
-            parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditConfigVo">
-        INSERT IGNORE INTO `knowledge_document_audit_config` (`hash`, `config`)
+    <insert id="insertKnowledgeDocumentAuditDetail"
+            parameterType="codedriver.module.knowledge.dto.KnowledgeDocumentAuditDetailVo">
+        INSERT IGNORE INTO `knowledge_document_audit_detail` (`hash`, `config`)
         VALUES (#{hash}, #{config})
     </insert>
 

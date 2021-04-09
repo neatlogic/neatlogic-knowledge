@@ -1,6 +1,6 @@
 package codedriver.module.knowledge.dao.mapper;
 
-import codedriver.module.knowledge.dto.KnowledgeDocumentAuditConfigVo;
+import codedriver.module.knowledge.dto.KnowledgeDocumentAuditDetailVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -16,9 +16,9 @@ public interface KnowledgeDocumentAuditMapper {
 
     public int getKnowledgeDocumentAuditCountByKnowledgeDocumentId(KnowledgeDocumentAuditVo searchVo);
 
-    public String getKnowledgeDocumentAuditConfigStringByHash(String hash);
+    public String getKnowledgeDocumentAuditDetailStringByHash(String hash);
     
     public int insertKnowledgeDocumentAudit(KnowledgeDocumentAuditVo knowledgeDocumentAuditVo);
     
-    public int insertKnowledgeDocumentAuditConfig(KnowledgeDocumentAuditConfigVo knowledgeDocumentAuditConfigVo);
+    public int insertKnowledgeDocumentAuditDetail(KnowledgeDocumentAuditDetailVo knowledgeDocumentAuditDetailVo);
 }

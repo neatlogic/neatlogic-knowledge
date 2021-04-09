@@ -110,7 +110,7 @@ public class KnowledgeDocumentAuditListApi extends PrivateApiComponentBase {
                 }
                 String title = KnowledgeDocumentOperate.getTitle(knowledgeDocumentAuditVo.getOperate());
                 if(StringUtils.isNotBlank(knowledgeDocumentAuditVo.getConfigHash())) {
-                    String configStr = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditConfigStringByHash(knowledgeDocumentAuditVo.getConfigHash());
+                    String configStr = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditDetailStringByHash(knowledgeDocumentAuditVo.getConfigHash());
                     if(StringUtils.isNotBlank(configStr)) {
                         JSONObject config = JSON.parseObject(configStr);
                         String content = config.getString("content");

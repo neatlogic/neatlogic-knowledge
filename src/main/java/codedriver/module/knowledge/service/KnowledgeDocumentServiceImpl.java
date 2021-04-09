@@ -179,7 +179,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             } else {
                 KnowledgeDocumentAuditVo rejectAudit = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditListByDocumentIdAndVersionIdAndOperate(new KnowledgeDocumentAuditVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionVo.getId(), KnowledgeDocumentOperate.REJECT.getValue()));
                 if (rejectAudit != null) {
-                    String rejectReason = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditConfigStringByHash(rejectAudit.getConfigHash());
+                    String rejectReason = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditDetailStringByHash(rejectAudit.getConfigHash());
                     if (StringUtils.isNotBlank(rejectReason)) {
                         knowledgeDocumentVo.setRejectReason((String) JSONPath.read(rejectReason, "content"));
                     }
@@ -362,9 +362,9 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         knowledgeDocumentAuditVo.setFcu(UserContext.get().getUserUuid(true));
         knowledgeDocumentAuditVo.setOperate(operate.getValue());
         if (MapUtils.isNotEmpty(config)) {
-            KnowledgeDocumentAuditConfigVo knowledgeDocumentAuditConfigVo = new KnowledgeDocumentAuditConfigVo(config.toJSONString());
-            knowledgeDocumentAuditMapper.insertKnowledgeDocumentAuditConfig(knowledgeDocumentAuditConfigVo);
-            knowledgeDocumentAuditVo.setConfigHash(knowledgeDocumentAuditConfigVo.getHash());
+            KnowledgeDocumentAuditDetailVo knowledgeDocumentAuditDetailVo = new KnowledgeDocumentAuditDetailVo(config.toJSONString());
+            knowledgeDocumentAuditMapper.insertKnowledgeDocumentAuditDetail(knowledgeDocumentAuditDetailVo);
+            knowledgeDocumentAuditVo.setConfigHash(knowledgeDocumentAuditDetailVo.getHash());
         }
         knowledgeDocumentAuditMapper.insertKnowledgeDocumentAudit(knowledgeDocumentAuditVo);
     }

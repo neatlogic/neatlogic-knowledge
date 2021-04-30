@@ -499,7 +499,7 @@ public class KnowledgeDocumentVersionVo extends BaseEditorVo {
 
     public String getSourceName() {
         if (StringUtils.isNotBlank(source)) {
-            SyncSourceVo syncSource = SyncSourceFactory.getUserProfileMap().get(source);
+            SyncSourceVo syncSource = SyncSourceFactory.getSourceMap().get(source);
             if (syncSource != null) {
                 this.setSourceName(syncSource.getSourceName() + "转知识");
             }

@@ -4,7 +4,6 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.common.dto.BaseEditorVo;
 import codedriver.framework.dto.WorkAssignmentUnitVo;
-import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.knowledge.dto.SyncSourceVo;
 import codedriver.framework.knowledge.source.SyncSourceFactory;
@@ -16,6 +15,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -389,7 +389,7 @@ public class KnowledgeDocumentVo extends BaseEditorVo {
     }
     public String getSourceName() {
         if(StringUtils.isNotBlank(source)) {
-            SyncSourceVo syncSource = SyncSourceFactory.getUserProfileMap().get(source);
+            SyncSourceVo syncSource = SyncSourceFactory.getSourceMap().get(source);
             if(syncSource != null) {
                 this.setSourceName(syncSource.getSourceName()+"转知识");
             }

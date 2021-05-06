@@ -2,6 +2,8 @@ package codedriver.module.knowledge.api.document;
 
 import java.util.List;
 
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +36,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundExc
 import javax.annotation.Resource;
 
 @Service
+@AuthAction(action = KNOWLEDGE_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentInvokeGetApi extends PrivateApiComponentBase {
 

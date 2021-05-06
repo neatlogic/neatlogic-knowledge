@@ -3,6 +3,8 @@ package codedriver.module.knowledge.api.tag;
 import java.util.ArrayList;
 import java.util.List;
 
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.dao.mapper.KnowledgeTagMapper;
 
 @Service
+@AuthAction(action = KNOWLEDGE_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeTagListApi extends PrivateApiComponentBase {
     

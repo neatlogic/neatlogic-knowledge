@@ -3,6 +3,8 @@ package codedriver.module.knowledge.api.document;
 import java.util.ArrayList;
 import java.util.List;
 
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -34,6 +36,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import javax.annotation.Resource;
 
 @Service
+@AuthAction(action = KNOWLEDGE_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentAuditListApi extends PrivateApiComponentBase {
 

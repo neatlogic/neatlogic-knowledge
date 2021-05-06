@@ -2,21 +2,19 @@ package codedriver.module.knowledge.api.document;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.auth.label.NO_AUTH;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentHasBeenFavoredException;
 import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-@AuthAction(action = NO_AUTH.class)
+@AuthAction(action = KNOWLEDGE_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class KnowledgeDocumentFavorToggleApi extends PrivateApiComponentBase {
 

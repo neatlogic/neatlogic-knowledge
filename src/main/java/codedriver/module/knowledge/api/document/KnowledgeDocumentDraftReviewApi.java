@@ -1,33 +1,31 @@
 package codedriver.module.knowledge.api.document;
 
-import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.auth.label.NO_AUTH;
-import codedriver.module.knowledge.exception.*;
-import codedriver.module.knowledge.service.KnowledgeDocumentService;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.alibaba.fastjson.JSONObject;
-
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.module.knowledge.exception.*;
+import codedriver.module.knowledge.service.KnowledgeDocumentService;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
 @Service
-@AuthAction(action = NO_AUTH.class)
+@AuthAction(action = KNOWLEDGE_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
 public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {

@@ -2,7 +2,6 @@ package codedriver.module.knowledge.api.document;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.auth.label.NO_AUTH;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.exception.type.ParamNotExistsException;
@@ -14,6 +13,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.UuidUtil;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentLineHandler;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
@@ -37,7 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
-@AuthAction(action = NO_AUTH.class)
+@AuthAction(action = KNOWLEDGE_BASE.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 @Transactional
 public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {

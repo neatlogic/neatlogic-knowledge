@@ -1,14 +1,19 @@
 package codedriver.module.knowledge.api.document;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
-import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.annotation.Description;
+import codedriver.framework.restful.annotation.Input;
+import codedriver.framework.restful.annotation.OperationType;
+import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import codedriver.framework.util.DocType;
 import codedriver.framework.util.ExportUtil;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentLineHandler;
 import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
@@ -31,6 +36,7 @@ import java.io.StringWriter;
 import java.net.URLEncoder;
 
 @Service
+@AuthAction(action = KNOWLEDGE_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentBase {
 

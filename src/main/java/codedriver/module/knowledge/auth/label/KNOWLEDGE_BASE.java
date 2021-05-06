@@ -2,16 +2,16 @@ package codedriver.module.knowledge.auth.label;
 
 import codedriver.framework.auth.core.AuthBase;
 
-public class KNOWLEDGE_TEMPLATE_MODIFY extends AuthBase {
+public class KNOWLEDGE_BASE extends AuthBase {
 
 	@Override
 	public String getAuthDisplayName() {
-		return "知识模版管理权限";
+		return "知识基础权限";
 	}
 
 	@Override
 	public String getAuthIntroduction() {
-		return "对知识模版进行添加、修改和删除";
+		return "查看知识";
 	}
 
 	@Override
@@ -21,6 +21,6 @@ public class KNOWLEDGE_TEMPLATE_MODIFY extends AuthBase {
 
 	@Override
 	public Integer sort() {
-		return 3;
+		return 1;
 	}
 }

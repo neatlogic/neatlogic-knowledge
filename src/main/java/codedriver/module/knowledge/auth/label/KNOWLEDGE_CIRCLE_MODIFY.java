@@ -18,4 +18,9 @@ public class KNOWLEDGE_CIRCLE_MODIFY extends AuthBase {
 	public String getAuthGroup() {
 		return "knowledge";
 	}
+
+	@Override
+	public Integer sort() {
+		return 2;
+	}
 }

@@ -1,14 +1,14 @@
 package codedriver.module.knowledge.api.document;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.auth.label.NO_AUTH;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
@@ -24,7 +24,7 @@ import javax.annotation.Resource;
 import java.util.Objects;
 
 @Service
-@AuthAction(action = NO_AUTH.class)
+@AuthAction(action = KNOWLEDGE_BASE.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 @Transactional
 public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {

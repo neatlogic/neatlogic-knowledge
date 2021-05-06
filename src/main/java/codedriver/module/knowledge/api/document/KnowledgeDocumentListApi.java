@@ -10,6 +10,8 @@ import java.util.function.Function;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -46,6 +48,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentCurrentUserNotMemb
 import codedriver.module.knowledge.exception.KnowledgeDocumentTypeNotFoundException;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 @Service
+@AuthAction(action = KNOWLEDGE_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
 

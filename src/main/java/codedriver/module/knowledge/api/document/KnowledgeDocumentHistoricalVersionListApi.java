@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
 import javax.annotation.Resource;
 
 @Service
+@AuthAction(action = KNOWLEDGE_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiComponentBase {
 

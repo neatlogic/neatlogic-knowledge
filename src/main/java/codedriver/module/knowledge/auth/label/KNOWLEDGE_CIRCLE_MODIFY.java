@@ -2,6 +2,9 @@ package codedriver.module.knowledge.auth.label;
 
 import codedriver.framework.auth.core.AuthBase;
 
+import java.util.Collections;
+import java.util.List;
+
 public class KNOWLEDGE_CIRCLE_MODIFY extends AuthBase {
 
 	@Override
@@ -22,5 +25,10 @@ public class KNOWLEDGE_CIRCLE_MODIFY extends AuthBase {
 	@Override
 	public Integer getSort() {
 		return 2;
+	}
+
+	@Override
+	public List<Class<? extends AuthBase>> getIncludeAuths(){
+		return Collections.singletonList(KNOWLEDGE_BASE.class);
 	}
 }

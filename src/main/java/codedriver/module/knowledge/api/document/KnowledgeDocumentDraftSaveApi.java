@@ -123,7 +123,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             knowledgeDocumentMapper.insertKnowledgeDocument(documentVo);
             if (StringUtils.isNotBlank(documentVo.getSource())) {
                 if (documentVo.getInvokeId() == null) {
-                    throw new ParamNotExistsException("参数：“invokeId”不能为空");
+                    throw new ParamNotExistsException("invokeId");
                 }
                 KnowledgeDocumentInvokeVo knowledgeDocumentInvokeVo = new KnowledgeDocumentInvokeVo(documentVo.getId(), documentVo.getInvokeId(), documentVo.getSource());
                 if (knowledgeDocumentMapper.getKnowledgeDocumentIdByInvokeIdAndSource(knowledgeDocumentInvokeVo) != null) {

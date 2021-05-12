@@ -74,7 +74,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
         map.put(KnowledgeType.ALL.getValue(), (jsonObj) -> {
             KnowledgeDocumentVo searchVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
             if(searchVo.getKnowledgeDocumentTypeUuid() == null) {
-                throw new ParamNotExistsException("参数：“knowledgeDocumentTypeUuid”不能为空");
+                throw new ParamNotExistsException("knowledgeDocumentTypeUuid");
             }
             KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMapper.getTypeByUuid(searchVo.getKnowledgeDocumentTypeUuid());
             if(knowledgeDocumentTypeVo == null) {

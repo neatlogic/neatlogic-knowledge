@@ -85,12 +85,12 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
             if(DocType.WORD.getValue().equals(type)){
                 response.setContentType("application/x-download");
                 response.setHeader("Content-Disposition",
-                        "attachment;filename=\"" + URLEncoder.encode(knowledgeDocumentVo.getTitle(), "utf-8") + ".docx\"");
+                        " attachment; filename=\"" + URLEncoder.encode(knowledgeDocumentVo.getTitle(), "utf-8") + ".docx\"");
                 ExportUtil.getWordFileByHtml(content, true, os);
             }else if(DocType.PDF.getValue().equals(type)){
                 response.setContentType("application/pdf");
                 response.setHeader("Content-Disposition",
-                        "attachment;filename=\"" + URLEncoder.encode(knowledgeDocumentVo.getTitle(), "utf-8") + ".pdf\"");
+                        " attachment; filename=\"" + URLEncoder.encode(knowledgeDocumentVo.getTitle(), "utf-8") + ".pdf\"");
                 ExportUtil.getPdfFileByHtml(content, true, os);
             }
         } catch (Exception ex) {

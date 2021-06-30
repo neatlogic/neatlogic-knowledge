@@ -342,6 +342,9 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
 //                System.out.println(afterMainBody);
                 return true;
             }
+            if (!Objects.equals(beforeLine.getConfigStr(), afterLine.getConfigStr())) {
+                return true;
+            }
         }
         return false;
     }

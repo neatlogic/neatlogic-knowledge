@@ -3,6 +3,7 @@ package codedriver.module.knowledge.api.type;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.GroupSearch;
+import codedriver.framework.dao.mapper.RoleMapper;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.restful.annotation.Description;
@@ -42,7 +43,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             String userUuid = UserContext.get().getUserUuid(true);
             documentVoParam.setCircleUserUuid(userUuid);
             documentVoParam.setCircleTeamUuidList(teamMapper.getTeamUuidListByUserUuid(userUuid));
-            documentVoParam.setCircleRoleUuidList(userMapper.getRoleUuidListByUserUuid(userUuid));
+            documentVoParam.setCircleRoleUuidList(roleMapper.getRoleUuidListByUserUuid(userUuid));
             documentVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.PASSED.getValue()));
             return knowledgeDocumentMapper.searchKnowledgeDocumentIdCount(documentVoParam);
         });
@@ -65,7 +66,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             String userUuid = UserContext.get().getUserUuid(true);
             documentVoParam.setCircleUserUuid(userUuid);
             documentVoParam.setCircleTeamUuidList(teamMapper.getTeamUuidListByUserUuid(userUuid));
-            documentVoParam.setCircleRoleUuidList(userMapper.getRoleUuidListByUserUuid(userUuid));
+            documentVoParam.setCircleRoleUuidList(roleMapper.getRoleUuidListByUserUuid(userUuid));
             documentVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.PASSED.getValue()));
             documentVoParam.setCollector(userUuid);
             return knowledgeDocumentMapper.searchKnowledgeDocumentIdCount(documentVoParam);
@@ -85,7 +86,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
     TeamMapper teamMapper;
 
     @Resource
-    UserMapper userMapper;
+    RoleMapper roleMapper;
 
     @Override
     public String getToken() {

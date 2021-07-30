@@ -4,6 +4,7 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
+import codedriver.framework.dao.mapper.RoleMapper;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dto.UserVo;
@@ -47,7 +48,7 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
     TeamMapper teamMapper;
 
     @Resource
-    UserMapper userMapper;
+    RoleMapper roleMapper;
 
     @Override
     public String getToken() {
@@ -154,7 +155,7 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
             if (documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.DRAFT.getValue()) && knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
                 //如果不在圈子内则不允许编辑
                 if (knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVersionVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true)),
-                        userMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid(true))) > 0) {
+                        roleMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid(true))) > 0) {
                     knowledgeDocumentVersionVo.setIsEditable(1);
                 }
                 knowledgeDocumentVersionVo.setIsDeletable(1);

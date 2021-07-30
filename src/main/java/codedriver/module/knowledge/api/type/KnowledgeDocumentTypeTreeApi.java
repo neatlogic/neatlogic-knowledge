@@ -2,6 +2,7 @@ package codedriver.module.knowledge.api.type;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.dao.mapper.RoleMapper;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -34,7 +35,7 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 	private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
 
 	@Autowired
-	private UserMapper userMapper;
+	private RoleMapper roleMapper;
 
 	@Autowired
 	private TeamMapper teamMapper;
@@ -63,7 +64,7 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 		List<String> uuidList = new ArrayList<String>();
 		/** 获取当前用户所在组和角色 */
 		List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid());
-		List<String> roleUuidList = userMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid());
+		List<String> roleUuidList = roleMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid());
 		uuidList.addAll(teamUuidList);
 		uuidList.addAll(roleUuidList);
 		uuidList.add(UserContext.get().getUserUuid());

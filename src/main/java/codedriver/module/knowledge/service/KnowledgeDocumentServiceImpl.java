@@ -320,14 +320,14 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
                     if (reviewer.startsWith(GroupSearch.USER.getValuePlugin()) || (!reviewer.startsWith(GroupSearch.TEAM.getValuePlugin()) && !reviewer.startsWith(GroupSearch.ROLE.getValuePlugin()))) {
                         reviewer = reviewer.replaceAll(GroupSearch.USER.getValuePlugin(), StringUtils.EMPTY);
                         documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
-                        documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
+                        documentVersionVoParam.getReviewerRoleUuidList().addAll(roleMapper.getRoleUuidListByUserUuid(reviewer));
                         reviewerList.add(reviewer);
                     } else if (reviewer.startsWith(GroupSearch.TEAM.getValuePlugin())) {
                         reviewer = reviewer.replaceAll(GroupSearch.TEAM.getValuePlugin(), StringUtils.EMPTY);
                         documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
                     } else {
                         reviewer = reviewer.replaceAll(GroupSearch.ROLE.getValuePlugin(), StringUtils.EMPTY);
-                        documentVersionVoParam.getReviewerRoleUuidList().addAll(userMapper.getRoleUuidListByUserUuid(reviewer));
+                        documentVersionVoParam.getReviewerRoleUuidList().addAll(roleMapper.getRoleUuidListByUserUuid(reviewer));
                     }
                 }
                 documentVersionVoParam.setReviewerList(reviewerList);

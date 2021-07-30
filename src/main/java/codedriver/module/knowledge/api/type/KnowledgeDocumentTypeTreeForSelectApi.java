@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.dao.mapper.RoleMapper;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +49,7 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 	private KnowledgeDocumentTypeService knowledgeDocumentTypeService;
 
 	@Autowired
-	private UserMapper userMapper;
+	private RoleMapper roleMapper;
 
 	@Autowired
 	private TeamMapper teamMapper;
@@ -79,7 +80,7 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 		List<String> uuidList = new ArrayList<String>();
 		/** 获取当前用户所在组和角色 */
 		List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid());
-		List<String> roleUuidList = userMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid());
+		List<String> roleUuidList = roleMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid());
 		uuidList.addAll(teamUuidList);
 		uuidList.addAll(roleUuidList);
 		uuidList.add(UserContext.get().getUserUuid());

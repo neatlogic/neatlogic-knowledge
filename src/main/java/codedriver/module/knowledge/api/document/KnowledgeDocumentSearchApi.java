@@ -4,6 +4,7 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
+import codedriver.framework.dao.mapper.RoleMapper;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dto.UserVo;
@@ -40,7 +41,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     TeamMapper teamMapper;
 
     @Resource
-    UserMapper userMapper;
+    RoleMapper roleMapper;
 
     @Resource
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
@@ -200,6 +201,6 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         String userUuid = UserContext.get().getUserUuid(true);
         documentVoParam.setCircleUserUuid(userUuid);
         documentVoParam.setCircleTeamUuidList(teamMapper.getTeamUuidListByUserUuid(userUuid));
-        documentVoParam.setCircleRoleUuidList(userMapper.getRoleUuidListByUserUuid(userUuid));
+        documentVoParam.setCircleRoleUuidList(roleMapper.getRoleUuidListByUserUuid(userUuid));
     }
 }

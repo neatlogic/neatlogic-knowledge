@@ -108,7 +108,13 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     @Override
     public int isReviewer(Long knowledgeCircleId) {
         List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        if (knowledgeDocumentMapper.checkUserIsApprover(knowledgeCircleId, UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) > 0) {
+        List<String> userRoleUuidList = UserContext.get().getRoleUuidList();
+        List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
+        Set<String> roleUuidSet = new HashSet<>();
+        roleUuidSet.addAll(userRoleUuidList);
+        roleUuidSet.addAll(teamRoleUuidList);
+        List<String> roleUuidList = new ArrayList<>(roleUuidSet);
+        if (knowledgeDocumentMapper.checkUserIsApprover(knowledgeCircleId, UserContext.get().getUserUuid(true), teamUuidList, roleUuidList) > 0) {
             return 1;
         }
         return 0;
@@ -117,7 +123,13 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     @Override
     public int isMember(Long knowledgeCircleId) {
         List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-        if (knowledgeDocumentMapper.checkUserIsMember(knowledgeCircleId, UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList()) > 0) {
+        List<String> userRoleUuidList = UserContext.get().getRoleUuidList();
+        List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
+        Set<String> roleUuidSet = new HashSet<>();
+        roleUuidSet.addAll(userRoleUuidList);
+        roleUuidSet.addAll(teamRoleUuidList);
+        List<String> roleUuidList = new ArrayList<>(roleUuidSet);
+        if (knowledgeDocumentMapper.checkUserIsMember(knowledgeCircleId, UserContext.get().getUserUuid(true), teamUuidList, roleUuidList) > 0) {
             return 1;
         }
         return 0;
@@ -319,15 +331,29 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
                     String reviewer = reviewerIterator.next();
                     if (reviewer.startsWith(GroupSearch.USER.getValuePlugin()) || (!reviewer.startsWith(GroupSearch.TEAM.getValuePlugin()) && !reviewer.startsWith(GroupSearch.ROLE.getValuePlugin()))) {
                         reviewer = reviewer.replaceAll(GroupSearch.USER.getValuePlugin(), StringUtils.EMPTY);
-                        documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
-                        documentVersionVoParam.getReviewerRoleUuidList().addAll(roleMapper.getRoleUuidListByUserUuid(reviewer));
+                        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(reviewer);
+                        List<String> userRoleUuidList = roleMapper.getRoleUuidListByUserUuid(reviewer);
+                        List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
+                        Set<String> roleUuidSet = new HashSet<>();
+                        roleUuidSet.addAll(userRoleUuidList);
+                        roleUuidSet.addAll(teamRoleUuidList);
+                        List<String> roleUuidList = new ArrayList<>(roleUuidSet);
+                        documentVersionVoParam.getReviewerTeamUuidList().addAll(teamUuidList);
+                        documentVersionVoParam.getReviewerRoleUuidList().addAll(roleUuidList);
                         reviewerList.add(reviewer);
                     } else if (reviewer.startsWith(GroupSearch.TEAM.getValuePlugin())) {
                         reviewer = reviewer.replaceAll(GroupSearch.TEAM.getValuePlugin(), StringUtils.EMPTY);
                         documentVersionVoParam.getReviewerTeamUuidList().addAll(teamMapper.getTeamUuidListByUserUuid(reviewer));
                     } else {
                         reviewer = reviewer.replaceAll(GroupSearch.ROLE.getValuePlugin(), StringUtils.EMPTY);
-                        documentVersionVoParam.getReviewerRoleUuidList().addAll(roleMapper.getRoleUuidListByUserUuid(reviewer));
+                        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(reviewer);
+                        List<String> userRoleUuidList = roleMapper.getRoleUuidListByUserUuid(reviewer);
+                        List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
+                        Set<String> roleUuidSet = new HashSet<>();
+                        roleUuidSet.addAll(userRoleUuidList);
+                        roleUuidSet.addAll(teamRoleUuidList);
+                        List<String> roleUuidList = new ArrayList<>(roleUuidSet);
+                        documentVersionVoParam.getReviewerRoleUuidList().addAll(roleUuidList);
                     }
                 }
                 documentVersionVoParam.setReviewerList(reviewerList);

@@ -127,14 +127,20 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         Integer isApprover = null;
         List<Long> approveCircleIdList = new ArrayList<Long>();
         List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        List<String> userRoleUuidList = UserContext.get().getRoleUuidList();
+        List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
+        Set<String> roleUuidSet = new HashSet<>();
+        roleUuidSet.addAll(userRoleUuidList);
+        roleUuidSet.addAll(teamRoleUuidList);
+        List<String> roleUuidList = new ArrayList<>(roleUuidSet);
         if (StringUtils.isNotBlank(documentVoParam.getKnowledgeDocumentTypeUuid())) {
             KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMapper.getTypeByUuid(documentVoParam.getKnowledgeDocumentTypeUuid());
             if (knowledgeDocumentTypeVo == null) {
                 throw new KnowledgeDocumentTypeNotFoundException(documentVoParam.getKnowledgeDocumentTypeUuid());
             }
-            isApprover = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+            isApprover = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, roleUuidList);
         } else {
-            approveCircleIdList = knowledgeDocumentMapper.getUserAllApproverCircleIdList(UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+            approveCircleIdList = knowledgeDocumentMapper.getUserAllApproverCircleIdList(UserContext.get().getUserUuid(true), teamUuidList, roleUuidList);
         }
         //获取所有知识当前激活版本
         List<Long> activeVersionIdList = new ArrayList<>();
@@ -200,7 +206,15 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     private void getDocumentViewParam(KnowledgeDocumentVo documentVoParam) {
         String userUuid = UserContext.get().getUserUuid(true);
         documentVoParam.setCircleUserUuid(userUuid);
-        documentVoParam.setCircleTeamUuidList(teamMapper.getTeamUuidListByUserUuid(userUuid));
-        documentVoParam.setCircleRoleUuidList(roleMapper.getRoleUuidListByUserUuid(userUuid));
+
+        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(userUuid);
+        List<String> userRoleUuidList = roleMapper.getRoleUuidListByUserUuid(userUuid);
+        List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
+        Set<String> roleUuidSet = new HashSet<>();
+        roleUuidSet.addAll(userRoleUuidList);
+        roleUuidSet.addAll(teamRoleUuidList);
+        List<String> roleUuidList = new ArrayList<>(roleUuidSet);
+        documentVoParam.setCircleTeamUuidList(teamUuidList);
+        documentVoParam.setCircleRoleUuidList(roleUuidList);
     }
 }

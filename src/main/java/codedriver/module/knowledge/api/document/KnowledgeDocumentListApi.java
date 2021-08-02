@@ -1,16 +1,13 @@
 package codedriver.module.knowledge.api.document;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.dao.mapper.RoleMapper;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -66,6 +63,9 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
 
     @Resource
     private TeamMapper teamMapper;
+
+    @Resource
+    private RoleMapper roleMapper;
 
     private Map<String, Function<JSONObject, JSONObject>> map = new HashMap<>();
     
@@ -133,10 +133,16 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             resultObj.put("theadList", getWaitingForMyReviewTheadList());
             resultObj.put("tbodyList", new ArrayList<>());
             List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+            List<String> userRoleUuidList = UserContext.get().getRoleUuidList();
+            List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
+            Set<String> roleUuidSet = new HashSet<>();
+            roleUuidSet.addAll(userRoleUuidList);
+            roleUuidSet.addAll(teamRoleUuidList);
+            List<String> roleUuidList = new ArrayList<>(roleUuidSet);
             BasePageVo searchVo = JSON.toJavaObject(jsonObj, BasePageVo.class);
             int pageCount = 0;
             if(searchVo.getNeedPage()) {
-                int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewCount(searchVo, UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+                int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewCount(searchVo, UserContext.get().getUserUuid(true), teamUuidList, roleUuidList);
                 pageCount = PageUtil.getPageCount(rowNum, searchVo.getPageSize());
                 resultObj.put("currentPage", searchVo.getCurrentPage());
                 resultObj.put("pageSize", searchVo.getPageSize());
@@ -144,7 +150,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                 resultObj.put("rowNum", rowNum);
             }
             if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
-                List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewList(searchVo, UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+                List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewList(searchVo, UserContext.get().getUserUuid(true), teamUuidList, roleUuidList);
                 resultObj.put("tbodyList", knowledgeDocumentVersionList);
             }
             return resultObj;

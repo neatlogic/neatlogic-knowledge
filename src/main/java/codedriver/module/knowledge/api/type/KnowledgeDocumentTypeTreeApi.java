@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -64,7 +65,12 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 		List<String> uuidList = new ArrayList<String>();
 		/** 获取当前用户所在组和角色 */
 		List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid());
-		List<String> roleUuidList = roleMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid());
+		List<String> userRoleUuidList = roleMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid());
+		List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
+		Set<String> roleUuidSet = new HashSet<>();
+		roleUuidSet.addAll(userRoleUuidList);
+		roleUuidSet.addAll(teamRoleUuidList);
+		List<String> roleUuidList = new ArrayList<>(roleUuidSet);
 		uuidList.addAll(teamUuidList);
 		uuidList.addAll(roleUuidList);
 		uuidList.add(UserContext.get().getUserUuid());

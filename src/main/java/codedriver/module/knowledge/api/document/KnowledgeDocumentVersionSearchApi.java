@@ -154,8 +154,14 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
             //跟新操作（如果是草稿,可以删除或编辑）
             if (documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.DRAFT.getValue()) && knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
                 //如果不在圈子内则不允许编辑
-                if (knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVersionVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true)),
-                        roleMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid(true))) > 0) {
+                List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+                List<String> userRoleUuidList = roleMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid(true));
+                List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
+                Set<String> roleUuidSet = new HashSet<>();
+                roleUuidSet.addAll(userRoleUuidList);
+                roleUuidSet.addAll(teamRoleUuidList);
+                List<String> roleUuidList = new ArrayList<>(roleUuidSet);
+                if (knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVersionVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, roleUuidList) > 0) {
                     knowledgeDocumentVersionVo.setIsEditable(1);
                 }
                 knowledgeDocumentVersionVo.setIsDeletable(1);

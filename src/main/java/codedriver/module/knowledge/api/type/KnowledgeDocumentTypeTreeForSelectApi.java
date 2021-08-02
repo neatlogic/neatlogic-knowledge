@@ -1,10 +1,6 @@
 package codedriver.module.knowledge.api.type;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import codedriver.framework.auth.core.AuthAction;
@@ -80,7 +76,12 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 		List<String> uuidList = new ArrayList<String>();
 		/** 获取当前用户所在组和角色 */
 		List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid());
-		List<String> roleUuidList = roleMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid());
+		List<String> userRoleUuidList = roleMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid());
+		List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
+		Set<String> roleUuidSet = new HashSet<>();
+		roleUuidSet.addAll(userRoleUuidList);
+		roleUuidSet.addAll(teamRoleUuidList);
+		List<String> roleUuidList = new ArrayList<>(roleUuidSet);
 		uuidList.addAll(teamUuidList);
 		uuidList.addAll(roleUuidList);
 		uuidList.add(UserContext.get().getUserUuid());

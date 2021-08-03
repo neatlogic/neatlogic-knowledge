@@ -1,14 +1,11 @@
 package codedriver.module.knowledge.api.type;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.dao.mapper.RoleMapper;
+import codedriver.framework.dto.AuthenticationInfoVo;
+import codedriver.framework.service.AuthenticationInfoService;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -20,8 +17,6 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -33,6 +28,8 @@ import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.module.knowledge.service.KnowledgeDocumentTypeService;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = KNOWLEDGE_BASE.class)
@@ -48,11 +45,8 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 	@Autowired
 	private KnowledgeDocumentTypeService knowledgeDocumentTypeService;
 
-	@Autowired
-	private RoleMapper roleMapper;
-
-	@Autowired
-	private TeamMapper teamMapper;
+	@Resource
+	private AuthenticationInfoService authenticationInfoService;
 
 	@Override
 	public String getToken() {
@@ -79,10 +73,9 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 //		List<KnowledgeDocumentTypeVo> docTypeList = null;
 		List<String> uuidList = new ArrayList<String>();
 		/** 获取当前用户所在组和角色 */
-		List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid());
-		List<String> roleUuidList = roleMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid());
-		uuidList.addAll(teamUuidList);
-		uuidList.addAll(roleUuidList);
+		AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(UserContext.get().getUserUuid());
+		uuidList.addAll(authenticationInfoVo.getTeamUuidList());
+		uuidList.addAll(authenticationInfoVo.getRoleUuidList());
 		uuidList.add(UserContext.get().getUserUuid());
 		/** 获取当前用户所有的圈子ID集合 */
 		List<Long> circleIdList = knowledgeCircleMapper.getCircleIdListByUserUuidList(uuidList);

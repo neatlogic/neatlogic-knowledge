@@ -4,14 +4,13 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
-import codedriver.framework.dao.mapper.RoleMapper;
-import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.dto.UserVo;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.service.AuthenticationInfoService;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
@@ -45,10 +44,7 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
     private KnowledgeDocumentService knowledgeDocumentService;
 
     @Resource
-    TeamMapper teamMapper;
-
-    @Resource
-    RoleMapper roleMapper;
+    private AuthenticationInfoService authenticationInfoService;
 
     @Override
     public String getToken() {
@@ -154,8 +150,8 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
             //跟新操作（如果是草稿,可以删除或编辑）
             if (documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.DRAFT.getValue()) && knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
                 //如果不在圈子内则不允许编辑
-                if (knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVersionVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true)),
-                        roleMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid(true))) > 0) {
+                AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(UserContext.get().getUserUuid(true));
+                if (knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVersionVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), authenticationInfoVo.getTeamUuidList(), authenticationInfoVo.getRoleUuidList()) > 0) {
                     knowledgeDocumentVersionVo.setIsEditable(1);
                 }
                 knowledgeDocumentVersionVo.setIsDeletable(1);

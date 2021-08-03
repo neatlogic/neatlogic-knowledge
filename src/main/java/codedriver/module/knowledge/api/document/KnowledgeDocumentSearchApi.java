@@ -4,14 +4,13 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
-import codedriver.framework.dao.mapper.RoleMapper;
-import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.dto.UserVo;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.service.AuthenticationInfoService;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
@@ -38,10 +37,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     KnowledgeDocumentMapper knowledgeDocumentMapper;
 
     @Resource
-    TeamMapper teamMapper;
-
-    @Resource
-    RoleMapper roleMapper;
+    private AuthenticationInfoService authenticationInfoService;
 
     @Resource
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
@@ -126,15 +122,15 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         //判断知识圈是否拥有审批权限。如果入参传入知识全类型，则查询是否有该圈子类型的审批权限，否则一次性获取当前登录人拥有审批权限的所有圈子id
         Integer isApprover = null;
         List<Long> approveCircleIdList = new ArrayList<Long>();
-        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
+        AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(UserContext.get().getUserUuid(true));
         if (StringUtils.isNotBlank(documentVoParam.getKnowledgeDocumentTypeUuid())) {
             KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMapper.getTypeByUuid(documentVoParam.getKnowledgeDocumentTypeUuid());
             if (knowledgeDocumentTypeVo == null) {
                 throw new KnowledgeDocumentTypeNotFoundException(documentVoParam.getKnowledgeDocumentTypeUuid());
             }
-            isApprover = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+            isApprover = knowledgeDocumentMapper.checkUserIsApprover(knowledgeDocumentTypeVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), authenticationInfoVo.getTeamUuidList(), authenticationInfoVo.getRoleUuidList());
         } else {
-            approveCircleIdList = knowledgeDocumentMapper.getUserAllApproverCircleIdList(UserContext.get().getUserUuid(true), teamUuidList, UserContext.get().getRoleUuidList());
+            approveCircleIdList = knowledgeDocumentMapper.getUserAllApproverCircleIdList(UserContext.get().getUserUuid(true), authenticationInfoVo.getTeamUuidList(), authenticationInfoVo.getRoleUuidList());
         }
         //获取所有知识当前激活版本
         List<Long> activeVersionIdList = new ArrayList<>();
@@ -200,7 +196,9 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
     private void getDocumentViewParam(KnowledgeDocumentVo documentVoParam) {
         String userUuid = UserContext.get().getUserUuid(true);
         documentVoParam.setCircleUserUuid(userUuid);
-        documentVoParam.setCircleTeamUuidList(teamMapper.getTeamUuidListByUserUuid(userUuid));
-        documentVoParam.setCircleRoleUuidList(roleMapper.getRoleUuidListByUserUuid(userUuid));
+
+        AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(userUuid);
+        documentVoParam.setCircleTeamUuidList(authenticationInfoVo.getTeamUuidList());
+        documentVoParam.setCircleRoleUuidList(authenticationInfoVo.getRoleUuidList());
     }
 }

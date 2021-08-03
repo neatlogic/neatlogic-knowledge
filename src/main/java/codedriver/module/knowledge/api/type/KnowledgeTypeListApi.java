@@ -3,15 +3,14 @@ package codedriver.module.knowledge.api.type;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.GroupSearch;
-import codedriver.framework.dao.mapper.RoleMapper;
-import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.service.AuthenticationInfoService;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.module.knowledge.constvalue.KnowledgeType;
@@ -42,15 +41,9 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             KnowledgeDocumentVo documentVoParam = new KnowledgeDocumentVo();
             String userUuid = UserContext.get().getUserUuid(true);
             documentVoParam.setCircleUserUuid(userUuid);
-            List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(userUuid);
-            List<String> userRoleUuidList = roleMapper.getRoleUuidListByUserUuid(userUuid);
-            List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
-            Set<String> roleUuidSet = new HashSet<>();
-            roleUuidSet.addAll(userRoleUuidList);
-            roleUuidSet.addAll(teamRoleUuidList);
-            List<String> roleUuidList = new ArrayList<>(roleUuidSet);
-            documentVoParam.setCircleTeamUuidList(teamUuidList);
-            documentVoParam.setCircleRoleUuidList(roleUuidList);
+            AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(userUuid);
+            documentVoParam.setCircleTeamUuidList(authenticationInfoVo.getTeamUuidList());
+            documentVoParam.setCircleRoleUuidList(authenticationInfoVo.getRoleUuidList());
             documentVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.PASSED.getValue()));
             return knowledgeDocumentMapper.searchKnowledgeDocumentIdCount(documentVoParam);
         });
@@ -72,15 +65,9 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             KnowledgeDocumentVo documentVoParam = new KnowledgeDocumentVo();
             String userUuid = UserContext.get().getUserUuid(true);
             documentVoParam.setCircleUserUuid(userUuid);
-            List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(userUuid);
-            List<String> userRoleUuidList = roleMapper.getRoleUuidListByUserUuid(userUuid);
-            List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
-            Set<String> roleUuidSet = new HashSet<>();
-            roleUuidSet.addAll(userRoleUuidList);
-            roleUuidSet.addAll(teamRoleUuidList);
-            List<String> roleUuidList = new ArrayList<>(roleUuidSet);
-            documentVoParam.setCircleTeamUuidList(teamUuidList);
-            documentVoParam.setCircleRoleUuidList(roleUuidList);
+            AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(userUuid);
+            documentVoParam.setCircleTeamUuidList(authenticationInfoVo.getTeamUuidList());
+            documentVoParam.setCircleRoleUuidList(authenticationInfoVo.getRoleUuidList());
             documentVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.PASSED.getValue()));
             documentVoParam.setCollector(userUuid);
             return knowledgeDocumentMapper.searchKnowledgeDocumentIdCount(documentVoParam);
@@ -97,10 +84,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
 
     @Resource
-    TeamMapper teamMapper;
-
-    @Resource
-    RoleMapper roleMapper;
+    private AuthenticationInfoService authenticationInfoService;
 
     @Override
     public String getToken() {

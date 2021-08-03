@@ -2,12 +2,11 @@ package codedriver.module.knowledge.api.type;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.dao.mapper.RoleMapper;
-import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.dto.AuthenticationInfoVo;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.service.AuthenticationInfoService;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
 import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
@@ -18,6 +17,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,11 +35,8 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 	@Autowired
 	private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
 
-	@Autowired
-	private RoleMapper roleMapper;
-
-	@Autowired
-	private TeamMapper teamMapper;
+	@Resource
+	private AuthenticationInfoService authenticationInfoService;
 
 	@Override
 	public String getToken() {
@@ -64,15 +61,9 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 		JSONArray result = new JSONArray();
 		List<String> uuidList = new ArrayList<String>();
 		/** 获取当前用户所在组和角色 */
-		List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid());
-		List<String> userRoleUuidList = roleMapper.getRoleUuidListByUserUuid(UserContext.get().getUserUuid());
-		List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
-		Set<String> roleUuidSet = new HashSet<>();
-		roleUuidSet.addAll(userRoleUuidList);
-		roleUuidSet.addAll(teamRoleUuidList);
-		List<String> roleUuidList = new ArrayList<>(roleUuidSet);
-		uuidList.addAll(teamUuidList);
-		uuidList.addAll(roleUuidList);
+		AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(UserContext.get().getUserUuid());
+		uuidList.addAll(authenticationInfoVo.getTeamUuidList());
+		uuidList.addAll(authenticationInfoVo.getRoleUuidList());
 		uuidList.add(UserContext.get().getUserUuid());
 		/** 获取当前用户所有的圈子ID集合 */
 		List<Long> circleIdList = knowledgeCircleMapper.getCircleIdListByUserUuidList(uuidList);

@@ -7,7 +7,8 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.dao.mapper.RoleMapper;
+import codedriver.framework.dto.AuthenticationInfoVo;
+import codedriver.framework.service.AuthenticationInfoService;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +23,6 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.util.PageUtil;
-import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dto.UserVo;
 import codedriver.framework.exception.type.ParamNotExistsException;
@@ -62,10 +62,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
     private KnowledgeDocumentService knowledgeDocumentService;
 
     @Resource
-    private TeamMapper teamMapper;
-
-    @Resource
-    private RoleMapper roleMapper;
+    private AuthenticationInfoService authenticationInfoService;
 
     private Map<String, Function<JSONObject, JSONObject>> map = new HashMap<>();
     
@@ -132,17 +129,11 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             JSONObject resultObj = new JSONObject();
             resultObj.put("theadList", getWaitingForMyReviewTheadList());
             resultObj.put("tbodyList", new ArrayList<>());
-            List<String> teamUuidList= teamMapper.getTeamUuidListByUserUuid(UserContext.get().getUserUuid(true));
-            List<String> userRoleUuidList = UserContext.get().getRoleUuidList();
-            List<String> teamRoleUuidList = roleMapper.getRoleUuidListByTeamUuidList(teamUuidList);
-            Set<String> roleUuidSet = new HashSet<>();
-            roleUuidSet.addAll(userRoleUuidList);
-            roleUuidSet.addAll(teamRoleUuidList);
-            List<String> roleUuidList = new ArrayList<>(roleUuidSet);
+            AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(UserContext.get().getUserUuid(true));
             BasePageVo searchVo = JSON.toJavaObject(jsonObj, BasePageVo.class);
             int pageCount = 0;
             if(searchVo.getNeedPage()) {
-                int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewCount(searchVo, UserContext.get().getUserUuid(true), teamUuidList, roleUuidList);
+                int rowNum = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewCount(searchVo, UserContext.get().getUserUuid(true), authenticationInfoVo.getTeamUuidList(), authenticationInfoVo.getRoleUuidList());
                 pageCount = PageUtil.getPageCount(rowNum, searchVo.getPageSize());
                 resultObj.put("currentPage", searchVo.getCurrentPage());
                 resultObj.put("pageSize", searchVo.getPageSize());
@@ -150,7 +141,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
                 resultObj.put("rowNum", rowNum);
             }
             if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
-                List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewList(searchVo, UserContext.get().getUserUuid(true), teamUuidList, roleUuidList);
+                List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentWaitingForReviewList(searchVo, UserContext.get().getUserUuid(true), authenticationInfoVo.getTeamUuidList(), authenticationInfoVo.getRoleUuidList());
                 resultObj.put("tbodyList", knowledgeDocumentVersionList);
             }
             return resultObj;

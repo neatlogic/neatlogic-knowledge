@@ -27,13 +27,13 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
-import codedriver.module.knowledge.dto.KnowledgeCircleUserVo;
-import codedriver.module.knowledge.dto.KnowledgeCircleVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
-import codedriver.module.knowledge.exception.KnowledgeCircleNameRepeatException;
-import codedriver.module.knowledge.exception.KnowledgeCircleNotFoundException;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
+import codedriver.framework.knowledge.dto.KnowledgeCircleUserVo;
+import codedriver.framework.knowledge.dto.KnowledgeCircleVo;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentTypeVo;
+import codedriver.framework.knowledge.exception.KnowledgeCircleNameRepeatException;
+import codedriver.framework.knowledge.exception.KnowledgeCircleNotFoundException;
 import codedriver.module.knowledge.service.KnowledgeDocumentTypeService;
 
 /**

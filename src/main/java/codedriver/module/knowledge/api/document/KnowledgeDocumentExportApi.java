@@ -5,6 +5,8 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
+import codedriver.framework.knowledge.linehandler.core.ILineHandler;
+import codedriver.framework.knowledge.linehandler.core.LineHandlerFactory;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -14,9 +16,9 @@ import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiCompon
 import codedriver.framework.util.DocType;
 import codedriver.framework.util.ExportUtil;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
-import codedriver.module.knowledge.constvalue.KnowledgeDocumentLineHandler;
-import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.framework.knowledge.constvalue.KnowledgeDocumentLineHandler;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentLineVo;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -117,7 +119,10 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
         out.write("<body>\n");
         for(KnowledgeDocumentLineVo line : knowledgeDocumentVo.getLineList()){
             if(!KnowledgeDocumentLineHandler.IMG.getValue().equals(line.getHandler())){
-                out.write(KnowledgeDocumentLineHandler.convertContentToHtml(line));
+                ILineHandler lineHandler = LineHandlerFactory.getHandler(line.getHandler());
+                if(lineHandler != null) {
+                    out.write(lineHandler.convertContentToHtml(line));
+                }
             }else{
                 bos.reset();
                 String url = line.getConfig().getString("url");

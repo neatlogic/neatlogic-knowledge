@@ -9,8 +9,8 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.common.constvalue.FormHandlerType;
 import codedriver.framework.common.dto.ValueTextVo;
-import codedriver.module.knowledge.constvalue.KnowledgeDocumentVersionStatus;
-import codedriver.module.knowledge.constvalue.KnowledgeType;
+import codedriver.framework.knowledge.constvalue.KnowledgeDocumentVersionStatus;
+import codedriver.framework.knowledge.constvalue.KnowledgeType;
 
 public class KnowledgeConditionBuilder {
      

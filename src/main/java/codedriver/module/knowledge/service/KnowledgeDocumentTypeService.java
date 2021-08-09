@@ -1,6 +1,6 @@
 package codedriver.module.knowledge.service;
 
-import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentTypeVo;
 
 public interface KnowledgeDocumentTypeService {
 	

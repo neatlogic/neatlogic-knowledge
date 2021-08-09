@@ -22,16 +22,16 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.knowledge.dao.mapper.KnowledgeCircleMapper;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
-import codedriver.module.knowledge.dto.KnowledgeCircleVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentInvokeVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
-import codedriver.module.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
+import codedriver.framework.knowledge.dto.KnowledgeCircleVo;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentInvokeVo;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentTypeVo;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentVersionVo;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.framework.knowledge.exception.KnowledgeDocumentNotFoundException;
+import codedriver.framework.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 
 import javax.annotation.Resource;
 

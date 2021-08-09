@@ -1,7 +1,7 @@
 package codedriver.module.knowledge.service;
 
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentTypeVo;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentTypeVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

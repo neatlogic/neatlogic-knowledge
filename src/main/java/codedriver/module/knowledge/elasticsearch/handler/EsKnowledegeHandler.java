@@ -1,7 +1,7 @@
 package codedriver.module.knowledge.elasticsearch.handler;
 
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerBase;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentVo;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 

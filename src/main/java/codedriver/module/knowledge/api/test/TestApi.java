@@ -4,7 +4,7 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_CIRCLE_MODIFY;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_TEMPLATE_MODIFY;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

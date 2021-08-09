@@ -2,10 +2,10 @@ package codedriver.module.knowledge.service;
 
 import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
-import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
-import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.framework.knowledge.constvalue.KnowledgeDocumentOperate;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentLineVo;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentVersionVo;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentVo;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.List;

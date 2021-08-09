@@ -10,7 +10,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.module.knowledge.fulltextindex.FullTextIndexType;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;

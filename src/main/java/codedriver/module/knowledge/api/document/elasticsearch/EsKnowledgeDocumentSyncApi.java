@@ -6,7 +6,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

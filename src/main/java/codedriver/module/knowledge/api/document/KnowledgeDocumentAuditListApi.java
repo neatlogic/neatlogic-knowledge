@@ -26,12 +26,12 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.FreemarkerUtil;
-import codedriver.module.knowledge.constvalue.KnowledgeDocumentOperate;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentAuditVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVo;
-import codedriver.module.knowledge.exception.KnowledgeDocumentNotFoundException;
+import codedriver.framework.knowledge.constvalue.KnowledgeDocumentOperate;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentAuditVo;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentVo;
+import codedriver.framework.knowledge.exception.KnowledgeDocumentNotFoundException;
 
 import javax.annotation.Resource;
 

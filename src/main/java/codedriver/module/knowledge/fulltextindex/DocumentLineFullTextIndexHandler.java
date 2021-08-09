@@ -3,9 +3,9 @@ package codedriver.module.knowledge.fulltextindex;
 import codedriver.framework.fulltextindex.core.FullTextIndexHandlerBase;
 import codedriver.framework.fulltextindex.core.IFullTextIndexType;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
-import codedriver.module.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.dto.KnowledgeDocumentLineVo;
-import codedriver.module.knowledge.dto.KnowledgeDocumentVersionVo;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentLineVo;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentVersionVo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 

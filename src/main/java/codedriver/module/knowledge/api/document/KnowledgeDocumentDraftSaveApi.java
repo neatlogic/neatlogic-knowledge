@@ -16,7 +16,6 @@ import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.UuidUtil;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
-import codedriver.framework.knowledge.constvalue.KnowledgeDocumentLineHandler;
 import codedriver.framework.knowledge.constvalue.KnowledgeDocumentOperate;
 import codedriver.framework.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;

@@ -11,7 +11,6 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
-import codedriver.framework.knowledge.constvalue.KnowledgeDocumentLineHandler;
 import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.framework.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.framework.knowledge.dto.KnowledgeDocumentVo;

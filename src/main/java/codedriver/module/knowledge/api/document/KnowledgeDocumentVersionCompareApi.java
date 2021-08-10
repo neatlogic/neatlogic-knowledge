@@ -3,12 +3,14 @@ package codedriver.module.knowledge.api.document;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.file.dto.FileVo;
+import codedriver.framework.knowledge.exception.KnowledgeDocumentLineHandlerNotFoundException;
+import codedriver.framework.knowledge.linehandler.core.ILineHandler;
+import codedriver.framework.knowledge.linehandler.core.LineHandlerFactory;
 import codedriver.framework.lcs.*;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
-import codedriver.framework.knowledge.constvalue.KnowledgeDocumentLineHandler;
 import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.framework.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.framework.knowledge.dto.KnowledgeDocumentVo;
@@ -209,13 +211,18 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                     /** 行组件相同，才是修改行数据 **/
                     oldLine.setChangeType("update");
                     newLine.setChangeType("update");
-                    String oldMainBody = KnowledgeDocumentLineHandler.getMainBody(oldLine);
-                    String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
-                    if (KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null) {
+                    String handler = oldLine.getHandler();
+                    ILineHandler lineHandler = LineHandlerFactory.getHandler(handler);
+                    if (lineHandler == null) {
+                        throw new KnowledgeDocumentLineHandlerNotFoundException(handler);
+                    }
+                    String oldMainBody = lineHandler.getMainBody(oldLine);
+                    String newMainBody = lineHandler.getMainBody(newLine);
+                    if (lineHandler.needCompare()) {
                         if (StringUtils.length(oldMainBody) == 0) {
-                            KnowledgeDocumentLineHandler.setMainBody(newLine, "<span class='insert'>" + newMainBody + "</span>");
+                            lineHandler.setMainBody(newLine, "<span class='insert'>" + newMainBody + "</span>");
                         } else if (StringUtils.length(newMainBody) == 0) {
-                            KnowledgeDocumentLineHandler.setMainBody(oldLine, "<span class='delete'>" + oldMainBody + "</span>");
+                            lineHandler.setMainBody(oldLine, "<span class='delete'>" + oldMainBody + "</span>");
                         } else {
                             List<SegmentRange> oldSegmentRangeList = new ArrayList<>();
                             List<SegmentRange> newSegmentRangeList = new ArrayList<>();
@@ -224,8 +231,8 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                                 oldSegmentRangeList.add(new SegmentRange(segmentpair.getOldBeginIndex(), segmentpair.getOldEndIndex(), segmentpair.isMatch()));
                                 newSegmentRangeList.add(new SegmentRange(segmentpair.getNewBeginIndex(), segmentpair.getNewEndIndex(), segmentpair.isMatch()));
                             }
-                            KnowledgeDocumentLineHandler.setMainBody(oldLine, LCSUtil.wrapChangePlace(oldMainBody, oldSegmentRangeList, "<span class='delete'>", "</span>"));
-                            KnowledgeDocumentLineHandler.setMainBody(newLine, LCSUtil.wrapChangePlace(newMainBody, newSegmentRangeList, "<span class='insert'>", "</span>"));
+                            lineHandler.setMainBody(oldLine, LCSUtil.wrapChangePlace(oldMainBody, oldSegmentRangeList, "<span class='delete'>", "</span>"));
+                            lineHandler.setMainBody(newLine, LCSUtil.wrapChangePlace(newMainBody, newSegmentRangeList, "<span class='insert'>", "</span>"));
                         }
                     }
                     oldResultList.add(oldLine);
@@ -287,13 +294,23 @@ public class KnowledgeDocumentVersionCompareApi extends PrivateApiComponentBase 
                 Node currentNode = new Node(i, j);
                 KnowledgeDocumentLineVo oldLine = source.get(i);
                 KnowledgeDocumentLineVo newLine = target.get(j);
-                String oldMainBody = KnowledgeDocumentLineHandler.getMainBody(oldLine);
-                String newMainBody = KnowledgeDocumentLineHandler.getMainBody(newLine);
+                String oldHandler = oldLine.getHandler();
+                ILineHandler oldLineHandler = LineHandlerFactory.getHandler(oldHandler);
+                if (oldLineHandler == null) {
+                    throw new KnowledgeDocumentLineHandlerNotFoundException(oldHandler);
+                }
+                String newHandler = newLine.getHandler();
+                ILineHandler newLineHandler = LineHandlerFactory.getHandler(newHandler);
+                if (newLineHandler == null) {
+                    throw new KnowledgeDocumentLineHandlerNotFoundException(newHandler);
+                }
+                String oldMainBody = oldLineHandler.getMainBody(oldLine);
+                String newMainBody = newLineHandler.getMainBody(newLine);
                 int oldLineContentLength = StringUtils.length(oldMainBody);
                 int newLineContentLength = StringUtils.length(newMainBody);
                 int minEditDistance = 0;
                 if (oldLine.getHandler().equals(newLine.getHandler())) {
-                    if (KnowledgeDocumentLineHandler.getMainBodySet(oldLine.getHandler()) != null && oldLineContentLength > 0 && newLineContentLength > 0) {
+                    if (oldLineHandler.needCompare() && oldLineContentLength > 0 && newLineContentLength > 0) {
                         minEditDistance = LCSUtil.minEditDistance(oldMainBody, newMainBody);
                     } else {
                         minEditDistance = oldLineContentLength + newLineContentLength;

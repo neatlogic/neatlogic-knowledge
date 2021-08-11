@@ -11,7 +11,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import codedriver.module.knowledge.fulltextindex.FullTextIndexType;
+import codedriver.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -46,7 +46,7 @@ public class KnowledgeDocumentFulltextIndexRebuildApi extends PrivateApiComponen
         JSONArray versionIdArray = jsonObj.getJSONArray("versionIdList");
         List<Long> versionIdList = null;
         //创建全文检索索引
-        IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(FullTextIndexType.KNOW_DOCUMENT_VERSION);
+        IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(KnowledgeFullTextIndexType.KNOW_DOCUMENT_VERSION);
         if (handler != null) {
             if(CollectionUtils.isNotEmpty(versionIdArray)){
                 versionIdList = JSONObject.parseArray(versionIdArray.toJSONString(), Long.class);

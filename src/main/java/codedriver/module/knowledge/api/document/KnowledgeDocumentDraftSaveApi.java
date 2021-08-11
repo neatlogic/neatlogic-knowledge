@@ -23,7 +23,7 @@ import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.framework.knowledge.dao.mapper.KnowledgeTagMapper;
 import codedriver.framework.knowledge.dto.*;
 import codedriver.framework.knowledge.exception.*;
-import codedriver.module.knowledge.fulltextindex.FullTextIndexType;
+import codedriver.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -206,7 +206,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
         if (needSaveDocument) {
             saveDocument(documentVo);
             //创建全文检索索引
-            IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(FullTextIndexType.KNOW_DOCUMENT_VERSION);
+            IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(KnowledgeFullTextIndexType.KNOW_DOCUMENT_VERSION);
             if (handler != null) {
                 handler.createIndex(documentVo.getKnowledgeDocumentVersionId());
             }

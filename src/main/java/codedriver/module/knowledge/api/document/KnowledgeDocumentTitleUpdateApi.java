@@ -17,7 +17,7 @@ import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.framework.knowledge.dto.KnowledgeDocumentVo;
 import codedriver.framework.knowledge.exception.KnowledgeDocumentNotFoundException;
 import codedriver.framework.knowledge.exception.KnowledgeDocumentTitleRepeatException;
-import codedriver.module.knowledge.fulltextindex.FullTextIndexType;
+import codedriver.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,7 +66,7 @@ public class KnowledgeDocumentTitleUpdateApi extends PrivateApiComponentBase {
             }
             knowledgeDocumentMapper.updateKnowledgeDocumentTitleById(knowledgeDocumentVo);
             //创建全文检索索引
-            IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(FullTextIndexType.KNOW_DOCUMENT_VERSION);
+            IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(KnowledgeFullTextIndexType.KNOW_DOCUMENT_VERSION);
             if (handler != null) {
                 handler.createIndex(knowledgeDocumentVo.getKnowledgeDocumentVersionId());
             }

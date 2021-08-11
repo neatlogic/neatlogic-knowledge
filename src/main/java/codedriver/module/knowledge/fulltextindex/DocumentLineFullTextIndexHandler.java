@@ -3,6 +3,7 @@ package codedriver.module.knowledge.fulltextindex;
 import codedriver.framework.fulltextindex.core.FullTextIndexHandlerBase;
 import codedriver.framework.fulltextindex.core.IFullTextIndexType;
 import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
+import codedriver.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
 import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import codedriver.framework.knowledge.dto.KnowledgeDocumentLineVo;
 import codedriver.framework.knowledge.dto.KnowledgeDocumentVersionVo;
@@ -47,7 +48,7 @@ public class DocumentLineFullTextIndexHandler extends FullTextIndexHandlerBase {
 
     @Override
     public IFullTextIndexType getType() {
-        return FullTextIndexType.KNOW_DOCUMENT_VERSION;
+        return KnowledgeFullTextIndexType.KNOW_DOCUMENT_VERSION;
     }
 
     @Override

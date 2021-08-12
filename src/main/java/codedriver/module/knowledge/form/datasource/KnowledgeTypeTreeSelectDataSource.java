@@ -43,7 +43,7 @@ public class KnowledgeTypeTreeSelectDataSource extends TreeSelectDataSourceBase 
     @Override
     public JSONObject getConfig() {
         return new JSONObject(){{
-            put("url","knowledge/document/type/tree/forselect");
+            put("url","/api/rest/knowledge/document/type/tree/forselect");
         }};
     }
 }

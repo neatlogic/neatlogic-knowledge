@@ -1,35 +1,28 @@
 package codedriver.module.knowledge.api.type;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dto.AuthenticationInfoVo;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentTypeVo;
+import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.service.AuthenticationInfoService;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
+import codedriver.module.knowledge.service.KnowledgeDocumentTypeService;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
-import codedriver.framework.asynchronization.threadlocal.UserContext;
-import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Output;
-import codedriver.framework.restful.annotation.Param;
-import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
-import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
-import codedriver.framework.knowledge.dto.KnowledgeDocumentTypeVo;
-import codedriver.module.knowledge.service.KnowledgeDocumentTypeService;
-
 import javax.annotation.Resource;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = KNOWLEDGE_BASE.class)
@@ -130,6 +123,7 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 						}
 						JSONObject circle = new JSONObject();
 						circle.put("id",id);
+						circle.put("uuid",id);
 						circle.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());
 						circle.put("disabled",true);
 						circle.put("children",root.getChildren());
@@ -157,6 +151,7 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 					}
 					JSONObject circle = new JSONObject();
 					circle.put("id",id);
+					circle.put("uuid",id);
 					circle.put("name",knowledgeCircleMapper.getKnowledgeCircleById(id).getName());
 					circle.put("disabled",true);
 					circle.put("children",root.getChildren());

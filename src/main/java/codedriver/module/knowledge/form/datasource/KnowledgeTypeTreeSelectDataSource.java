@@ -6,8 +6,18 @@
 package codedriver.module.knowledge.form.datasource;
 
 import codedriver.framework.form.treeselect.core.TreeSelectDataSourceBase;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
+import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
+import codedriver.framework.knowledge.dto.KnowledgeCircleVo;
+import codedriver.framework.knowledge.dto.KnowledgeDocumentTypeVo;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lvzk
@@ -15,6 +25,12 @@ import org.springframework.stereotype.Component;
  **/
 @Component
 public class KnowledgeTypeTreeSelectDataSource extends TreeSelectDataSourceBase {
+
+    @Resource
+    private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
+    @Resource
+    private KnowledgeCircleMapper knowledgeCircleMapper;
+
     /**
      * 获取组件英文名
      *
@@ -45,5 +61,25 @@ public class KnowledgeTypeTreeSelectDataSource extends TreeSelectDataSourceBase 
         return new JSONObject(){{
             put("url","/api/rest/knowledge/document/type/tree/forselect");
         }};
+    }
+
+    @Override
+    public String valueConversionTextPath(Object value) {
+        KnowledgeDocumentTypeVo typeVo = knowledgeDocumentTypeMapper.getTypeByUuid((String)value);
+        if (typeVo != null) {
+            List<String> pathList = new ArrayList<>();
+            KnowledgeCircleVo knowledgeCircleVo = knowledgeCircleMapper.getKnowledgeCircleById(typeVo.getKnowledgeCircleId());
+            if (knowledgeCircleVo != null) {
+                pathList.add(knowledgeCircleVo.getName());
+            }
+            List<KnowledgeDocumentTypeVo> typeVoList = knowledgeDocumentTypeMapper.getAncestorsAndSelfByLftRht(typeVo.getLft(), typeVo.getRht(), typeVo.getKnowledgeCircleId());
+            if (CollectionUtils.isNotEmpty(typeVoList)) {
+                List<String> nameList = typeVoList.stream().map(KnowledgeDocumentTypeVo::getName).collect(Collectors.toList());
+                pathList.addAll(nameList);
+            }
+
+            return String.join("/", pathList);
+        }
+        return null;
     }
 }

@@ -113,9 +113,7 @@ public class KnowledgeDocumentInvokeGetApi extends PrivateApiComponentBase {
                 if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getLcu())) {
                     UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
                     if(userVo != null) {
-                        UserVo vo = new UserVo();
-                        BeanUtils.copyProperties(userVo,vo);
-                        knowledgeDocumentVersionVo.setLcuVo(vo);
+                        knowledgeDocumentVersionVo.setLcuVo(userVo);
 //                        knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
 //                        knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
 //                        knowledgeDocumentVersionVo.setLcuVipLevel(userVo.getVipLevel());

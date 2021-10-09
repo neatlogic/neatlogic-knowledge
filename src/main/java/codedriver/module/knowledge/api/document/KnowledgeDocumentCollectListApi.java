@@ -88,22 +88,18 @@ public class KnowledgeDocumentCollectListApi extends PrivateApiComponentBase {
         if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
             List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyCollectList(searchVo);
             for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
-                if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getFcu())) {
-                    UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getFcu());
-                    UserVo vo = new UserVo();
-                    BeanUtils.copyProperties(userVo,vo);
-                    knowledgeDocumentVersionVo.setFcuVo(vo);
-//                    knowledgeDocumentVersionVo.setFcuName(userVo.getUserName());
-//                    knowledgeDocumentVersionVo.setFcuInfo(userVo.getUserInfo());
-                }
-                if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getLcu())) {
-                    UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
-                    UserVo vo = new UserVo();
-                    BeanUtils.copyProperties(userVo,vo);
-                    knowledgeDocumentVersionVo.setLcuVo(vo);
-//                    knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
-//                    knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
-                }
+//                if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getFcu())) {
+//                    UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getFcu());
+//                    UserVo vo = new UserVo();
+//                    BeanUtils.copyProperties(userVo,vo);
+//                    knowledgeDocumentVersionVo.setFcuVo(vo);
+//                }
+//                if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getLcu())) {
+//                    UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
+//                    UserVo vo = new UserVo();
+//                    BeanUtils.copyProperties(userVo,vo);
+//                    knowledgeDocumentVersionVo.setLcuVo(vo);
+//                }
                 knowledgeDocumentVersionVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
                 knowledgeDocumentVersionVo.setIsEditable(1);
             }

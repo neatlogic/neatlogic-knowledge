@@ -110,15 +110,12 @@ public class KnowledgeDocumentInvokeGetApi extends PrivateApiComponentBase {
                         knowledgeDocumentVersionVo.getPath().addAll(typeNameList);
                     }
                 }
-                if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getLcu())) {
-                    UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
-                    if(userVo != null) {
-                        knowledgeDocumentVersionVo.setLcuVo(userVo);
-//                        knowledgeDocumentVersionVo.setLcuName(userVo.getUserName());
-//                        knowledgeDocumentVersionVo.setLcuInfo(userVo.getUserInfo());
-//                        knowledgeDocumentVersionVo.setLcuVipLevel(userVo.getVipLevel());
-                    }
-                }               
+//                if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getLcu())) {
+//                    UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
+//                    if(userVo != null) {
+//                        knowledgeDocumentVersionVo.setLcuVo(userVo);
+//                    }
+//                }
                 resultObj.put("knowledgeDocumentVersion", knowledgeDocumentVersionVo);               
             }
         }else {

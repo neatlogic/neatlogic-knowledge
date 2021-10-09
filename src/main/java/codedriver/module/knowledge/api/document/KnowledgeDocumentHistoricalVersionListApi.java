@@ -92,14 +92,14 @@ public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiCompone
                 item.setIsDeletable(isReviewable);
                 item.setIsSwitchable(isReviewable);
             }
-            UserVo userVo = userMapper.getUserBaseInfoByUuid(item.getLcu());
-            if(userVo != null) {
-//                item.setLcuName(userVo.getUserName());
-                //使用新对象，防止缓存
-                UserVo vo = new UserVo();
-                BeanUtils.copyProperties(userVo,vo);
-                item.setLcuVo(vo);
-            }
+//            UserVo userVo = userMapper.getUserBaseInfoByUuid(item.getLcu());
+//            if(userVo != null) {
+////                item.setLcuName(userVo.getUserName());
+//                //使用新对象，防止缓存
+//                UserVo vo = new UserVo();
+//                BeanUtils.copyProperties(userVo,vo);
+//                item.setLcuVo(vo);
+//            }
         }
         resultObj.put("historicalVersionList", historicalVersionList);        
         return resultObj;

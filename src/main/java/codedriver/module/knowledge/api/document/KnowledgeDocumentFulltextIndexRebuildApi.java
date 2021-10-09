@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.knowledge.api.document;
 
 import codedriver.framework.auth.core.AuthAction;
@@ -46,7 +51,7 @@ public class KnowledgeDocumentFulltextIndexRebuildApi extends PrivateApiComponen
         JSONArray versionIdArray = jsonObj.getJSONArray("versionIdList");
         List<Long> versionIdList = null;
         //创建全文检索索引
-        IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getComponent(KnowledgeFullTextIndexType.KNOW_DOCUMENT_VERSION);
+        IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getHandler(KnowledgeFullTextIndexType.KNOW_DOCUMENT_VERSION);
         if (handler != null) {
             if(CollectionUtils.isNotEmpty(versionIdArray)){
                 versionIdList = JSONObject.parseArray(versionIdArray.toJSONString(), Long.class);

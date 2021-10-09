@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.knowledge.service;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
@@ -10,9 +15,9 @@ import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.fulltextindex.dao.mapper.FullTextIndexMapper;
-import codedriver.framework.fulltextindex.dto.FullTextIndexContentVo;
-import codedriver.framework.fulltextindex.dto.FullTextIndexVo;
-import codedriver.framework.fulltextindex.dto.FullTextIndexWordOffsetVo;
+import codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexContentVo;
+import codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexVo;
+import codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexWordOffsetVo;
 import codedriver.framework.fulltextindex.utils.FullTextIndexUtil;
 import codedriver.framework.service.AuthenticationInfoService;
 import codedriver.framework.util.HtmlUtil;

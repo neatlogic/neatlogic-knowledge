@@ -54,7 +54,7 @@ public class DocumentLineFullTextIndexHandler extends FullTextIndexHandlerBase {
     }
 
     @Override
-    public void rebuildIndex(Boolean isRebuildAll) {
+    public void myRebuildIndex(String type, Boolean isRebuildAll) {
 
     }
 

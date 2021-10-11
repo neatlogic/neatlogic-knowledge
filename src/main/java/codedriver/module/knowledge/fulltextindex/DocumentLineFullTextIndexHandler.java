@@ -7,6 +7,7 @@ package codedriver.module.knowledge.fulltextindex;
 
 import codedriver.framework.fulltextindex.core.FullTextIndexHandlerBase;
 import codedriver.framework.fulltextindex.core.IFullTextIndexType;
+import codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo;
 import codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexVo;
 import codedriver.framework.fulltextindex.dto.globalsearch.DocumentVo;
 import codedriver.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
@@ -54,7 +55,7 @@ public class DocumentLineFullTextIndexHandler extends FullTextIndexHandlerBase {
     }
 
     @Override
-    public void myRebuildIndex(String type, Boolean isRebuildAll) {
+    public void myRebuildIndex(FullTextIndexTypeVo fullTextIndexTypeVo) {
 
     }
 

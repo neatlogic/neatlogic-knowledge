@@ -64,11 +64,11 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
     public String getConfig() {
         return null;
     }
-    
+
     @Input({
-        @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, isRequired = true, desc = "文档id"),
-        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
-        @Param(name = "type", type = ApiParamType.ENUM, rule = "pdf,word", isRequired = true, desc = "文件类型")
+            @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, isRequired = true, desc = "文档id"),
+            @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
+            @Param(name = "type", type = ApiParamType.ENUM, rule = "pdf,word", isRequired = true, desc = "文件类型")
     })
     @Description(desc = "导出文档内容")
     @Override
@@ -77,19 +77,19 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
         String type = jsonObj.getString("type");
         Long knowledgeDocumentId = jsonObj.getLong("knowledgeDocumentId");
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
-        Long currentVersionId = knowledgeDocumentService.checkViewPermissionByDocumentIdAndVersionId(knowledgeDocumentId,knowledgeDocumentVersionId);
+        Long currentVersionId = knowledgeDocumentService.checkViewPermissionByDocumentIdAndVersionId(knowledgeDocumentId, knowledgeDocumentVersionId);
 
         KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentService.getKnowledgeDocumentContentByKnowledgeDocumentVersionId(currentVersionId);
         OutputStream os = null;
         try {
             os = response.getOutputStream();
             String content = getHtmlContent(knowledgeDocumentVo);
-            if(DocType.WORD.getValue().equals(type)){
+            if (DocType.WORD.getValue().equals(type)) {
                 response.setContentType("application/x-download");
                 response.setHeader("Content-Disposition",
                         " attachment; filename=\"" + URLEncoder.encode(knowledgeDocumentVo.getTitle(), "utf-8") + ".docx\"");
                 ExportUtil.getWordFileByHtml(content, true, os);
-            }else if(DocType.PDF.getValue().equals(type)){
+            } else if (DocType.PDF.getValue().equals(type)) {
                 response.setContentType("application/pdf");
                 response.setHeader("Content-Disposition",
                         " attachment; filename=\"" + URLEncoder.encode(knowledgeDocumentVo.getTitle(), "utf-8") + ".pdf\"");
@@ -117,24 +117,24 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
         out.write("<style>\n" + style + "\n</style>\n");
         out.write("</head>\n");
         out.write("<body>\n");
-        for(KnowledgeDocumentLineVo line : knowledgeDocumentVo.getLineList()){
-            if(!KnowledgeDocumentLineHandler.IMG.getValue().equals(line.getHandler())){
+        for (KnowledgeDocumentLineVo line : knowledgeDocumentVo.getLineList()) {
+            if (!KnowledgeDocumentLineHandler.IMG.getValue().equals(line.getHandler())) {
                 ILineHandler lineHandler = LineHandlerFactory.getHandler(line.getHandler());
-                if(lineHandler != null) {
+                if (lineHandler != null) {
                     out.write(lineHandler.convertContentToHtml(line));
                 }
-            }else{
+            } else {
                 bos.reset();
                 String url = line.getConfig().getString("url");
                 String value = line.getConfig().getString("value");
-                if(StringUtils.isNotBlank(url)){
+                if (StringUtils.isNotBlank(url)) {
                     String id = url.split("=")[1];
                     FileVo fileVo = fileMapper.getFileById(Long.valueOf(id));
-                    if(fileVo != null){
+                    if (fileVo != null) {
                         in = FileUtil.getData(fileVo.getPath());
-                        IOUtils.copyLarge(in,bos);
+                        IOUtils.copyLarge(in, bos);
                         out.write("<div><img src=\"data:image/png;base64," + Base64.encodeBase64String(bos.toByteArray()) + "\">");
-                        if(StringUtils.isNotBlank(value)){
+                        if (StringUtils.isNotBlank(value)) {
                             out.write("<br/><span>备注：" + value + "</span>");
                         }
                         out.write("</div>");
@@ -142,7 +142,7 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
                 }
             }
         }
-        if(in != null){
+        if (in != null) {
             in.close();
         }
         bos.close();
@@ -506,7 +506,6 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
             "}\n" +
             "h1{\n" +
             "  font-size:16px;\n" +
-            "}"
-            ;
+            "}";
 
 }

@@ -35,7 +35,7 @@ public class KnowledgeFileHandler extends FileTypeHandlerBase {
     }
 
     @Override
-    protected boolean myDeleteFile(Long fileId) {
+    protected boolean myDeleteFile(FileVo fileVo, JSONObject paramObj) {
         return true;
     }
 }

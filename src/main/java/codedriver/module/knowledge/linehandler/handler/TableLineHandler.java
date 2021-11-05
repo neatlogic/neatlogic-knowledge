@@ -12,6 +12,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.itextpdf.tool.xml.html.HTML;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
@@ -73,16 +75,24 @@ public class TableLineHandler extends LineHandlerBase {
     protected String myConvertContentToHtml(KnowledgeDocumentLineVo line) {
         JSONObject config = line.getConfig();
         JSONArray tableList = config.getJSONArray("tableList");
+        JSONObject tableStyleConfig = config.getJSONObject("tableStyle");
+        String tableStyle = "table-layout:fixed;border-collapse:collapse;width:100%;text-align:left;";
+        String tdStyle = "border-bottom:1px solid grey";
+        String trStyle = "height:42px";
+        if (MapUtils.isNotEmpty(tableStyleConfig)) {
+            tableStyle = StringUtils.isNotBlank(tableStyleConfig.getString("table")) ? tableStyleConfig.getString("table") : tableStyle;
+            tdStyle = StringUtils.isNotBlank(tableStyleConfig.getString("td")) ? tableStyleConfig.getString("td") : tdStyle;
+            trStyle = StringUtils.isNotBlank(tableStyleConfig.getString("tr")) ? tableStyleConfig.getString("tr") : trStyle;
+        }
         StringBuilder sb = new StringBuilder();
         if (CollectionUtils.isNotEmpty(tableList)) {
-            sb.append("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\" " +
-                    "style=\"border: 1px solid #DBDBDB;border-collapse: collapse;\">");
+            sb.append("<table style=\"" + tableStyle + "\">");
             sb.append("<tbody>");
             for (int i = 0; i < tableList.size(); i++) {
-                sb.append("<tr>");
+                sb.append("<tr style=\"" + trStyle + "\">");
                 JSONArray row = tableList.getJSONArray(i);
                 for (int j = 0; j < row.size(); j++) {
-                    sb.append("<td>" + row.getString(j) + "</td>");
+                    sb.append("<td style=\"" + tdStyle + "\">" + row.getString(j) + "</td>");
                 }
                 sb.append("</tr>");
             }

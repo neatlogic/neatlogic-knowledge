@@ -10,7 +10,6 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.dto.AuthenticationInfoVo;
-import codedriver.framework.dto.UserVo;
 import codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -177,10 +176,6 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
                 knowledgeDocumentVersionVo.setStatus(null);
                 knowledgeDocumentVersionVo.setStatusVo(null);
             }
-
-//            UserVo vo = new UserVo();
-//            vo.setUuid(knowledgeDocumentVersionVo.getLcu());
-//            knowledgeDocumentVersionVo.setLcuVo(vo);
         }
         //补充状态
         setStatusCount(documentVersionVoParam, resultJson);

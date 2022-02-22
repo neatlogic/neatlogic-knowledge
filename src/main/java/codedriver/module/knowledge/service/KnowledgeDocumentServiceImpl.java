@@ -32,7 +32,6 @@ import com.alibaba.fastjson.JSONPath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -211,13 +210,6 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         knowledgeDocumentVo.setVersion(knowledgeDocumentVersionVo.getVersion() != null ? knowledgeDocumentVersionVo.getVersion() : knowledgeDocumentVersionVo.getFromVersion());
         knowledgeDocumentVo.setLcu(knowledgeDocumentVersionVo.getLcu());
         knowledgeDocumentVo.setLcd(knowledgeDocumentVersionVo.getLcd());
-//        UserVo lcuUserVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
-//        if (lcuUserVo != null) {
-//            //使用新对象，防止缓存
-//            UserVo vo = new UserVo();
-//            BeanUtils.copyProperties(lcuUserVo, vo);
-//            knowledgeDocumentVo.setLcuVo(vo);
-//        }
         List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentVo.setLineList(lineList);
         List<Long> fileIdList = knowledgeDocumentMapper.getKnowledgeDocumentFileIdListByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentVo.getId(), knowledgeDocumentVersionId));

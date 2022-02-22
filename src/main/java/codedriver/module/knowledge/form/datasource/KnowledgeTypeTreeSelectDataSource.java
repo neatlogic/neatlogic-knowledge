@@ -66,10 +66,10 @@ public class KnowledgeTypeTreeSelectDataSource extends TreeSelectDataSourceBase 
     }
 
     @Override
-    public String valueConversionTextPath(Object value) {
+    public List<String> valueConversionTextPathList(Object value) {
+        List<String> pathList = new ArrayList<>();
         KnowledgeDocumentTypeVo typeVo = knowledgeDocumentTypeMapper.getTypeByUuid((String)value);
         if (typeVo != null) {
-            List<String> pathList = new ArrayList<>();
             KnowledgeCircleVo knowledgeCircleVo = knowledgeCircleMapper.getKnowledgeCircleById(typeVo.getKnowledgeCircleId());
             if (knowledgeCircleVo != null) {
                 pathList.add(knowledgeCircleVo.getName());
@@ -79,9 +79,7 @@ public class KnowledgeTypeTreeSelectDataSource extends TreeSelectDataSourceBase 
                 List<String> nameList = typeVoList.stream().map(KnowledgeDocumentTypeVo::getName).collect(Collectors.toList());
                 pathList.addAll(nameList);
             }
-
-            return String.join("/", pathList);
         }
-        return null;
+        return pathList;
     }
 }

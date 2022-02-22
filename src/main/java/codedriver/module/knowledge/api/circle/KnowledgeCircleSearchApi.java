@@ -104,7 +104,7 @@ public class KnowledgeCircleSearchApi extends PrivateApiComponentBase{
 				if(CollectionUtils.isNotEmpty(approverUuidSet)){
 //					List<String> approverNameList = userMapper.getUserNameListByUuidList(new ArrayList<>(approverUuidSet));
 //					vo.setApproverNameList(approverNameList);
-					userMapper.getUserListByUuidList(approverUuidSet.stream().collect(Collectors.toList()));
+//					userMapper.getUserListByUuidList(approverUuidSet.stream().collect(Collectors.toList()));
 					vo.setApproverVoList(userMapper.getUserListByUuidList(approverUuidSet.stream().collect(Collectors.toList())));
 				}
 			}

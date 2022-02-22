@@ -7,15 +7,12 @@ import java.util.Objects;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.dao.mapper.UserMapper;
-import codedriver.framework.dto.UserVo;
 import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
@@ -40,8 +37,6 @@ public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiCompone
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
-    @Resource
-    private UserMapper userMapper;
 
     @Override
     public String getToken() {
@@ -92,14 +87,6 @@ public class KnowledgeDocumentHistoricalVersionListApi extends PrivateApiCompone
                 item.setIsDeletable(isReviewable);
                 item.setIsSwitchable(isReviewable);
             }
-//            UserVo userVo = userMapper.getUserBaseInfoByUuid(item.getLcu());
-//            if(userVo != null) {
-////                item.setLcuName(userVo.getUserName());
-//                //使用新对象，防止缓存
-//                UserVo vo = new UserVo();
-//                BeanUtils.copyProperties(userVo,vo);
-//                item.setLcuVo(vo);
-//            }
         }
         resultObj.put("historicalVersionList", historicalVersionList);        
         return resultObj;

@@ -6,15 +6,11 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.dao.mapper.UserMapper;
-import codedriver.framework.dto.UserVo;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -44,8 +40,6 @@ public class KnowledgeDocumentInvokeGetApi extends PrivateApiComponentBase {
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
-    @Resource
-    private UserMapper userMapper;   
     @Resource
     private KnowledgeCircleMapper knowledgeCircleMapper;
     @Resource
@@ -110,12 +104,6 @@ public class KnowledgeDocumentInvokeGetApi extends PrivateApiComponentBase {
                         knowledgeDocumentVersionVo.getPath().addAll(typeNameList);
                     }
                 }
-//                if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getLcu())) {
-//                    UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
-//                    if(userVo != null) {
-//                        knowledgeDocumentVersionVo.setLcuVo(userVo);
-//                    }
-//                }
                 resultObj.put("knowledgeDocumentVersion", knowledgeDocumentVersionVo);               
             }
         }else {

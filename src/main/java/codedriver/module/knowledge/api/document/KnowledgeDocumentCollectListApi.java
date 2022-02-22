@@ -3,8 +3,6 @@ package codedriver.module.knowledge.api.document;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.fastjson.JSON;
@@ -15,8 +13,6 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.util.PageUtil;
-import codedriver.framework.dao.mapper.UserMapper;
-import codedriver.framework.dto.UserVo;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -29,6 +25,7 @@ import codedriver.framework.knowledge.dto.KnowledgeDocumentCollectVo;
 import codedriver.framework.knowledge.dto.KnowledgeDocumentVersionVo;
 import codedriver.module.knowledge.service.KnowledgeDocumentService;
 
+@Deprecated
 //@Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentCollectListApi extends PrivateApiComponentBase {
@@ -38,9 +35,6 @@ public class KnowledgeDocumentCollectListApi extends PrivateApiComponentBase {
 
     @Autowired
     private KnowledgeDocumentService knowledgeDocumentService;
-    
-    @Autowired
-    private UserMapper userMapper;
 
     @Override
     public String getToken() {
@@ -88,18 +82,6 @@ public class KnowledgeDocumentCollectListApi extends PrivateApiComponentBase {
         if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
             List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionMyCollectList(searchVo);
             for(KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : knowledgeDocumentVersionList) {
-//                if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getFcu())) {
-//                    UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getFcu());
-//                    UserVo vo = new UserVo();
-//                    BeanUtils.copyProperties(userVo,vo);
-//                    knowledgeDocumentVersionVo.setFcuVo(vo);
-//                }
-//                if(StringUtils.isNotBlank(knowledgeDocumentVersionVo.getLcu())) {
-//                    UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentVersionVo.getLcu());
-//                    UserVo vo = new UserVo();
-//                    BeanUtils.copyProperties(userVo,vo);
-//                    knowledgeDocumentVersionVo.setLcuVo(vo);
-//                }
                 knowledgeDocumentVersionVo.setIsDeletable(knowledgeDocumentService.isDeletable(knowledgeDocumentVersionVo));
                 knowledgeDocumentVersionVo.setIsEditable(1);
             }

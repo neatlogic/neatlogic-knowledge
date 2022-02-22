@@ -101,13 +101,6 @@ public class KnowledgeDocumentAuditListApi extends PrivateApiComponentBase {
         if(!searchVo.getNeedPage() || searchVo.getCurrentPage() <= pageCount) {
             List<KnowledgeDocumentAuditVo> knowledgeDocumentAuditList = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditListByKnowledgeDocumentId(searchVo);
             for(KnowledgeDocumentAuditVo knowledgeDocumentAuditVo : knowledgeDocumentAuditList) {
-//                if(StringUtils.isNotBlank(knowledgeDocumentAuditVo.getFcu())) {
-//                    UserVo userVo = userMapper.getUserBaseInfoByUuid(knowledgeDocumentAuditVo.getFcu());
-//                    //使用新对象，防止缓存
-//                    UserVo vo = new UserVo();
-//                    BeanUtils.copyProperties(userVo,vo);
-//                    knowledgeDocumentAuditVo.setFcuVo(vo);
-//                }
                 String title = KnowledgeDocumentOperate.getTitle(knowledgeDocumentAuditVo.getOperate());
                 if(StringUtils.isNotBlank(knowledgeDocumentAuditVo.getConfigHash())) {
                     String configStr = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditDetailStringByHash(knowledgeDocumentAuditVo.getConfigHash());

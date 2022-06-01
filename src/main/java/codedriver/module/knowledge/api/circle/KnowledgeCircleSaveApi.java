@@ -1,32 +1,10 @@
 package codedriver.module.knowledge.api.circle;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import codedriver.framework.dto.FieldValidResultVo;
-import codedriver.framework.restful.core.IValid;
-import codedriver.module.knowledge.auth.label.KNOWLEDGE_CIRCLE_MODIFY;
-import com.alibaba.fastjson.JSON;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.dto.AuthorityVo;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Output;
-import codedriver.framework.restful.annotation.Param;
-import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
 import codedriver.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import codedriver.framework.knowledge.dto.KnowledgeCircleUserVo;
@@ -34,7 +12,24 @@ import codedriver.framework.knowledge.dto.KnowledgeCircleVo;
 import codedriver.framework.knowledge.dto.KnowledgeDocumentTypeVo;
 import codedriver.framework.knowledge.exception.KnowledgeCircleNameRepeatException;
 import codedriver.framework.knowledge.exception.KnowledgeCircleNotFoundException;
+import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.IValid;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.util.RegexUtils;
+import codedriver.module.knowledge.auth.label.KNOWLEDGE_CIRCLE_MODIFY;
 import codedriver.module.knowledge.service.KnowledgeDocumentTypeService;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * 关于知识圈中的知识类型说明：
@@ -77,7 +72,7 @@ public class KnowledgeCircleSaveApi extends PrivateApiComponentBase{
 
 	@Input({
 			@Param( name = "id", type = ApiParamType.LONG, desc = "知识圈ID"),
-			@Param( name = "name", type = ApiParamType.REGEX, rule = "^[A-Za-z_\\d\\u4e00-\\u9fa5]+$", desc = "名称", isRequired = true,xss=true),
+			@Param( name = "name", type = ApiParamType.REGEX, rule = RegexUtils.NAME, desc = "名称", isRequired = true,xss=true),
 			@Param( name = "approver", type = ApiParamType.JSONARRAY, desc = "审批人，可多选，格式[\"user#userUuid\",\"team#teamUuid\",\"role#roleUuid\"]", isRequired = true),
 			@Param( name = "member", type = ApiParamType.JSONARRAY, desc = "成员，可多选，格式[\"user#userUuid\",\"team#teamUuid\",\"role#roleUuid\"]"),
 			@Param( name = "knowledgeType", type = ApiParamType.JSONOBJECT, desc = "知识类型",isRequired = true)

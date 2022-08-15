@@ -6,9 +6,9 @@
 package codedriver.module.knowledge.linehandler.handler;
 
 import codedriver.framework.knowledge.constvalue.KnowledgeDocumentLineHandler;
-import codedriver.framework.knowledge.dto.KnowledgeDocumentLineVo;
-import codedriver.framework.knowledge.linehandler.core.LineHandlerBase;
-import codedriver.framework.knowledge.linehandler.core.LineHandlerFactory;
+import codedriver.framework.lcs.BaseLineVo;
+import codedriver.framework.lcs.linehandler.core.LineHandlerBase;
+import codedriver.framework.lcs.linehandler.core.LineHandlerFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -47,7 +47,7 @@ public class FigureLineHandler extends LineHandlerBase {
      * @return mainBody content|config
      */
     @Override
-    public String getMainBody(KnowledgeDocumentLineVo line) {
+    public String getMainBody(BaseLineVo line) {
         return null;
     }
 
@@ -58,7 +58,7 @@ public class FigureLineHandler extends LineHandlerBase {
      * @param mainBody content|config
      */
     @Override
-    public void setMainBody(KnowledgeDocumentLineVo line, String mainBody) {
+    public void setMainBody(BaseLineVo line, String mainBody) {
 
     }
 

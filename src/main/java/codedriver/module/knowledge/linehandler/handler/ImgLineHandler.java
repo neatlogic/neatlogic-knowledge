@@ -8,8 +8,8 @@ package codedriver.module.knowledge.linehandler.handler;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.knowledge.constvalue.KnowledgeDocumentLineHandler;
-import codedriver.framework.knowledge.dto.KnowledgeDocumentLineVo;
-import codedriver.framework.knowledge.linehandler.core.LineHandlerBase;
+import codedriver.framework.lcs.BaseLineVo;
+import codedriver.framework.lcs.linehandler.core.LineHandlerBase;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Element;
@@ -55,7 +55,7 @@ public class ImgLineHandler extends LineHandlerBase {
      * @return mainBody content|config
      */
     @Override
-    public String getMainBody(KnowledgeDocumentLineVo line) {
+    public String getMainBody(BaseLineVo line) {
         return line.getConfig().getString("url");
     }
 
@@ -66,7 +66,7 @@ public class ImgLineHandler extends LineHandlerBase {
      * @param mainBody content|config
      */
     @Override
-    public void setMainBody(KnowledgeDocumentLineVo line, String mainBody) {
+    public void setMainBody(BaseLineVo line, String mainBody) {
 
     }
 

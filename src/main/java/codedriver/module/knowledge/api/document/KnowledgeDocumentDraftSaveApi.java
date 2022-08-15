@@ -13,8 +13,9 @@ import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.exception.type.PermissionDeniedException;
 import codedriver.framework.fulltextindex.core.FullTextIndexHandlerFactory;
 import codedriver.framework.fulltextindex.core.IFullTextIndexHandler;
-import codedriver.framework.knowledge.linehandler.core.ILineHandler;
-import codedriver.framework.knowledge.linehandler.core.LineHandlerFactory;
+import codedriver.framework.lcs.exception.LineHandlerNotFoundException;
+import codedriver.framework.lcs.linehandler.core.ILineHandler;
+import codedriver.framework.lcs.linehandler.core.LineHandlerFactory;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
@@ -344,7 +345,7 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             String handler = beforeLine.getHandler();
             ILineHandler lineHandler = LineHandlerFactory.getHandler(handler);
             if (lineHandler == null) {
-                throw new KnowledgeDocumentLineHandlerNotFoundException(handler);
+                throw new LineHandlerNotFoundException(handler);
             }
             String beforeMainBody = lineHandler.getMainBody(beforeLine);
             String afterMainBody = lineHandler.getMainBody(afterLine);

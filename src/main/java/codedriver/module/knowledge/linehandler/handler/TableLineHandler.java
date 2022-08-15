@@ -5,8 +5,8 @@
 
 package codedriver.module.knowledge.linehandler.handler;
 
-import codedriver.framework.knowledge.dto.KnowledgeDocumentLineVo;
-import codedriver.framework.knowledge.linehandler.core.LineHandlerBase;
+import codedriver.framework.lcs.BaseLineVo;
+import codedriver.framework.lcs.linehandler.core.LineHandlerBase;
 import codedriver.framework.util.HtmlUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -51,7 +51,7 @@ public class TableLineHandler extends LineHandlerBase {
      * @return mainBody content|config
      */
     @Override
-    public String getMainBody(KnowledgeDocumentLineVo line) {
+    public String getMainBody(BaseLineVo line) {
         return line.getConfig().getString("tableList");
     }
 
@@ -62,7 +62,7 @@ public class TableLineHandler extends LineHandlerBase {
      * @param mainBody content|config
      */
     @Override
-    public void setMainBody(KnowledgeDocumentLineVo line, String mainBody) {
+    public void setMainBody(BaseLineVo line, String mainBody) {
 
     }
 
@@ -72,7 +72,7 @@ public class TableLineHandler extends LineHandlerBase {
     }
 
     @Override
-    protected String myConvertContentToHtml(KnowledgeDocumentLineVo line) {
+    protected String myConvertContentToHtml(BaseLineVo line) {
         JSONObject config = line.getConfig();
         JSONArray tableList = config.getJSONArray("tableList");
         JSONObject tableStyleConfig = config.getJSONObject("tableStyle");

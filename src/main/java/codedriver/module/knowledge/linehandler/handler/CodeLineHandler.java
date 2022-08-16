@@ -5,8 +5,8 @@
 
 package codedriver.module.knowledge.linehandler.handler;
 
-import codedriver.framework.knowledge.dto.KnowledgeDocumentLineVo;
-import codedriver.framework.knowledge.linehandler.core.LineHandlerBase;
+import codedriver.framework.lcs.BaseLineVo;
+import codedriver.framework.knowledge.linehandler.core.KnowledgeLineHandlerBase;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  * @since 2021/8/9 18:48
  **/
 @Component
-public class CodeLineHandler extends LineHandlerBase {
+public class CodeLineHandler extends KnowledgeLineHandlerBase {
     /**
      * 获取组件英文名
      *
@@ -43,7 +43,7 @@ public class CodeLineHandler extends LineHandlerBase {
      * @return mainBody content|config
      */
     @Override
-    public String getMainBody(KnowledgeDocumentLineVo line) {
+    public String getMainBody(BaseLineVo line) {
         return line.getConfig().getString("tableList");
     }
 
@@ -54,7 +54,7 @@ public class CodeLineHandler extends LineHandlerBase {
      * @param mainBody content|config
      */
     @Override
-    public void setMainBody(KnowledgeDocumentLineVo line, String mainBody) {
+    public void setMainBody(BaseLineVo line, String mainBody) {
 
     }
 
@@ -64,7 +64,7 @@ public class CodeLineHandler extends LineHandlerBase {
     }
 
     @Override
-    protected String myConvertContentToHtml(KnowledgeDocumentLineVo line) {
+    protected String myConvertContentToHtml(BaseLineVo line) {
         JSONObject config = line.getConfig();
         String code = config.getString("value");
         if (code != null) {

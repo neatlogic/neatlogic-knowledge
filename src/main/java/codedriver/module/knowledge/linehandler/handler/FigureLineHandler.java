@@ -6,9 +6,9 @@
 package codedriver.module.knowledge.linehandler.handler;
 
 import codedriver.framework.knowledge.constvalue.KnowledgeDocumentLineHandler;
-import codedriver.framework.knowledge.dto.KnowledgeDocumentLineVo;
-import codedriver.framework.knowledge.linehandler.core.LineHandlerBase;
-import codedriver.framework.knowledge.linehandler.core.LineHandlerFactory;
+import codedriver.framework.lcs.BaseLineVo;
+import codedriver.framework.knowledge.linehandler.core.KnowledgeLineHandlerBase;
+import codedriver.framework.lcs.linehandler.core.LineHandlerFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
  * @since 2021/8/9 18:48
  **/
 @Component
-public class FigureLineHandler extends LineHandlerBase {
+public class FigureLineHandler extends KnowledgeLineHandlerBase {
     /**
      * 获取组件英文名
      *
@@ -47,7 +47,7 @@ public class FigureLineHandler extends LineHandlerBase {
      * @return mainBody content|config
      */
     @Override
-    public String getMainBody(KnowledgeDocumentLineVo line) {
+    public String getMainBody(BaseLineVo line) {
         return null;
     }
 
@@ -58,7 +58,7 @@ public class FigureLineHandler extends LineHandlerBase {
      * @param mainBody content|config
      */
     @Override
-    public void setMainBody(KnowledgeDocumentLineVo line, String mainBody) {
+    public void setMainBody(BaseLineVo line, String mainBody) {
 
     }
 
@@ -71,11 +71,11 @@ public class FigureLineHandler extends LineHandlerBase {
     public String myConvertHtmlToConfig(Element element) {
         Elements elements = element.getElementsByTag(KnowledgeDocumentLineHandler.TABLE.getValue());
         if (CollectionUtils.isNotEmpty(elements)) {
-            return LineHandlerFactory.getHandler(KnowledgeDocumentLineHandler.TABLE.getValue()).convertHtmlToConfig(elements.get(0));
+            return ((KnowledgeLineHandlerBase) LineHandlerFactory.getHandler(KnowledgeDocumentLineHandler.TABLE.getValue())).convertHtmlToConfig(elements.get(0));
         }
         elements = element.getElementsByTag(KnowledgeDocumentLineHandler.IMG.getValue());
         if (CollectionUtils.isNotEmpty(elements)) {
-            return LineHandlerFactory.getHandler(KnowledgeDocumentLineHandler.IMG.getValue()).convertHtmlToConfig(elements.get(0));
+            return ((KnowledgeLineHandlerBase) LineHandlerFactory.getHandler(KnowledgeDocumentLineHandler.IMG.getValue())).convertHtmlToConfig(elements.get(0));
         }
         return null;
     }
@@ -84,11 +84,11 @@ public class FigureLineHandler extends LineHandlerBase {
     public String myConvertHtmlToContent(Element element) {
         Elements elements = element.getElementsByTag(KnowledgeDocumentLineHandler.TABLE.getValue());
         if (CollectionUtils.isNotEmpty(elements)) {
-            return LineHandlerFactory.getHandler(KnowledgeDocumentLineHandler.TABLE.getValue()).convertHtmlToContent(elements.get(0));
+            return ((KnowledgeLineHandlerBase) LineHandlerFactory.getHandler(KnowledgeDocumentLineHandler.TABLE.getValue())).convertHtmlToContent(elements.get(0));
         }
         elements = element.getElementsByTag(KnowledgeDocumentLineHandler.IMG.getValue());
         if (CollectionUtils.isNotEmpty(elements)) {
-            return LineHandlerFactory.getHandler(KnowledgeDocumentLineHandler.IMG.getValue()).convertHtmlToContent(elements.get(0));
+            return ((KnowledgeLineHandlerBase) LineHandlerFactory.getHandler(KnowledgeDocumentLineHandler.IMG.getValue())).convertHtmlToContent(elements.get(0));
         }
         return null;
     }
@@ -97,11 +97,11 @@ public class FigureLineHandler extends LineHandlerBase {
     public String myRealHandler(Element element){
         Elements elements = element.getElementsByTag(KnowledgeDocumentLineHandler.TABLE.getValue());
         if (CollectionUtils.isNotEmpty(elements)) {
-            return LineHandlerFactory.getHandler(KnowledgeDocumentLineHandler.TABLE.getValue()).getRealHandler(elements.get(0));
+            return ((KnowledgeLineHandlerBase) LineHandlerFactory.getHandler(KnowledgeDocumentLineHandler.TABLE.getValue())).getRealHandler(elements.get(0));
         }
         elements = element.getElementsByTag(KnowledgeDocumentLineHandler.IMG.getValue());
         if (CollectionUtils.isNotEmpty(elements)) {
-            return LineHandlerFactory.getHandler(KnowledgeDocumentLineHandler.IMG.getValue()).getRealHandler(elements.get(0));
+            return ((KnowledgeLineHandlerBase) LineHandlerFactory.getHandler(KnowledgeDocumentLineHandler.IMG.getValue())).getRealHandler(elements.get(0));
         }
         return KnowledgeDocumentLineHandler.P.getValue();
     }

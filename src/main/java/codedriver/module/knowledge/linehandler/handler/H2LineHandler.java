@@ -6,7 +6,7 @@
 package codedriver.module.knowledge.linehandler.handler;
 
 import codedriver.framework.lcs.BaseLineVo;
-import codedriver.framework.lcs.linehandler.core.LineHandlerBase;
+import codedriver.framework.knowledge.linehandler.core.KnowledgeLineHandlerBase;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * @since 2021/8/9 18:48
  **/
 @Component
-public class H2LineHandler extends LineHandlerBase {
+public class H2LineHandler extends KnowledgeLineHandlerBase {
     /**
      * 获取组件英文名
      *

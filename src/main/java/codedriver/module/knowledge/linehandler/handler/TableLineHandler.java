@@ -6,7 +6,7 @@
 package codedriver.module.knowledge.linehandler.handler;
 
 import codedriver.framework.lcs.BaseLineVo;
-import codedriver.framework.lcs.linehandler.core.LineHandlerBase;
+import codedriver.framework.knowledge.linehandler.core.KnowledgeLineHandlerBase;
 import codedriver.framework.util.HtmlUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
  * @since 2021/8/9 18:48
  **/
 @Component
-public class TableLineHandler extends LineHandlerBase {
+public class TableLineHandler extends KnowledgeLineHandlerBase {
     /**
      * 获取组件英文名
      *

@@ -5,6 +5,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
+import codedriver.framework.knowledge.linehandler.core.KnowledgeLineHandlerBase;
 import codedriver.framework.lcs.linehandler.core.ILineHandler;
 import codedriver.framework.lcs.linehandler.core.LineHandlerFactory;
 import codedriver.framework.restful.annotation.Description;
@@ -120,8 +121,8 @@ public class KnowledgeDocumentExportApi extends PrivateBinaryStreamApiComponentB
         for (KnowledgeDocumentLineVo line : knowledgeDocumentVo.getLineList()) {
             if (!KnowledgeDocumentLineHandler.IMG.getValue().equals(line.getHandler())) {
                 ILineHandler lineHandler = LineHandlerFactory.getHandler(line.getHandler());
-                if (lineHandler != null) {
-                    out.write(lineHandler.convertContentToHtml(line));
+                if (lineHandler != null && lineHandler instanceof KnowledgeLineHandlerBase) {
+                    out.write(((KnowledgeLineHandlerBase)lineHandler).convertContentToHtml(line));
                 }
             } else {
                 bos.reset();

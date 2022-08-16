@@ -9,7 +9,7 @@ import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.knowledge.constvalue.KnowledgeDocumentLineHandler;
 import codedriver.framework.lcs.BaseLineVo;
-import codedriver.framework.lcs.linehandler.core.LineHandlerBase;
+import codedriver.framework.knowledge.linehandler.core.KnowledgeLineHandlerBase;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Element;
@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * @since 2021/8/9 18:48
  **/
 @Component
-public class ImgLineHandler extends LineHandlerBase {
+public class ImgLineHandler extends KnowledgeLineHandlerBase {
     @Resource
     FileMapper fileMapper;
 

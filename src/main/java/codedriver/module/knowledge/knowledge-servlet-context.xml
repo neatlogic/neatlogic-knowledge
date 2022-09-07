@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans default-lazy-init="false" xmlns="http://www.springframework.org/schema/beans" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context" xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:util="http://www.springframework.org/schema/util" xmlns:codedriver="http://codedriver.techsure.com/schema/codedriver"
-	xsi:schemaLocation="http://www.springframework.org/schema/aop
+<!--
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<beans default-lazy-init="false" xmlns="http://www.springframework.org/schema/beans"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:codedriver="http://codedriver.techsure.com/schema/codedriver"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop
 		http://www.springframework.org/schema/aop/spring-aop.xsd 
 		http://www.springframework.org/schema/beans 
 		http://www.springframework.org/schema/beans/spring-beans.xsd 
@@ -10,37 +20,35 @@
 		http://www.springframework.org/schema/mvc/spring-mvc.xsd 
 		http://www.springframework.org/schema/tx 
 		http://www.springframework.org/schema/tx/spring-tx.xsd
-		http://www.springframework.org/schema/util
-		http://www.springframework.org/schema/util/spring-util.xsd
 		http://codedriver.techsure.com/schema/codedriver
 		http://codedriver.techsure.com/schema/codedriver.xsd">
 
-	<codedriver:module id="knowledge" name="知识库模块" groupName="知识库" group="knowledge" groupSort="2" groupDescription=" "/>
-	
-	<context:component-scan base-package="codedriver.module.knowledge" />
+    <codedriver:module id="knowledge" name="知识库模块" groupName="知识库" group="knowledge" groupSort="2"
+                       groupDescription=" "/>
 
-	<context:annotation-config />
+    <context:component-scan base-package="codedriver.module.knowledge"/>
 
-	<tx:annotation-driven transaction-manager="transactionManager" />
+    <context:annotation-config/>
 
-	<aop:aspectj-autoproxy expose-proxy="true" proxy-target-class="false"/>
+    <tx:annotation-driven transaction-manager="transactionManager"/>
 
-	<mvc:annotation-driven />
+    <aop:aspectj-autoproxy expose-proxy="true" proxy-target-class="false"/>
 
-	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-		<property name="basePackage" value="codedriver.framework.knowledge.dao.mapper" />
-	</bean>
+    <mvc:annotation-driven/>
 
-	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-		<property name="configLocation" value="classpath:codedriver/framework/dao/config/mybatis-config.xml" />
-		<property name="dataSource" ref="dataSource" />
-		<property name="mapperLocations">
-			<list>
-				<value>classpath:codedriver/framework/knowledge/dao/mapper/**/*.xml</value>
-			</list>
-		</property>
-	</bean>
-	
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="codedriver.framework.knowledge.dao.mapper"/>
+    </bean>
 
-	
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="configLocation" value="classpath:codedriver/framework/dao/config/mybatis-config.xml"/>
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations">
+            <list>
+                <value>classpath:codedriver/framework/knowledge/dao/mapper/**/*.xml</value>
+            </list>
+        </property>
+    </bean>
+
+
 </beans>

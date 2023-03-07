@@ -32,6 +32,7 @@ limitations under the License.
 					<include>META-INF/**</include>
 				</includes>
 			</resource>
+
 		</resources>
 	</build>
 	<dependencies>

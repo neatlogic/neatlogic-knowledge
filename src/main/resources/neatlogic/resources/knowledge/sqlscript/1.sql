@@ -1,7 +1,7 @@
 -- ----------------------------
 -- Table structure for knowledge_circle
 -- ----------------------------
-CREATE TABLE `knowledge_circle` (
+CREATE TABLE IF NOT EXISTS `knowledge_circle` (
   `id` bigint NOT NULL COMMENT '主键',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '名称',
   PRIMARY KEY (`id`) USING BTREE
@@ -10,7 +10,7 @@ CREATE TABLE `knowledge_circle` (
 -- ----------------------------
 -- Table structure for knowledge_circle_user
 -- ----------------------------
-CREATE TABLE `knowledge_circle_user` (
+CREATE TABLE IF NOT EXISTS `knowledge_circle_user` (
   `knowledge_circle_id` bigint NOT NULL COMMENT '知识圈ID',
   `uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户/角色/分组UUID',
   `type` enum('common','user','team','role') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '类型',
@@ -21,7 +21,7 @@ CREATE TABLE `knowledge_circle_user` (
 -- ----------------------------
 -- Table structure for knowledge_document
 -- ----------------------------
-CREATE TABLE `knowledge_document` (
+CREATE TABLE IF NOT EXISTS `knowledge_document` (
   `id` bigint NOT NULL COMMENT '文档主键id',
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '标题',
   `knowledge_document_version_id` bigint DEFAULT NULL COMMENT '激活版本id',
@@ -39,7 +39,7 @@ CREATE TABLE `knowledge_document` (
 -- ----------------------------
 -- Table structure for knowledge_document_audit
 -- ----------------------------
-CREATE TABLE `knowledge_document_audit` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_audit` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `knowledge_document_id` bigint DEFAULT NULL COMMENT '知识id',
   `knowledge_document_version_id` bigint DEFAULT NULL COMMENT '知识版本id',
@@ -54,7 +54,7 @@ CREATE TABLE `knowledge_document_audit` (
 -- ----------------------------
 -- Table structure for knowledge_document_audit_detail
 -- ----------------------------
-CREATE TABLE `knowledge_document_audit_detail` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_audit_detail` (
   `hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '记录hash',
   `config` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '记录详细',
   PRIMARY KEY (`hash`) USING BTREE
@@ -63,7 +63,7 @@ CREATE TABLE `knowledge_document_audit_detail` (
 -- ----------------------------
 -- Table structure for knowledge_document_collect
 -- ----------------------------
-CREATE TABLE `knowledge_document_collect` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_collect` (
   `knowledge_document_id` bigint NOT NULL COMMENT '文档主键',
   `user_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户UUID',
   `fcd` timestamp(3) NULL DEFAULT NULL COMMENT '收藏时间',
@@ -73,7 +73,7 @@ CREATE TABLE `knowledge_document_collect` (
 -- ----------------------------
 -- Table structure for knowledge_document_favor
 -- ----------------------------
-CREATE TABLE `knowledge_document_favor` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_favor` (
   `knowledge_document_id` bigint NOT NULL COMMENT '文档主键',
   `user_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户UUID',
   `fcd` timestamp(3) NULL DEFAULT NULL COMMENT '点赞时间',
@@ -83,7 +83,7 @@ CREATE TABLE `knowledge_document_favor` (
 -- ----------------------------
 -- Table structure for knowledge_document_file
 -- ----------------------------
-CREATE TABLE `knowledge_document_file` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_file` (
   `knowledge_document_id` bigint NOT NULL COMMENT '文档id',
   `knowledge_document_version_id` bigint NOT NULL COMMENT '文档版本id',
   `file_id` bigint NOT NULL COMMENT '附件id',
@@ -93,7 +93,7 @@ CREATE TABLE `knowledge_document_file` (
 -- ----------------------------
 -- Table structure for knowledge_document_invoke
 -- ----------------------------
-CREATE TABLE `knowledge_document_invoke` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_invoke` (
   `knowledge_document_id` bigint NOT NULL COMMENT '知识文档id',
   `invoke_id` bigint NOT NULL COMMENT '调用者id',
   `source` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '来源',
@@ -104,7 +104,7 @@ CREATE TABLE `knowledge_document_invoke` (
 -- ----------------------------
 -- Table structure for knowledge_document_line
 -- ----------------------------
-CREATE TABLE `knowledge_document_line` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_line` (
   `uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '行uuid',
   `handler` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '行组件',
   `knowledge_document_id` bigint DEFAULT NULL COMMENT '文档id',
@@ -121,7 +121,7 @@ CREATE TABLE `knowledge_document_line` (
 -- ----------------------------
 -- Table structure for knowledge_document_line_config
 -- ----------------------------
-CREATE TABLE `knowledge_document_line_config` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_line_config` (
   `hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '主键',
   `config` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '配置',
   PRIMARY KEY (`hash`) USING BTREE
@@ -130,7 +130,7 @@ CREATE TABLE `knowledge_document_line_config` (
 -- ----------------------------
 -- Table structure for knowledge_document_line_content
 -- ----------------------------
-CREATE TABLE `knowledge_document_line_content` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_line_content` (
   `hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'hash值',
   `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '文本内容',
   PRIMARY KEY (`hash`) USING BTREE
@@ -139,7 +139,7 @@ CREATE TABLE `knowledge_document_line_content` (
 -- ----------------------------
 -- Table structure for knowledge_document_tag
 -- ----------------------------
-CREATE TABLE `knowledge_document_tag` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_tag` (
   `knowledge_document_id` bigint NOT NULL COMMENT '文档id',
   `knowledge_document_version_id` bigint NOT NULL COMMENT '文档版本id',
   `tag_id` bigint NOT NULL COMMENT '标签id',
@@ -149,7 +149,7 @@ CREATE TABLE `knowledge_document_tag` (
 -- ----------------------------
 -- Table structure for knowledge_document_type
 -- ----------------------------
-CREATE TABLE `knowledge_document_type` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_type` (
   `uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '主键ID',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '名称',
   `knowledge_circle_id` bigint NOT NULL COMMENT '知识圈ID',
@@ -163,7 +163,7 @@ CREATE TABLE `knowledge_document_type` (
 -- ----------------------------
 -- Table structure for knowledge_document_version
 -- ----------------------------
-CREATE TABLE `knowledge_document_version` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_version` (
   `id` bigint NOT NULL COMMENT '文档版本主键id',
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '标题',
   `knowledge_document_type_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '文档类型uuid',
@@ -184,7 +184,7 @@ CREATE TABLE `knowledge_document_version` (
 -- ----------------------------
 -- Table structure for knowledge_document_view_count
 -- ----------------------------
-CREATE TABLE `knowledge_document_view_count` (
+CREATE TABLE IF NOT EXISTS `knowledge_document_view_count` (
   `knowledge_document_id` bigint NOT NULL COMMENT '文档主键',
   `count` int DEFAULT NULL COMMENT '浏览量',
   PRIMARY KEY (`knowledge_document_id`) USING BTREE
@@ -193,7 +193,7 @@ CREATE TABLE `knowledge_document_view_count` (
 -- ----------------------------
 -- Table structure for knowledge_tag
 -- ----------------------------
-CREATE TABLE `knowledge_tag` (
+CREATE TABLE IF NOT EXISTS `knowledge_tag` (
   `id` bigint NOT NULL COMMENT 'id',
   `name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '标签名',
   PRIMARY KEY (`id`) USING BTREE,
@@ -203,7 +203,7 @@ CREATE TABLE `knowledge_tag` (
 -- ----------------------------
 -- Table structure for knowledge_template
 -- ----------------------------
-CREATE TABLE `knowledge_template` (
+CREATE TABLE IF NOT EXISTS `knowledge_template` (
   `id` bigint NOT NULL COMMENT '主键ID',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '模版名称',
   `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '目录',

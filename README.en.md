@@ -27,4 +27,4 @@ which can easily realize various common layouts.
 ### Linkage with ITSM
 
 - Supports direct conversion of completed work orders into knowledge base
-  ![img.png](README_IMAGES/img2.png)img2.png)
+  ![img.png](README_IMAGES/img2.png)

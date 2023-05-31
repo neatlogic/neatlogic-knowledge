@@ -34,7 +34,7 @@ limitations under the License.
 		http://neatlogic.com/schema/neatlogic
 		http://neatlogic.com/schema/neatlogic.xsd">
 
-    <neatlogic:module id="knowledge" name="知识库模块" groupName="modulegroup.knowledge.a" group="knowledge" groupSort="2"
+    <neatlogic:module id="knowledge" name="知识库模块" groupName="common.knowledgebase" group="knowledge" groupSort="2"
                        groupDescription="modulegroup.knowledge.desc"/>
 
     <context:component-scan base-package="neatlogic.module.knowledge"/>

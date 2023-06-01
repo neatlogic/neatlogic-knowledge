@@ -6,12 +6,12 @@ public class KNOWLEDGE_BASE extends AuthBase {
 
 	@Override
 	public String getAuthDisplayName() {
-		return "auth.knowledge.knowledgebase.name";
+		return "知识基础权限";
 	}
 
 	@Override
 	public String getAuthIntroduction() {
-		return "auth.knowledge.knowledgebase.introduction";
+		return "查看知识";
 	}
 
 	@Override

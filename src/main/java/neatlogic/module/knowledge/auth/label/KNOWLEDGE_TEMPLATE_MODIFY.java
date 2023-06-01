@@ -9,12 +9,12 @@ public class KNOWLEDGE_TEMPLATE_MODIFY extends AuthBase {
 
 	@Override
 	public String getAuthDisplayName() {
-		return "auth.knowledge.knowledgetemplatemodify.name";
+		return "知识模版管理权限";
 	}
 
 	@Override
 	public String getAuthIntroduction() {
-		return "auth.knowledge.knowledgetemplatemodify.introduction";
+		return "对知识模版进行添加、修改和删除";
 	}
 
 	@Override

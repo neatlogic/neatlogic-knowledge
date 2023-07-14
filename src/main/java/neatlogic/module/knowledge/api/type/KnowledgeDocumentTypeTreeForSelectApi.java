@@ -10,7 +10,6 @@ import neatlogic.framework.knowledge.dto.KnowledgeDocumentTypeVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import neatlogic.module.knowledge.service.KnowledgeDocumentTypeService;
 import com.alibaba.fastjson.JSONArray;
@@ -20,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,9 +36,6 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 	@Autowired
 	private KnowledgeDocumentTypeService knowledgeDocumentTypeService;
 
-	@Resource
-	private AuthenticationInfoService authenticationInfoService;
-
 	@Override
 	public String getToken() {
 		return "knowledge/document/type/tree/forselect";
@@ -48,7 +43,7 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 
 	@Override
 	public String getName() {
-		return "获取知识圈知识分类树_下拉框";
+		return "nmkat.knowledgedocumenttypetreeforselectapi.getname";
 	}
 
 	@Override
@@ -56,9 +51,9 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 		return null;
 	}
 
-	@Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字",xss = true)})
-	@Output({@Param( name = "typeList", explode = KnowledgeDocumentTypeVo[].class, desc = "知识类型架构集合")})
-	@Description(desc = "获取知识圈知识分类树_下拉框")
+	@Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword",xss = true)})
+	@Output({@Param( name = "typeList", explode = KnowledgeDocumentTypeVo[].class, desc = "common.tbodylist")})
+	@Description(desc = "nmkat.knowledgedocumenttypetreeforselectapi.getname")
 	@Override
 	public Object myDoService(JSONObject jsonObj) throws Exception {
 		JSONArray result = new JSONArray();
@@ -66,7 +61,7 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 //		List<KnowledgeDocumentTypeVo> docTypeList = null;
 		List<String> uuidList = new ArrayList<String>();
 		/** 获取当前用户所在组和角色 */
-		AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(UserContext.get().getUserUuid());
+		AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
 		uuidList.addAll(authenticationInfoVo.getTeamUuidList());
 		uuidList.addAll(authenticationInfoVo.getRoleUuidList());
 		uuidList.add(UserContext.get().getUserUuid());

@@ -19,13 +19,13 @@ package neatlogic.module.knowledge.api.document;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.common.util.PageUtil;
 import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentOperate;
 import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentVersionStatus;
@@ -58,9 +58,6 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
 
-    @Resource
-    private AuthenticationInfoService authenticationInfoService;
-
     @Override
     public String getToken() {
         return "knowledge/document/version/search";
@@ -68,7 +65,7 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "搜索文档";
+        return "nmkad.knowledgedocumentsearchapi.getname";
     }
 
     @Override
@@ -77,43 +74,39 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "搜索关键字"),
-            @Param(name = "lcuList", type = ApiParamType.JSONARRAY, desc = "修改人"),
-            @Param(name = "reviewerList", type = ApiParamType.JSONARRAY, desc = "审批人"),
-            @Param(name = "collector", type = ApiParamType.STRING, desc = "收藏人"),
-            @Param(name = "sourceList", type = ApiParamType.JSONARRAY, desc = "来源"),
-            @Param(name = "statusList", type = ApiParamType.JSONARRAY, desc = "审批状态：all|submitted|passed|rejected|draft"),
-            @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc = "知识文档类型"),
-            @Param(name = "lcd", type = ApiParamType.JSONOBJECT, desc = "最近修改时间； {timeRange: 6, timeUnit: 'month'} 或  {startTime: 1605196800000, endTime: 1607961600000}"),
-            @Param(name = "reviewDate", type = ApiParamType.JSONOBJECT, desc = "最近修改时间； {timeRange: 6, timeUnit: 'month'} 或  {startTime: 1605196800000, endTime: 1607961600000}"),
-            @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页数"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目")
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+            @Param(name = "lcuList", type = ApiParamType.JSONARRAY, desc = "common.editorlist"),
+            @Param(name = "reviewerList", type = ApiParamType.JSONARRAY, desc = "common.reviewerlist"),
+            @Param(name = "collector", type = ApiParamType.STRING, desc = "common.collector"),
+            @Param(name = "sourceList", type = ApiParamType.JSONARRAY, desc = "common.sourcelist"),
+            @Param(name = "statusList", type = ApiParamType.JSONARRAY, desc = "common.statuslist", help = "审批状态：all|submitted|passed|rejected|draft"),
+            @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc = "common.typeid"),
+            @Param(name = "lcd", type = ApiParamType.JSONOBJECT, desc = "common.editdate", help = "{timeRange: 6, timeUnit: 'month'} 或  {startTime: 1605196800000, endTime: 1607961600000}"),
+            @Param(name = "reviewDate", type = ApiParamType.JSONOBJECT, desc = "term.knowledge.reviewdate", help = "{timeRange: 6, timeUnit: 'month'} 或  {startTime: 1605196800000, endTime: 1607961600000}"),
+            @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "common.taglist"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize")
     })
     @Output({
-            @Param(name = "dataList[].version", type = ApiParamType.INTEGER, desc = "版本号"),
-            @Param(name = "dataList[].knowledgeDocumentVersionId", type = ApiParamType.INTEGER, desc = "版本号id"),
-            @Param(name = "dataList[].knowledgeCircleName", type = ApiParamType.STRING, desc = "知识圈名称"),
-            @Param(name = "dataList[].title", type = ApiParamType.STRING, desc = "知识标题"),
-            @Param(name = "dataList[].content", type = ApiParamType.STRING, desc = "知识内容"),
-            @Param(name = "dataList[].lcu", type = ApiParamType.STRING, desc = "知识最近更新人uuid"),
-            @Param(name = "dataList[].lcuName", type = ApiParamType.STRING, desc = "知识最近更新人"),
-            @Param(name = "dataList[].lcd", type = ApiParamType.STRING, desc = "知识最近更新时间"),
-            @Param(name = "dataList[].tagList", type = ApiParamType.JSONARRAY, desc = "知识标签"),
-            @Param(name = "dataList[].viewCount", type = ApiParamType.LONG, desc = "知识浏览量"),
-            @Param(name = "dataList[].favorCount", type = ApiParamType.LONG, desc = "知识点赞量"),
-            @Param(name = "dataList[].collectCount", type = ApiParamType.LONG, desc = "知识收藏量"),
-            @Param(name = "dataList[].documentTypePath", type = ApiParamType.STRING, desc = "知识圈分类路径"),
-            @Param(name = "dataList[].knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc = "知识圈分类uuid"),
-            @Param(name = "dataList[].status", type = ApiParamType.STRING, desc = "知识当前版本状态"),
-            @Param(name = "statusList", type = ApiParamType.JSONARRAY, desc = "”待我审批“、”我提交的“ 知识分类，对应“全部” “待审批” “以通过” “不通过” 分类的数量"),
-            @Param(name = "rowNum", type = ApiParamType.INTEGER, desc = "总数"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页数"),
-            @Param(name = "pageCount", type = ApiParamType.INTEGER, desc = "总页数"),
+            @Param(name = "dataList[].version", type = ApiParamType.INTEGER, desc = "common.versionnum"),
+            @Param(name = "dataList[].knowledgeDocumentVersionId", type = ApiParamType.INTEGER, desc = "common.versionid"),
+            @Param(name = "dataList[].knowledgeCircleName", type = ApiParamType.STRING, desc = "common.name"),
+            @Param(name = "dataList[].title", type = ApiParamType.STRING, desc = "common.title"),
+            @Param(name = "dataList[].content", type = ApiParamType.STRING, desc = "common.content"),
+            @Param(name = "dataList[].lcu", type = ApiParamType.STRING, desc = "common.editor"),
+            @Param(name = "dataList[].lcuName", type = ApiParamType.STRING, desc = "common.editorname"),
+            @Param(name = "dataList[].lcd", type = ApiParamType.STRING, desc = "common.editdate"),
+            @Param(name = "dataList[].tagList", type = ApiParamType.JSONARRAY, desc = "common.taglist"),
+            @Param(name = "dataList[].viewCount", type = ApiParamType.LONG, desc = "common.viewcount"),
+            @Param(name = "dataList[].favorCount", type = ApiParamType.LONG, desc = "common.favorcount"),
+            @Param(name = "dataList[].collectCount", type = ApiParamType.LONG, desc = "common.collectcount"),
+            @Param(name = "dataList[].documentTypePath", type = ApiParamType.STRING, desc = "term.knowledge.typepath"),
+            @Param(name = "dataList[].knowledgeDocumentTypeUuid", type = ApiParamType.STRING, desc = "common.typeid"),
+            @Param(name = "dataList[].status", type = ApiParamType.STRING, desc = "common.status"),
+            @Param(name = "statusList", type = ApiParamType.JSONARRAY, desc = "common.statuslist", help = "”待我审批“、”我提交的“ 知识分类，对应“全部” “待审批” “以通过” “不通过” 分类的数量"),
+            @Param(explode = BasePageVo.class)
     })
-
-    @Description(desc = "搜索文档")
+    @Description(desc = "nmkad.knowledgedocumentsearchapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultJson = new JSONObject();
@@ -165,7 +158,7 @@ public class KnowledgeDocumentVersionSearchApi extends PrivateApiComponentBase {
             //跟新操作（如果是草稿,可以删除或编辑）
             if (documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.DRAFT.getValue()) && knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
                 //如果不在圈子内则不允许编辑
-                AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(UserContext.get().getUserUuid(true));
+                AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
                 if (knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVersionVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), authenticationInfoVo.getTeamUuidList(), authenticationInfoVo.getRoleUuidList()) > 0) {
                     knowledgeDocumentVersionVo.setIsEditable(1);
                 }

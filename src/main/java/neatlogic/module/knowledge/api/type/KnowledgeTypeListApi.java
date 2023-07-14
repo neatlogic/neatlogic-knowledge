@@ -10,7 +10,6 @@ import neatlogic.framework.restful.annotation.Output;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import neatlogic.framework.knowledge.constvalue.KnowledgeType;
@@ -41,7 +40,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             KnowledgeDocumentVo documentVoParam = new KnowledgeDocumentVo();
             String userUuid = UserContext.get().getUserUuid(true);
             documentVoParam.setCircleUserUuid(userUuid);
-            AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(userUuid);
+            AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
             documentVoParam.setCircleTeamUuidList(authenticationInfoVo.getTeamUuidList());
             documentVoParam.setCircleRoleUuidList(authenticationInfoVo.getRoleUuidList());
             documentVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.PASSED.getValue()));
@@ -65,7 +64,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
             KnowledgeDocumentVo documentVoParam = new KnowledgeDocumentVo();
             String userUuid = UserContext.get().getUserUuid(true);
             documentVoParam.setCircleUserUuid(userUuid);
-            AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(userUuid);
+            AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
             documentVoParam.setCircleTeamUuidList(authenticationInfoVo.getTeamUuidList());
             documentVoParam.setCircleRoleUuidList(authenticationInfoVo.getRoleUuidList());
             documentVoParam.setStatusList(Collections.singletonList(KnowledgeDocumentVersionStatus.PASSED.getValue()));
@@ -83,9 +82,6 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
     @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
 
-    @Resource
-    private AuthenticationInfoService authenticationInfoService;
-
     @Override
     public String getToken() {
         return "knowledge/type/list";
@@ -93,7 +89,7 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询知识分类列表";
+        return "nmkat.knowledgetypelistapi.getname";
     }
 
     @Override
@@ -102,9 +98,9 @@ public class KnowledgeTypeListApi extends PrivateApiComponentBase {
     }
 
     @Output({
-        @Param(explode = KnowledgeTypeVo[].class, desc = "知识分类列表")
+        @Param(explode = KnowledgeTypeVo[].class, desc = "common.tbodylist")
     })
-    @Description(desc = "查询知识分类列表")
+    @Description(desc = "nmkat.knowledgetypelistapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         int isReviewable = knowledgeDocumentService.isReviewer(null);

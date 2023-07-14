@@ -9,13 +9,12 @@ INSERT INTO `knowledge_circle` (`id`, `name`) VALUES (933859674669056, '发布')
 -- ----------------------------
 -- Records of knowledge_circle_user
 -- ----------------------------
-INSERT INTO `knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933842217975808, '31aa8c515add4a688b80000aa2bf2310', 'user', 'member');
-INSERT INTO `knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933842217975808, '45206688efe949c2afc661b7b0806aae', 'role', 'approver');
-INSERT INTO `knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933842217975808, '6e6fd7feadc7469592047184919c8b4c', 'user', 'member');
-INSERT INTO `knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933844977827840, '3b468d80605648a690ab892e12a92fac', 'user', 'member');
-INSERT INTO `knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933844977827840, '45206688efe949c2afc661b7b0806aae', 'role', 'approver');
-INSERT INTO `knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933859674669056, '31aa8c515add4a688b80000aa2bf2310', 'user', 'member');
-INSERT INTO `knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933859674669056, 'c8dea216f5bd49349db05cbc87db2f9a', 'user', 'approver');
+INSERT INTO `neatlogic_opensource`.`knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933842217975808, '45206688efe949c2afc661b7b0806aae', 'role', 'approver');
+INSERT INTO `neatlogic_opensource`.`knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933842217975808, 'alluser', 'common', 'member');
+INSERT INTO `neatlogic_opensource`.`knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933844977827840, '45206688efe949c2afc661b7b0806aae', 'role', 'approver');
+INSERT INTO `neatlogic_opensource`.`knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933844977827840, 'alluser', 'common', 'member');
+INSERT INTO `neatlogic_opensource`.`knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933859674669056, 'alluser', 'common', 'member');
+INSERT INTO `neatlogic_opensource`.`knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933859674669056, 'c8dea216f5bd49349db05cbc87db2f9a', 'user', 'approver');
 
 -- ----------------------------
 -- Records of knowledge_document

@@ -2,6 +2,7 @@ package neatlogic.module.knowledge.api.type;
 
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.common.constvalue.UserType;
 import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.annotation.*;
@@ -44,7 +45,7 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 
 	@Override
 	public String getName() {
-		return "获取知识圈知识分类树";
+		return "nmkat.knowledgedocumenttypetreeapi.getname";
 	}
 
 	@Override
@@ -53,8 +54,8 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 	}
 
 	@Input({})
-	@Output({@Param( name = "typeList", explode = KnowledgeDocumentTypeVo[].class, desc = "知识类型架构集合")})
-	@Description(desc = "获取知识圈知识分类树")
+	@Output({@Param( name = "typeList", explode = KnowledgeDocumentTypeVo[].class, desc = "common.tbodylist")})
+	@Description(desc = "nmkat.knowledgedocumenttypetreeapi.getname")
 	@Override
 	public Object myDoService(JSONObject jsonObj) throws Exception {
 		JSONArray result = new JSONArray();
@@ -64,6 +65,7 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 		uuidList.addAll(authenticationInfoVo.getTeamUuidList());
 		uuidList.addAll(authenticationInfoVo.getRoleUuidList());
 		uuidList.add(UserContext.get().getUserUuid());
+		uuidList.add(UserType.ALL.getValue());
 		/** 获取当前用户所有的圈子ID集合 */
 		List<Long> circleIdList = knowledgeCircleMapper.getCircleIdListByUserUuidList(uuidList);
 		if(CollectionUtils.isNotEmpty(circleIdList)){

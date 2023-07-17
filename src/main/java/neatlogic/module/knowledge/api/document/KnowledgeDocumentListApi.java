@@ -8,7 +8,6 @@ import javax.annotation.Resource;
 
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.dto.AuthenticationInfoVo;
-import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -59,9 +58,6 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
 
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
-
-    @Resource
-    private AuthenticationInfoService authenticationInfoService;
 
     private Map<String, Function<JSONObject, JSONObject>> map = new HashMap<>();
     
@@ -120,7 +116,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
             JSONObject resultObj = new JSONObject();
             resultObj.put("theadList", getWaitingForMyReviewTheadList());
             resultObj.put("tbodyList", new ArrayList<>());
-            AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(UserContext.get().getUserUuid(true));
+            AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
             BasePageVo searchVo = JSON.toJavaObject(jsonObj, BasePageVo.class);
             int pageCount = 0;
             if(searchVo.getNeedPage()) {
@@ -236,7 +232,7 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询文档列表";
+        return "nmkad.knowledgedocumentlistapi.getname";
     }
 
     @Override
@@ -245,19 +241,19 @@ public class KnowledgeDocumentListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-        @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字，匹配名称"),
-        @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true"),
-        @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页条目"),
-        @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-        @Param(name = "knowledgeType", type = ApiParamType.ENUM, rule = "all,waitingforreview,share,collect,draft",isRequired = true, desc = "知识类型"),
-        @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, minLength = 32, maxLength = 32, desc = "类型id")
+        @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+        @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "common.isneedpage"),
+        @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
+        @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+        @Param(name = "knowledgeType", type = ApiParamType.ENUM, rule = "all,waitingforreview,share,collect,draft",isRequired = true, desc = "common.type"),
+        @Param(name = "knowledgeDocumentTypeUuid", type = ApiParamType.STRING, minLength = 32, maxLength = 32, desc = "common.typeid")
     })
     @Output({
         @Param(explode = BasePageVo.class),
-        @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头列表"),
-        @Param(name = "tbodyList", explode = KnowledgeDocumentVersionVo[].class, desc = "文档列表")
+        @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "common.theadlist"),
+        @Param(name = "tbodyList", explode = KnowledgeDocumentVersionVo[].class, desc = "common.tbodylist")
     })
-    @Description(desc = "查询文档列表")
+    @Description(desc = "nmkad.knowledgedocumentlistapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         String knowledgeType = jsonObj.getString("knowledgeType");

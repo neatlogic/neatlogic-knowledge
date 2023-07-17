@@ -7,7 +7,6 @@ import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
@@ -18,7 +17,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -34,9 +32,6 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 
 	@Autowired
 	private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
-
-	@Resource
-	private AuthenticationInfoService authenticationInfoService;
 
 	@Override
 	public String getToken() {
@@ -61,7 +56,7 @@ public class KnowledgeDocumentTypeTreeApi extends PrivateApiComponentBase{
 		JSONArray result = new JSONArray();
 		List<String> uuidList = new ArrayList<String>();
 		/** 获取当前用户所在组和角色 */
-		AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(UserContext.get().getUserUuid());
+		AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
 		uuidList.addAll(authenticationInfoVo.getTeamUuidList());
 		uuidList.addAll(authenticationInfoVo.getRoleUuidList());
 		uuidList.add(UserContext.get().getUserUuid());

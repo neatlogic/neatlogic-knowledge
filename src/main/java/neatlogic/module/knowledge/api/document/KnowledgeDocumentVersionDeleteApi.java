@@ -23,10 +23,12 @@ import neatlogic.framework.knowledge.exception.KnowledgeDocumentCurrentVersionCa
 import neatlogic.framework.knowledge.exception.KnowledgeDocumentDraftSubmittedCannotBeDeletedException;
 import neatlogic.module.knowledge.service.KnowledgeDocumentService;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -47,7 +49,7 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除文档版本";
+        return "nmkad.knowledgedocumentversiondeleteapi.getname";
     }
 
     @Override
@@ -56,9 +58,9 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
     }
     
     @Input({
-        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id")
+        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "common.versionid")
     })
-    @Description(desc = "删除文档版本")
+    @Description(desc = "nmkad.knowledgedocumentversiondeleteapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
@@ -99,6 +101,24 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
             knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
             knowledgeDocumentMapper.deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
+        }
+
+        List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionListByKnowledgeDocumentId(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        if (CollectionUtils.isNotEmpty(knowledgeDocumentVersionList)) {
+            boolean allVersionIsDelete = true;
+            for (KnowledgeDocumentVersionVo knowledgeDocumentVersion : knowledgeDocumentVersionList) {
+                if (Objects.equals(knowledgeDocumentVersion.getIsDelete(), 0)) {
+                    allVersionIsDelete = false;
+                    break;
+                }
+            }
+            if (allVersionIsDelete) {
+                // 文档所有版本的is_delete都等于1时，将文档is_delete置1
+                knowledgeDocumentMapper.updateKnowledgeDocumentToDeleteById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+            }
+        } else {
+            // 文档所有版本都已被删除时，删除文档数据
+            knowledgeDocumentMapper.deleteKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
         return null;
     }

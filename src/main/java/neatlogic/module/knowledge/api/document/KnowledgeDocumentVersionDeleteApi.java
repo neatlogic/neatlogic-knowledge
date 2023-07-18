@@ -49,7 +49,7 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除文档版本";
+        return "nmkad.knowledgedocumentversiondeleteapi.getname";
     }
 
     @Override
@@ -58,9 +58,9 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
     }
     
     @Input({
-        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id")
+        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "common.versionid")
     })
-    @Description(desc = "删除文档版本")
+    @Description(desc = "nmkad.knowledgedocumentversiondeleteapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");

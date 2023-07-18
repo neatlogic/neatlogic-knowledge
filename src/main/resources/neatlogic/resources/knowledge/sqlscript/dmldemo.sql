@@ -1,4 +1,3 @@
-BEGIN;
 -- ----------------------------
 -- Records of knowledge_circle
 -- ----------------------------
@@ -9,12 +8,12 @@ INSERT INTO `knowledge_circle` (`id`, `name`) VALUES (933859674669056, '发布')
 -- ----------------------------
 -- Records of knowledge_circle_user
 -- ----------------------------
-INSERT INTO `neatlogic_opensource`.`knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933842217975808, '45206688efe949c2afc661b7b0806aae', 'role', 'approver');
-INSERT INTO `neatlogic_opensource`.`knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933842217975808, 'alluser', 'common', 'member');
-INSERT INTO `neatlogic_opensource`.`knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933844977827840, '45206688efe949c2afc661b7b0806aae', 'role', 'approver');
-INSERT INTO `neatlogic_opensource`.`knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933844977827840, 'alluser', 'common', 'member');
-INSERT INTO `neatlogic_opensource`.`knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933859674669056, 'alluser', 'common', 'member');
-INSERT INTO `neatlogic_opensource`.`knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933859674669056, 'c8dea216f5bd49349db05cbc87db2f9a', 'user', 'approver');
+INSERT INTO `knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933842217975808, '45206688efe949c2afc661b7b0806aae', 'role', 'approver');
+INSERT INTO `knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933842217975808, 'alluser', 'common', 'member');
+INSERT INTO `knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933844977827840, '45206688efe949c2afc661b7b0806aae', 'role', 'approver');
+INSERT INTO `knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933844977827840, 'alluser', 'common', 'member');
+INSERT INTO `knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933859674669056, 'alluser', 'common', 'member');
+INSERT INTO `knowledge_circle_user` (`knowledge_circle_id`, `uuid`, `type`, `auth_type`) VALUES (933859674669056, 'c8dea216f5bd49349db05cbc87db2f9a', 'user', 'approver');
 
 -- ----------------------------
 -- Records of knowledge_document
@@ -265,10 +264,6 @@ INSERT INTO `knowledge_document_line_content` (`hash`, `content`) VALUES ('f96c4
 INSERT INTO `knowledge_document_line_content` (`hash`, `content`) VALUES ('fbe81a18628e1e4a5aed41e54a73c237', '9. 通知用户和相关方：如果故障对用户或相关方造成了影响，及时与他们进行沟通，提供解释、道歉和补救措施。');
 
 -- ----------------------------
--- Records of knowledge_document_tag
--- ----------------------------
-
--- ----------------------------
 -- Records of knowledge_document_type
 -- ----------------------------
 INSERT INTO `knowledge_document_type` (`uuid`, `name`, `knowledge_circle_id`, `parent_uuid`, `lft`, `rht`, `sort`) VALUES ('171f3120dc86419aad858aac9d6e4bc4', '研发技能', 933842217975808, '0', 4, 5, 1);
@@ -299,4 +294,3 @@ INSERT INTO `knowledge_document_view_count` (`knowledge_document_id`, `count`) V
 INSERT INTO `knowledge_document_view_count` (`knowledge_document_id`, `count`) VALUES (933856562495488, 2);
 INSERT INTO `knowledge_document_view_count` (`knowledge_document_id`, `count`) VALUES (933860891017216, 4);
 
-COMMIT;

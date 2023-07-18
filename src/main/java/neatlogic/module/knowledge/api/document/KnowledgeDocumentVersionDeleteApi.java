@@ -113,9 +113,11 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
                 }
             }
             if (allVersionIsDelete) {
+                // 文档所有版本的is_delete都等于1时，将文档is_delete置1
                 knowledgeDocumentMapper.updateKnowledgeDocumentToDeleteById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
             }
         } else {
+            // 文档所有版本都已被删除时，删除文档数据
             knowledgeDocumentMapper.deleteKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
         return null;

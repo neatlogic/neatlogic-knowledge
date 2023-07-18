@@ -23,10 +23,12 @@ import neatlogic.framework.knowledge.exception.KnowledgeDocumentCurrentVersionCa
 import neatlogic.framework.knowledge.exception.KnowledgeDocumentDraftSubmittedCannotBeDeletedException;
 import neatlogic.module.knowledge.service.KnowledgeDocumentService;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -73,8 +75,6 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
             knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
             knowledgeDocumentMapper.deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
             return null;
-        } else {
-            knowledgeDocumentMapper.updateKnowledgeDocumentToDeleteById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
         if(Objects.equals(knowledgeDocumentVo.getKnowledgeDocumentVersionId(), knowledgeDocumentVersionId)) {
             throw new KnowledgeDocumentCurrentVersionCannotBeDeletedException();
@@ -101,6 +101,22 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
             knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
             knowledgeDocumentMapper.deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
+        }
+
+        List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionListByKnowledgeDocumentId(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        if (CollectionUtils.isNotEmpty(knowledgeDocumentVersionList)) {
+            boolean allVersionIsDelete = true;
+            for (KnowledgeDocumentVersionVo knowledgeDocumentVersion : knowledgeDocumentVersionList) {
+                if (Objects.equals(knowledgeDocumentVersion.getIsDelete(), 0)) {
+                    allVersionIsDelete = false;
+                    break;
+                }
+            }
+            if (allVersionIsDelete) {
+                knowledgeDocumentMapper.updateKnowledgeDocumentToDeleteById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+            }
+        } else {
+            knowledgeDocumentMapper.deleteKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
         return null;
     }

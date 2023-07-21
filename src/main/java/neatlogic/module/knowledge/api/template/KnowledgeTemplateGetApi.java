@@ -2,13 +2,13 @@ package neatlogic.module.knowledge.api.template;
 
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.knowledge.exception.KnowledgeTemplateNotFoundEditTargetException;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeTemplateMapper;
 import neatlogic.framework.knowledge.dto.KnowledgeTemplateVo;
-import neatlogic.framework.knowledge.exception.KnowledgeTemplateNotFoundException;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class KnowledgeTemplateGetApi extends PrivateApiComponentBase{
 
 	@Override
 	public String getName() {
-		return "获取单个知识模版";
+		return "nmkat.knowledgetemplategetapi.getname";
 	}
 
 	@Override
@@ -39,18 +39,19 @@ public class KnowledgeTemplateGetApi extends PrivateApiComponentBase{
 
 
 	@Input({
-			@Param( name = "id", type = ApiParamType.LONG, desc = "模版ID",isRequired = true)
+			@Param( name = "id", type = ApiParamType.LONG, desc = "common.id",isRequired = true)
 	})
-	@Output({@Param(name = "template",type = ApiParamType.JSONARRAY,explode = KnowledgeTemplateVo.class,desc = "知识模版")})
-	@Description(desc = "获取单个知识模版")
+	@Output({@Param(name = "template",explode = KnowledgeTemplateVo.class,desc = "term.knowledge.templateinfo")})
+	@Description(desc = "nmkat.knowledgetemplategetapi.getname")
 	@Override
 	public Object myDoService(JSONObject jsonObj) throws Exception {
 		Long id = jsonObj.getLong("id");
-		if(knowledgeTemplateMapper.checkKnowledgeTemplateExistsById(id) == 0){
-			throw new KnowledgeTemplateNotFoundException(id);
+		KnowledgeTemplateVo knowledgeTemplateVo = knowledgeTemplateMapper.getKnowledgeTemplateById(id);
+		if(knowledgeTemplateVo == null){
+			throw new KnowledgeTemplateNotFoundEditTargetException(id);
 		}
 		JSONObject result = new JSONObject();
-		result.put("template",knowledgeTemplateMapper.getKnowledgeTemplateById(id));
+		result.put("template", knowledgeTemplateVo);
 		return result;
 	}
 

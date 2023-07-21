@@ -2,6 +2,7 @@ package neatlogic.module.knowledge.api.circle;
 
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.knowledge.exception.KnowledgeCircleNotFoundEditTargetException;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -11,7 +12,6 @@ import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import neatlogic.framework.knowledge.dto.KnowledgeCircleUserVo;
 import neatlogic.framework.knowledge.dto.KnowledgeCircleVo;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentTypeVo;
-import neatlogic.framework.knowledge.exception.KnowledgeCircleNotFoundException;
 import neatlogic.module.knowledge.service.KnowledgeDocumentTypeService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -43,7 +43,7 @@ public class KnowledgeCircleGetApi extends PrivateApiComponentBase{
 
 	@Override
 	public String getName() {
-		return "获取单个知识圈";
+		return "nmkac.knowledgecirclegetapi.getname";
 	}
 
 	@Override
@@ -51,15 +51,15 @@ public class KnowledgeCircleGetApi extends PrivateApiComponentBase{
 		return null;
 	}
 
-	@Input({@Param( name = "id", type = ApiParamType.LONG, desc = "知识圈ID",isRequired = true)})
-	@Output({@Param(name = "knowledgeCircle",type = ApiParamType.JSONOBJECT,explode = KnowledgeCircleVo.class,desc = "知识圈")})
-	@Description(desc = "获取单个知识圈")
+	@Input({@Param( name = "id", type = ApiParamType.LONG, desc = "common.id",isRequired = true)})
+	@Output({@Param(name = "knowledgeCircle",type = ApiParamType.JSONOBJECT,explode = KnowledgeCircleVo.class,desc = "term.knowledge.circleinfo")})
+	@Description(desc = "nmkac.knowledgecirclegetapi.getname")
 	@Override
 	public Object myDoService(JSONObject jsonObj) throws Exception {
 		JSONObject result = new JSONObject();
 		Long id = jsonObj.getLong("id");
 		if(knowledgeCircleMapper.checkKnowledgeCircleExistsById(id) == 0){
-			throw new KnowledgeCircleNotFoundException(id);
+			throw new KnowledgeCircleNotFoundEditTargetException(id);
 		}
 
 		KnowledgeCircleVo circle = knowledgeCircleMapper.getKnowledgeCircleById(id);

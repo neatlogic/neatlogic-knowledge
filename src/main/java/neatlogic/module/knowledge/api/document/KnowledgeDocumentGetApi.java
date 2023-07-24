@@ -3,6 +3,8 @@ package neatlogic.module.knowledge.api.document;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.knowledge.exception.KnowledgeDocumentNotFoundEditTargetException;
+import neatlogic.framework.knowledge.exception.KnowledgeDocumentVersionNotFoundEditTargetException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -34,7 +36,7 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询文档内容";
+        return "nmkad.knowledgedocumentgetapi.getname";
     }
 
     @Override
@@ -43,19 +45,25 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
     }
     
     @Input({
-        @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, isRequired = true, desc = "文档id"),
-        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "版本id"),
-        @Param(name = "isReadOnly", type = ApiParamType.ENUM, rule = "0,1", desc = "是否增加浏览量")
+        @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, isRequired = true, desc = "term.knowledge.documentid"),
+        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, desc = "term.knowledge.documentversionid"),
+        @Param(name = "isReadOnly", type = ApiParamType.ENUM, rule = "0,1", desc = "nmkad.knowledgedocumentgetapi.input.param.desc.isreadonly")
     })
     @Output({
-        @Param(explode = KnowledgeDocumentVo.class, desc = "文档内容")
+        @Param(explode = KnowledgeDocumentVo.class, desc = "term.knowledge.documentinfo")
     })
-    @Description(desc = "查询文档内容")
+    @Description(desc = "nmkad.knowledgedocumentgetapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         String userUuid = UserContext.get().getUserUuid(true);
         Long knowledgeDocumentId = jsonObj.getLong("knowledgeDocumentId");
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
+        if (knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId) == null) {
+            throw new KnowledgeDocumentNotFoundEditTargetException(knowledgeDocumentId);
+        }
+        if (knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId) == null) {
+            throw new KnowledgeDocumentVersionNotFoundEditTargetException(knowledgeDocumentVersionId);
+        }
         Long currentVersionId = knowledgeDocumentService.checkViewPermissionByDocumentIdAndVersionId(knowledgeDocumentId,knowledgeDocumentVersionId);
 
         Integer isReadOnly = jsonObj.getInteger("isReadOnly");

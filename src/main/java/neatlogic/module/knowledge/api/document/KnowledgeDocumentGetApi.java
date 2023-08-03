@@ -61,8 +61,10 @@ public class KnowledgeDocumentGetApi extends PrivateApiComponentBase {
         if (knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId) == null) {
             throw new KnowledgeDocumentNotFoundEditTargetException(knowledgeDocumentId);
         }
-        if (knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId) == null) {
-            throw new KnowledgeDocumentVersionNotFoundEditTargetException(knowledgeDocumentVersionId);
+        if (knowledgeDocumentVersionId != null) {
+            if (knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId) == null) {
+                throw new KnowledgeDocumentVersionNotFoundEditTargetException(knowledgeDocumentVersionId);
+            }
         }
         Long currentVersionId = knowledgeDocumentService.checkViewPermissionByDocumentIdAndVersionId(knowledgeDocumentId,knowledgeDocumentVersionId);
 

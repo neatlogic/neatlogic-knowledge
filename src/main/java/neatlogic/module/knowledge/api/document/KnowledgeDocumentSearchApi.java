@@ -23,7 +23,7 @@ import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.common.util.PageUtil;
 import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexVo;
-import neatlogic.module.knowledge.auth.label.KNOWLEDGE;
+import neatlogic.framework.knowledge.auth.label.KNOWLEDGE;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;

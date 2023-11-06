@@ -23,10 +23,10 @@ import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.common.util.PageUtil;
 import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexVo;
+import neatlogic.module.knowledge.auth.label.KNOWLEDGE;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentTypeVo;
@@ -44,7 +44,7 @@ import javax.annotation.Resource;
 import java.util.*;
 
 @Service
-@AuthAction(action = KNOWLEDGE_BASE.class)
+@AuthAction(action = KNOWLEDGE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
 

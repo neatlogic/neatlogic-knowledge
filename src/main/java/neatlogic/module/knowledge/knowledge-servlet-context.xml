@@ -59,6 +59,7 @@ limitations under the License.
                 <value>classpath:neatlogic/framework/knowledge/dao/mapper/**/*.xml</value>
             </list>
         </property>
+        <property name="databaseIdProvider" ref="neatLogicDatabaseIdProvider"/>
     </bean>
 
 

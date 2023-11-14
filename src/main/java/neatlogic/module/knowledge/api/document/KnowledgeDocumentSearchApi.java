@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = KNOWLEDGE.class)
@@ -112,6 +113,17 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
         KnowledgeDocumentVo documentVoParam = new KnowledgeDocumentVo(jsonObj);
         //补充查看权限条件参数（圈子成员or圈子审批人）
         getDocumentViewParam(documentVoParam);
+        String knowledgeDocumentTypeUuid = documentVoParam.getKnowledgeDocumentTypeUuid();
+        if (StringUtils.isNotBlank(knowledgeDocumentTypeUuid)) {
+            KnowledgeDocumentTypeVo typeVo = knowledgeDocumentTypeMapper.getTypeByUuid(documentVoParam.getKnowledgeDocumentTypeUuid());
+            if (typeVo == null) {
+                throw new KnowledgeDocumentTypeNotFoundException(documentVoParam.getKnowledgeDocumentTypeUuid());
+            }
+            documentVoParam.setKnowledgeCircleId(typeVo.getKnowledgeCircleId());
+            List<KnowledgeDocumentTypeVo> typeList = knowledgeDocumentTypeMapper.getChildAndSelfByLftRht(typeVo.getLft(), typeVo.getRht(), typeVo.getKnowledgeCircleId());
+            List<String> typeUuidList = typeList.stream().map(KnowledgeDocumentTypeVo::getUuid).collect(Collectors.toList());
+            documentVoParam.setKnowledgeDocumentTypeUuidList(typeUuidList);
+        }
         //根据keyword等条件，从数据库搜索知识
         List<KnowledgeDocumentVo> documentList = new ArrayList<>();
         List<Long> documentIdList = knowledgeDocumentMapper.searchKnowledgeDocumentId(documentVoParam);

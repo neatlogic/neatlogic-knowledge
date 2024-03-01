@@ -95,4 +95,13 @@ public interface KnowledgeDocumentService {
      * @Returns: void
      **/
     public void setVersionContentMap(List<String> keywordList,List<Long> activeVersionIdList,Map<Long, FullTextIndexVo> versionIndexVoMap,Map<Long, String> versionContentMap);
+
+    /**
+     * 获取两个版本之间的对比结果
+     * @param newVersionId
+     * @param oldVersionId
+     * @return
+     * @throws PermissionDeniedException
+     */
+    JSONObject getKnowledgeDocumentVersionCompare(Long newVersionId, Long oldVersionId) throws PermissionDeniedException;
 }

@@ -49,5 +49,9 @@ limitations under the License.
 			<groupId>com.neatlogic</groupId>
 			<artifactId>neatlogic-knowledge-base</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.neatlogic</groupId>
+			<artifactId>neatlogic-itsm-base</artifactId>
+		</dependency>
 	</dependencies>
 </project>

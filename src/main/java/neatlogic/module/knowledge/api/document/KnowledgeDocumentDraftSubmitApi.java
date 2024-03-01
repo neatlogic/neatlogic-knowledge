@@ -3,9 +3,13 @@ package neatlogic.module.knowledge.api.document;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.process.approve.ApproveHandlerNotFoundException;
+import neatlogic.framework.process.approve.core.ApproveHandlerFactory;
+import neatlogic.framework.process.approve.core.IApproveHandler;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.knowledge.approve.constvalue.KnowledgeApproveHandlerType;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentOperate;
 import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentVersionStatus;
@@ -95,6 +99,13 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
         resultObj.put("isReviewable", isReviewable);
 
         knowledgeDocumentService.audit(knowledgeDocumentVo.getId(), knowledgeDocumentVersionId, KnowledgeDocumentOperate.SUBMIT, null);
+
+        IApproveHandler approveHandler = ApproveHandlerFactory.getHandler(KnowledgeApproveHandlerType.KNOWLEDGE_DOCUMENT.getValue());
+        if (approveHandler == null) {
+            throw new ApproveHandlerNotFoundException(KnowledgeApproveHandlerType.KNOWLEDGE_DOCUMENT.getValue());
+        }
+        String channelUuid = "a9a7437ce34a404b83993fc87c58d917";
+        Long processTaskId = approveHandler.startProcess(channelUuid, knowledgeDocumentVersionId);
         return resultObj;
     }
 

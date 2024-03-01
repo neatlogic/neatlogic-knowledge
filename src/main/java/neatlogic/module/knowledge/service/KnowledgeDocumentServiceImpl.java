@@ -16,6 +16,7 @@
 
 package neatlogic.module.knowledge.service;
 
+import com.alibaba.fastjson.JSON;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.common.constvalue.GroupSearch;
 import neatlogic.framework.dao.mapper.RoleMapper;
@@ -30,6 +31,9 @@ import neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexContentV
 import neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexVo;
 import neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexWordOffsetVo;
 import neatlogic.framework.fulltextindex.utils.FullTextIndexUtil;
+import neatlogic.framework.lcs.BaseLineVo;
+import neatlogic.framework.lcs.LCSUtil;
+import neatlogic.framework.lcs.SegmentPair;
 import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.framework.util.HtmlUtil;
 import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentOperate;
@@ -495,5 +499,124 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
                 versionContentMap.put(contentVo.getTargetId(), contentVo.getContent());
             }
         }
+    }
+
+    @Override
+    public JSONObject getKnowledgeDocumentVersionCompare(Long newVersionId, Long oldVersionId) throws PermissionDeniedException {
+        JSONObject resultObj = new JSONObject();
+        KnowledgeDocumentVo newDocumentVo = getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(newVersionId);
+        resultObj.put("newDocumentVo", newDocumentVo);
+        if (oldVersionId == null) {
+            KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(newDocumentVo.getId());
+            oldVersionId = knowledgeDocumentVo.getKnowledgeDocumentVersionId();
+        }
+        if (Objects.equals(oldVersionId, newVersionId)) {
+            KnowledgeDocumentVo oldDocumentVo = cloneKnowledgeDocumentDetail(newDocumentVo);
+            resultObj.put("oldDocumentVo", oldDocumentVo);
+        } else {
+            KnowledgeDocumentVo oldDocumentVo = getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(oldVersionId);
+            resultObj.put("oldDocumentVo", oldDocumentVo);
+            compareLineList(oldDocumentVo, newDocumentVo);
+        }
+        return resultObj;
+    }
+
+    /**
+     * @param source
+     * @return KnowledgeDocumentVo
+     * @Time:2020年10月28日
+     * @Description: 复制文档详细信息
+     */
+    private KnowledgeDocumentVo cloneKnowledgeDocumentDetail(KnowledgeDocumentVo source) {
+        KnowledgeDocumentVo cloneVo = new KnowledgeDocumentVo();
+        cloneVo.setId(source.getId());
+        cloneVo.setKnowledgeDocumentVersionId(source.getKnowledgeDocumentVersionId());
+        cloneVo.setVersion(source.getVersion());
+        cloneVo.setKnowledgeDocumentTypeUuid(source.getKnowledgeDocumentTypeUuid());
+        cloneVo.setKnowledgeCircleId(source.getKnowledgeCircleId());
+        cloneVo.setTitle(source.getTitle());
+        cloneVo.getFileIdList().addAll(source.getFileIdList());
+        cloneVo.setIsEditable(source.getIsEditable());
+        cloneVo.setIsDeletable(source.getIsDeletable());
+        cloneVo.setIsReviewable(source.getIsReviewable());
+        for (KnowledgeDocumentLineVo line : source.getLineList()) {
+            KnowledgeDocumentLineVo lineVo = new KnowledgeDocumentLineVo();
+            lineVo.setUuid(line.getUuid());
+            lineVo.setHandler(line.getHandler());
+            lineVo.setChangeType(line.getChangeType());
+            lineVo.setLineNumber(line.getLineNumber());
+            lineVo.setConfig(JSON.toJSONString(line.getConfig()));
+            lineVo.setContent(line.getContent());
+            cloneVo.getLineList().add(lineVo);
+        }
+        for (FileVo file : source.getFileList()) {
+            FileVo fileVo = new FileVo();
+            fileVo.setId(file.getId());
+            fileVo.setName(file.getName());
+            fileVo.setSize(file.getSize());
+            fileVo.setUserUuid(file.getUserUuid());
+            fileVo.setUploadTime(file.getUploadTime());
+            fileVo.setType(file.getType());
+            fileVo.setPath(file.getPath());
+            fileVo.setContentType(file.getContentType());
+            cloneVo.getFileList().add(fileVo);
+        }
+
+        cloneVo.getTagList().addAll(source.getTagList());
+        cloneVo.getPath().addAll(source.getPath());
+        return cloneVo;
+    }
+
+    /**
+     * @param oldDocumentVo
+     * @param newDocumentVo
+     * @return void
+     * @Time:2020年10月28日
+     * @Description: 对比文档每行数据
+     */
+    private void compareLineList(KnowledgeDocumentVo oldDocumentVo, KnowledgeDocumentVo newDocumentVo) {
+        List<KnowledgeDocumentLineVo> oldLineList = oldDocumentVo.getLineList();
+        List<KnowledgeDocumentLineVo> newLineList = newDocumentVo.getLineList();
+        List<BaseLineVo> oldResultList = new ArrayList<>();
+        List<BaseLineVo> newResultList = new ArrayList<>();
+        List<SegmentPair> segmentPairList = LCSUtil.LCSCompare(oldLineList, newLineList);
+        for (SegmentPair segmentPair : segmentPairList) {
+            LCSUtil.regroupLineList(
+                    knowledgeDocumentLineVoListConvertBaseLineVoList(oldLineList),
+                    knowledgeDocumentLineVoListConvertBaseLineVoList(newLineList),
+                    oldResultList,
+                    newResultList,
+                    segmentPair);
+        }
+        oldDocumentVo.setLineList(baseLineVoListConvertKnowledgeDocumentLineVoList(oldResultList));
+        newDocumentVo.setLineList(baseLineVoListConvertKnowledgeDocumentLineVoList(newResultList));
+    }
+
+    /**
+     * 将KnowledgeDocumentLineVo列表转换成BaseLineVo列表
+     * @param lineList
+     * @return
+     */
+    private List<BaseLineVo> knowledgeDocumentLineVoListConvertBaseLineVoList(List<KnowledgeDocumentLineVo> lineList) {
+        List<BaseLineVo> resultList = new ArrayList<>();
+        for (KnowledgeDocumentLineVo lineVo : lineList) {
+            resultList.add(lineVo);
+        }
+        return resultList;
+    }
+
+    /**
+     * 将BaseLineVo列表转换成KnowledgeDocumentLineVo列表
+     * @param lineList
+     * @return
+     */
+    private List<KnowledgeDocumentLineVo> baseLineVoListConvertKnowledgeDocumentLineVoList(List<BaseLineVo> lineList) {
+        List<KnowledgeDocumentLineVo> resultList = new ArrayList<>();
+        for (BaseLineVo lineVo : lineList) {
+            if (lineVo instanceof KnowledgeDocumentLineVo) {
+                resultList.add((KnowledgeDocumentLineVo)lineVo);
+            }
+        }
+        return resultList;
     }
 }

@@ -9,9 +9,9 @@ import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentVersionVo;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentVo;
 import neatlogic.framework.knowledge.exception.*;
-import neatlogic.framework.process.approve.constvalue.ApproveReply;
 import neatlogic.framework.process.approve.core.ApproveHandlerBase;
 import neatlogic.framework.process.approve.dto.ApproveEntityVo;
+import neatlogic.framework.process.constvalue.ProcessTaskFinalStatus;
 import neatlogic.module.knowledge.approve.constvalue.KnowledgeApproveHandlerType;
 import neatlogic.module.knowledge.service.KnowledgeDocumentService;
 import org.apache.commons.lang3.StringUtils;
@@ -47,7 +47,7 @@ public class KnowledgeApproveHandler extends ApproveHandlerBase {
     }
 
     @Override
-    public int callback(Long processTaskId, ApproveReply approveReply, Long id, String content) {
+    public int callback(Long processTaskId, ProcessTaskFinalStatus finalStatus, Long id, String content) {
         KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(id);
         if(knowledgeDocumentVersionVo == null) {
             throw new KnowledgeDocumentVersionNotFoundException(id);
@@ -76,7 +76,7 @@ public class KnowledgeApproveHandler extends ApproveHandlerBase {
         if(knowledgeDocumentVersionVo.getIsDelete() == 1){
             updateStatusVo.setFromVersion(0);
         }
-        if (ApproveReply.DENY == approveReply) {
+        if (ProcessTaskFinalStatus.FAILED == finalStatus) {
             operate = KnowledgeDocumentOperate.REJECT;
         }
         if(operate == KnowledgeDocumentOperate.PASS) {

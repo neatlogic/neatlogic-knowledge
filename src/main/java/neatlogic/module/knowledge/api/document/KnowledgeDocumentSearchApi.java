@@ -15,6 +15,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.knowledge.api.document;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -23,24 +26,24 @@ import neatlogic.framework.common.util.PageUtil;
 import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexVo;
 import neatlogic.framework.knowledge.auth.label.KNOWLEDGE;
-import neatlogic.framework.restful.annotation.*;
-import neatlogic.framework.restful.constvalue.OperationTypeEnum;
-import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentTypeVo;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentVo;
 import neatlogic.framework.knowledge.exception.KnowledgeDocumentTypeNotFoundException;
+import neatlogic.framework.restful.annotation.*;
+import neatlogic.framework.restful.constvalue.OperationTypeEnum;
+import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.knowledge.service.KnowledgeDocumentService;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -188,7 +191,7 @@ public class KnowledgeDocumentSearchApi extends PrivateApiComponentBase {
             //设置标题、截取内容，并高亮
             knowledgeDocumentService.setTitleAndShortcutContentHighlight(keywordList, knowledgeDocumentVo.getKnowledgeDocumentVersionId(),knowledgeDocumentVo, versionIndexVoMap, versionContentMap);
             //组装返回数据
-            JSONObject returnData = JSONObject.parseObject(JSON.toJSONString(knowledgeDocumentVo));
+            JSONObject returnData = JSON.parseObject(JSON.toJSONString(knowledgeDocumentVo));
             returnData.put("knowledgeDocumentId", returnData.getLong("id"));
             returnData.put("id", returnData.getLong("knowledgeDocumentVersionId"));
             returnDataList.add(returnData);

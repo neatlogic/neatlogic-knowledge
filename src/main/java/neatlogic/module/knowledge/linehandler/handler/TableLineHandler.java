@@ -20,7 +20,6 @@ import neatlogic.framework.knowledge.linehandler.core.KnowledgeLineHandlerBase;
 import neatlogic.framework.util.HtmlUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.itextpdf.tool.xml.html.HTML;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -115,16 +114,16 @@ public class TableLineHandler extends KnowledgeLineHandlerBase {
     @Override
     protected String myConvertHtmlToConfig(Element element) {
         JSONObject tableJson = new JSONObject();
-        Elements trElements = element.getElementsByTag(HTML.Tag.TR);
+        Elements trElements = element.getElementsByTag("tr");
         tableJson.put("headerList", CollectionUtils.EMPTY_COLLECTION);
         tableJson.put("mergeData", CollectionUtils.EMPTY_COLLECTION);
         tableJson.put("lefterList", CollectionUtils.EMPTY_COLLECTION);
         String[][] tableData = new String[trElements.size()][];
         for (int i = 0; i < trElements.size(); i++) {
-            Elements tdElements = trElements.get(i).getElementsByTag(HTML.Tag.TD);
+            Elements tdElements = trElements.get(i).getElementsByTag("td");
             tableData[i] = new String[tdElements.size()];
             for (int j = 0; j < tdElements.size(); j++) {
-                Elements spanElements = tdElements.get(j).getElementsByTag(HTML.Tag.SPAN);
+                Elements spanElements = tdElements.get(j).getElementsByTag("span");
                 if (CollectionUtils.isNotEmpty(spanElements)) {
                     tableData[i][j] = HtmlUtil.decodeHtml(spanElements.get(0).html());
                 } else {

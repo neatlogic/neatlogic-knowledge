@@ -12,6 +12,8 @@
 
 package neatlogic.module.knowledge.fulltextindex;
 
+import neatlogic.framework.asynchronization.thread.NeatLogicThread;
+import neatlogic.framework.asynchronization.threadpool.CachedThreadPool;
 import neatlogic.framework.fulltextindex.core.FullTextIndexHandlerBase;
 import neatlogic.framework.fulltextindex.core.IFullTextIndexType;
 import neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo;
@@ -21,14 +23,17 @@ import neatlogic.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentLineVo;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentVersionVo;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 @Service
 public class DocumentLineFullTextIndexHandler extends FullTextIndexHandlerBase {
+    private static final Semaphore semaphore = new Semaphore(5);
     @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
 
@@ -52,6 +57,11 @@ public class DocumentLineFullTextIndexHandler extends FullTextIndexHandlerBase {
     }
 
     @Override
+    public boolean needSaveContent() {
+        return true;
+    }
+
+    @Override
     protected void myMakeupDocument(DocumentVo documentVo) {
 
     }
@@ -63,7 +73,31 @@ public class DocumentLineFullTextIndexHandler extends FullTextIndexHandlerBase {
 
     @Override
     public void myRebuildIndex(FullTextIndexTypeVo fullTextIndexTypeVo) {
-
+        fullTextIndexTypeVo.setPageSize(500);
+        fullTextIndexTypeVo.setCurrentPage(1);
+        //为了增量重建索引时，能实现补充缺少属性的效果，因此不管全量重建还是增量重建，都需要遍历所有知识库
+        List<Long> knowledgeVersionIdList = knowledgeDocumentMapper.getKnowledgeDocumentVersionIdListForFulltextIndex(fullTextIndexTypeVo);
+        while (CollectionUtils.isNotEmpty(knowledgeVersionIdList)) {
+            for (Long knowledgeVersionId : knowledgeVersionIdList) {
+                try {
+                    semaphore.acquire();
+                    CachedThreadPool.execute(new NeatLogicThread("FULLTEXTINDEX-REBUILD-KNOWLEDGE-VERSION-" + knowledgeVersionId) {
+                        @Override
+                        protected void execute() {
+                            try {
+                                createIndex(knowledgeVersionId, true);
+                            } finally {
+                                semaphore.release();
+                            }
+                        }
+                    });
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            fullTextIndexTypeVo.setCurrentPage(fullTextIndexTypeVo.getCurrentPage() + 1);
+            knowledgeVersionIdList = knowledgeDocumentMapper.getKnowledgeDocumentVersionIdListForFulltextIndex(fullTextIndexTypeVo);
+        }
     }
 
 }

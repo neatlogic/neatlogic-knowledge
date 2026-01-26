@@ -15,10 +15,16 @@ package neatlogic.module.knowledge.file;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.file.core.FileTypeHandlerBase;
 import neatlogic.framework.file.dto.FileVo;
+import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 @Component
 public class KnowledgeFileHandler extends FileTypeHandlerBase {
+
+    @Resource
+    private KnowledgeDocumentMapper knowledgeDocumentMapper;
 
     @Override
     public boolean valid(String userUuid, FileVo fileVo, JSONObject jsonObj) {
@@ -42,5 +48,16 @@ public class KnowledgeFileHandler extends FileTypeHandlerBase {
     @Override
     protected boolean myDeleteFile(FileVo fileVo, JSONObject paramObj) {
         return true;
+    }
+
+    /**
+     * 校验附件是否允许删除
+     *
+     * @param fileVo 附件信息
+     */
+    @Override
+    public boolean validDeleteFile(FileVo fileVo) {
+        Long fileId = knowledgeDocumentMapper.checkKnowledgeDocumentFileIdIsExistsByFileId(fileVo.getId());
+        return fileId == null;
     }
 }

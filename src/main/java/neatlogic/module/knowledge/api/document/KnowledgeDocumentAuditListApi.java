@@ -17,7 +17,6 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.common.util.PageUtil;
 import neatlogic.framework.dao.mapper.UserMapper;
-import neatlogic.framework.dto.UserVo;
 import neatlogic.framework.exception.type.PermissionDeniedException;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.annotation.Input;

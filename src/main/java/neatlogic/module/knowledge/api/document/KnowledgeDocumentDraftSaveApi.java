@@ -30,7 +30,6 @@ import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeTagMapper;
 import neatlogic.framework.knowledge.dto.*;
 import neatlogic.framework.knowledge.exception.*;
-import neatlogic.framework.lcs.exception.LineHandlerNotFoundException;
 import neatlogic.framework.lcs.linehandler.core.ILineHandler;
 import neatlogic.framework.lcs.linehandler.core.LineHandlerFactory;
 import neatlogic.framework.restful.annotation.*;
@@ -352,7 +351,8 @@ public class KnowledgeDocumentDraftSaveApi extends PrivateApiComponentBase {
             String handler = beforeLine.getHandler();
             ILineHandler lineHandler = LineHandlerFactory.getHandler(handler);
             if (lineHandler == null) {
-                throw new LineHandlerNotFoundException(handler);
+                return true;
+//                throw new LineHandlerNotFoundException(handler);
             }
             String beforeMainBody = lineHandler.getMainBody(beforeLine);
             String afterMainBody = lineHandler.getMainBody(afterLine);

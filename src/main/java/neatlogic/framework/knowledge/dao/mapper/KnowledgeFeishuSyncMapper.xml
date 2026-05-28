@@ -48,6 +48,7 @@
                `base_url` AS baseUrl,
                `app_id` AS appId,
                `app_secret` AS appSecret,
+               `user_access_token` AS userAccessToken,
                `space_id` AS spaceId,
                `space_name` AS spaceName,
                `knowledge_circle_id` AS knowledgeCircleId,
@@ -80,9 +81,9 @@
 
     <insert id="insertConfig">
         INSERT INTO `knowledge_feishu_sync_config`
-        (`id`, `name`, `base_url`, `app_id`, `app_secret`, `space_id`, `space_name`, `knowledge_circle_id`, `is_active`, `fcu`, `fcd`, `lcu`, `lcd`)
+        (`id`, `name`, `base_url`, `app_id`, `app_secret`, `user_access_token`, `space_id`, `space_name`, `knowledge_circle_id`, `is_active`, `fcu`, `fcd`, `lcu`, `lcd`)
         VALUES
-        (#{id}, #{name}, #{baseUrl}, #{appId}, #{appSecret}, #{spaceId}, #{spaceName}, #{knowledgeCircleId}, #{isActive}, #{fcu}, NOW(3), #{lcu}, NOW(3))
+        (#{id}, #{name}, #{baseUrl}, #{appId}, #{appSecret}, #{userAccessToken}, #{spaceId}, #{spaceName}, #{knowledgeCircleId}, #{isActive}, #{fcu}, NOW(3), #{lcu}, NOW(3))
     </insert>
 
     <update id="updateConfig">
@@ -92,6 +93,9 @@
             `app_id` = #{appId},
             <if test="appSecret != null and appSecret != ''">
                 `app_secret` = #{appSecret},
+            </if>
+            <if test="userAccessToken != null and userAccessToken != ''">
+                `user_access_token` = #{userAccessToken},
             </if>
             `space_id` = #{spaceId},
             `space_name` = #{spaceName},

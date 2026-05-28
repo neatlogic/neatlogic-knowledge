@@ -20,6 +20,8 @@ public class KnowledgeFeishuSyncConfigVo extends BasePageVo {
     private String appId;
     @JSONField(serialize = false)
     private String appSecret;
+    @JSONField(serialize = false)
+    private String userAccessToken;
     @EntityField(name = "wiki space id", type = ApiParamType.STRING)
     private String spaceId;
     @EntityField(name = "wiki space name", type = ApiParamType.STRING)
@@ -57,6 +59,8 @@ public class KnowledgeFeishuSyncConfigVo extends BasePageVo {
     public void setAppId(String appId) { this.appId = appId; }
     public String getAppSecret() { return appSecret; }
     public void setAppSecret(String appSecret) { this.appSecret = appSecret; }
+    public String getUserAccessToken() { return userAccessToken; }
+    public void setUserAccessToken(String userAccessToken) { this.userAccessToken = userAccessToken; }
     public String getSpaceId() { return spaceId; }
     public void setSpaceId(String spaceId) { this.spaceId = spaceId; }
     public String getSpaceName() { return spaceName; }

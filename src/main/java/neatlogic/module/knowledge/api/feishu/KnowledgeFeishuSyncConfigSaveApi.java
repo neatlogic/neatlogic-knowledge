@@ -32,6 +32,7 @@ public class KnowledgeFeishuSyncConfigSaveApi extends PrivateApiComponentBase {
             @Param(name = "baseUrl", type = ApiParamType.STRING, isRequired = true, desc = "飞书平台地址"),
             @Param(name = "appId", type = ApiParamType.STRING, isRequired = true, desc = "App ID"),
             @Param(name = "appSecret", type = ApiParamType.STRING, desc = "App Secret"),
+            @Param(name = "userAccessToken", type = ApiParamType.STRING, desc = "User Access Token"),
             @Param(name = "spaceId", type = ApiParamType.STRING, desc = "Wiki 空间 ID"),
             @Param(name = "spaceName", type = ApiParamType.STRING, desc = "Wiki 空间名称"),
             @Param(name = "knowledgeCircleId", type = ApiParamType.LONG, desc = "知识圈 ID"),
@@ -40,10 +41,8 @@ public class KnowledgeFeishuSyncConfigSaveApi extends PrivateApiComponentBase {
     @Description(desc = "保存飞书云文档同步配置")
     @Override
     public Object myDoService(JSONObject jsonObj) {
-//        System.out.println("jsonObj = " + jsonObj);
         KnowledgeFeishuSyncConfigVo knowledgeFeishuSyncConfigVo = JSON.toJavaObject(jsonObj, KnowledgeFeishuSyncConfigVo.class);
         Long id = knowledgeFeishuSyncService.saveConfig(knowledgeFeishuSyncConfigVo);
-//        System.out.println("id = " + id);
         JSONObject result = new JSONObject();
         result.put("id", id);
         return result;

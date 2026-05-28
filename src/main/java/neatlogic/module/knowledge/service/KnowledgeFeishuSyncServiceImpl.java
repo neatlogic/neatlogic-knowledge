@@ -17,6 +17,7 @@ import neatlogic.framework.util.SnowflakeUtil;
 import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.knowledge.source.FeishuSyncSource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +82,9 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
             if (StringUtils.isBlank(vo.getAppSecret())) {
                 throw new ParamNotExistsException("appSecret");
             }
+//            if (StringUtils.isBlank(vo.getUserAccessToken())) {
+//                throw new ParamNotExistsException("userAccessToken");
+//            }
             vo.setFcu(userUuid);
             knowledgeFeishuSyncMapper.insertConfig(vo);
         } else {
@@ -124,32 +128,45 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
             if (!Objects.equals(config.getIsActive(), 1)) {
                 throw new RuntimeException("同步配置未启用");
             }
-            if (StringUtils.isBlank(config.getSpaceId())) {
-                throw new ParamNotExistsException("spaceId");
-            }
-            List<FeishuNode> nodes = new ArrayList<>();
-            loadWikiNodes(config, null, new ArrayList<>(), nodes);
-            for (FeishuNode node : nodes) {
-                if (!isDocumentNode(node)) {
-                    continue;
+//            if (StringUtils.isBlank(config.getSpaceId())) {
+//                throw new ParamNotExistsException("spaceId");
+//            }
+            JSONArray wikiSpaceList = feishuWikiSpaces(config);
+            if (CollectionUtils.isNotEmpty(wikiSpaceList)) {
+                for (int i = 0; i < wikiSpaceList.size(); i++) {
+                    JSONObject wikiSpaceObj = wikiSpaceList.getJSONObject(i);
+                    System.out.println("wikiSpaceObj = " + wikiSpaceObj);
+                    Long spaceId = wikiSpaceObj.getLong("space_id");
+                    if (spaceId != null) {
+                        List<FeishuNode> nodes = new ArrayList<>();
+                        loadWikiNodes(config, spaceId, null, new ArrayList<>(), nodes);
+                        System.out.println("nodes = " + nodes);
+                        for (FeishuNode node : nodes) {
+                            if (!isDocumentNode(node)) {
+                                continue;
+                            }
+                            total++;
+                            JSONObject item = new JSONObject();
+                            item.put("title", node.title);
+                            item.put("nodeToken", node.nodeToken);
+                            try {
+                                String typeUuid = getOrCreateType(config.getKnowledgeCircleId(), node.path);
+                                Long documentId = saveFeishuDocument(config, node, typeUuid);
+                                item.put("knowledgeDocumentId", documentId);
+                                item.put("status", "succeed");
+                                success++;
+                            } catch (Exception ex) {
+                                item.put("status", "failed");
+                                item.put("error", ex.getMessage());
+                                failed++;
+                            }
+                            detailList.add(item);
+                            break;
+                        }
+                    }
                 }
-                total++;
-                JSONObject item = new JSONObject();
-                item.put("title", node.title);
-                item.put("nodeToken", node.nodeToken);
-                try {
-                    String typeUuid = getOrCreateType(config.getKnowledgeCircleId(), node.path);
-                    Long documentId = saveFeishuDocument(config, node, typeUuid);
-                    item.put("knowledgeDocumentId", documentId);
-                    item.put("status", "succeed");
-                    success++;
-                } catch (Exception ex) {
-                    item.put("status", "failed");
-                    item.put("error", ex.getMessage());
-                    failed++;
-                }
-                detailList.add(item);
             }
+
             finishAudit(audit, failed == 0 ? "succeed" : "failed", total, success, failed, null, detailList);
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
@@ -360,7 +377,9 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
     private List<KnowledgeDocumentLineVo> getFeishuDocumentLines(KnowledgeFeishuSyncConfigVo config, FeishuNode node) {
         List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
         try {
-            JSONObject blockResult = feishuGet(config, "/docx/v1/documents/" + node.objToken + "/blocks/" + node.objToken + "/children", null);
+//            JSONObject blockResult = feishuGet(config, "/docx/v1/documents/" + node.objToken + "/blocks/" + node.objToken + "/children", null);
+            System.out.println("node.title = " + node.title);
+            JSONObject blockResult = feishuGet(config, "/docx/v1/documents/" + node.objToken + "/blocks", null);
             JSONArray items = blockResult.getJSONObject("data") == null ? null : blockResult.getJSONObject("data").getJSONArray("items");
             if (CollectionUtils.isNotEmpty(items)) {
                 for (int i = 0; i < items.size(); i++) {
@@ -441,8 +460,9 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
         knowledgeDocumentMapper.updateKnowledgeDocumentVersionById(updateVo);
     }
 
-    private void loadWikiNodes(KnowledgeFeishuSyncConfigVo config, String parentNodeToken, List<String> path, List<FeishuNode> nodeList) {
+    private void loadWikiNodes(KnowledgeFeishuSyncConfigVo config, Long spaceId, String parentNodeToken, List<String> path, List<FeishuNode> nodeList) {
         String pageToken = null;
+        Boolean hasMore = false;
         do {
             JSONObject query = new JSONObject();
             query.put("page_size", 50);
@@ -452,14 +472,17 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
             if (StringUtils.isNotBlank(pageToken)) {
                 query.put("page_token", pageToken);
             }
-            JSONObject result = feishuGet(config, "/wiki/v2/spaces/" + config.getSpaceId() + "/nodes", query);
+            JSONObject result = feishuGet(config, "/wiki/v2/spaces/" + spaceId + "/nodes", query);
             System.out.println("result = " + result);
+            checkFeishuResult(result);
             JSONObject data = result.getJSONObject("data");
             if (data == null) {
                 return;
             }
+            hasMore = data.getBoolean("has_more");
+            pageToken = data.getString("page_token");
             JSONArray items = data.getJSONArray("items");
-            if (items != null) {
+            if (CollectionUtils.isNotEmpty(items)) {
                 for (int i = 0; i < items.size(); i++) {
                     JSONObject item = items.getJSONObject(i);
                     FeishuNode node = new FeishuNode(item);
@@ -469,12 +492,13 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
                     }
                     nodeList.add(node);
                     if (Objects.equals(item.getBoolean("has_child"), true)) {
-                        loadWikiNodes(config, node.nodeToken, node.path, nodeList);
+                        System.out.println("子查询");
+                        loadWikiNodes(config, spaceId, node.nodeToken, node.path, nodeList);
                     }
                 }
             }
-            pageToken = Objects.equals(data.getBoolean("has_more"), true) ? data.getString("page_token") : null;
-        } while (StringUtils.isNotBlank(pageToken));
+//            pageToken = Objects.equals(data.getBoolean("has_more"), true) ? data.getString("page_token") : null;
+        } while (Objects.equals(hasMore, true));
     }
 
     private boolean isDocumentNode(FeishuNode node) {
@@ -496,11 +520,52 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
         return result.getString("tenant_access_token");
     }
 
+//    private String getUserAccessToken(KnowledgeFeishuSyncConfigVo config) {
+//        if (StringUtils.isBlank(config.getUserAccessToken())) {
+//            throw new ParamNotExistsException("userAccessToken");
+//        }
+//        return config.getUserAccessToken();
+//    }
+
+    private JSONArray feishuWikiSpaces(KnowledgeFeishuSyncConfigVo config) {
+        JSONArray resultArray = new JSONArray();
+        String pageToken = null;
+        Boolean hasMore = false;
+        do {
+            JSONObject query = new JSONObject();
+            query.put("page_size", 50);
+            if (StringUtils.isNotBlank(pageToken)) {
+                query.put("page_token", pageToken);
+            }
+            String url = "https://open.feishu.cn/open-apis/wiki/v2/spaces";
+            HttpRequestUtil request = HttpRequestUtil.get(url)
+                    .addHeader("Authorization", "Bearer " + getTenantAccessToken(config));
+//                .addHeader("Authorization", "Bearer " + getUserAccessToken(config));
+            if (query != null) {
+                request.setQueryString(query);
+            }
+            JSONObject resultObj = request.sendRequest().getResultJson();
+            System.out.println("feishuWikiSpaces resultObj = " + resultObj);
+            checkFeishuResult(resultObj);
+            JSONObject data = resultObj.getJSONObject("data");
+            if (MapUtils.isNotEmpty(data)) {
+                pageToken = data.getString("page_token");
+                hasMore = data.getBoolean("has_more");
+                JSONArray items = data.getJSONArray("items");
+                if (CollectionUtils.isNotEmpty(items)) {
+                    resultArray.addAll(items);
+                }
+            }
+        } while (Objects.equals(hasMore, true));
+        return resultArray;
+    }
+
     private JSONObject feishuGet(KnowledgeFeishuSyncConfigVo config, String path, JSONObject query) {
         String url = "https://open.feishu.cn" + OPEN_API + path;
         System.out.println("url = " + url);
         HttpRequestUtil request = HttpRequestUtil.get(url)
                 .addHeader("Authorization", "Bearer " + getTenantAccessToken(config));
+//                .addHeader("Authorization", "Bearer " + getUserAccessToken(config));
         if (query != null) {
             request.setQueryString(query);
         }
@@ -512,6 +577,7 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
 
     private JSONObject feishuPatch(KnowledgeFeishuSyncConfigVo config, String path, JSONObject payload) {
         JSONObject result = HttpRequestUtil.post("https://open.feishu.cn" + OPEN_API + path)
+//                .addHeader("Authorization", "Bearer " + getUserAccessToken(config))
                 .addHeader("Authorization", "Bearer " + getTenantAccessToken(config))
                 .addHeader("X-HTTP-Method-Override", "PATCH")
                 .setPayload(payload.toJSONString())

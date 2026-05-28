@@ -104,6 +104,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
 
             documentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             documentVo.setVersion(updateStatusVo.getVersion());
+            documentVo.setTitle(knowledgeDocumentVersionVo.getTitle());
             knowledgeDocumentMapper.updateKnowledgeDocumentById(documentVo);
         }else{
             operate = KnowledgeDocumentOperate.REJECT;

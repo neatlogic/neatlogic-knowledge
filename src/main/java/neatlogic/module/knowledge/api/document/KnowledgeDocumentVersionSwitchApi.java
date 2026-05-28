@@ -84,6 +84,7 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
 
         knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentVo.setVersion(knowledgeDocumentVersionVo.getVersion());
+        knowledgeDocumentVo.setTitle(knowledgeDocumentVersionVo.getTitle());
         knowledgeDocumentMapper.updateKnowledgeDocumentById(knowledgeDocumentVo);
 
         JSONObject config = new JSONObject();

@@ -42,9 +42,6 @@ public class KnowledgeFeishuSyncConfigVo extends BasePageVo {
     private Date lcd;
 
     public Long getId() {
-        if (id == null) {
-            id = SnowflakeUtil.uniqueLong();
-        }
         return id;
     }
 

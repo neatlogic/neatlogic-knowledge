@@ -13,10 +13,13 @@ import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeFeishuSyncMapper;
 import neatlogic.framework.knowledge.dto.*;
 import neatlogic.framework.util.HttpRequestUtil;
+import neatlogic.framework.util.SnowflakeUtil;
 import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.knowledge.source.FeishuSyncSource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +30,7 @@ import java.util.*;
 @Service
 public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncService {
 
+    private final Logger logger = LoggerFactory.getLogger(KnowledgeFeishuSyncServiceImpl.class);
     private static final String OPEN_API = "/open-apis";
 
     @Resource
@@ -73,6 +77,7 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
         }
         vo.setKnowledgeCircleId(getOrCreateFeishuCircle(vo.getKnowledgeCircleId()));
         if (vo.getId() == null) {
+            vo.setId(SnowflakeUtil.uniqueLong());
             if (StringUtils.isBlank(vo.getAppSecret())) {
                 throw new ParamNotExistsException("appSecret");
             }
@@ -147,6 +152,7 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
             }
             finishAudit(audit, failed == 0 ? "succeed" : "failed", total, success, failed, null, detailList);
         } catch (Exception ex) {
+            logger.error(ex.getMessage(), ex);
             finishAudit(audit, "failed", total, success, failed == 0 ? 1 : failed, ex.getMessage(), detailList);
         }
         updateConfigSyncStatus(config, audit);
@@ -447,6 +453,7 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
                 query.put("page_token", pageToken);
             }
             JSONObject result = feishuGet(config, "/wiki/v2/spaces/" + config.getSpaceId() + "/nodes", query);
+            System.out.println("result = " + result);
             JSONObject data = result.getJSONObject("data");
             if (data == null) {
                 return;
@@ -482,6 +489,7 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
                 .setPayload(body.toJSONString())
                 .sendRequest()
                 .getResultJson();
+        System.out.println("getTenantAccessToken result = " + result);
         if (result == null || result.getInteger("code") == null || result.getInteger("code") != 0) {
             throw new RuntimeException(result == null ? "获取 tenant_access_token 失败" : result.getString("msg"));
         }
@@ -489,12 +497,15 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
     }
 
     private JSONObject feishuGet(KnowledgeFeishuSyncConfigVo config, String path, JSONObject query) {
-        HttpRequestUtil request = HttpRequestUtil.get("https://open.feishu.cn" + OPEN_API + path)
+        String url = "https://open.feishu.cn" + OPEN_API + path;
+        System.out.println("url = " + url);
+        HttpRequestUtil request = HttpRequestUtil.get(url)
                 .addHeader("Authorization", "Bearer " + getTenantAccessToken(config));
         if (query != null) {
             request.setQueryString(query);
         }
         JSONObject result = request.sendRequest().getResultJson();
+        System.out.println("feishuGet result = " + result);
         checkFeishuResult(result);
         return result;
     }

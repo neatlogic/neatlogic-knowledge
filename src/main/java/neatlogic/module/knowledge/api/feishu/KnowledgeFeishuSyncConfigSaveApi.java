@@ -40,8 +40,12 @@ public class KnowledgeFeishuSyncConfigSaveApi extends PrivateApiComponentBase {
     @Description(desc = "保存飞书云文档同步配置")
     @Override
     public Object myDoService(JSONObject jsonObj) {
+//        System.out.println("jsonObj = " + jsonObj);
+        KnowledgeFeishuSyncConfigVo knowledgeFeishuSyncConfigVo = JSON.toJavaObject(jsonObj, KnowledgeFeishuSyncConfigVo.class);
+        Long id = knowledgeFeishuSyncService.saveConfig(knowledgeFeishuSyncConfigVo);
+//        System.out.println("id = " + id);
         JSONObject result = new JSONObject();
-        result.put("id", knowledgeFeishuSyncService.saveConfig(JSON.toJavaObject(jsonObj, KnowledgeFeishuSyncConfigVo.class)));
+        result.put("id", id);
         return result;
     }
 }

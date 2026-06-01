@@ -20,7 +20,7 @@ public interface KnowledgeFeishuSyncService {
 
     KnowledgeFeishuSyncAuditVo syncFromFeishu(Long configId);
 
-    KnowledgeFeishuSyncAuditVo syncToFeishu(Long configId, Long knowledgeDocumentId);
+//    KnowledgeFeishuSyncAuditVo syncToFeishu(Long configId, Long knowledgeDocumentId);
 
     KnowledgeFeishuSyncAuditVo retry(Long auditId);
 

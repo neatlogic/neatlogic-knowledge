@@ -4,8 +4,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.exception.type.ParamNotExistsException;
+import neatlogic.framework.file.dto.FileVo;
 import neatlogic.framework.fulltextindex.core.FullTextIndexHandlerFactory;
 import neatlogic.framework.fulltextindex.core.IFullTextIndexHandler;
+import neatlogic.framework.knowledge.constvalue.FeiShuBlockType;
 import neatlogic.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
@@ -176,39 +178,39 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
         return audit;
     }
 
-    @Override
-    @Transactional
-    public KnowledgeFeishuSyncAuditVo syncToFeishu(Long configId, Long knowledgeDocumentId) {
-        KnowledgeFeishuSyncConfigVo config = getRequiredConfig(configId);
-        KnowledgeFeishuSyncAuditVo audit = startAudit(configId, "to_feishu");
-        JSONArray detailList = new JSONArray();
-        try {
-            KnowledgeFeishuSyncDocumentVo syncDocumentVo = knowledgeFeishuSyncMapper.getSyncDocumentByDocumentId(knowledgeDocumentId);
-            if (syncDocumentVo == null) {
-                throw new RuntimeException("该知识文档没有飞书同步映射");
-            }
-            KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId);
-            if (documentVo == null) {
-                throw new RuntimeException("知识文档不存在");
-            }
-            List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(documentVo.getKnowledgeDocumentVersionId());
-            JSONObject payload = new JSONObject();
-            payload.put("title", documentVo.getTitle());
-            payload.put("content", toPlainText(lineList));
-            JSONObject item = new JSONObject();
-            item.put("knowledgeDocumentId", knowledgeDocumentId);
-            item.put("nodeToken", syncDocumentVo.getNodeToken());
-            JSONObject response = feishuPatch(config, "/docx/v1/documents/" + syncDocumentVo.getObjToken(), payload);
-            item.put("response", response);
-            item.put("status", "succeed");
-            detailList.add(item);
-            finishAudit(audit, "succeed", 1, 1, 0, null, detailList);
-        } catch (Exception ex) {
-            finishAudit(audit, "failed", 1, 0, 1, ex.getMessage(), detailList);
-        }
-        updateConfigSyncStatus(config, audit);
-        return audit;
-    }
+//    @Override
+//    @Transactional
+//    public KnowledgeFeishuSyncAuditVo syncToFeishu(Long configId, Long knowledgeDocumentId) {
+//        KnowledgeFeishuSyncConfigVo config = getRequiredConfig(configId);
+//        KnowledgeFeishuSyncAuditVo audit = startAudit(configId, "to_feishu");
+//        JSONArray detailList = new JSONArray();
+//        try {
+//            KnowledgeFeishuSyncDocumentVo syncDocumentVo = knowledgeFeishuSyncMapper.getSyncDocumentByDocumentId(knowledgeDocumentId);
+//            if (syncDocumentVo == null) {
+//                throw new RuntimeException("该知识文档没有飞书同步映射");
+//            }
+//            KnowledgeDocumentVo documentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId);
+//            if (documentVo == null) {
+//                throw new RuntimeException("知识文档不存在");
+//            }
+//            List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(documentVo.getKnowledgeDocumentVersionId());
+//            JSONObject payload = new JSONObject();
+//            payload.put("title", documentVo.getTitle());
+//            payload.put("content", toPlainText(lineList));
+//            JSONObject item = new JSONObject();
+//            item.put("knowledgeDocumentId", knowledgeDocumentId);
+//            item.put("nodeToken", syncDocumentVo.getNodeToken());
+//            JSONObject response = feishuPatch(config, "/docx/v1/documents/" + syncDocumentVo.getObjToken(), payload);
+//            item.put("response", response);
+//            item.put("status", "succeed");
+//            detailList.add(item);
+//            finishAudit(audit, "succeed", 1, 1, 0, null, detailList);
+//        } catch (Exception ex) {
+//            finishAudit(audit, "failed", 1, 0, 1, ex.getMessage(), detailList);
+//        }
+//        updateConfigSyncStatus(config, audit);
+//        return audit;
+//    }
 
     @Override
     public KnowledgeFeishuSyncAuditVo retry(Long auditId) {
@@ -374,6 +376,445 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
         }
     }
 
+    private String getContentFromElements(JSONArray elements) {
+        StringBuilder builder = new StringBuilder();
+        if (CollectionUtils.isNotEmpty(elements)) {
+            for (int i = 0; i < elements.size(); i++) {
+                JSONObject element = elements.getJSONObject(i);
+                if (MapUtils.isNotEmpty(element)) {
+                    JSONObject textRun = element.getJSONObject("text_run");
+                    if (MapUtils.isNotEmpty(textRun)) {
+                        String content = textRun.getString("content");
+                        if (StringUtils.isNotBlank(content)) {
+                            JSONObject textElementStyle = textRun.getJSONObject("text_element_style");
+                            if (MapUtils.isNotEmpty(textElementStyle)) {
+                                JSONObject link = textElementStyle.getJSONObject("link");
+                                if (MapUtils.isNotEmpty(link)) {
+                                    String url = link.getString("url");
+                                    if (StringUtils.isNotBlank(url)) {
+                                        content = String.format("<a href=\"%s\" target=\"_blank\">%s</a>", url, content);
+                                    }
+                                }
+                            }
+                            builder.append(content);
+                        }
+                    }
+                }
+            }
+        }
+        return builder.toString();
+    }
+
+    private List<String> getContentListFromElements(JSONArray elements) {
+        List<String> list = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(elements)) {
+            for (int i = 0; i < elements.size(); i++) {
+                JSONObject element = elements.getJSONObject(i);
+                if (MapUtils.isNotEmpty(element)) {
+                    JSONObject textRun = element.getJSONObject("text_run");
+                    if (MapUtils.isNotEmpty(textRun)) {
+                        String content = textRun.getString("content");
+                        if (StringUtils.isNotBlank(content)) {
+                            JSONObject textElementStyle = textRun.getJSONObject("text_element_style");
+                            if (MapUtils.isNotEmpty(textElementStyle)) {
+                                JSONObject link = textElementStyle.getJSONObject("link");
+                                if (MapUtils.isNotEmpty(link)) {
+                                    String url = link.getString("url");
+                                    if (StringUtils.isNotBlank(url)) {
+                                        content = String.format("<a href=\"%s\" target=\"_blank\">%s</a>", url, content);
+                                    }
+                                }
+                            }
+                            list.add(content);
+                        }
+                    }
+                }
+            }
+        }
+        return list;
+    }
+
+    private KnowledgeDocumentLineVo handleText(JSONObject item) {
+        Integer blockType = item.getInteger("block_type");
+        FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+        String blockId = item.getString("block_id");
+        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+        knowledgeDocumentLineVo.setHandler("paragraph");
+        JSONObject configObj = new JSONObject();
+        configObj.put("blockType", "paragraph");
+        configObj.put("blockUuid", blockId);
+        configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item));
+        JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+        if (MapUtils.isNotEmpty(jsonObj)) {
+            JSONArray elements = jsonObj.getJSONArray("elements");
+            String content = getContentFromElements(elements);
+            knowledgeDocumentLineVo.setContent(content);
+//            configObj.put("content", content);
+        }
+        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+        return knowledgeDocumentLineVo;
+    }
+
+    private KnowledgeDocumentLineVo handleHeading(JSONObject item) {
+        Integer blockType = item.getInteger("block_type");
+        FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+        String blockId = item.getString("block_id");
+        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+        knowledgeDocumentLineVo.setHandler("heading");
+        JSONObject configObj = new JSONObject();
+        configObj.put("blockType", "heading");
+        configObj.put("level", feiShuBlockType.getValue() - 2);
+        configObj.put("blockUuid", blockId);
+        configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item));
+        JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+        if (MapUtils.isNotEmpty(jsonObj)) {
+            JSONArray elements = jsonObj.getJSONArray("elements");
+            String content = getContentFromElements(elements);
+            knowledgeDocumentLineVo.setContent(content);
+            configObj.put("content", content);
+        }
+        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+        return knowledgeDocumentLineVo;
+    }
+
+    private KnowledgeDocumentLineVo handleIframe(JSONObject item) {
+        Integer blockType = item.getInteger("block_type");
+        FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+        String blockId = item.getString("block_id");
+        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+        knowledgeDocumentLineVo.setHandler("image");
+        JSONObject configObj = new JSONObject();
+        configObj.put("blockType", "image");
+        configObj.put("blockUuid", blockId);
+        configObj.put("name", "");
+        configObj.put("uploading", false);
+        configObj.put("align", "left");
+        configObj.put("title", "");
+        configObj.put("value", "");
+        configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item));
+        JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+        if (MapUtils.isNotEmpty(jsonObj)) {
+            JSONObject component = jsonObj.getJSONObject("component");
+            if (MapUtils.isNotEmpty(component)) {
+                Integer iframeType = component.getInteger("iframe_type");// TODO
+                String url = component.getString("url");
+                configObj.put("url", url);
+                configObj.put("src", url);
+            }
+        }
+        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+        return knowledgeDocumentLineVo;
+    }
+
+    private KnowledgeDocumentLineVo handleOrderedList(List<JSONObject> orderedList) {
+        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+        knowledgeDocumentLineVo.setHandler("orderedList");
+        JSONObject configObj = new JSONObject();
+        configObj.put("blockType", "orderedList");
+        configObj.put("className", "decimal");
+        configObj.put("feiShuBlockList", orderedList);
+        if (CollectionUtils.isNotEmpty(orderedList)) {
+            Integer start = null;
+            List<String> blockIdList = new ArrayList<>();
+            List<String> contentList = new ArrayList<>();
+            for (JSONObject item : orderedList) {
+                String blockId = item.getString("block_id");
+                blockIdList.add(blockId);
+                Integer blockType = item.getInteger("block_type");
+                FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+                JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+                if (MapUtils.isNotEmpty(jsonObj)) {
+                    JSONArray elements = jsonObj.getJSONArray("elements");
+                    String content = getContentFromElements(elements);
+                    contentList.add("<li>" + content + "</li>");
+                    if (start == null) {
+                        JSONObject style = jsonObj.getJSONObject("style");
+                        if (MapUtils.isNotEmpty(style)) {
+                            String sequence = style.getString("sequence");
+                            if (StringUtils.isNumeric(sequence)) {
+                                start = Integer.parseInt(sequence);
+                            }
+                        }
+                    }
+                }
+            }
+            configObj.put("start", start != null ? start : 1);
+            knowledgeDocumentLineVo.setContent(String.join("", contentList));
+            configObj.put("content", String.join("", contentList));
+            configObj.put("blockUuid", String.join(",", blockIdList));
+        }
+        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+        return knowledgeDocumentLineVo;
+    }
+
+    private KnowledgeDocumentLineVo handleBulletList(List<JSONObject> bulletList) {
+        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+        knowledgeDocumentLineVo.setHandler("bulletList");
+        JSONObject configObj = new JSONObject();
+        configObj.put("blockType", "bulletList");
+        configObj.put("className", "disc");
+        configObj.put("feiShuBlockList", bulletList);
+        if (CollectionUtils.isNotEmpty(bulletList)) {
+            Integer start = null;
+            List<String> blockIdList = new ArrayList<>();
+            List<String> contentList = new ArrayList<>();
+            for (JSONObject item : bulletList) {
+                String blockId = item.getString("block_id");
+                blockIdList.add(blockId);
+                Integer blockType = item.getInteger("block_type");
+                FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+                JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+                if (MapUtils.isNotEmpty(jsonObj)) {
+                    JSONArray elements = jsonObj.getJSONArray("elements");
+                    String content = getContentFromElements(elements);
+                    contentList.add("<li>" + content + "</li>");
+//                    if (start == null) {
+//                        JSONObject style = jsonObj.getJSONObject("style");
+//                        if (MapUtils.isNotEmpty(style)) {
+//                            String sequence = style.getString("sequence");
+//                            if (StringUtils.isNumeric(sequence)) {
+//                                start = Integer.parseInt(sequence);
+//                            }
+//                        }
+//                    }
+                }
+            }
+//            configObj.put("start", start != null ? start : 1);
+            knowledgeDocumentLineVo.setContent(String.join("", contentList));
+            configObj.put("content", String.join("", contentList));
+            configObj.put("blockUuid", String.join(",", blockIdList));
+        }
+        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+        return knowledgeDocumentLineVo;
+    }
+
+    private KnowledgeDocumentLineVo handleTodoList(List<JSONObject> todoList) {
+        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+        knowledgeDocumentLineVo.setHandler("taskList");
+        JSONObject configObj = new JSONObject();
+        configObj.put("blockType", "taskList");
+//        configObj.put("className", "disc");
+        configObj.put("feiShuBlockList", todoList);
+        if (CollectionUtils.isNotEmpty(todoList)) {
+            Integer start = null;
+            List<String> blockIdList = new ArrayList<>();
+            List<String> contentList = new ArrayList<>();
+            List<JSONObject> contentObjList = new ArrayList<>();
+            for (JSONObject item : todoList) {
+                String blockId = item.getString("block_id");
+                blockIdList.add(blockId);
+                Integer blockType = item.getInteger("block_type");
+                FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+                JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+                if (MapUtils.isNotEmpty(jsonObj)) {
+                    JSONArray elements = jsonObj.getJSONArray("elements");
+                    String content = getContentFromElements(elements);
+                    contentList.add("<li>" + content + "</li>");
+                    Boolean done = null;
+                    JSONObject style = jsonObj.getJSONObject("style");
+                    if (MapUtils.isNotEmpty(style)) {
+                        done = style.getBoolean("done");
+                    }
+                    contentObjList.add(new JSONObject().fluentPut("content", content).fluentPut("checked", done));
+                }
+            }
+//            configObj.put("start", start != null ? start : 1);
+            knowledgeDocumentLineVo.setContent(String.join("", contentList));
+            configObj.put("contentList", contentObjList);
+            configObj.put("blockUuid", String.join(",", blockIdList));
+        }
+        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+        return knowledgeDocumentLineVo;
+    }
+
+    private KnowledgeDocumentLineVo handleCode(JSONObject item) {
+        Integer blockType = item.getInteger("block_type");
+        FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+        String blockId = item.getString("block_id");
+        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+        knowledgeDocumentLineVo.setHandler("codeBlock");
+        JSONObject configObj = new JSONObject();
+        configObj.put("blockType", "codeBlock");
+        configObj.put("blockUuid", blockId);
+        configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item));
+        JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+        if (MapUtils.isNotEmpty(jsonObj)) {
+            JSONArray elements = jsonObj.getJSONArray("elements");
+            List<String> contentList = getContentListFromElements(elements);
+            knowledgeDocumentLineVo.setContent(String.join("\n", contentList));
+//            configObj.put("content", content);
+            configObj.put("value", String.join("\n", contentList));
+            JSONObject style = jsonObj.getJSONObject("style");
+            if (MapUtils.isNotEmpty(style)) {
+                Integer language = style.getInteger("language");
+                if (language != null) {
+                    configObj.put("codeMode", language); // TODO
+                }
+            }
+        }
+        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+        return knowledgeDocumentLineVo;
+    }
+
+    private KnowledgeDocumentLineVo handleCallOut(JSONObject item, List<JSONObject> childItemList) {
+        String blockId = item.getString("block_id");
+        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+        knowledgeDocumentLineVo.setHandler("highlightBlock");
+        JSONObject configObj = new JSONObject();
+        configObj.put("blockType", "highlightBlock");
+        configObj.put("blockUuid", blockId);
+        configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item).fluentAddAll(childItemList));
+        List<String> list = new ArrayList<>();
+        for (JSONObject childItem : childItemList) {
+            Integer blockType = childItem.getInteger("block_type");
+            FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+            JSONObject jsonObj = childItem.getJSONObject(feiShuBlockType.getText());
+            if (MapUtils.isNotEmpty(jsonObj)) {
+                JSONArray elements = jsonObj.getJSONArray("elements");
+                List<String> contentList = getContentListFromElements(elements);
+                for (String content : contentList) {
+                    list.add("<p>" + content + "</p>");
+                }
+            }
+        }
+        knowledgeDocumentLineVo.setContent(String.join("", list));
+        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+        return knowledgeDocumentLineVo;
+    }
+
+    private KnowledgeDocumentLineVo handleQuoteContainer(JSONObject item, List<JSONObject> childItemList) {
+        String blockId = item.getString("block_id");
+        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+        knowledgeDocumentLineVo.setHandler("blockquote");
+        JSONObject configObj = new JSONObject();
+        configObj.put("blockType", "blockquote");
+        configObj.put("blockUuid", blockId);
+        configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item).fluentAddAll(childItemList));
+        List<String> list = new ArrayList<>();
+        for (JSONObject childItem : childItemList) {
+            Integer blockType = childItem.getInteger("block_type");
+            FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+            JSONObject jsonObj = childItem.getJSONObject(feiShuBlockType.getText());
+            if (MapUtils.isNotEmpty(jsonObj)) {
+                JSONArray elements = jsonObj.getJSONArray("elements");
+                List<String> contentList = getContentListFromElements(elements);
+                for (String content : contentList) {
+                    list.add("<p>" + content + "</p>");
+                }
+            }
+        }
+        knowledgeDocumentLineVo.setContent(String.join("", list));
+        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+        return knowledgeDocumentLineVo;
+    }
+
+    private KnowledgeDocumentLineVo handleView(JSONObject item, List<JSONObject> childItemList) {
+        String blockId = item.getString("block_id");
+        Integer viewType = null;
+        JSONObject view = item.getJSONObject("view");
+        if (MapUtils.isNotEmpty(view)) {
+            viewType = view.getInteger("view_type");
+        }
+        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+        knowledgeDocumentLineVo.setHandler("");
+        JSONObject configObj = new JSONObject();
+        configObj.put("blockType", "");
+        configObj.put("blockUuid", blockId);
+        configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item).fluentAddAll(childItemList));
+        for (JSONObject childItem : childItemList) {
+            Integer blockType = childItem.getInteger("block_type");
+            FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+            JSONObject jsonObj = childItem.getJSONObject(feiShuBlockType.getText());
+            if (MapUtils.isNotEmpty(jsonObj)) {
+                String name = jsonObj.getString("name");
+                String token = jsonObj.getString("token");
+                FileVo fileVo = downloadMedias(token);
+            }
+        }
+        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+        return knowledgeDocumentLineVo;
+    }
+
+    private FileVo downloadMedias(String token) {
+        // https://open.feishu.cn/open-apis/drive/v1/medias/:file_token/download
+        return null;
+    }
+
+    private KnowledgeDocumentLineVo handleTable(JSONObject item, List<JSONObject> childItemList) {
+        String blockId = item.getString("block_id");
+        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+        knowledgeDocumentLineVo.setHandler("table");
+        Map<String, JSONObject> childItemMap = new HashMap<>();
+        for (JSONObject childItem : childItemList) {
+            childItemMap.put(childItem.getString("block_id"), childItem);
+        }
+        JSONObject tableObj = item.getJSONObject(FeiShuBlockType.TABLE.getText());
+        JSONObject property = tableObj.getJSONObject("property");
+        Integer columnSize = property.getInteger("column_size");
+        Integer rowSize = property.getInteger("row_size");
+        JSONArray mergeInfo = property.getJSONArray("merge_info");
+        List<JSONObject> headerList = new ArrayList<>(columnSize);
+        for (int i = 0; i < columnSize; i++) {
+            headerList.add(new JSONObject().fluentPut("width", 100));
+        }
+        List<JSONObject> lefterList = new ArrayList<>(rowSize);
+        for (int i = 0; i < rowSize; i++) {
+            lefterList.add(new JSONObject().fluentPut("height", 45));
+        }
+        List<JSONObject> tableList = new ArrayList<>(columnSize * rowSize);
+        JSONArray tableChildren = item.getJSONArray("children");
+        if (CollectionUtils.isNotEmpty(tableChildren)) {
+            for (int i = 0; i < tableChildren.size(); i++) {
+                int rowIndex = i / columnSize;
+                int colIndex = i % columnSize;
+                JSONObject mergeInfoElement = mergeInfo.getJSONObject(i);
+                JSONObject tableElement = new JSONObject();
+                tableElement.put("col", colIndex);
+                tableElement.put("row", rowIndex);
+                tableElement.put("colspan", mergeInfoElement.getInteger("colspan"));
+                tableElement.put("rowspan", mergeInfoElement.getInteger("rowspan"));
+                tableElement.put("verticalAlign", "top");
+                tableElement.put("isHeader", 0);
+                tableElement.put("cellStyle", "border-bottom:1px solid #dfe1e5");
+                tableElement.put("content", "");
+                String tableChildBlockId = tableChildren.getString(i);
+                JSONObject childItem = childItemMap.get(tableChildBlockId);
+                JSONArray tableCellChildren = childItem.getJSONArray("children");
+                if (CollectionUtils.isNotEmpty(tableCellChildren)) {
+                    for (String tableCellChildBlockId : tableCellChildren.toJavaList(String.class)) {
+                        JSONObject tableCellChildItem = childItemMap.get(tableCellChildBlockId);
+                        if (MapUtils.isNotEmpty(tableCellChildItem)) {
+                            Integer blockType = tableCellChildItem.getInteger("block_type");
+                            FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+                            if (feiShuBlockType == FeiShuBlockType.TEXT) {
+                                JSONObject jsonObj = tableCellChildItem.getJSONObject(FeiShuBlockType.TEXT.getText());
+                                if (MapUtils.isNotEmpty(jsonObj)) {
+                                    JSONArray elements = jsonObj.getJSONArray("elements");
+                                    String content = getContentFromElements(elements);
+                                    tableElement.put("content", content);
+                                }
+                            }
+                        }
+                    }
+                }
+                tableList.add(tableElement);
+            }
+        }
+        JSONObject configObj = new JSONObject();
+        configObj.put("blockType", "table");
+        configObj.put("blockUuid", blockId);
+        configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item).fluentAddAll(childItemList));
+        configObj.put("col", columnSize);
+        configObj.put("row", rowSize);
+        configObj.put("headerList", headerList);
+        configObj.put("lefterList", lefterList);
+        configObj.put("tableList", tableList);
+        configObj.put("tableStyle", new JSONObject().fluentPut("td", "border-bottom:1px solid #dfe1e5").fluentPut("tr", "height:42px").fluentPut("table", "table-layout:fixed;border-collapse:collapse;width:100%;text-align:left;border:none;"));
+        configObj.put("style", "table-layout:fixed;border-collapse:collapse;text-align:left;border:none");
+        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+        return knowledgeDocumentLineVo;
+    }
+
     private List<KnowledgeDocumentLineVo> getFeishuDocumentLines(KnowledgeFeishuSyncConfigVo config, FeishuNode node) {
         List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
         try {
@@ -382,12 +823,256 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
             JSONObject blockResult = feishuGet(config, "/docx/v1/documents/" + node.objToken + "/blocks", null);
             JSONArray items = blockResult.getJSONObject("data") == null ? null : blockResult.getJSONObject("data").getJSONArray("items");
             if (CollectionUtils.isNotEmpty(items)) {
+                JSONObject pageItem = null;
+                Map<String, JSONObject> itemMap = new LinkedHashMap<>();
                 for (int i = 0; i < items.size(); i++) {
-                    String text = extractBlockText(items.getJSONObject(i));
-                    if (StringUtils.isNotBlank(text)) {
-                        lineList.add(newLine("p", text));
+                    JSONObject item = items.getJSONObject(i);
+                    if (MapUtils.isNotEmpty(item)) {
+                        String blockId = item.getString("block_id");
+                        itemMap.put(blockId, item);
+                        String parentId = item.getString("parent_id");
+                        Integer blockType = item.getInteger("block_type");
+                        if (Objects.equals(blockType, FeiShuBlockType.PAGE.getValue()) && StringUtils.isBlank(parentId)) {
+                            pageItem = item;
+                        }
                     }
                 }
+                if (pageItem != null) {
+                    String title = null;
+                    JSONObject pageObj = pageItem.getJSONObject(FeiShuBlockType.PAGE.getText());
+                    if (MapUtils.isNotEmpty(pageObj)) {
+                        JSONArray elements = pageObj.getJSONArray("elements");
+                        title = getContentFromElements(elements);
+                    }
+                    JSONArray children = pageItem.getJSONArray("children");
+                    if (CollectionUtils.isNotEmpty(children)) {
+                        List<String> handledBlockIdList = new ArrayList<>();
+                        List<String> blockIdList = children.toJavaList(String.class);
+                        for (String blockId : blockIdList) {
+                            JSONObject item = itemMap.get(blockId);
+                            String parentId = item.getString("parent_id");
+                            Integer blockType = item.getInteger("block_type");
+                            System.out.println("blockType = " + blockType);
+                            FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+                            System.out.println("feiShuBlockType = " + feiShuBlockType.getText());
+                            if (handledBlockIdList.contains(blockId)) {
+                                continue;
+                            }
+                            handledBlockIdList.add(blockId);
+                            if (feiShuBlockType == FeiShuBlockType.TEXT) {
+                                KnowledgeDocumentLineVo line = handleText(item);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.HEADING1) {
+                                KnowledgeDocumentLineVo line = handleHeading(item);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.HEADING2) {
+                                KnowledgeDocumentLineVo line = handleHeading(item);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.HEADING3) {
+                                KnowledgeDocumentLineVo line = handleHeading(item);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.HEADING4) {
+                                KnowledgeDocumentLineVo line = handleHeading(item);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.HEADING5) {
+                                KnowledgeDocumentLineVo line = handleHeading(item);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.HEADING6) {
+                                KnowledgeDocumentLineVo line = handleHeading(item);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.HEADING7) {
+                                KnowledgeDocumentLineVo line = handleHeading(item);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.HEADING8) {
+                                KnowledgeDocumentLineVo line = handleHeading(item);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.HEADING9) {
+                                KnowledgeDocumentLineVo line = handleHeading(item);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.BULLET) {
+                                List<JSONObject> bulletList = new ArrayList<>();
+                                boolean isStart = false;
+                                for (Map.Entry<String, JSONObject> entry : itemMap.entrySet()) {
+                                    JSONObject value = entry.getValue();
+                                    String key = entry.getKey();
+                                    if (!isStart && Objects.equals(key, blockId)) {
+                                        bulletList.add(value);
+                                        isStart = true;
+                                    } else if (isStart) {
+                                        if (Objects.equals(value.getInteger("block_type"), feiShuBlockType.getValue())
+                                                && Objects.equals(value.getString("parent_id"), parentId)) {
+                                            bulletList.add(value);
+                                            handledBlockIdList.add(value.getString("block_id"));
+                                        } else {
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (CollectionUtils.isNotEmpty(bulletList)) {
+                                    KnowledgeDocumentLineVo line = handleBulletList(bulletList);
+                                    lineList.add(line);
+                                }
+                            } else if (feiShuBlockType == FeiShuBlockType.ORDERED) {
+                                List<JSONObject> orderedList = new ArrayList<>();
+                                boolean isStart = false;
+                                for (Map.Entry<String, JSONObject> entry : itemMap.entrySet()) {
+                                    JSONObject value = entry.getValue();
+                                    String key = entry.getKey();
+                                    if (!isStart && Objects.equals(key, blockId)) {
+                                        orderedList.add(value);
+                                        isStart = true;
+                                    } else if (isStart) {
+                                        if (Objects.equals(value.getInteger("block_type"), feiShuBlockType.getValue())
+                                                && Objects.equals(value.getString("parent_id"), parentId)) {
+                                            orderedList.add(value);
+                                            handledBlockIdList.add(value.getString("block_id"));
+                                        } else {
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (CollectionUtils.isNotEmpty(orderedList)) {
+                                    KnowledgeDocumentLineVo line = handleOrderedList(orderedList);
+                                    lineList.add(line);
+                                }
+                            } else if (feiShuBlockType == FeiShuBlockType.CODE) {
+                                KnowledgeDocumentLineVo line = handleCode(item);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.QUOTE_CONTAINER) {
+                                List<JSONObject> childItemList = new ArrayList<>();
+                                JSONArray array = item.getJSONArray("children");
+                                if (CollectionUtils.isNotEmpty(array)) {
+                                    List<String> list = array.toJavaList(String.class);
+                                    for (String str : list) {
+                                        JSONObject childItem = itemMap.get(str);
+                                        if (MapUtils.isNotEmpty(childItem)) {
+                                            childItemList.add(childItem);
+                                            handledBlockIdList.add(str);
+                                        }
+                                    }
+                                }
+                                KnowledgeDocumentLineVo line = handleQuoteContainer(item, childItemList);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.TODO) {
+                                List<JSONObject> todoList = new ArrayList<>();
+                                boolean isStart = false;
+                                for (Map.Entry<String, JSONObject> entry : itemMap.entrySet()) {
+                                    JSONObject value = entry.getValue();
+                                    String key = entry.getKey();
+                                    if (!isStart && Objects.equals(key, blockId)) {
+                                        todoList.add(value);
+                                        isStart = true;
+                                    } else if (isStart) {
+                                        if (Objects.equals(value.getInteger("block_type"), feiShuBlockType.getValue())
+                                                && Objects.equals(value.getString("parent_id"), parentId)) {
+                                            todoList.add(value);
+                                            handledBlockIdList.add(value.getString("block_id"));
+                                        } else {
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (CollectionUtils.isNotEmpty(todoList)) {
+                                    KnowledgeDocumentLineVo line = handleTodoList(todoList);
+                                    lineList.add(line);
+                                }
+                            } else if (feiShuBlockType == FeiShuBlockType.CALLOUT) {
+                                List<JSONObject> childItemList = new ArrayList<>();
+                                JSONArray array = item.getJSONArray("children");
+                                if (CollectionUtils.isNotEmpty(array)) {
+                                    List<String> list = array.toJavaList(String.class);
+                                    for (String str : list) {
+                                        JSONObject childItem = itemMap.get(str);
+                                        if (MapUtils.isNotEmpty(childItem)) {
+                                            childItemList.add(childItem);
+                                            handledBlockIdList.add(str);
+                                        }
+                                    }
+                                }
+                                KnowledgeDocumentLineVo line = handleCallOut(item, childItemList);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.DIVIDER) {
+                                KnowledgeDocumentLineVo line = new KnowledgeDocumentLineVo();
+                                JSONObject configObj = new JSONObject();
+                                configObj.put("blockType", "divider");
+                                configObj.put("blockUuid", blockId);
+                                line.setConfig(configObj.toJSONString());
+                                line.setHandler("divider");
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.IFRAME) {
+                                KnowledgeDocumentLineVo line = handleIframe(item);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.VIEW) {
+                                List<JSONObject> childItemList = new ArrayList<>();
+                                JSONArray array = item.getJSONArray("children");
+                                if (CollectionUtils.isNotEmpty(array)) {
+                                    List<String> list = array.toJavaList(String.class);
+                                    for (String str : list) {
+                                        JSONObject childItem = itemMap.get(str);
+                                        if (MapUtils.isNotEmpty(childItem)) {
+                                            childItemList.add(childItem);
+                                            handledBlockIdList.add(str);
+                                        }
+                                    }
+                                }
+                                KnowledgeDocumentLineVo line = handleView(item, childItemList);
+                                lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.IMAGE) {
+//                                KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+//                                knowledgeDocumentLineVo.setHandler("image");
+
+                            } else if (feiShuBlockType == FeiShuBlockType.TABLE) {
+                                List<JSONObject> childItemList = new ArrayList<>();
+                                JSONArray array = item.getJSONArray("children");
+                                if (CollectionUtils.isNotEmpty(array)) {
+                                    List<String> list = array.toJavaList(String.class);
+                                    for (String str : list) {
+                                        JSONObject childItem = itemMap.get(str);
+                                        if (MapUtils.isNotEmpty(childItem)) {
+                                            childItemList.add(childItem);
+                                            handledBlockIdList.add(str);
+                                            Integer childBlockType = childItem.getInteger("block_type");
+                                            FeiShuBlockType childFeiShuBlockType = FeiShuBlockType.getFeiShuBlockType(childBlockType);
+                                            if (childFeiShuBlockType == FeiShuBlockType.TABLE_CELL) {
+                                                JSONArray tableCellChildArray = childItem.getJSONArray("children");
+                                                if (CollectionUtils.isNotEmpty(tableCellChildArray)) {
+                                                    List<String> tableCellChildList = tableCellChildArray.toJavaList(String.class);
+                                                    for (String tableCellChild : tableCellChildList) {
+                                                        JSONObject tableCellChildItem = itemMap.get(tableCellChild);
+                                                        if (MapUtils.isNotEmpty(tableCellChildItem)) {
+                                                            childItemList.add(tableCellChildItem);
+                                                            handledBlockIdList.add(tableCellChild);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                KnowledgeDocumentLineVo line = handleTable(item, childItemList);
+                                lineList.add(line);
+                            } else {
+                                KnowledgeDocumentLineVo line = new KnowledgeDocumentLineVo();
+                                JSONObject configObj = new JSONObject();
+                                configObj.put("blockType", feiShuBlockType.getText());
+                                configObj.put("blockUuid", blockId);
+                                configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item));
+                                line.setConfig(configObj.toJSONString());
+                                line.setHandler(feiShuBlockType.getText());
+                                lineList.add(line);
+                            }
+                        }
+                    }
+                }
+//                for (int i = 0; i < items.size(); i++) {
+//                    JSONObject item = items.getJSONObject(i);
+//
+//
+//                    String text = extractBlockText(items.getJSONObject(i));
+//                    if (StringUtils.isNotBlank(text)) {
+//                        lineList.add(newLine("p", text));
+//                    }
+//                }
             }
         } catch (Exception ignored) {
         }
@@ -442,6 +1127,13 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
             lineVo.setKnowledgeDocumentId(documentId);
             lineVo.setKnowledgeDocumentVersionId(versionId);
             lineVo.setUuid(UuidUtil.randomUuid());
+            if (lineVo.getConfig() != null) {
+                KnowledgeDocumentLineConfigVo knowledgeDocumentLineConfigVo = new KnowledgeDocumentLineConfigVo(lineVo.getConfigStr());
+                lineVo.setConfigHash(knowledgeDocumentLineConfigVo.getHash());
+                if (knowledgeDocumentMapper.checkKnowledgeDocumentLineConfigHashIsExists(knowledgeDocumentLineConfigVo.getHash()) == 0) {
+                    knowledgeDocumentMapper.insertKnowledgeDocumentLineConfig(knowledgeDocumentLineConfigVo);
+                }
+            }
             if (StringUtils.isNotBlank(lineVo.getContent())) {
                 size += lineVo.getContent().getBytes(StandardCharsets.UTF_8).length;
                 KnowledgeDocumentLineContentVo contentVo = new KnowledgeDocumentLineContentVo(lineVo.getContent());

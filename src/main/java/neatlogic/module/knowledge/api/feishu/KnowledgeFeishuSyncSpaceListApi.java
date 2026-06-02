@@ -29,7 +29,7 @@ public class KnowledgeFeishuSyncSpaceListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) {
         JSONObject result = new JSONObject();
-        result.put("spaceList", knowledgeFeishuSyncService.listSpaces(jsonObj.getLong("configId")));
+//        result.put("spaceList", knowledgeFeishuSyncService.listSpaces(jsonObj.getLong("configId")));
         return result;
     }
 }

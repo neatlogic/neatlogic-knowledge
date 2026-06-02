@@ -14,18 +14,18 @@ public class KnowledgeFeishuSyncConfigVo extends BasePageVo {
     private Long id;
     @EntityField(name = "name", type = ApiParamType.STRING)
     private String name;
-    @EntityField(name = "feishu base url", type = ApiParamType.STRING)
-    private String baseUrl;
+//    @EntityField(name = "feishu base url", type = ApiParamType.STRING)
+//    private String baseUrl;
     @EntityField(name = "app id", type = ApiParamType.STRING)
     private String appId;
-    @JSONField(serialize = false)
+//    @JSONField(serialize = false)
     private String appSecret;
-    @JSONField(serialize = false)
-    private String userAccessToken;
-    @EntityField(name = "wiki space id", type = ApiParamType.STRING)
-    private String spaceId;
-    @EntityField(name = "wiki space name", type = ApiParamType.STRING)
-    private String spaceName;
+//    @JSONField(serialize = false)
+//    private String userAccessToken;
+//    @EntityField(name = "wiki space id", type = ApiParamType.STRING)
+//    private String spaceId;
+//    @EntityField(name = "wiki space name", type = ApiParamType.STRING)
+//    private String spaceName;
     @EntityField(name = "knowledge circle id", type = ApiParamType.LONG)
     private Long knowledgeCircleId;
     @EntityField(name = "knowledge circle name", type = ApiParamType.STRING)
@@ -53,18 +53,18 @@ public class KnowledgeFeishuSyncConfigVo extends BasePageVo {
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-    public String getBaseUrl() { return baseUrl; }
-    public void setBaseUrl(String baseUrl) { this.baseUrl = baseUrl; }
+//    public String getBaseUrl() { return baseUrl; }
+//    public void setBaseUrl(String baseUrl) { this.baseUrl = baseUrl; }
     public String getAppId() { return appId; }
     public void setAppId(String appId) { this.appId = appId; }
     public String getAppSecret() { return appSecret; }
     public void setAppSecret(String appSecret) { this.appSecret = appSecret; }
-    public String getUserAccessToken() { return userAccessToken; }
-    public void setUserAccessToken(String userAccessToken) { this.userAccessToken = userAccessToken; }
-    public String getSpaceId() { return spaceId; }
-    public void setSpaceId(String spaceId) { this.spaceId = spaceId; }
-    public String getSpaceName() { return spaceName; }
-    public void setSpaceName(String spaceName) { this.spaceName = spaceName; }
+//    public String getUserAccessToken() { return userAccessToken; }
+//    public void setUserAccessToken(String userAccessToken) { this.userAccessToken = userAccessToken; }
+//    public String getSpaceId() { return spaceId; }
+//    public void setSpaceId(String spaceId) { this.spaceId = spaceId; }
+//    public String getSpaceName() { return spaceName; }
+//    public void setSpaceName(String spaceName) { this.spaceName = spaceName; }
     public Long getKnowledgeCircleId() { return knowledgeCircleId; }
     public void setKnowledgeCircleId(Long knowledgeCircleId) { this.knowledgeCircleId = knowledgeCircleId; }
     public String getKnowledgeCircleName() { return knowledgeCircleName; }

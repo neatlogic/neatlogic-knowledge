@@ -25,7 +25,7 @@ public interface KnowledgeFeishuSyncMapper {
 
     int updateConfigStatus(@Param("id") Long id, @Param("isActive") Integer isActive, @Param("lcu") String lcu);
 
-    int updateConfigLastSync(KnowledgeFeishuSyncConfigVo vo);
+//    int updateConfigLastSync(KnowledgeFeishuSyncConfigVo vo);
 
     int deleteConfig(Long id);
 

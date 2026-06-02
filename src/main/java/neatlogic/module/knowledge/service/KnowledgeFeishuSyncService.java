@@ -16,13 +16,11 @@ public interface KnowledgeFeishuSyncService {
 
     void deleteConfig(Long id);
 
-    JSONArray listSpaces(Long configId);
+//    JSONArray listSpaces(Long configId);
 
-    KnowledgeFeishuSyncAuditVo syncFromFeishu(Long configId);
+//    KnowledgeFeishuSyncAuditVo syncFromFeishu(Long configId);
 
-//    KnowledgeFeishuSyncAuditVo syncToFeishu(Long configId, Long knowledgeDocumentId);
-
-    KnowledgeFeishuSyncAuditVo retry(Long auditId);
+//    KnowledgeFeishuSyncAuditVo retry(Long auditId);
 
     JSONObject searchAudit(KnowledgeFeishuSyncAuditVo vo);
 }

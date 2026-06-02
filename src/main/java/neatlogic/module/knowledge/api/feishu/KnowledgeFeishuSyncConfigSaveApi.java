@@ -29,13 +29,13 @@ public class KnowledgeFeishuSyncConfigSaveApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "id", type = ApiParamType.LONG, desc = "id"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "名称", xss = true),
-            @Param(name = "baseUrl", type = ApiParamType.STRING, isRequired = true, desc = "飞书平台地址"),
+//            @Param(name = "baseUrl", type = ApiParamType.STRING, isRequired = true, desc = "飞书平台地址"),
             @Param(name = "appId", type = ApiParamType.STRING, isRequired = true, desc = "App ID"),
-            @Param(name = "appSecret", type = ApiParamType.STRING, desc = "App Secret"),
-            @Param(name = "userAccessToken", type = ApiParamType.STRING, desc = "User Access Token"),
-            @Param(name = "spaceId", type = ApiParamType.STRING, desc = "Wiki 空间 ID"),
-            @Param(name = "spaceName", type = ApiParamType.STRING, desc = "Wiki 空间名称"),
-            @Param(name = "knowledgeCircleId", type = ApiParamType.LONG, desc = "知识圈 ID"),
+            @Param(name = "appSecret", type = ApiParamType.STRING, isRequired = true, desc = "App Secret"),
+//            @Param(name = "userAccessToken", type = ApiParamType.STRING, desc = "User Access Token"),
+//            @Param(name = "spaceId", type = ApiParamType.STRING, desc = "Wiki 空间 ID"),
+//            @Param(name = "spaceName", type = ApiParamType.STRING, desc = "Wiki 空间名称"),
+            @Param(name = "knowledgeCircleId", type = ApiParamType.LONG, isRequired = true, desc = "知识圈 ID"),
             @Param(name = "isActive", type = ApiParamType.INTEGER, desc = "是否启用")
     })
     @Description(desc = "保存飞书云文档同步配置")

@@ -28,6 +28,7 @@ public class KnowledgeFeishuSyncRetryApi extends PrivateApiComponentBase {
     @Description(desc = "重试飞书云文档同步")
     @Override
     public Object myDoService(JSONObject jsonObj) {
-        return knowledgeFeishuSyncService.retry(jsonObj.getLong("auditId"));
+//        return knowledgeFeishuSyncService.retry(jsonObj.getLong("auditId"));
+        return null;
     }
 }

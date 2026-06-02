@@ -13,7 +13,7 @@ import neatlogic.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
-import neatlogic.framework.knowledge.dao.mapper.KnowledgeFeishuSyncMapper;
+import neatlogic.module.knowledge.dao.mapper.KnowledgeFeishuSyncMapper;
 import neatlogic.framework.knowledge.dto.*;
 import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncAuditVo;
 import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncConfigVo;

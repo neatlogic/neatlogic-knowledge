@@ -13,6 +13,7 @@ import neatlogic.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
+import neatlogic.framework.knowledge.dto.feishu.FeishuNode;
 import neatlogic.module.knowledge.dao.mapper.KnowledgeFeishuSyncMapper;
 import neatlogic.framework.knowledge.dto.*;
 import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncAuditVo;
@@ -100,10 +101,10 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                     System.out.println("wikiSpaceObj = " + wikiSpaceObj);
                     Long spaceId = wikiSpaceObj.getLong("space_id");
                     if (spaceId != null) {
-                        List<KnowledgeFeishuSyncServiceImpl.FeishuNode> nodes = new ArrayList<>();
+                        List<FeishuNode> nodes = new ArrayList<>();
                         loadWikiNodes(config, spaceId, null, new ArrayList<>(), nodes);
                         System.out.println("nodes = " + nodes);
-                        for (KnowledgeFeishuSyncServiceImpl.FeishuNode node : nodes) {
+                        for (FeishuNode node : nodes) {
                             if (!isDocumentNode(node)) {
                                 continue;
                             }
@@ -213,7 +214,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return resultArray;
     }
 
-    private void loadWikiNodes(KnowledgeFeishuSyncConfigVo config, Long spaceId, String parentNodeToken, List<String> path, List<KnowledgeFeishuSyncServiceImpl.FeishuNode> nodeList) {
+    private void loadWikiNodes(KnowledgeFeishuSyncConfigVo config, Long spaceId, String parentNodeToken, List<String> path, List<FeishuNode> nodeList) {
         String pageToken = null;
         Boolean hasMore = false;
         do {
@@ -238,7 +239,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
             if (CollectionUtils.isNotEmpty(items)) {
                 for (int i = 0; i < items.size(); i++) {
                     JSONObject item = items.getJSONObject(i);
-                    KnowledgeFeishuSyncServiceImpl.FeishuNode node = new KnowledgeFeishuSyncServiceImpl.FeishuNode(item);
+                    FeishuNode node = new FeishuNode(item);
                     node.getPath().addAll(path);
                     if (!isDocumentNode(node)) {
                         node.getPath().add(node.getTitle());
@@ -254,7 +255,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         } while (Objects.equals(hasMore, true));
     }
 
-    private boolean isDocumentNode(KnowledgeFeishuSyncServiceImpl.FeishuNode node) {
+    private boolean isDocumentNode(FeishuNode node) {
         return "docx".equals(node.getObjType()) || "doc".equals(node.getObjType());
     }
 
@@ -337,7 +338,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         }
         return lastUuid;
     }
-    private Long saveFeishuDocument(KnowledgeFeishuSyncConfigVo config, KnowledgeFeishuSyncServiceImpl.FeishuNode node, String typeUuid) {
+    private Long saveFeishuDocument(KnowledgeFeishuSyncConfigVo config, FeishuNode node, String typeUuid) {
         KnowledgeFeishuSyncDocumentVo mapping = knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(config.getId(), node.getNodeToken());
         KnowledgeDocumentVo documentVo = new KnowledgeDocumentVo();
         if (mapping == null) {
@@ -381,7 +382,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return documentVo.getId();
     }
 
-    private void upsertMapping(KnowledgeFeishuSyncConfigVo config, KnowledgeFeishuSyncServiceImpl.FeishuNode node, String typeUuid, Long documentId) {
+    private void upsertMapping(KnowledgeFeishuSyncConfigVo config, FeishuNode node, String typeUuid, Long documentId) {
         KnowledgeFeishuSyncDocumentVo vo = new neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo();
         vo.setConfigId(config.getId());
         vo.setNodeToken(node.getNodeToken());
@@ -837,7 +838,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return knowledgeDocumentLineVo;
     }
 
-    private List<KnowledgeDocumentLineVo> getFeishuDocumentLines(KnowledgeFeishuSyncConfigVo config, KnowledgeFeishuSyncServiceImpl.FeishuNode node) {
+    private List<KnowledgeDocumentLineVo> getFeishuDocumentLines(KnowledgeFeishuSyncConfigVo config, FeishuNode node) {
         List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
         try {
 //            JSONObject blockResult = feishuGet(config, "/docx/v1/documents/" + node.objToken + "/blocks/" + node.objToken + "/children", null);

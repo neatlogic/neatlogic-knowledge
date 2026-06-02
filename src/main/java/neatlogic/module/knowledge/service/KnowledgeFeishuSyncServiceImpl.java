@@ -177,44 +177,44 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
 //        return config.getUserAccessToken();
 //    }
 
-    public static class FeishuNode {
-        private final String nodeToken;
-        private final String objToken;
-        private final String objType;
-        private final String title;
-        private final String updateTime;
-        private final List<String> path = new ArrayList<>();
-
-        public FeishuNode(JSONObject item) {
-            this.nodeToken = item.getString("node_token");
-            this.objToken = item.getString("obj_token");
-            this.objType = item.getString("obj_type");
-            this.title = StringUtils.defaultIfBlank(item.getString("title"), item.getString("obj_token"));
-            this.updateTime = item.getString("obj_edit_time");
-        }
-
-        public String getNodeToken() {
-            return nodeToken;
-        }
-
-        public String getObjToken() {
-            return objToken;
-        }
-
-        public String getObjType() {
-            return objType;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public String getUpdateTime() {
-            return updateTime;
-        }
-
-        public List<String> getPath() {
-            return path;
-        }
-    }
+//    public static class FeishuNode {
+//        private final String nodeToken;
+//        private final String objToken;
+//        private final String objType;
+//        private final String title;
+//        private final String updateTime;
+//        private final List<String> path = new ArrayList<>();
+//
+//        public FeishuNode(JSONObject item) {
+//            this.nodeToken = item.getString("node_token");
+//            this.objToken = item.getString("obj_token");
+//            this.objType = item.getString("obj_type");
+//            this.title = StringUtils.defaultIfBlank(item.getString("title"), item.getString("obj_token"));
+//            this.updateTime = item.getString("obj_edit_time");
+//        }
+//
+//        public String getNodeToken() {
+//            return nodeToken;
+//        }
+//
+//        public String getObjToken() {
+//            return objToken;
+//        }
+//
+//        public String getObjType() {
+//            return objType;
+//        }
+//
+//        public String getTitle() {
+//            return title;
+//        }
+//
+//        public String getUpdateTime() {
+//            return updateTime;
+//        }
+//
+//        public List<String> getPath() {
+//            return path;
+//        }
+//    }
 }

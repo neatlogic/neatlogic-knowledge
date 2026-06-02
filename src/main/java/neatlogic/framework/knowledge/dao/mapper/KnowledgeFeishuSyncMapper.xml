@@ -12,7 +12,7 @@
         </where>
     </select>
 
-    <select id="searchConfig" resultType="neatlogic.framework.knowledge.dto.KnowledgeFeishuSyncConfigVo">
+    <select id="searchConfig" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncConfigVo">
         SELECT kfsc.`id`,
                kfsc.`name`,
                kfsc.`app_id` AS appId,
@@ -36,7 +36,7 @@
         </if>
     </select>
 
-    <select id="getConfigById" resultType="neatlogic.framework.knowledge.dto.KnowledgeFeishuSyncConfigVo">
+    <select id="getConfigById" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncConfigVo">
         SELECT `id`,
                `name`,
                `app_id` AS appId,
@@ -51,7 +51,7 @@
         WHERE `id` = #{value}
     </select>
 
-    <select id="getConfigByName" resultType="neatlogic.framework.knowledge.dto.KnowledgeFeishuSyncConfigVo">
+    <select id="getConfigByName" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncConfigVo">
         SELECT `id`, `name`
         FROM `knowledge_feishu_sync_config`
         WHERE `name` = #{value}
@@ -119,7 +119,7 @@
         WHERE `id` = #{id}
     </update>
 
-    <select id="getAuditById" resultType="neatlogic.framework.knowledge.dto.KnowledgeFeishuSyncAuditVo">
+    <select id="getAuditById" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncAuditVo">
         SELECT `id`, `config_id` AS configId, `direction`, `status`, `total_count` AS totalCount,
                `success_count` AS successCount, `failed_count` AS failedCount, `error`, `detail` AS detailStr,
                `fcu`, `fcd`, `start_time` AS startTime, `end_time` AS endTime
@@ -133,7 +133,7 @@
         WHERE `config_id` = #{configId}
     </select>
 
-    <select id="searchAudit" resultType="neatlogic.framework.knowledge.dto.KnowledgeFeishuSyncAuditVo">
+    <select id="searchAudit" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncAuditVo">
         SELECT `id`, `config_id` AS configId, `direction`, `status`, `total_count` AS totalCount,
                `success_count` AS successCount, `failed_count` AS failedCount, `error`, `detail` AS detailStr,
                `fcu`, `fcd`, `start_time` AS startTime, `end_time` AS endTime
@@ -145,7 +145,7 @@
         </if>
     </select>
 
-    <select id="getSyncDocumentByNodeToken" resultType="neatlogic.framework.knowledge.dto.KnowledgeFeishuSyncDocumentVo">
+    <select id="getSyncDocumentByNodeToken" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo">
         SELECT `config_id` AS configId, `node_token` AS nodeToken, `obj_token` AS objToken, `obj_type` AS objType,
                `knowledge_document_id` AS knowledgeDocumentId, `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
                `title`, `feishu_update_time` AS feishuUpdateTime, `last_sync_time` AS lastSyncTime
@@ -154,7 +154,7 @@
           AND `node_token` = #{nodeToken}
     </select>
 
-    <select id="getSyncDocumentByDocumentId" resultType="neatlogic.framework.knowledge.dto.KnowledgeFeishuSyncDocumentVo">
+    <select id="getSyncDocumentByDocumentId" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo">
         SELECT `config_id` AS configId, `node_token` AS nodeToken, `obj_token` AS objToken, `obj_type` AS objType,
                `knowledge_document_id` AS knowledgeDocumentId, `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
                `title`, `feishu_update_time` AS feishuUpdateTime, `last_sync_time` AS lastSyncTime

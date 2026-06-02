@@ -1,25 +1,15 @@
 package neatlogic.module.knowledge.service;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.exception.type.ParamNotExistsException;
-import neatlogic.framework.file.dto.FileVo;
-import neatlogic.framework.fulltextindex.core.FullTextIndexHandlerFactory;
-import neatlogic.framework.fulltextindex.core.IFullTextIndexHandler;
-import neatlogic.framework.knowledge.constvalue.FeiShuBlockType;
-import neatlogic.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeFeishuSyncMapper;
-import neatlogic.framework.knowledge.dto.*;
-import neatlogic.framework.util.HttpRequestUtil;
+import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncAuditVo;
+import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncConfigVo;
 import neatlogic.framework.util.SnowflakeUtil;
-import neatlogic.framework.util.UuidUtil;
-import neatlogic.module.knowledge.source.FeishuSyncSource;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service

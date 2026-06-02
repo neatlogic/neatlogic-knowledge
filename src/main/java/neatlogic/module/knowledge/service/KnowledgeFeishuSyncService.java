@@ -1,9 +1,8 @@
 package neatlogic.module.knowledge.service;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import neatlogic.framework.knowledge.dto.KnowledgeFeishuSyncAuditVo;
-import neatlogic.framework.knowledge.dto.KnowledgeFeishuSyncConfigVo;
+import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncAuditVo;
+import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncConfigVo;
 
 public interface KnowledgeFeishuSyncService {
     JSONObject searchConfig(KnowledgeFeishuSyncConfigVo vo);

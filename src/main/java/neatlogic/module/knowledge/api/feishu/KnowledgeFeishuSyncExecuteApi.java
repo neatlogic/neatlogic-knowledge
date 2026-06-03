@@ -1014,7 +1014,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return knowledgeDocumentLineVo;
     }
 
-    private KnowledgeDocumentLineVo handleView(JSONObject item, List<JSONObject> childItemList) {
+    private KnowledgeDocumentLineVo handleView(JSONObject item, List<JSONObject> childItemList, String tenantAccessToken) {
         String blockId = item.getString("block_id");
         Integer viewType = null;
         JSONObject view = item.getJSONObject("view");
@@ -1034,7 +1034,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
             if (MapUtils.isNotEmpty(jsonObj)) {
                 String name = jsonObj.getString("name");
                 String token = jsonObj.getString("token");
-                FileVo fileVo = downloadMedias(token);
+                FileVo fileVo = downloadMedias(token, tenantAccessToken);
             }
         }
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
@@ -1318,7 +1318,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                                         }
                                     }
                                 }
-                                KnowledgeDocumentLineVo line = handleView(item, childItemList);
+                                KnowledgeDocumentLineVo line = handleView(item, childItemList, tenantAccessToken);
                                 lineList.add(line);
                             } else if (feiShuBlockType == FeiShuBlockType.IMAGE) {
 //                                KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();

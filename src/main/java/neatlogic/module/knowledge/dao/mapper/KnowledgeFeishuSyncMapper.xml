@@ -181,4 +181,17 @@
         WHERE `config_id` = #{configId}
           AND `node_token` = #{nodeToken}
     </update>
+
+    <insert id="insertSyncMediasMapping">
+        INSERT INTO `knowledge_sync_medias_mapping` (`uuid`, `file_id`)
+        VALUES
+            (#{uuid}, #{fileId})
+    </insert>
+
+    <select id="getSyncMediasMappingFileIdByUuid" parameterType="java.lang.String">
+        SELECT
+            `file_id`
+        FROM `knowledge_sync_medias_mapping`
+        WHERE `uuid` = #{value}
+    </select>
 </mapper>

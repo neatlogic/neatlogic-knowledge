@@ -115,7 +115,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
 //                        }
                         KnowledgeDocumentTypeVo knowledgeType = getOrCreateKnowledgeType(spaceName, "0", knowledgeCircleId);
                         List<FeishuNode> nodes = loadWikiNodes(config, spaceId, null, new ArrayList<>(), tenantAccessToken);
-                        System.out.println("nodes = " + JSONObject.toJSONString(nodes));
+//                        System.out.println("nodes = " + JSONObject.toJSONString(nodes));
                         saveNodes(spaceId, spaceName, nodes, config, knowledgeType, audit, tenantAccessToken);
                     }
                 }
@@ -541,15 +541,12 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
 //            }
             auditVo.incrementTotalCount();
             JSONObject item = new JSONObject();
-            item.put("spaceId", spaceId);
-            item.put("spaceName", spaceName);
-            item.put("title", node.getTitle());
-            item.put("nodeToken", node.getNodeToken());
+            Long documentId = null;
+            String status = null;
             try {
                 JSONObject resultObj = saveFeishuDocument(config, node, knowledgeType.getUuid(), tenantAccessToken);
-                Long documentId = resultObj.getLong("knowledgeDocumentId");
-                item.put("knowledgeDocumentId", documentId);
-                item.put("status", "succeed");
+                documentId = resultObj.getLong("knowledgeDocumentId");
+                status = "succeed";
                 JSONArray unprocessedItems = resultObj.getJSONArray("unprocessedItems");
                 if (CollectionUtils.isNotEmpty(unprocessedItems)) {
                     item.put("unprocessedItems", unprocessedItems);
@@ -560,11 +557,20 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                     saveNodes(spaceId, spaceName, node.getChildren(), config, childType, auditVo, tenantAccessToken);
                 }
             } catch (Exception ex) {
-                item.put("status", "failed");
+                logger.error(ex.getMessage(), ex);
+                status = "succeed";
                 item.put("error", ex.getMessage());
                 auditVo.incrementFailedCount();
             }
-            auditVo.addDetailItem(item);
+            if (MapUtils.isNotEmpty(item)) {
+                item.put("spaceId", spaceId);
+                item.put("spaceName", spaceName);
+                item.put("title", node.getTitle());
+                item.put("nodeToken", node.getNodeToken());
+                item.put("knowledgeDocumentId", documentId);
+                item.put("status", status);
+                auditVo.addDetailItem(item);
+            }
 //            break;
         }
     }
@@ -933,7 +939,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         JSONObject configObj = new JSONObject();
         configObj.put("blockType", "heading");
         int level = feiShuBlockType.getValue() - 2;
-        configObj.put("level", Math.max(level, 6));
+        configObj.put("level", Math.min(level, 6));
         configObj.put("blockUuid", blockId);
         configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item));
         JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
@@ -1372,9 +1378,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                             JSONObject item = itemMap.get(blockId);
                             String parentId = item.getString("parent_id");
                             Integer blockType = item.getInteger("block_type");
-//                            System.out.println("blockType = " + blockType);
                             FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
-//                            System.out.println("feiShuBlockType = " + feiShuBlockType.getText());
                             if (handledBlockIdList.contains(blockId)) {
                                 continue;
                             }
@@ -1647,6 +1651,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
     private void saveLines(Long documentId, Long versionId, List<KnowledgeDocumentLineVo> lineList) {
         int size = 0;
         int lineNumber = 0;
+        List<KnowledgeDocumentLineVo> knowledgeDocumentLineListTmp = new ArrayList<>(100);
         for (KnowledgeDocumentLineVo lineVo : lineList) {
             lineVo.setLineNumber(++lineNumber);
             lineVo.setKnowledgeDocumentId(documentId);
@@ -1666,6 +1671,11 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                 if (knowledgeDocumentMapper.checkKnowledgeDocumentLineContentHashIsExists(contentVo.getHash()) == 0) {
                     knowledgeDocumentMapper.insertKnowledgeDocumentLineContent(contentVo);
                 }
+            }
+            knowledgeDocumentLineListTmp.add(lineVo);
+            if (knowledgeDocumentLineListTmp.size() >= 100) {
+                knowledgeDocumentMapper.insertKnowledgeDocumentLineList(knowledgeDocumentLineListTmp);
+                knowledgeDocumentLineListTmp.clear();
             }
         }
         if (CollectionUtils.isNotEmpty(lineList)) {

@@ -10,7 +10,6 @@ import neatlogic.framework.fulltextindex.core.FullTextIndexHandlerFactory;
 import neatlogic.framework.fulltextindex.core.IFullTextIndexHandler;
 import neatlogic.framework.knowledge.constvalue.FeiShuBlockType;
 import neatlogic.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
-import neatlogic.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import neatlogic.framework.knowledge.dto.feishu.FeishuNode;
@@ -26,7 +25,6 @@ import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_FEISHU_SYNC_MODIFY;
 import neatlogic.module.knowledge.service.KnowledgeDocumentTypeService;
-import neatlogic.module.knowledge.service.KnowledgeFeishuSyncServiceImpl;
 import neatlogic.module.knowledge.source.FeishuSyncSource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -45,12 +43,14 @@ import java.util.*;
 public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
 
     private final Logger logger = LoggerFactory.getLogger(KnowledgeFeishuSyncExecuteApi.class);
-    private static final String OPEN_API = "/open-apis";
-
+    private final String TENANT_ACCESS_TOKEN_INTERNAL_URL = "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal";
+    private final String WIKI_V2_SPACES_URL = "https://open.feishu.cn/open-apis/wiki/v2/spaces";
+    private final String SPACE_NODES_URL = "https://open.feishu.cn/open-apis/wiki/v2/spaces/:space_id/nodes";
+    private final String DOCUMENT_BLOCKS_URL = "https://open.feishu.cn/open-apis/docx/v1/documents/:document_id/blocks";
     @Resource
     private KnowledgeFeishuSyncMapper knowledgeFeishuSyncMapper;
-    @Resource
-    private KnowledgeCircleMapper knowledgeCircleMapper;
+//    @Resource
+//    private KnowledgeCircleMapper knowledgeCircleMapper;
     @Resource
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
     @Resource
@@ -82,61 +82,359 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
 //    @Transactional
     public KnowledgeFeishuSyncAuditVo syncFromFeishu(Long configId) {
         KnowledgeFeishuSyncConfigVo config = getRequiredConfig(configId);
+        Long knowledgeCircleId = config.getKnowledgeCircleId();
+        String tenantAccessToken = getTenantAccessToken(config);
+        System.out.println("tenantAccessToken = " + tenantAccessToken);
         KnowledgeFeishuSyncAuditVo audit = startAudit(configId, "from_feishu");
-        JSONArray detailList = new JSONArray();
-        int total = 0;
-        int success = 0;
-        int failed = 0;
         try {
             if (!Objects.equals(config.getIsActive(), 1)) {
                 throw new RuntimeException("同步配置未启用");
             }
-//            if (StringUtils.isBlank(config.getSpaceId())) {
-//                throw new ParamNotExistsException("spaceId");
-//            }
-            JSONArray wikiSpaceList = feishuWikiSpaces(config);
+            JSONArray wikiSpaceList = feishuWikiSpaces(tenantAccessToken);
             if (CollectionUtils.isNotEmpty(wikiSpaceList)) {
                 for (int i = 0; i < wikiSpaceList.size(); i++) {
                     JSONObject wikiSpaceObj = wikiSpaceList.getJSONObject(i);
                     System.out.println("wikiSpaceObj = " + wikiSpaceObj);
                     Long spaceId = wikiSpaceObj.getLong("space_id");
+                    String name = wikiSpaceObj.getString("name");
                     if (spaceId != null) {
-                        List<FeishuNode> nodes = new ArrayList<>();
-                        loadWikiNodes(config, spaceId, null, new ArrayList<>(), nodes);
+                        KnowledgeDocumentTypeVo knowledgeType = getOrCreateKnowledgeType(name, "0", knowledgeCircleId);
+                        List<FeishuNode> nodes = loadWikiNodes(config, spaceId, null, new ArrayList<>(), tenantAccessToken);
                         System.out.println("nodes = " + nodes);
-                        for (FeishuNode node : nodes) {
-                            if (!isDocumentNode(node)) {
-                                continue;
-                            }
-                            total++;
-                            JSONObject item = new JSONObject();
-                            item.put("title", node.getTitle());
-                            item.put("nodeToken", node.getNodeToken());
-                            try {
-                                String typeUuid = getOrCreateType(config.getKnowledgeCircleId(), node.getPath());
-                                Long documentId = saveFeishuDocument(config, node, typeUuid);
-                                item.put("knowledgeDocumentId", documentId);
-                                item.put("status", "succeed");
-                                success++;
-                            } catch (Exception ex) {
-                                item.put("status", "failed");
-                                item.put("error", ex.getMessage());
-                                failed++;
-                            }
-                            detailList.add(item);
-                            break;
-                        }
+                        saveNodes(nodes, config, knowledgeType, audit, tenantAccessToken);
                     }
                 }
             }
 
-            finishAudit(audit, failed == 0 ? "succeed" : "failed", total, success, failed, null, detailList);
+            finishAudit(audit, audit.getFailedCount() == 0 ? "succeed" : "failed", null);
+//            finishAudit(audit, failed == 0 ? "succeed" : "failed", total, success, failed, null, detailList);
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
-            finishAudit(audit, "failed", total, success, failed == 0 ? 1 : failed, ex.getMessage(), detailList);
+            finishAudit(audit, "failed", ex.getMessage());
+//            finishAudit(audit, "failed", total, success, failed == 0 ? 1 : failed, ex.getMessage(), detailList);
         }
-//        updateConfigSyncStatus(config, audit);
+        knowledgeDocumentTypeService.rebuildLeftRightCode(knowledgeCircleId);
         return audit;
+    }
+
+    /**
+     *
+     * @param config
+     * @return
+     */
+    private String getTenantAccessToken(KnowledgeFeishuSyncConfigVo config) {
+        JSONObject body = new JSONObject();
+        body.put("app_id", config.getAppId());
+        body.put("app_secret", config.getAppSecret());
+        JSONObject result = HttpRequestUtil.post(TENANT_ACCESS_TOKEN_INTERNAL_URL)
+                .setPayload(body.toJSONString())
+                .sendRequest()
+                .getResultJson();
+        System.out.println("getTenantAccessToken result = " + result);
+        /*
+        {
+            "msg": "ok",
+            "code": 0,
+            "expire": 4119,
+            "tenant_access_token": "t-g10462hfSE4CYZ3Y5DD6CCQNPSH3S4GOZZBPA4FG"
+        }
+         */
+        checkFeishuResult(result);
+        return result.getString("tenant_access_token");
+    }
+
+    /**
+     * {
+     * 	"msg": "success",
+     * 	"code": 0,
+     * 	"data": {
+     * 		"page_token": "0||7644786409622113212",
+     * 		"has_more": false,
+     * 		"items": [
+     * 			            {
+     * 				"open_sharing": "closed",
+     * 				"visibility": "public",
+     * 				"space_type": "team",
+     * 				"name": "前端研发规范",
+     * 				"description": "",
+     * 				"space_id": "7208706433871773699"
+     *            },
+     *            {
+     * 				"open_sharing": "closed",
+     * 				"visibility": "public",
+     * 				"space_type": "team",
+     * 				"name": "后端研发规范",
+     * 				"description": "",
+     * 				"space_id": "7208734024653832196"
+     *            },
+     *            {
+     * 				"open_sharing": "closed",
+     * 				"visibility": "public",
+     * 				"space_type": "team",
+     * 				"name": "设计文档",
+     * 				"description": "",
+     * 				"space_id": "7208737988736483331"
+     *            },
+     *            {
+     * 				"open_sharing": "closed",
+     * 				"visibility": "public",
+     * 				"space_type": "team",
+     * 				"name": "研发管理",
+     * 				"description": "",
+     * 				"space_id": "7208739847777828867"
+     *            },
+     *            {
+     * 				"open_sharing": "closed",
+     * 				"visibility": "public",
+     * 				"space_type": "team",
+     * 				"name": "项目文档",
+     * 				"description": "",
+     * 				"space_id": "7208744663619223555"
+     *            },
+     *            {
+     * 				"open_sharing": "closed",
+     * 				"visibility": "public",
+     * 				"space_type": "team",
+     * 				"name": "技术方案",
+     * 				"description": "",
+     * 				"space_id": "7208747120034283523"
+     *            },
+     *            {
+     * 				"open_sharing": "closed",
+     * 				"visibility": "public",
+     * 				"space_type": "team",
+     * 				"name": "产品手册",
+     * 				"description": "",
+     * 				"space_id": "7208748423435173892"
+     *            },
+     *            {
+     * 				"open_sharing": "closed",
+     * 				"visibility": "public",
+     * 				"space_type": "team",
+     * 				"name": "常见问题",
+     * 				"description": "",
+     * 				"space_id": "7208872407434592260"
+     *            },
+     *            {
+     * 				"open_sharing": "closed",
+     * 				"visibility": "public",
+     * 				"space_type": "team",
+     * 				"name": "国产系统&软件适配",
+     * 				"description": "",
+     * 				"space_id": "7208876213417410563"
+     *            },
+     *            {
+     * 				"open_sharing": "closed",
+     * 				"visibility": "private",
+     * 				"space_type": "team",
+     * 				"name": "交付问题知识库",
+     * 				"description": "交付问题知识库",
+     * 				"space_id": "7397619128632180764"
+     *            },
+     *            {
+     * 				"open_sharing": "closed",
+     * 				"visibility": "private",
+     * 				"space_type": "team",
+     * 				"name": "linbq测试",
+     * 				"description": "test",
+     * 				"space_id": "7644786409622113212"
+     *            }
+     * 		]
+     * 	}
+     * }
+     * @param pageToken
+     * @param tenantAccessToken
+     * @return
+     */
+    private JSONObject getFeishuWikiSpaces(String pageToken, String tenantAccessToken) {
+        JSONObject query = new JSONObject();
+        query.put("page_size", 50);// 最大值是50
+        if (StringUtils.isNotBlank(pageToken)) {
+            query.put("page_token", pageToken);
+        }
+        HttpRequestUtil request = HttpRequestUtil.get(WIKI_V2_SPACES_URL)
+                .addHeader("Authorization", "Bearer " + tenantAccessToken)
+                .setQueryString(query);
+        JSONObject result = request.sendRequest().getResultJson();
+        System.out.println("feishuWikiSpaces result = " + result);
+        checkFeishuResult(result);
+        return result;
+    }
+
+    /**
+     * {
+     * 	"msg": "success",
+     * 	"code": 0,
+     * 	"data": {
+     * 		"page_token": "",
+     * 		"has_more": false,
+     * 		"items": [
+     * 			            {
+     * 				"owner": "ou_3ef5dcb99755ec0a091af657adca1d58",
+     * 				"creator": "ou_3ef5dcb99755ec0a091af657adca1d58",
+     * 				"obj_create_time": "1678407262",
+     * 				"node_token": "wikcnxWQmsOGQdxLzCSmAKJ0wRe",
+     * 				"origin_space_id": "7208706433871773699",
+     * 				"title": "前端开发规范（新平台）",
+     * 				"url": "https://lqnnbz38z5y.feishu.cn/wiki/wikcnxWQmsOGQdxLzCSmAKJ0wRe",
+     * 				"obj_edit_time": "1778754590",
+     * 				"node_type": "origin",
+     * 				"origin_node_token": "wikcnxWQmsOGQdxLzCSmAKJ0wRe",
+     * 				"node_create_time": "1678407262",
+     * 				"obj_token": "YsLKdHukxojuJ0x06iBc8IClnff",
+     * 				"obj_type": "docx",
+     * 				"has_child": false,
+     * 				"space_id": "7208706433871773699",
+     * 				"parent_node_token": ""
+     *            },
+     *            {
+     * 				"owner": "ou_3ef5dcb99755ec0a091af657adca1d58",
+     * 				"creator": "ou_3ef5dcb99755ec0a091af657adca1d58",
+     * 				"obj_create_time": "1678407135",
+     * 				"node_token": "wikcnQQtAljD3d0I6lOctjwhaJc",
+     * 				"origin_space_id": "7208706433871773699",
+     * 				"title": "codedriver 新增一个模块和对应图标指南",
+     * 				"url": "https://lqnnbz38z5y.feishu.cn/wiki/wikcnQQtAljD3d0I6lOctjwhaJc",
+     * 				"obj_edit_time": "1719475731",
+     * 				"node_type": "origin",
+     * 				"origin_node_token": "wikcnQQtAljD3d0I6lOctjwhaJc",
+     * 				"node_create_time": "1678407135",
+     * 				"obj_token": "Y4ntdrlFWoY0pnxZLYOc4sNBn2c",
+     * 				"obj_type": "docx",
+     * 				"has_child": false,
+     * 				"space_id": "7208706433871773699",
+     * 				"parent_node_token": ""
+     *            }
+     * 		]
+     * 	}
+     * }
+     * @param config
+     * @param spaceId
+     * @param parentNodeToken
+     * @param pageToken
+     * @return
+     */
+    private JSONObject getFeishuWikiNodes(KnowledgeFeishuSyncConfigVo config, Long spaceId, String parentNodeToken, String pageToken, String tenantAccessToken) {
+        String url = SPACE_NODES_URL.replace(":space_id", spaceId.toString());
+        System.out.println("url = " + url);
+        JSONObject query = new JSONObject();
+        query.put("page_size", 50);
+        if (StringUtils.isNotBlank(parentNodeToken)) {
+            query.put("parent_node_token", parentNodeToken);
+        }
+        if (StringUtils.isNotBlank(pageToken)) {
+            query.put("page_token", pageToken);
+        }
+        HttpRequestUtil request = HttpRequestUtil.get(url)
+                .addHeader("Authorization", "Bearer " + tenantAccessToken)
+                .setQueryString(query);
+        JSONObject result = request.sendRequest().getResultJson();
+        System.out.println("getFeishuWikiNodes result = " + result);
+        checkFeishuResult(result);
+        return result;
+    }
+
+    private JSONObject getDocumentBlocks(KnowledgeFeishuSyncConfigVo config, String objToken, String tenantAccessToken) {
+        JSONArray allItems = new JSONArray();
+        String url = DOCUMENT_BLOCKS_URL.replace(":document_id", objToken);
+        String pageToken = null;
+        Boolean hasMore = false;
+        do {
+            JSONObject query = new JSONObject();
+            query.put("page_size", 50);
+            if (StringUtils.isNotBlank(pageToken)) {
+                query.put("page_token", pageToken);
+            }
+            System.out.println("url = " + url);
+            HttpRequestUtil request = HttpRequestUtil.get(url)
+                    .addHeader("Authorization", "Bearer " + tenantAccessToken)
+                    .setQueryString(query);
+            JSONObject result = request.sendRequest().getResultJson();
+//            System.out.println("getDocumentBlocks result = " + result);
+            checkFeishuResult(result);
+            JSONObject data = result.getJSONObject("data");
+            if (MapUtils.isNotEmpty(data)) {
+                hasMore = data.getBoolean("has_more");
+                pageToken = data.getString("page_token");
+                JSONArray items = data.getJSONArray("items");
+                if (CollectionUtils.isNotEmpty(items)) {
+                    allItems.addAll(items);
+                }
+            }
+        } while (Objects.equals(hasMore, true));
+        return new JSONObject().fluentPut("code", 0).fluentPut("mas", "success").fluentPut("data", new JSONObject().fluentPut("has_more", false).fluentPut("items", allItems));
+    }
+
+    /**
+     * 飞书下载素材
+     * @param fileToken
+     * @param tenantAccessToken
+     * @return
+     */
+    private FileVo downloadMedias(String fileToken, String tenantAccessToken) {
+        String url = "https://open.feishu.cn/open-apis/drive/v1/medias/:file_token/download";
+        url = url.replace(":file_token", fileToken);
+        HttpRequestUtil request = HttpRequestUtil.get(url)
+                .addHeader("Authorization", "Bearer " + tenantAccessToken);
+        return null;
+    }
+
+    private void checkFeishuResult(JSONObject result) {
+        if (result == null) {
+            throw new RuntimeException("飞书接口无返回");
+        }
+        Integer code = result.getInteger("code");
+        if (code != null && code != 0) {
+            throw new RuntimeException(result.getString("msg"));
+        }
+    }
+
+    private void saveNodes(List<FeishuNode> nodes, KnowledgeFeishuSyncConfigVo config, KnowledgeDocumentTypeVo knowledgeType, KnowledgeFeishuSyncAuditVo auditVo, String tenantAccessToken) {
+        for (FeishuNode node : nodes) {
+            if (!isDocumentNode(node)) {
+                continue;
+            }
+            auditVo.incrementTotalCount();
+            JSONObject item = new JSONObject();
+            item.put("title", node.getTitle());
+            item.put("nodeToken", node.getNodeToken());
+            try {
+                Long documentId = saveFeishuDocument(config, node, knowledgeType.getUuid(), tenantAccessToken);
+                item.put("knowledgeDocumentId", documentId);
+                item.put("status", "succeed");
+                auditVo.incrementSuccessCount();
+                if (CollectionUtils.isNotEmpty(node.getChildren())) {
+                    KnowledgeDocumentTypeVo childType = getOrCreateKnowledgeType(node.getTitle(), knowledgeType.getUuid(), config.getKnowledgeCircleId());
+                    saveNodes(node.getChildren(), config, childType, auditVo, tenantAccessToken);
+                }
+            } catch (Exception ex) {
+                item.put("status", "failed");
+                item.put("error", ex.getMessage());
+                auditVo.incrementFailedCount();
+            }
+            auditVo.addDetailItem(item);
+//            break;
+        }
+    }
+
+    private KnowledgeDocumentTypeVo getOrCreateKnowledgeType(String name, String parentUuid, Long knowledgeCircleId) {
+        List<KnowledgeDocumentTypeVo> typeList = knowledgeDocumentTypeMapper.getTypeByNameAndKnowledgeCircleId(name, knowledgeCircleId);
+        if (CollectionUtils.isNotEmpty(typeList)) {
+            return typeList.get(0);
+        } else {
+            List<KnowledgeDocumentTypeVo> typeListByParentUuid = knowledgeDocumentTypeMapper.getTypeByParentUuid(parentUuid, knowledgeCircleId);
+            List<KnowledgeDocumentTypeVo> list = new ArrayList<>();
+            KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = new KnowledgeDocumentTypeVo();
+            knowledgeDocumentTypeVo.setUuid(UuidUtil.randomUuid());
+            knowledgeDocumentTypeVo.setParentUuid(parentUuid);
+            knowledgeDocumentTypeVo.setName(name);
+            knowledgeDocumentTypeVo.setKnowledgeCircleId(knowledgeCircleId);
+            /** sort的用处在于重建左右编码 */
+            knowledgeDocumentTypeVo.setSort(typeListByParentUuid.size());
+            list.add(knowledgeDocumentTypeVo);
+            knowledgeDocumentTypeMapper.batchInsertType(list);
+            return knowledgeDocumentTypeVo;
+        }
     }
 
     private KnowledgeFeishuSyncConfigVo getRequiredConfig(Long configId) {
@@ -160,47 +458,119 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return audit;
     }
 
-    private void finishAudit(KnowledgeFeishuSyncAuditVo audit, String status, int total, int success, int failed, String error, JSONArray detailList) {
+    private void finishAudit(KnowledgeFeishuSyncAuditVo audit, String status, String error) {// , String status, int total, int success, int failed, String error, JSONArray detailList
         audit.setStatus(status);
-        audit.setTotalCount(total);
-        audit.setSuccessCount(success);
-        audit.setFailedCount(failed);
+//        audit.setTotalCount(total);
+//        audit.setSuccessCount(success);
+//        audit.setFailedCount(failed);
         audit.setError(error);
-        JSONObject detail = new JSONObject();
-        detail.put("items", detailList);
-        audit.setDetail(detail);
+//        JSONObject detail = new JSONObject();
+//        detail.put("items", detailList);
+//        audit.setDetail(detail);
         knowledgeFeishuSyncMapper.updateAudit(audit);
     }
 
-//    private void updateConfigSyncStatus(KnowledgeFeishuSyncConfigVo config, KnowledgeFeishuSyncAuditVo audit) {
-//        KnowledgeFeishuSyncConfigVo updateVo = new KnowledgeFeishuSyncConfigVo();
-//        updateVo.setId(config.getId());
-//        updateVo.setLastSyncAuditId(audit.getId());
-//        updateVo.setLastSyncStatus(audit.getStatus());
-//        updateVo.setLcu(UserContext.get().getUserUuid(true));
-//        knowledgeFeishuSyncMapper.updateConfigLastSync(updateVo);
-//    }
-
-    private JSONArray feishuWikiSpaces(KnowledgeFeishuSyncConfigVo config) {
+    /**
+     * 返回数据结构为
+     * [
+     * 	    {
+     * 		"open_sharing": "closed",
+     * 		"visibility": "public",
+     * 		"space_type": "team",
+     * 		"name": "前端研发规范",
+     * 		"description": "",
+     * 		"space_id": "7208706433871773699"
+     *    },
+     *    {
+     * 		"open_sharing": "closed",
+     * 		"visibility": "public",
+     * 		"space_type": "team",
+     * 		"name": "后端研发规范",
+     * 		"description": "",
+     * 		"space_id": "7208734024653832196"
+     *    },
+     *    {
+     * 		"open_sharing": "closed",
+     * 		"visibility": "public",
+     * 		"space_type": "team",
+     * 		"name": "设计文档",
+     * 		"description": "",
+     * 		"space_id": "7208737988736483331"
+     *    },
+     *    {
+     * 		"open_sharing": "closed",
+     * 		"visibility": "public",
+     * 		"space_type": "team",
+     * 		"name": "研发管理",
+     * 		"description": "",
+     * 		"space_id": "7208739847777828867"
+     *    },
+     *    {
+     * 		"open_sharing": "closed",
+     * 		"visibility": "public",
+     * 		"space_type": "team",
+     * 		"name": "项目文档",
+     * 		"description": "",
+     * 		"space_id": "7208744663619223555"
+     *    },
+     *    {
+     * 		"open_sharing": "closed",
+     * 		"visibility": "public",
+     * 		"space_type": "team",
+     * 		"name": "技术方案",
+     * 		"description": "",
+     * 		"space_id": "7208747120034283523"
+     *    },
+     *    {
+     * 		"open_sharing": "closed",
+     * 		"visibility": "public",
+     * 		"space_type": "team",
+     * 		"name": "产品手册",
+     * 		"description": "",
+     * 		"space_id": "7208748423435173892"
+     *    },
+     *    {
+     * 		"open_sharing": "closed",
+     * 		"visibility": "public",
+     * 		"space_type": "team",
+     * 		"name": "常见问题",
+     * 		"description": "",
+     * 		"space_id": "7208872407434592260"
+     *    },
+     *    {
+     * 		"open_sharing": "closed",
+     * 		"visibility": "public",
+     * 		"space_type": "team",
+     * 		"name": "国产系统&软件适配",
+     * 		"description": "",
+     * 		"space_id": "7208876213417410563"
+     *    },
+     *    {
+     * 		"open_sharing": "closed",
+     * 		"visibility": "private",
+     * 		"space_type": "team",
+     * 		"name": "交付问题知识库",
+     * 		"description": "交付问题知识库",
+     * 		"space_id": "7397619128632180764"
+     *    },
+     *    {
+     * 		"open_sharing": "closed",
+     * 		"visibility": "private",
+     * 		"space_type": "team",
+     * 		"name": "linbq测试",
+     * 		"description": "test",
+     * 		"space_id": "7644786409622113212"
+     *    }
+     * ]
+     *
+     * @return
+     */
+    private JSONArray feishuWikiSpaces(String tenantAccessToken) {
         JSONArray resultArray = new JSONArray();
         String pageToken = null;
         Boolean hasMore = false;
         do {
-            JSONObject query = new JSONObject();
-            query.put("page_size", 50);
-            if (StringUtils.isNotBlank(pageToken)) {
-                query.put("page_token", pageToken);
-            }
-            String url = "https://open.feishu.cn/open-apis/wiki/v2/spaces";
-            HttpRequestUtil request = HttpRequestUtil.get(url)
-                    .addHeader("Authorization", "Bearer " + getTenantAccessToken(config));
-//                .addHeader("Authorization", "Bearer " + getUserAccessToken(config));
-            if (query != null) {
-                request.setQueryString(query);
-            }
-            JSONObject resultObj = request.sendRequest().getResultJson();
-            System.out.println("feishuWikiSpaces resultObj = " + resultObj);
-            checkFeishuResult(resultObj);
+            JSONObject resultObj = getFeishuWikiSpaces(pageToken, tenantAccessToken);
             JSONObject data = resultObj.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {
                 pageToken = data.getString("page_token");
@@ -214,24 +584,15 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return resultArray;
     }
 
-    private void loadWikiNodes(KnowledgeFeishuSyncConfigVo config, Long spaceId, String parentNodeToken, List<String> path, List<FeishuNode> nodeList) {
+    private List<FeishuNode> loadWikiNodes(KnowledgeFeishuSyncConfigVo config, Long spaceId, String parentNodeToken, List<String> path, String tenantAccessToken) {
+        List<FeishuNode> nodeList = new ArrayList<>();
         String pageToken = null;
         Boolean hasMore = false;
         do {
-            JSONObject query = new JSONObject();
-            query.put("page_size", 50);
-            if (StringUtils.isNotBlank(parentNodeToken)) {
-                query.put("parent_node_token", parentNodeToken);
-            }
-            if (StringUtils.isNotBlank(pageToken)) {
-                query.put("page_token", pageToken);
-            }
-            JSONObject result = feishuGet(config, "/wiki/v2/spaces/" + spaceId + "/nodes", query);
-            System.out.println("result = " + result);
-            checkFeishuResult(result);
+            JSONObject result = getFeishuWikiNodes(config, spaceId, parentNodeToken, pageToken, tenantAccessToken);
             JSONObject data = result.getJSONObject("data");
             if (data == null) {
-                return;
+                return nodeList;
             }
             hasMore = data.getBoolean("has_more");
             pageToken = data.getString("page_token");
@@ -247,98 +608,20 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                     nodeList.add(node);
                     if (Objects.equals(item.getBoolean("has_child"), true)) {
                         System.out.println("子查询");
-                        loadWikiNodes(config, spaceId, node.getNodeToken(), node.getPath(), nodeList);
+                        List<FeishuNode> children = loadWikiNodes(config, spaceId, node.getNodeToken(), node.getPath(), tenantAccessToken);
+                        node.setChildren(children);
                     }
                 }
             }
-//            pageToken = Objects.equals(data.getBoolean("has_more"), true) ? data.getString("page_token") : null;
         } while (Objects.equals(hasMore, true));
+        return nodeList;
     }
 
     private boolean isDocumentNode(FeishuNode node) {
         return "docx".equals(node.getObjType()) || "doc".equals(node.getObjType());
     }
 
-    private JSONObject feishuGet(KnowledgeFeishuSyncConfigVo config, String path, JSONObject query) {
-        String url = "https://open.feishu.cn" + OPEN_API + path;
-        System.out.println("url = " + url);
-        HttpRequestUtil request = HttpRequestUtil.get(url)
-                .addHeader("Authorization", "Bearer " + getTenantAccessToken(config));
-//                .addHeader("Authorization", "Bearer " + getUserAccessToken(config));
-        if (query != null) {
-            request.setQueryString(query);
-        }
-        JSONObject result = request.sendRequest().getResultJson();
-        System.out.println("feishuGet result = " + result);
-        checkFeishuResult(result);
-        return result;
-    }
-
-    private String getTenantAccessToken(KnowledgeFeishuSyncConfigVo config) {
-        JSONObject body = new JSONObject();
-        body.put("app_id", config.getAppId());
-        body.put("app_secret", config.getAppSecret());
-        JSONObject result = HttpRequestUtil.post("https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal")
-                .setPayload(body.toJSONString())
-                .sendRequest()
-                .getResultJson();
-        System.out.println("getTenantAccessToken result = " + result);
-        if (result == null || result.getInteger("code") == null || result.getInteger("code") != 0) {
-            throw new RuntimeException(result == null ? "获取 tenant_access_token 失败" : result.getString("msg"));
-        }
-        return result.getString("tenant_access_token");
-    }
-
-    private void checkFeishuResult(JSONObject result) {
-        if (result == null) {
-            throw new RuntimeException("飞书接口无返回");
-        }
-        Integer code = result.getInteger("code");
-        if (code != null && code != 0) {
-            throw new RuntimeException(result.getString("msg"));
-        }
-    }
-
-    private String getOrCreateType(Long circleId, List<String> path) {
-        String parentUuid = KnowledgeDocumentTypeVo.ROOT_UUID;
-        String lastUuid = null;
-        int sort = 0;
-        for (String name : path) {
-            if (StringUtils.isBlank(name)) {
-                continue;
-            }
-            KnowledgeDocumentTypeVo exists = null;
-            List<KnowledgeDocumentTypeVo> children = knowledgeDocumentTypeMapper.getTypeByParentUuid(parentUuid, circleId);
-            if (CollectionUtils.isNotEmpty(children)) {
-                for (KnowledgeDocumentTypeVo child : children) {
-                    if (name.equals(child.getName())) {
-                        exists = child;
-                        break;
-                    }
-                }
-            }
-            if (exists == null) {
-                KnowledgeDocumentTypeVo typeVo = new KnowledgeDocumentTypeVo();
-                typeVo.setUuid(UuidUtil.randomUuid());
-                typeVo.setName(name);
-                typeVo.setParentUuid(parentUuid);
-                typeVo.setKnowledgeCircleId(circleId);
-                typeVo.setSort(sort);
-                knowledgeDocumentTypeMapper.batchInsertType(Collections.singletonList(typeVo));
-                knowledgeDocumentTypeService.rebuildLeftRightCode(circleId);
-                exists = typeVo;
-            }
-            parentUuid = exists.getUuid();
-            lastUuid = exists.getUuid();
-            sort++;
-        }
-        if (lastUuid == null) {
-            String name = "默认分类";
-            return getOrCreateType(circleId, Collections.singletonList(name));
-        }
-        return lastUuid;
-    }
-    private Long saveFeishuDocument(KnowledgeFeishuSyncConfigVo config, FeishuNode node, String typeUuid) {
+    private Long saveFeishuDocument(KnowledgeFeishuSyncConfigVo config, FeishuNode node, String typeUuid, String tenantAccessToken) {
         KnowledgeFeishuSyncDocumentVo mapping = knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(config.getId(), node.getNodeToken());
         KnowledgeDocumentVo documentVo = new KnowledgeDocumentVo();
         if (mapping == null) {
@@ -373,7 +656,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         documentVo.setVersion(versionVo.getVersion());
         knowledgeDocumentMapper.updateKnowledgeDocumentById(documentVo);
 
-        saveLines(documentVo.getId(), versionVo.getId(), getFeishuDocumentLines(config, node));
+        saveLines(documentVo.getId(), versionVo.getId(), getFeishuDocumentLines(config, node, tenantAccessToken));
         upsertMapping(config, node, typeUuid, documentVo.getId());
         IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getHandler(KnowledgeFullTextIndexType.KNOW_DOCUMENT_VERSION);
         if (handler != null) {
@@ -758,11 +1041,6 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return knowledgeDocumentLineVo;
     }
 
-    private FileVo downloadMedias(String token) {
-        // https://open.feishu.cn/open-apis/drive/v1/medias/:file_token/download
-        return null;
-    }
-
     private KnowledgeDocumentLineVo handleTable(JSONObject item, List<JSONObject> childItemList) {
         String blockId = item.getString("block_id");
         KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
@@ -838,12 +1116,12 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return knowledgeDocumentLineVo;
     }
 
-    private List<KnowledgeDocumentLineVo> getFeishuDocumentLines(KnowledgeFeishuSyncConfigVo config, FeishuNode node) {
+    private List<KnowledgeDocumentLineVo> getFeishuDocumentLines(KnowledgeFeishuSyncConfigVo config, FeishuNode node, String tenantAccessToken) {
         List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
         try {
-//            JSONObject blockResult = feishuGet(config, "/docx/v1/documents/" + node.objToken + "/blocks/" + node.objToken + "/children", null);
             System.out.println("node.title = " + node.getTitle());
-            JSONObject blockResult = feishuGet(config, "/docx/v1/documents/" + node.getObjToken() + "/blocks", null);
+            JSONObject blockResult = getDocumentBlocks(config, node.getObjToken(), tenantAccessToken);
+            System.out.println("blockResult = " + blockResult);
             JSONArray items = blockResult.getJSONObject("data") == null ? null : blockResult.getJSONObject("data").getJSONArray("items");
             if (CollectionUtils.isNotEmpty(items)) {
                 JSONObject pageItem = null;
@@ -875,13 +1153,15 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                             JSONObject item = itemMap.get(blockId);
                             String parentId = item.getString("parent_id");
                             Integer blockType = item.getInteger("block_type");
-                            System.out.println("blockType = " + blockType);
+//                            System.out.println("blockType = " + blockType);
                             FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
-                            System.out.println("feiShuBlockType = " + feiShuBlockType.getText());
+//                            System.out.println("feiShuBlockType = " + feiShuBlockType.getText());
                             if (handledBlockIdList.contains(blockId)) {
                                 continue;
                             }
                             handledBlockIdList.add(blockId);
+                            item.put("block_type_value", feiShuBlockType.getValue());
+                            item.put("block_type_text", feiShuBlockType.getText());
                             if (feiShuBlockType == FeiShuBlockType.TEXT) {
                                 KnowledgeDocumentLineVo line = handleText(item);
                                 lineList.add(line);
@@ -1081,7 +1361,8 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                                 configObj.put("blockUuid", blockId);
                                 configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item));
                                 line.setConfig(configObj.toJSONString());
-                                line.setHandler(feiShuBlockType.getText());
+                                line.setHandler("paragraph");
+                                line.setContent(item.toJSONString());
                                 lineList.add(line);
                             }
                         }
@@ -1095,14 +1376,6 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
 //        }
         return lineList;
     }
-
-
-//    private KnowledgeDocumentLineVo newLine(String handler, String content) {
-//        KnowledgeDocumentLineVo lineVo = new KnowledgeDocumentLineVo();
-//        lineVo.setHandler(handler);
-//        lineVo.setContent(content);
-//        return lineVo;
-//    }
 
     private void saveLines(Long documentId, Long versionId, List<KnowledgeDocumentLineVo> lineList) {
         int size = 0;

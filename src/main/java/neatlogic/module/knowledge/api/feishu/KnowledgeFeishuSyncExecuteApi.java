@@ -106,15 +106,15 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                     JSONObject wikiSpaceObj = wikiSpaceList.getJSONObject(i);
                     System.out.println("wikiSpaceObj = " + wikiSpaceObj);
                     Long spaceId = wikiSpaceObj.getLong("space_id");
-                    String name = wikiSpaceObj.getString("name");
+                    String spaceName = wikiSpaceObj.getString("name");
                     if (spaceId != null) {
-                        if (!Objects.equals(spaceId, 7644786409622113212L)) {
-                            continue;
-                        }
-                        KnowledgeDocumentTypeVo knowledgeType = getOrCreateKnowledgeType(name, "0", knowledgeCircleId);
+//                        if (!Objects.equals(spaceId, 7644786409622113212L)) {
+//                            continue;
+//                        }
+                        KnowledgeDocumentTypeVo knowledgeType = getOrCreateKnowledgeType(spaceName, "0", knowledgeCircleId);
                         List<FeishuNode> nodes = loadWikiNodes(config, spaceId, null, new ArrayList<>(), tenantAccessToken);
                         System.out.println("nodes = " + JSONObject.toJSONString(nodes));
-                        saveNodes(nodes, config, knowledgeType, audit, tenantAccessToken);
+                        saveNodes(spaceId, spaceName, nodes, config, knowledgeType, audit, tenantAccessToken);
                     }
                 }
             }
@@ -503,62 +503,6 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return result;
     }
 
-    /**
-     * 构造内存 MultipartFile，让飞书下载的二进制素材按统一附件保存入口处理。
-     *
-     * @param fileName    文件名
-     * @param contentType 文件 MIME
-     * @param data        文件二进制
-     * @return MultipartFile
-     */
-    private MultipartFile buildFeishuMediaMultipartFile(String fileName, String contentType, byte[] data) {
-        final byte[] fileData = data == null ? new byte[0] : data;
-        final String mediaFileName = StringUtils.defaultIfBlank(fileName, "feishu-media");
-        final String mediaContentType = StringUtils.defaultIfBlank(contentType, "application/octet-stream");
-        return new MultipartFile() {
-            @Override
-            public String getName() {
-                return mediaFileName;
-            }
-
-            @Override
-            public String getOriginalFilename() {
-                return mediaFileName;
-            }
-
-            @Override
-            public String getContentType() {
-                return mediaContentType;
-            }
-
-            @Override
-            public boolean isEmpty() {
-                return fileData.length == 0;
-            }
-
-            @Override
-            public long getSize() {
-                return fileData.length;
-            }
-
-            @Override
-            public byte[] getBytes() {
-                return fileData;
-            }
-
-            @Override
-            public InputStream getInputStream() {
-                return new ByteArrayInputStream(fileData);
-            }
-
-            @Override
-            public void transferTo(File dest) throws IOException, IllegalStateException {
-                // MultipartFile 接口要求提供落盘能力，便于未来复用该对象时行为完整。
-                Files.write(dest.toPath(), fileData);
-            }
-        };
-    }
-
     private void checkFeishuResult(JSONObject result) {
         if (result == null) {
             throw new RuntimeException("飞书接口无返回");
@@ -569,16 +513,18 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         }
     }
 
-    private void saveNodes(List<FeishuNode> nodes, KnowledgeFeishuSyncConfigVo config, KnowledgeDocumentTypeVo knowledgeType, KnowledgeFeishuSyncAuditVo auditVo, String tenantAccessToken) {
+    private void saveNodes(Long spaceId, String spaceName, List<FeishuNode> nodes, KnowledgeFeishuSyncConfigVo config, KnowledgeDocumentTypeVo knowledgeType, KnowledgeFeishuSyncAuditVo auditVo, String tenantAccessToken) {
         for (FeishuNode node : nodes) {
             if (!isDocumentNode(node)) {
                 continue;
             }
-            if (!Objects.equals(node.getNodeToken(), "EnH5wTCBMiZibmkDu6lcmI94n8g")) {
-                continue;
-            }
+//            if (!Objects.equals(node.getNodeToken(), "EnH5wTCBMiZibmkDu6lcmI94n8g")) {
+//                continue;
+//            }
             auditVo.incrementTotalCount();
             JSONObject item = new JSONObject();
+            item.put("spaceId", spaceId);
+            item.put("spaceName", spaceName);
             item.put("title", node.getTitle());
             item.put("nodeToken", node.getNodeToken());
             try {
@@ -588,12 +534,12 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                 item.put("status", "succeed");
                 JSONArray unprocessedItems = resultObj.getJSONArray("unprocessedItems");
                 if (CollectionUtils.isNotEmpty(unprocessedItems)) {
-                    item.put("unprocessedItems", "unprocessedItems");
+                    item.put("unprocessedItems", unprocessedItems);
                 }
                 auditVo.incrementSuccessCount();
                 if (CollectionUtils.isNotEmpty(node.getChildren())) {
                     KnowledgeDocumentTypeVo childType = getOrCreateKnowledgeType(node.getTitle(), knowledgeType.getUuid(), config.getKnowledgeCircleId());
-                    saveNodes(node.getChildren(), config, childType, auditVo, tenantAccessToken);
+                    saveNodes(spaceId, spaceName, node.getChildren(), config, childType, auditVo, tenantAccessToken);
                 }
             } catch (Exception ex) {
                 item.put("status", "failed");

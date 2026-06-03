@@ -2,12 +2,16 @@ package neatlogic.module.knowledge.api.feishu;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.util.FileUtil;
+import neatlogic.framework.file.dao.mapper.FileMapper;
 import neatlogic.framework.file.dto.FileVo;
 import neatlogic.framework.fulltextindex.core.FullTextIndexHandlerFactory;
 import neatlogic.framework.fulltextindex.core.IFullTextIndexHandler;
+import neatlogic.framework.knowledge.constvalue.FeiShuAlignType;
 import neatlogic.framework.knowledge.constvalue.FeiShuBlockType;
 import neatlogic.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
@@ -32,9 +36,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.*;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 
 @Service
@@ -49,6 +57,8 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
     private final String DOCUMENT_BLOCKS_URL = "https://open.feishu.cn/open-apis/docx/v1/documents/:document_id/blocks";
     @Resource
     private KnowledgeFeishuSyncMapper knowledgeFeishuSyncMapper;
+    @Resource
+    private FileMapper fileMapper;
 //    @Resource
 //    private KnowledgeCircleMapper knowledgeCircleMapper;
     @Resource
@@ -98,9 +108,12 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                     Long spaceId = wikiSpaceObj.getLong("space_id");
                     String name = wikiSpaceObj.getString("name");
                     if (spaceId != null) {
+                        if (!Objects.equals(spaceId, 7644786409622113212L)) {
+                            continue;
+                        }
                         KnowledgeDocumentTypeVo knowledgeType = getOrCreateKnowledgeType(name, "0", knowledgeCircleId);
                         List<FeishuNode> nodes = loadWikiNodes(config, spaceId, null, new ArrayList<>(), tenantAccessToken);
-                        System.out.println("nodes = " + nodes);
+                        System.out.println("nodes = " + JSONObject.toJSONString(nodes));
                         saveNodes(nodes, config, knowledgeType, audit, tenantAccessToken);
                     }
                 }
@@ -374,9 +387,176 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
     private FileVo downloadMedias(String fileToken, String tenantAccessToken) {
         String url = "https://open.feishu.cn/open-apis/drive/v1/medias/:file_token/download";
         url = url.replace(":file_token", fileToken);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         HttpRequestUtil request = HttpRequestUtil.get(url)
-                .addHeader("Authorization", "Bearer " + tenantAccessToken);
+                .addHeader("Authorization", "Bearer " + tenantAccessToken)
+                // 飞书下载素材接口返回二进制流，这里把响应先写入内存，再统一走系统附件保存逻辑。
+                .setOutputStream(outputStream)
+                .sendRequest();
+        if (StringUtils.isNotBlank(request.getError())) {
+            throw new RuntimeException(request.getError());
+        }
+        if (request.getResponseCode() != 200 && request.getResponseCode() != 206) {
+            throw new RuntimeException("Feishu media download failed, responseCode:" + request.getResponseCode());
+        }
+        Map<String, List<String>> responseHeaderMap = request.getResponseHeaderMap();
+        String contentType = getFirstResponseHeader(responseHeaderMap, "content-type");
+        String contentDisposition = getFirstResponseHeader(responseHeaderMap, "content-disposition");
+        String fileName = parseFeishuMediaFileName(contentDisposition, fileToken);
+        byte[] data = outputStream.toByteArray();
+        try {
+//            MultipartFile multipartFile = buildFeishuMediaMultipartFile(fileName, contentType, data);
+            FileVo fileVo = new FileVo();
+            // 飞书素材同步到知识库后按知识库附件类型保存，便于后续下载和删除校验复用现有逻辑。
+            fileVo.setType("knowledge");
+//            fileVo.setName(multipartFile.getOriginalFilename());
+//            fileVo.setSize(multipartFile.getSize());
+//            fileVo.setContentType(multipartFile.getContentType());
+            fileVo.setName(fileName);
+            fileVo.setSize((long) data.length);
+            fileVo.setContentType(contentType);
+            fileVo.setUserUuid(UserContext.get().getUserUuid(true));
+            fileVo.setUploadTime(new Date());
+            String tenantUuid = TenantContext.get().getTenantUuid();
+//            String filePath = FileUtil.saveData(tenantUuid, multipartFile.getInputStream(), fileVo);
+            String filePath = FileUtil.saveData(tenantUuid, new ByteArrayInputStream(data), fileVo);
+            fileVo.setPath(filePath);
+            fileMapper.insertFile(fileVo);
+            return fileVo;
+        } catch (Exception ex) {
+            throw new RuntimeException("Feishu media save failed, fileToken:" + fileToken, ex);
+        }
+    }
+
+    /**
+     * 从响应头 Map 中按忽略大小写方式获取第一个 Header 值，兼容 JDK 返回的 Header 名大小写差异。
+     *
+     * @param responseHeaderMap 响应头 Map
+     * @param headerName        Header 名称
+     * @return Header 第一个值
+     */
+    private String getFirstResponseHeader(Map<String, List<String>> responseHeaderMap, String headerName) {
+        if (MapUtils.isEmpty(responseHeaderMap) || StringUtils.isBlank(headerName)) {
+            return null;
+        }
+        for (Map.Entry<String, List<String>> entry : responseHeaderMap.entrySet()) {
+            if (entry.getKey() != null && headerName.equalsIgnoreCase(entry.getKey()) && CollectionUtils.isNotEmpty(entry.getValue())) {
+                return entry.getValue().get(0);
+            }
+        }
         return null;
+    }
+
+    /**
+     * 飞书通过 Content-Disposition 返回素材文件名，解析失败时使用 fileToken 兜底，避免附件名称为空。
+     *
+     * @param contentDisposition 飞书响应头 Content-Disposition
+     * @param fileToken          素材 token
+     * @return 素材文件名
+     */
+    private String parseFeishuMediaFileName(String contentDisposition, String fileToken) {
+        String fileName = null;
+        if (StringUtils.isNotBlank(contentDisposition)) {
+            String[] partArray = contentDisposition.split(";");
+            for (String part : partArray) {
+                String trimPart = StringUtils.trim(part);
+                // 统一转小写后判断响应头字段，避免依赖已弃用的 StringUtils 忽略大小写方法。
+                String lowerPart = trimPart.toLowerCase(Locale.ROOT);
+                if (lowerPart.startsWith("filename*=")) {
+                    fileName = trimQuote(StringUtils.substringAfter(trimPart, "="));
+                    int charsetIndex = fileName.indexOf("''");
+                    if (charsetIndex >= 0) {
+                        fileName = fileName.substring(charsetIndex + 2);
+                    }
+                    try {
+                        // filename* 通常会进行 URL 编码，这里按 UTF-8 解码还原原始文件名。
+                        fileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8.name());
+                    } catch (Exception ignored) {
+                    }
+                    break;
+                } else if (lowerPart.startsWith("filename=")) {
+                    fileName = trimQuote(StringUtils.substringAfter(trimPart, "="));
+                }
+            }
+        }
+        if (StringUtils.isBlank(fileName)) {
+            // 无文件名响应头时使用 token 兜底，保证 FileVo.name 必填语义。
+            fileName = fileToken;
+        }
+        return fileName;
+    }
+
+    /**
+     * 去掉响应头文件名两侧的引号，兼容 filename="xxx" 和 filename='xxx' 两种形式。
+     *
+     * @param value 原始文件名
+     * @return 去除引号后的文件名
+     */
+    private String trimQuote(String value) {
+        if (StringUtils.isBlank(value)) {
+            return value;
+        }
+        String result = StringUtils.trim(value);
+        if ((result.startsWith("\"") && result.endsWith("\"")) || (result.startsWith("'") && result.endsWith("'"))) {
+            return result.substring(1, result.length() - 1);
+        }
+        return result;
+    }
+
+    /**
+     * 构造内存 MultipartFile，让飞书下载的二进制素材按统一附件保存入口处理。
+     *
+     * @param fileName    文件名
+     * @param contentType 文件 MIME
+     * @param data        文件二进制
+     * @return MultipartFile
+     */
+    private MultipartFile buildFeishuMediaMultipartFile(String fileName, String contentType, byte[] data) {
+        final byte[] fileData = data == null ? new byte[0] : data;
+        final String mediaFileName = StringUtils.defaultIfBlank(fileName, "feishu-media");
+        final String mediaContentType = StringUtils.defaultIfBlank(contentType, "application/octet-stream");
+        return new MultipartFile() {
+            @Override
+            public String getName() {
+                return mediaFileName;
+            }
+
+            @Override
+            public String getOriginalFilename() {
+                return mediaFileName;
+            }
+
+            @Override
+            public String getContentType() {
+                return mediaContentType;
+            }
+
+            @Override
+            public boolean isEmpty() {
+                return fileData.length == 0;
+            }
+
+            @Override
+            public long getSize() {
+                return fileData.length;
+            }
+
+            @Override
+            public byte[] getBytes() {
+                return fileData;
+            }
+
+            @Override
+            public InputStream getInputStream() {
+                return new ByteArrayInputStream(fileData);
+            }
+
+            @Override
+            public void transferTo(File dest) throws IOException, IllegalStateException {
+                // MultipartFile 接口要求提供落盘能力，便于未来复用该对象时行为完整。
+                Files.write(dest.toPath(), fileData);
+            }
+        };
     }
 
     private void checkFeishuResult(JSONObject result) {
@@ -394,14 +574,22 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
             if (!isDocumentNode(node)) {
                 continue;
             }
+            if (!Objects.equals(node.getNodeToken(), "EnH5wTCBMiZibmkDu6lcmI94n8g")) {
+                continue;
+            }
             auditVo.incrementTotalCount();
             JSONObject item = new JSONObject();
             item.put("title", node.getTitle());
             item.put("nodeToken", node.getNodeToken());
             try {
-                Long documentId = saveFeishuDocument(config, node, knowledgeType.getUuid(), tenantAccessToken);
+                JSONObject resultObj = saveFeishuDocument(config, node, knowledgeType.getUuid(), tenantAccessToken);
+                Long documentId = resultObj.getLong("knowledgeDocumentId");
                 item.put("knowledgeDocumentId", documentId);
                 item.put("status", "succeed");
+                JSONArray unprocessedItems = resultObj.getJSONArray("unprocessedItems");
+                if (CollectionUtils.isNotEmpty(unprocessedItems)) {
+                    item.put("unprocessedItems", "unprocessedItems");
+                }
                 auditVo.incrementSuccessCount();
                 if (CollectionUtils.isNotEmpty(node.getChildren())) {
                     KnowledgeDocumentTypeVo childType = getOrCreateKnowledgeType(node.getTitle(), knowledgeType.getUuid(), config.getKnowledgeCircleId());
@@ -418,9 +606,18 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
     }
 
     private KnowledgeDocumentTypeVo getOrCreateKnowledgeType(String name, String parentUuid, Long knowledgeCircleId) {
-        List<KnowledgeDocumentTypeVo> typeList = knowledgeDocumentTypeMapper.getTypeByNameAndKnowledgeCircleId(name, knowledgeCircleId);
-        if (CollectionUtils.isNotEmpty(typeList)) {
-            return typeList.get(0);
+        KnowledgeDocumentTypeVo exists = null;
+        List<KnowledgeDocumentTypeVo> children = knowledgeDocumentTypeMapper.getTypeByParentUuid(parentUuid, knowledgeCircleId);
+        if (CollectionUtils.isNotEmpty(children)) {
+            for (KnowledgeDocumentTypeVo child : children) {
+                if (Objects.equals(child.getName(), name)) {
+                    exists = child;
+                    break;
+                }
+            }
+        }
+        if (exists != null) {
+            return exists;
         } else {
             List<KnowledgeDocumentTypeVo> typeListByParentUuid = knowledgeDocumentTypeMapper.getTypeByParentUuid(parentUuid, knowledgeCircleId);
             List<KnowledgeDocumentTypeVo> list = new ArrayList<>();
@@ -621,7 +818,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return "docx".equals(node.getObjType()) || "doc".equals(node.getObjType());
     }
 
-    private Long saveFeishuDocument(KnowledgeFeishuSyncConfigVo config, FeishuNode node, String typeUuid, String tenantAccessToken) {
+    private JSONObject saveFeishuDocument(KnowledgeFeishuSyncConfigVo config, FeishuNode node, String typeUuid, String tenantAccessToken) {
         KnowledgeFeishuSyncDocumentVo mapping = knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(config.getId(), node.getNodeToken());
         KnowledgeDocumentVo documentVo = new KnowledgeDocumentVo();
         if (mapping == null) {
@@ -656,13 +853,15 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         documentVo.setVersion(versionVo.getVersion());
         knowledgeDocumentMapper.updateKnowledgeDocumentById(documentVo);
 
-        saveLines(documentVo.getId(), versionVo.getId(), getFeishuDocumentLines(config, node, tenantAccessToken));
+        JSONArray unprocessedItems = new JSONArray();
+        List<KnowledgeDocumentLineVo> feishuDocumentLines = getFeishuDocumentLines(config, node, tenantAccessToken, unprocessedItems);
+        saveLines(documentVo.getId(), versionVo.getId(), feishuDocumentLines);
         upsertMapping(config, node, typeUuid, documentVo.getId());
         IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getHandler(KnowledgeFullTextIndexType.KNOW_DOCUMENT_VERSION);
         if (handler != null) {
             handler.createIndex(versionVo.getId());
         }
-        return documentVo.getId();
+        return new JSONObject().fluentPut("knowledgeDocumentId", documentVo.getId()).fluentPut("unprocessedItems", unprocessedItems);
     }
 
     private void upsertMapping(KnowledgeFeishuSyncConfigVo config, FeishuNode node, String typeUuid, Long documentId) {
@@ -783,34 +982,34 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return knowledgeDocumentLineVo;
     }
 
-    private KnowledgeDocumentLineVo handleIframe(JSONObject item) {
-        Integer blockType = item.getInteger("block_type");
-        FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
-        String blockId = item.getString("block_id");
-        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
-        knowledgeDocumentLineVo.setHandler("image");
-        JSONObject configObj = new JSONObject();
-        configObj.put("blockType", "image");
-        configObj.put("blockUuid", blockId);
-        configObj.put("name", "");
-        configObj.put("uploading", false);
-        configObj.put("align", "left");
-        configObj.put("title", "");
-        configObj.put("value", "");
-        configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item));
-        JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
-        if (MapUtils.isNotEmpty(jsonObj)) {
-            JSONObject component = jsonObj.getJSONObject("component");
-            if (MapUtils.isNotEmpty(component)) {
-                Integer iframeType = component.getInteger("iframe_type");// TODO
-                String url = component.getString("url");
-                configObj.put("url", url);
-                configObj.put("src", url);
-            }
-        }
-        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
-        return knowledgeDocumentLineVo;
-    }
+//    private KnowledgeDocumentLineVo handleIframe(JSONObject item) {
+//        Integer blockType = item.getInteger("block_type");
+//        FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+//        String blockId = item.getString("block_id");
+//        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+//        knowledgeDocumentLineVo.setHandler("image");
+//        JSONObject configObj = new JSONObject();
+//        configObj.put("blockType", "image");
+//        configObj.put("blockUuid", blockId);
+//        configObj.put("name", "");
+//        configObj.put("uploading", false);
+//        configObj.put("align", "left");
+//        configObj.put("title", "");
+//        configObj.put("value", "");
+//        configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item));
+//        JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+//        if (MapUtils.isNotEmpty(jsonObj)) {
+//            JSONObject component = jsonObj.getJSONObject("component");
+//            if (MapUtils.isNotEmpty(component)) {
+//                Integer iframeType = component.getInteger("iframe_type");
+//                String url = component.getString("url");
+//                configObj.put("url", url);
+//                configObj.put("src", url);
+//            }
+//        }
+//        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+//        return knowledgeDocumentLineVo;
+//    }
 
     private KnowledgeDocumentLineVo handleOrderedList(List<JSONObject> orderedList) {
         KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
@@ -1015,16 +1214,28 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
     }
 
     private KnowledgeDocumentLineVo handleView(JSONObject item, List<JSONObject> childItemList, String tenantAccessToken) {
+        String handler = "paragraph";
         String blockId = item.getString("block_id");
-        Integer viewType = null;
-        JSONObject view = item.getJSONObject("view");
-        if (MapUtils.isNotEmpty(view)) {
-            viewType = view.getInteger("view_type");
+        {
+            Integer blockType = item.getInteger("block_type");
+            FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+            Integer viewType = null;
+            JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+            if (MapUtils.isNotEmpty(jsonObj)) {
+                viewType = jsonObj.getInteger("view_type");
+                if (Objects.equals(viewType, 1)) {
+                    handler = "file";
+                } else if (Objects.equals(viewType, 2)) {
+                    handler = "video";
+                } else if (Objects.equals(viewType, 3)) {
+//                    handler = "image";
+                }
+            }
         }
         KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
-        knowledgeDocumentLineVo.setHandler("");
+        knowledgeDocumentLineVo.setHandler(handler);
         JSONObject configObj = new JSONObject();
-        configObj.put("blockType", "");
+        configObj.put("blockType", handler);
         configObj.put("blockUuid", blockId);
         configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item).fluentAddAll(childItemList));
         for (JSONObject childItem : childItemList) {
@@ -1035,6 +1246,47 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                 String name = jsonObj.getString("name");
                 String token = jsonObj.getString("token");
                 FileVo fileVo = downloadMedias(token, tenantAccessToken);
+                if (fileVo != null) {
+                    if (Objects.equals(handler, "video")) {
+                        configObj.put("src", "api/binary/file/download?id=" + fileVo.getId());
+                    } else if (Objects.equals(handler, "file")) {
+                        configObj.put("name", fileVo.getName());
+                        configObj.put("size", fileVo.getSize());
+                    }
+                    configObj.put("url", "api/binary/file/download?id=" + fileVo.getId());
+//                    configObj.put("uploading", false);
+                    configObj.put("align", "left");
+                }
+            }
+        }
+        if (Objects.equals(handler, "paragraph")) {
+            knowledgeDocumentLineVo.setContent(configObj.toJSONString());
+        }
+        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+        return knowledgeDocumentLineVo;
+    }
+
+    private KnowledgeDocumentLineVo handleImage(JSONObject item, String tenantAccessToken) {
+        String blockId = item.getString("block_id");
+        Integer blockType = item.getInteger("block_type");
+        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+        knowledgeDocumentLineVo.setHandler("image");
+        JSONObject configObj = new JSONObject();
+        configObj.put("blockType", "image");
+        configObj.put("blockUuid", blockId);
+        configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item));
+        FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+        JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+        if (MapUtils.isNotEmpty(jsonObj)) {
+            Integer width = jsonObj.getInteger("width");
+            Integer height = jsonObj.getInteger("height");
+            Integer scale = jsonObj.getInteger("scale");
+            Integer align = jsonObj.getInteger("align");
+            configObj.put("align", FeiShuAlignType.getFeiShuAlignText(align));
+            String token = jsonObj.getString("token");
+            FileVo fileVo = downloadMedias(token, tenantAccessToken);
+            if (fileVo != null) {
+                configObj.put("url", "api/binary/file/download?id=" + fileVo.getId());
             }
         }
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
@@ -1116,7 +1368,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return knowledgeDocumentLineVo;
     }
 
-    private List<KnowledgeDocumentLineVo> getFeishuDocumentLines(KnowledgeFeishuSyncConfigVo config, FeishuNode node, String tenantAccessToken) {
+    private List<KnowledgeDocumentLineVo> getFeishuDocumentLines(KnowledgeFeishuSyncConfigVo config, FeishuNode node, String tenantAccessToken, JSONArray unprocessedItems) {
         List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
         try {
             System.out.println("node.title = " + node.getTitle());
@@ -1160,8 +1412,8 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                                 continue;
                             }
                             handledBlockIdList.add(blockId);
-                            item.put("block_type_value", feiShuBlockType.getValue());
                             item.put("block_type_text", feiShuBlockType.getText());
+                            item.put("block_type_description", feiShuBlockType.getDescription());
                             if (feiShuBlockType == FeiShuBlockType.TEXT) {
                                 KnowledgeDocumentLineVo line = handleText(item);
                                 lineList.add(line);
@@ -1302,9 +1554,9 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                                 line.setConfig(configObj.toJSONString());
                                 line.setHandler("divider");
                                 lineList.add(line);
-                            } else if (feiShuBlockType == FeiShuBlockType.IFRAME) {
-                                KnowledgeDocumentLineVo line = handleIframe(item);
-                                lineList.add(line);
+//                            } else if (feiShuBlockType == FeiShuBlockType.IFRAME) {
+//                                KnowledgeDocumentLineVo line = handleIframe(item);
+//                                lineList.add(line);
                             } else if (feiShuBlockType == FeiShuBlockType.VIEW) {
                                 List<JSONObject> childItemList = new ArrayList<>();
                                 JSONArray array = item.getJSONArray("children");
@@ -1321,9 +1573,8 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                                 KnowledgeDocumentLineVo line = handleView(item, childItemList, tenantAccessToken);
                                 lineList.add(line);
                             } else if (feiShuBlockType == FeiShuBlockType.IMAGE) {
-//                                KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
-//                                knowledgeDocumentLineVo.setHandler("image");
-
+                                KnowledgeDocumentLineVo line = handleImage(item, tenantAccessToken);
+                                lineList.add(line);
                             } else if (feiShuBlockType == FeiShuBlockType.TABLE) {
                                 List<JSONObject> childItemList = new ArrayList<>();
                                 JSONArray array = item.getJSONArray("children");
@@ -1355,6 +1606,15 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                                 KnowledgeDocumentLineVo line = handleTable(item, childItemList);
                                 lineList.add(line);
                             } else {
+                                unprocessedItems.add(item);
+                                JSONArray childItemList = collectChildItemList(item, itemMap);
+                                if (CollectionUtils.isNotEmpty(childItemList)) {
+                                    unprocessedItems.addAll(childItemList);
+                                    for (int i = 0; i < childItemList.size(); i++) {
+                                        JSONObject childItem = childItemList.getJSONObject(i);
+                                        handledBlockIdList.add(childItem.getString("block_id"));
+                                    }
+                                }
                                 KnowledgeDocumentLineVo line = new KnowledgeDocumentLineVo();
                                 JSONObject configObj = new JSONObject();
                                 configObj.put("blockType", feiShuBlockType.getText());
@@ -1375,6 +1635,23 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
 //            lineList.add(newLine("p", "<a href=\"" + config.getBaseUrl() + "/wiki/" + node.getNodeToken() + "\">" + node.getTitle() + "</a>"));
 //        }
         return lineList;
+    }
+
+    private JSONArray collectChildItemList(JSONObject item, Map<String, JSONObject> itemMap) {
+        JSONArray resultList = new JSONArray();
+        JSONArray children = item.getJSONArray("children");
+        if (CollectionUtils.isNotEmpty(children)) {
+            for (int i = 0; i < children.size(); i++) {
+                String childBlockId = children.getString(i);
+                JSONObject childItem = itemMap.get(childBlockId);
+                if (MapUtils.isNotEmpty(childItem)) {
+                    resultList.add(childItem);
+                    JSONArray childItemList = collectChildItemList(childItem, itemMap);
+                    resultList.addAll(childItemList);
+                }
+            }
+        }
+        return resultList;
     }
 
     private void saveLines(Long documentId, Long versionId, List<KnowledgeDocumentLineVo> lineList) {

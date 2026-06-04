@@ -29,7 +29,7 @@ public class GetFeiShuDocumentInfoApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "feishu/document/get";
+        return "knowledge/feishu/document/get";
     }
 
     @Override

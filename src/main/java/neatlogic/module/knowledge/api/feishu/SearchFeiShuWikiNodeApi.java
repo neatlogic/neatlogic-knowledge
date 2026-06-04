@@ -26,11 +26,11 @@ import java.util.Objects;
 @Service
 @AuthAction(action = KNOWLEDGE_FEISHU_SYNC_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class SearchFeishuSpaceNodeApi extends PrivateApiComponentBase {
+public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
     @Resource
     private KnowledgeFeishuSyncService knowledgeFeishuSyncService;
     @Override
-    public String getToken() { return "feishu/wiki/node/list"; }
+    public String getToken() { return "knowledge/feishu/wiki/node/list"; }
     @Override
     public String getName() { return "获取飞书Wiki节点列表"; }
 

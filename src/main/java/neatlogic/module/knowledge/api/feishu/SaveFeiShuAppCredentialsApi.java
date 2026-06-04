@@ -24,7 +24,7 @@ public class SaveFeiShuAppCredentialsApi extends PrivateApiComponentBase {
     private ConfigMapper configMapper;
 
     @Override
-    public String getToken() { return "feishu/app/credentials/save"; }
+    public String getToken() { return "knowledge/feishu/app/credentials/save"; }
     @Override
     public String getName() { return "保存飞书应用凭证"; }
 

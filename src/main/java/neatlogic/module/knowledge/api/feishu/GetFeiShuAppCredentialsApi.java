@@ -34,7 +34,7 @@ public class GetFeiShuAppCredentialsApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "feishu/app/credentials/get";
+        return "knowledge/feishu/app/credentials/get";
     }
 
     @Override

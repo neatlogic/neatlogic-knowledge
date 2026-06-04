@@ -250,30 +250,48 @@ public class FeiShuOpenApiUtil {
      * 		]
      * 	}
      * }
-     * @param config
+     *
      * @param spaceId
      * @param parentNodeToken
-     * @param pageToken
      * @return
      */
-    public static JSONObject getFeishuWikiNodes(KnowledgeFeishuSyncConfigVo config, Long spaceId, String parentNodeToken, String pageToken, String tenantAccessToken) {
+    public static JSONObject getFeishuWikiNodes(Long spaceId, String parentNodeToken, String tenantAccessToken) {
         String url = SPACE_NODES_URL.replace(":space_id", spaceId.toString());
-//        System.out.println("url = " + url);
-        JSONObject query = new JSONObject();
-        query.put("page_size", 50);
-        if (StringUtils.isNotBlank(parentNodeToken)) {
-            query.put("parent_node_token", parentNodeToken);
-        }
-        if (StringUtils.isNotBlank(pageToken)) {
-            query.put("page_token", pageToken);
-        }
-        HttpRequestUtil request = HttpRequestUtil.get(url)
-                .addHeader("Authorization", "Bearer " + tenantAccessToken)
-                .setQueryString(query);
-        JSONObject result = request.sendRequest().getResultJson();
-//        System.out.println("getFeishuWikiNodes result = " + result);
-        checkFeishuResult(result);
-        return result;
+        JSONArray allItems = new JSONArray();
+        String pageToken = null;
+        Boolean hasMore = false;
+        do {
+            JSONObject query = new JSONObject();
+            query.put("page_size", 50);
+            if (StringUtils.isNotBlank(parentNodeToken)) {
+                query.put("parent_node_token", parentNodeToken);
+            }
+            if (StringUtils.isNotBlank(pageToken)) {
+                query.put("page_token", pageToken);
+            }
+            HttpRequestUtil request = HttpRequestUtil.get(url)
+                    .addHeader("Authorization", "Bearer " + tenantAccessToken)
+                    .setQueryString(query);
+            JSONObject result = request.sendRequest().getResultJson();
+    //        System.out.println("getFeishuWikiNodes result = " + result);
+            checkFeishuResult(result);
+            JSONObject data = result.getJSONObject("data");
+            if (MapUtils.isNotEmpty(data)) {
+                hasMore = data.getBoolean("has_more");
+                pageToken = data.getString("page_token");
+                JSONArray items = data.getJSONArray("items");
+                if (CollectionUtils.isNotEmpty(items)) {
+                    if (CollectionUtils.isNotEmpty(items)) {
+                        allItems.addAll(items);
+                    }
+                }
+            }
+        } while (Objects.equals(hasMore, true));
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("msg", "success");
+        resultObj.put("code", 0);
+        resultObj.put("data", new JSONObject().fluentPut("has_more", false).fluentPut("items", allItems));
+        return resultObj;
     }
 
     public static JSONObject getFeishuNodeInfo(String nodeToken, String tenantAccessToken) {

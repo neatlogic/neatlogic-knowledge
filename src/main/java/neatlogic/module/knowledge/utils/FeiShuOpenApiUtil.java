@@ -166,23 +166,41 @@ public class FeiShuOpenApiUtil {
      * 		]
      * 	}
      * }
-     * @param pageToken
+     *
      * @param tenantAccessToken
      * @return
      */
-    public static JSONObject getFeishuWikiSpaces(String pageToken, String tenantAccessToken) {
-        JSONObject query = new JSONObject();
-        query.put("page_size", 50);// 最大值是50
-        if (StringUtils.isNotBlank(pageToken)) {
-            query.put("page_token", pageToken);
-        }
-        HttpRequestUtil request = HttpRequestUtil.get(WIKI_V2_SPACES_URL)
-                .addHeader("Authorization", "Bearer " + tenantAccessToken)
-                .setQueryString(query);
-        JSONObject result = request.sendRequest().getResultJson();
-        System.out.println("feishuWikiSpaces result = " + result);
-        checkFeishuResult(result);
-        return result;
+    public static JSONObject getFeishuWikiSpaces(String tenantAccessToken) {
+        JSONArray allItems = new JSONArray();
+        String pageToken = null;
+        Boolean hasMore = false;
+        do {
+            JSONObject query = new JSONObject();
+            query.put("page_size", 50);// 最大值是50
+            if (StringUtils.isNotBlank(pageToken)) {
+                query.put("page_token", pageToken);
+            }
+            HttpRequestUtil request = HttpRequestUtil.get(WIKI_V2_SPACES_URL)
+                    .addHeader("Authorization", "Bearer " + tenantAccessToken)
+                    .setQueryString(query);
+            JSONObject result = request.sendRequest().getResultJson();
+//            System.out.println("feishuWikiSpaces result = " + result);
+            checkFeishuResult(result);
+            JSONObject data = result.getJSONObject("data");
+            if (MapUtils.isNotEmpty(data)) {
+                pageToken = data.getString("page_token");
+                hasMore = data.getBoolean("has_more");
+                JSONArray items = data.getJSONArray("items");
+                if (CollectionUtils.isNotEmpty(items)) {
+                    allItems.addAll(items);
+                }
+            }
+        } while (Objects.equals(hasMore, true));
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("msg", "success");
+        resultObj.put("code", 0);
+        resultObj.put("data", new JSONObject().fluentPut("has_more", false).fluentPut("items", allItems));
+        return resultObj;
     }
 
     /**
@@ -240,7 +258,7 @@ public class FeiShuOpenApiUtil {
      */
     public static JSONObject getFeishuWikiNodes(KnowledgeFeishuSyncConfigVo config, Long spaceId, String parentNodeToken, String pageToken, String tenantAccessToken) {
         String url = SPACE_NODES_URL.replace(":space_id", spaceId.toString());
-        System.out.println("url = " + url);
+//        System.out.println("url = " + url);
         JSONObject query = new JSONObject();
         query.put("page_size", 50);
         if (StringUtils.isNotBlank(parentNodeToken)) {
@@ -253,7 +271,7 @@ public class FeiShuOpenApiUtil {
                 .addHeader("Authorization", "Bearer " + tenantAccessToken)
                 .setQueryString(query);
         JSONObject result = request.sendRequest().getResultJson();
-        System.out.println("getFeishuWikiNodes result = " + result);
+//        System.out.println("getFeishuWikiNodes result = " + result);
         checkFeishuResult(result);
         return result;
     }
@@ -266,7 +284,7 @@ public class FeiShuOpenApiUtil {
                 .addHeader("Content-Type", "application/json; charset=utf-8")
                 .setQueryString(query);
         JSONObject result = request.sendRequest().getResultJson();
-        System.out.println("getFeishuNodeInfo result = " + result);
+//        System.out.println("getFeishuNodeInfo result = " + result);
         checkFeishuResult(result);
         return result;
     }
@@ -282,7 +300,7 @@ public class FeiShuOpenApiUtil {
             if (StringUtils.isNotBlank(pageToken)) {
                 query.put("page_token", pageToken);
             }
-            System.out.println("url = " + url);
+//            System.out.println("url = " + url);
             HttpRequestUtil request = HttpRequestUtil.get(url)
                     .addHeader("Authorization", "Bearer " + tenantAccessToken)
                     .setQueryString(query);
@@ -340,7 +358,6 @@ public class FeiShuOpenApiUtil {
             String tenantUuid = TenantContext.get().getTenantUuid();
             String filePath = FileUtil.saveData(tenantUuid, new ByteArrayInputStream(data), fileVo);
             fileVo.setPath(filePath);
-            System.out.println("insertSyncMediasMapping fileId = " + fileVo.getId());
             return fileVo;
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);

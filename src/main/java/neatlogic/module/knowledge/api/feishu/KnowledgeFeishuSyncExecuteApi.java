@@ -119,18 +119,15 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
 //                        }
                         KnowledgeDocumentTypeVo knowledgeType = getOrCreateKnowledgeType(spaceName, "0", knowledgeCircleId);
                         List<FeishuNode> nodes = loadWikiNodes(spaceId, null, new ArrayList<>(), tenantAccessToken);
-//                        System.out.println("nodes = " + JSONObject.toJSONString(nodes));
                         saveNodes(spaceId, spaceName, nodes, config, knowledgeType, audit, tenantAccessToken);
                     }
                 }
             }
 
             finishAudit(audit, audit.getFailedCount() == 0 ? "succeed" : "failed", null);
-//            finishAudit(audit, failed == 0 ? "succeed" : "failed", total, success, failed, null, detailList);
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
             finishAudit(audit, "failed", ex.getMessage());
-//            finishAudit(audit, "failed", total, success, failed == 0 ? 1 : failed, ex.getMessage(), detailList);
         }
         knowledgeDocumentTypeService.rebuildLeftRightCode(knowledgeCircleId);
         return audit;
@@ -254,120 +251,6 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
 
         knowledgeFeishuSyncMapper.updateAudit(audit);
     }
-
-    /**
-     * 返回数据结构为
-     * [
-     * 	    {
-     * 		"open_sharing": "closed",
-     * 		"visibility": "public",
-     * 		"space_type": "team",
-     * 		"name": "前端研发规范",
-     * 		"description": "",
-     * 		"space_id": "7208706433871773699"
-     *    },
-     *    {
-     * 		"open_sharing": "closed",
-     * 		"visibility": "public",
-     * 		"space_type": "team",
-     * 		"name": "后端研发规范",
-     * 		"description": "",
-     * 		"space_id": "7208734024653832196"
-     *    },
-     *    {
-     * 		"open_sharing": "closed",
-     * 		"visibility": "public",
-     * 		"space_type": "team",
-     * 		"name": "设计文档",
-     * 		"description": "",
-     * 		"space_id": "7208737988736483331"
-     *    },
-     *    {
-     * 		"open_sharing": "closed",
-     * 		"visibility": "public",
-     * 		"space_type": "team",
-     * 		"name": "研发管理",
-     * 		"description": "",
-     * 		"space_id": "7208739847777828867"
-     *    },
-     *    {
-     * 		"open_sharing": "closed",
-     * 		"visibility": "public",
-     * 		"space_type": "team",
-     * 		"name": "项目文档",
-     * 		"description": "",
-     * 		"space_id": "7208744663619223555"
-     *    },
-     *    {
-     * 		"open_sharing": "closed",
-     * 		"visibility": "public",
-     * 		"space_type": "team",
-     * 		"name": "技术方案",
-     * 		"description": "",
-     * 		"space_id": "7208747120034283523"
-     *    },
-     *    {
-     * 		"open_sharing": "closed",
-     * 		"visibility": "public",
-     * 		"space_type": "team",
-     * 		"name": "产品手册",
-     * 		"description": "",
-     * 		"space_id": "7208748423435173892"
-     *    },
-     *    {
-     * 		"open_sharing": "closed",
-     * 		"visibility": "public",
-     * 		"space_type": "team",
-     * 		"name": "常见问题",
-     * 		"description": "",
-     * 		"space_id": "7208872407434592260"
-     *    },
-     *    {
-     * 		"open_sharing": "closed",
-     * 		"visibility": "public",
-     * 		"space_type": "team",
-     * 		"name": "国产系统&软件适配",
-     * 		"description": "",
-     * 		"space_id": "7208876213417410563"
-     *    },
-     *    {
-     * 		"open_sharing": "closed",
-     * 		"visibility": "private",
-     * 		"space_type": "team",
-     * 		"name": "交付问题知识库",
-     * 		"description": "交付问题知识库",
-     * 		"space_id": "7397619128632180764"
-     *    },
-     *    {
-     * 		"open_sharing": "closed",
-     * 		"visibility": "private",
-     * 		"space_type": "team",
-     * 		"name": "linbq测试",
-     * 		"description": "test",
-     * 		"space_id": "7644786409622113212"
-     *    }
-     * ]
-     *
-     * @return
-     */
-//    private JSONArray feishuWikiSpaces(String tenantAccessToken) {
-//        JSONArray resultArray = new JSONArray();
-//        String pageToken = null;
-//        Boolean hasMore = false;
-//        do {
-//            JSONObject resultObj = FeiShuOpenApiUtil.getFeishuWikiSpaces(pageToken, tenantAccessToken);
-//            JSONObject data = resultObj.getJSONObject("data");
-//            if (MapUtils.isNotEmpty(data)) {
-//                pageToken = data.getString("page_token");
-//                hasMore = data.getBoolean("has_more");
-//                JSONArray items = data.getJSONArray("items");
-//                if (CollectionUtils.isNotEmpty(items)) {
-//                    resultArray.addAll(items);
-//                }
-//            }
-//        } while (Objects.equals(hasMore, true));
-//        return resultArray;
-//    }
 
     private List<FeishuNode> loadWikiNodes(Long spaceId, String parentNodeToken, List<String> path, String tenantAccessToken) {
         List<FeishuNode> nodeList = new ArrayList<>();
@@ -1135,18 +1018,6 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                                 KnowledgeDocumentLineVo line = handleQuote(item);
                                 lineList.add(line);
                             } else if (feiShuBlockType == FeiShuBlockType.QUOTE_CONTAINER) {
-//                                List<JSONObject> childItemList = new ArrayList<>();
-//                                JSONArray array = item.getJSONArray("children");
-//                                if (CollectionUtils.isNotEmpty(array)) {
-//                                    List<String> list = array.toJavaList(String.class);
-//                                    for (String str : list) {
-//                                        JSONObject childItem = itemMap.get(str);
-//                                        if (MapUtils.isNotEmpty(childItem)) {
-//                                            childItemList.add(childItem);
-//                                            handledBlockIdList.add(str);
-//                                        }
-//                                    }
-//                                }
                                 List<JSONObject> childItemList = collectChildItemList(item, itemMap);
                                 if (CollectionUtils.isNotEmpty(childItemList)) {
                                     for (JSONObject childItem : childItemList) {
@@ -1179,18 +1050,6 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                                     lineList.add(line);
                                 }
                             } else if (feiShuBlockType == FeiShuBlockType.CALLOUT) {
-//                                List<JSONObject> childItemList = new ArrayList<>();
-//                                JSONArray array = item.getJSONArray("children");
-//                                if (CollectionUtils.isNotEmpty(array)) {
-//                                    List<String> list = array.toJavaList(String.class);
-//                                    for (String str : list) {
-//                                        JSONObject childItem = itemMap.get(str);
-//                                        if (MapUtils.isNotEmpty(childItem)) {
-//                                            childItemList.add(childItem);
-//                                            handledBlockIdList.add(str);
-//                                        }
-//                                    }
-//                                }
                                 List<JSONObject> childItemList = collectChildItemList(item, itemMap);
                                 if (CollectionUtils.isNotEmpty(childItemList)) {
                                     for (JSONObject childItem : childItemList) {
@@ -1211,18 +1070,6 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
 //                                KnowledgeDocumentLineVo line = handleIframe(item);
 //                                lineList.add(line);
                             } else if (feiShuBlockType == FeiShuBlockType.VIEW) {
-//                                List<JSONObject> childItemList = new ArrayList<>();
-//                                JSONArray array = item.getJSONArray("children");
-//                                if (CollectionUtils.isNotEmpty(array)) {
-//                                    List<String> list = array.toJavaList(String.class);
-//                                    for (String str : list) {
-//                                        JSONObject childItem = itemMap.get(str);
-//                                        if (MapUtils.isNotEmpty(childItem)) {
-//                                            childItemList.add(childItem);
-//                                            handledBlockIdList.add(str);
-//                                        }
-//                                    }
-//                                }
                                 List<JSONObject> childItemList = collectChildItemList(item, itemMap);
                                 if (CollectionUtils.isNotEmpty(childItemList)) {
                                     for (JSONObject childItem : childItemList) {
@@ -1235,33 +1082,6 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                                 KnowledgeDocumentLineVo line = handleImage(item, tenantAccessToken);
                                 lineList.add(line);
                             } else if (feiShuBlockType == FeiShuBlockType.TABLE) {
-//                                List<JSONObject> childItemList = new ArrayList<>();
-//                                JSONArray array = item.getJSONArray("children");
-//                                if (CollectionUtils.isNotEmpty(array)) {
-//                                    List<String> list = array.toJavaList(String.class);
-//                                    for (String str : list) {
-//                                        JSONObject childItem = itemMap.get(str);
-//                                        if (MapUtils.isNotEmpty(childItem)) {
-//                                            childItemList.add(childItem);
-//                                            handledBlockIdList.add(str);
-//                                            Integer childBlockType = childItem.getInteger("block_type");
-//                                            FeiShuBlockType childFeiShuBlockType = FeiShuBlockType.getFeiShuBlockType(childBlockType);
-//                                            if (childFeiShuBlockType == FeiShuBlockType.TABLE_CELL) {
-//                                                JSONArray tableCellChildArray = childItem.getJSONArray("children");
-//                                                if (CollectionUtils.isNotEmpty(tableCellChildArray)) {
-//                                                    List<String> tableCellChildList = tableCellChildArray.toJavaList(String.class);
-//                                                    for (String tableCellChild : tableCellChildList) {
-//                                                        JSONObject tableCellChildItem = itemMap.get(tableCellChild);
-//                                                        if (MapUtils.isNotEmpty(tableCellChildItem)) {
-//                                                            childItemList.add(tableCellChildItem);
-//                                                            handledBlockIdList.add(tableCellChild);
-//                                                        }
-//                                                    }
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-//                                }
                                 List<JSONObject> childItemList = collectChildItemList(item, itemMap);
                                 if (CollectionUtils.isNotEmpty(childItemList)) {
                                     for (JSONObject childItem : childItemList) {

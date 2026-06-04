@@ -90,7 +90,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
     public KnowledgeFeishuSyncAuditVo syncFromFeishu(Long configId) {
         KnowledgeFeishuSyncConfigVo config = getRequiredConfig(configId);
         Long knowledgeCircleId = config.getKnowledgeCircleId();
-        String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(config);
+        String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(config.getAppId(), config.getAppSecret());
         System.out.println("tenantAccessToken = " + tenantAccessToken);
         KnowledgeFeishuSyncAuditVo audit = startAudit(configId, "from_feishu");
         try {
@@ -879,7 +879,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
         try {
             System.out.println("node.title = " + node.getTitle());
-            JSONObject blockResult = FeiShuOpenApiUtil.getDocumentBlocks(config, node.getObjToken(), tenantAccessToken);
+            JSONObject blockResult = FeiShuOpenApiUtil.getDocumentBlocks(node.getObjToken(), tenantAccessToken);
             System.out.println("blockResult = " + blockResult);
             JSONArray items = blockResult.getJSONObject("data") == null ? null : blockResult.getJSONObject("data").getJSONArray("items");
             if (CollectionUtils.isNotEmpty(items)) {

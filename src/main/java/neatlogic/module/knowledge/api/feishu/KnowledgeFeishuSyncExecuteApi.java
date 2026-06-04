@@ -56,7 +56,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
     private final String SPACE_NODES_URL = "https://open.feishu.cn/open-apis/wiki/v2/spaces/:space_id/nodes";
     private final String DOCUMENT_BLOCKS_URL = "https://open.feishu.cn/open-apis/docx/v1/documents/:document_id/blocks";
     private final String GET_NODE_URL = "https://open.feishu.cn/open-apis/wiki/v2/spaces/get_node";
-
+    private final String MEDIAS_DOWNLOAD_URL = "https://open.feishu.cn/open-apis/drive/v1/medias/:file_token/download";
     @Resource
     private KnowledgeFeishuSyncMapper knowledgeFeishuSyncMapper;
     @Resource
@@ -402,8 +402,16 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
      * @return
      */
     private FileVo downloadMedias(String fileToken, String tenantAccessToken) {
-        String url = "https://open.feishu.cn/open-apis/drive/v1/medias/:file_token/download";
-        url = url.replace(":file_token", fileToken);
+        Long fileId = knowledgeFeishuSyncMapper.getSyncMediasMappingFileIdByUuid(fileToken);
+        System.out.println("getSyncMediasMappingFileIdByUuid fileId = " + fileId);
+        if (fileId != null) {
+            FileVo fileVo = fileMapper.getFileById(fileId);
+            if (fileVo != null) {
+                return fileVo;
+            }
+        }
+//        String url = "https://open.feishu.cn/open-apis/drive/v1/medias/:file_token/download";
+        String url = MEDIAS_DOWNLOAD_URL.replace(":file_token", fileToken);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         HttpRequestUtil request = HttpRequestUtil.get(url)
                 .addHeader("Authorization", "Bearer " + tenantAccessToken)
@@ -422,25 +430,23 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         String fileName = parseFeishuMediaFileName(contentDisposition, fileToken);
         byte[] data = outputStream.toByteArray();
         try {
-//            MultipartFile multipartFile = buildFeishuMediaMultipartFile(fileName, contentType, data);
             FileVo fileVo = new FileVo();
             // 飞书素材同步到知识库后按知识库附件类型保存，便于后续下载和删除校验复用现有逻辑。
             fileVo.setType("knowledge");
-//            fileVo.setName(multipartFile.getOriginalFilename());
-//            fileVo.setSize(multipartFile.getSize());
-//            fileVo.setContentType(multipartFile.getContentType());
             fileVo.setName(fileName);
             fileVo.setSize((long) data.length);
             fileVo.setContentType(contentType);
             fileVo.setUserUuid(UserContext.get().getUserUuid(true));
             fileVo.setUploadTime(new Date());
             String tenantUuid = TenantContext.get().getTenantUuid();
-//            String filePath = FileUtil.saveData(tenantUuid, multipartFile.getInputStream(), fileVo);
             String filePath = FileUtil.saveData(tenantUuid, new ByteArrayInputStream(data), fileVo);
             fileVo.setPath(filePath);
             fileMapper.insertFile(fileVo);
+            knowledgeFeishuSyncMapper.insertSyncMediasMapping(fileToken, fileVo.getId());
+            System.out.println("insertSyncMediasMapping fileId = " + fileVo.getId());
             return fileVo;
         } catch (Exception ex) {
+            logger.error(ex.getMessage(), ex);
             throw new RuntimeException("Feishu media save failed, fileToken:" + fileToken, ex);
         }
     }
@@ -489,6 +495,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                         // filename* 通常会进行 URL 编码，这里按 UTF-8 解码还原原始文件名。
                         fileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8.name());
                     } catch (Exception ignored) {
+                        logger.error(ignored.getMessage(), ignored);
                     }
                     break;
                 } else if (lowerPart.startsWith("filename=")) {
@@ -1158,6 +1165,30 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return knowledgeDocumentLineVo;
     }
 
+    private KnowledgeDocumentLineVo handleQuote(JSONObject item) {
+        String blockId = item.getString("block_id");
+        KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
+        knowledgeDocumentLineVo.setHandler("blockquote");
+        JSONObject configObj = new JSONObject();
+        configObj.put("blockType", "blockquote");
+        configObj.put("blockUuid", blockId);
+        configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item));
+        List<String> list = new ArrayList<>();
+        Integer blockType = item.getInteger("block_type");
+        FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+        JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+        if (MapUtils.isNotEmpty(jsonObj)) {
+            JSONArray elements = jsonObj.getJSONArray("elements");
+            List<String> contentList = getContentListFromElements(elements);
+            for (String content : contentList) {
+                list.add("<p>" + content + "</p>");
+            }
+        }
+        knowledgeDocumentLineVo.setContent(String.join("", list));
+        knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
+        return knowledgeDocumentLineVo;
+    }
+
     private KnowledgeDocumentLineVo handleQuoteContainer(JSONObject item, List<JSONObject> childItemList) {
         String blockId = item.getString("block_id");
         KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
@@ -1464,6 +1495,9 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                             } else if (feiShuBlockType == FeiShuBlockType.CODE) {
                                 KnowledgeDocumentLineVo line = handleCode(item);
                                 lineList.add(line);
+                            } else if (feiShuBlockType == FeiShuBlockType.QUOTE) {
+                                KnowledgeDocumentLineVo line = handleQuote(item);
+                                lineList.add(line);
                             } else if (feiShuBlockType == FeiShuBlockType.QUOTE_CONTAINER) {
 //                                List<JSONObject> childItemList = new ArrayList<>();
 //                                JSONArray array = item.getJSONArray("children");
@@ -1623,11 +1657,9 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                     }
                 }
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
         }
-//        if (CollectionUtils.isEmpty(lineList)) {
-//            lineList.add(newLine("p", "<a href=\"" + config.getBaseUrl() + "/wiki/" + node.getNodeToken() + "\">" + node.getTitle() + "</a>"));
-//        }
         return lineList;
     }
 
@@ -1678,8 +1710,9 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
                 knowledgeDocumentLineListTmp.clear();
             }
         }
-        if (CollectionUtils.isNotEmpty(lineList)) {
-            knowledgeDocumentMapper.insertKnowledgeDocumentLineList(lineList);
+        if (CollectionUtils.isNotEmpty(knowledgeDocumentLineListTmp)) {
+            knowledgeDocumentMapper.insertKnowledgeDocumentLineList(knowledgeDocumentLineListTmp);
+            knowledgeDocumentLineListTmp.clear();
         }
         KnowledgeDocumentVersionVo updateVo = new KnowledgeDocumentVersionVo();
         updateVo.setId(versionId);

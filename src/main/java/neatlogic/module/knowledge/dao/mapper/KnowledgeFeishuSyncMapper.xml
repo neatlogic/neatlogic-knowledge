@@ -188,7 +188,7 @@
             (#{uuid}, #{fileId})
     </insert>
 
-    <select id="getSyncMediasMappingFileIdByUuid" parameterType="java.lang.String">
+    <select id="getSyncMediasMappingFileIdByUuid" parameterType="java.lang.String" resultType="java.lang.Long">
         SELECT
             `file_id`
         FROM `knowledge_sync_medias_mapping`

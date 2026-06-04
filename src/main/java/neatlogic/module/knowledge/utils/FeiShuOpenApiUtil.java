@@ -16,7 +16,6 @@ import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.common.util.FileUtil;
 import neatlogic.framework.file.dto.FileVo;
-import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncConfigVo;
 import neatlogic.framework.util.HttpRequestUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -43,13 +42,14 @@ public class FeiShuOpenApiUtil {
 
     /**
      *
-     * @param config
+     * @param appId
+     * @param appSecret
      * @return
      */
-    public static String getTenantAccessToken(KnowledgeFeishuSyncConfigVo config) {
+    public static String getTenantAccessToken(String appId, String appSecret) {
         JSONObject body = new JSONObject();
-        body.put("app_id", config.getAppId());
-        body.put("app_secret", config.getAppSecret());
+        body.put("app_id", appId);
+        body.put("app_secret", appSecret);
         JSONObject result = HttpRequestUtil.post(TENANT_ACCESS_TOKEN_INTERNAL_URL)
                 .setPayload(body.toJSONString())
                 .sendRequest()
@@ -307,7 +307,7 @@ public class FeiShuOpenApiUtil {
         return result;
     }
 
-    public static JSONObject getDocumentBlocks(KnowledgeFeishuSyncConfigVo config, String objToken, String tenantAccessToken) {
+    public static JSONObject getDocumentBlocks(String objToken, String tenantAccessToken) {
         JSONArray allItems = new JSONArray();
         String url = DOCUMENT_BLOCKS_URL.replace(":document_id", objToken);
         String pageToken = null;

@@ -9,6 +9,8 @@ public interface KnowledgeFeishuSyncService {
 
     KnowledgeFeishuSyncConfigVo getConfig(Long id);
 
+    JSONObject getFeiShuAppCredentials();
+
     Long saveConfig(KnowledgeFeishuSyncConfigVo vo);
 
     void updateStatus(Long id, Integer isActive);

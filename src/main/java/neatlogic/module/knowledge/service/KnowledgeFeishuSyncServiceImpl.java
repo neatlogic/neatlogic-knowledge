@@ -2,7 +2,9 @@ package neatlogic.module.knowledge.service;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
+import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.exception.type.ParamNotExistsException;
+import neatlogic.framework.knowledge.constvalue.KnowledgeTenantConfig;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
@@ -50,6 +52,13 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
     @Override
     public KnowledgeFeishuSyncConfigVo getConfig(Long id) {
         return knowledgeFeishuSyncMapper.getConfigById(id);
+    }
+
+    @Override
+    public JSONObject getFeiShuAppCredentials() {
+        String appId = ConfigManager.getConfig(KnowledgeTenantConfig.FEISHU_APP_ID);
+        String appSecret = ConfigManager.getConfig(KnowledgeTenantConfig.FEISHU_APP_SECRET);
+        return new JSONObject().fluentPut("appId", appId).fluentPut("appSecret", appSecret);
     }
 
     @Override

@@ -51,7 +51,7 @@ public interface KnowledgeFeishuSyncMapper {
 
     List<KnowledgeFeishuSyncDocumentVo> getSyncDocumentListByNodeTokenList(List<String> nodeTokenList);
 
-    KnowledgeFeishuSyncDocumentVo getSyncDocumentByNodeToken(@Param("configId") Long configId, @Param("nodeToken") String nodeToken);
+    KnowledgeFeishuSyncDocumentVo getSyncDocumentByNodeToken(String nodeToken);
 
 //    KnowledgeFeishuSyncDocumentVo getSyncDocumentByDocumentId(Long knowledgeDocumentId);
 

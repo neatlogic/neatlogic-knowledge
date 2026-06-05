@@ -157,7 +157,7 @@
             `knowledge_document_id` AS knowledgeDocumentId,
             `knowledge_document_version_id` AS knowledgeDocumentVersionId,
             `status`,
-            `config`,
+            `config` AS configStr,
             `lcu`,
             `lcd`
         FROM `knowledge_feishu_sync_document`
@@ -179,7 +179,7 @@
             `knowledge_document_id` AS knowledgeDocumentId,
             `knowledge_document_version_id` AS knowledgeDocumentVersionId,
             `status`,
-            `config`,
+            `config` AS configStr,
             `lcu`,
             `lcd`
         FROM `knowledge_feishu_sync_document`
@@ -198,7 +198,7 @@
         INSERT INTO `knowledge_feishu_sync_document`
         (`app_id`, `title`, `node_token`, `obj_token`, `obj_type`, `update_time`, `knowledge_document_id`, `knowledge_document_version_id`, `knowledge_document_type_uuid`, `status`, `config`, `lcu`, `lcd`)
         VALUES
-        (#{appId}, #{title}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{knowledgeDocumentId}, #{knowledgeDocumentVersionId}, #{knowledgeDocumentTypeUuid}, #{status}, #{config}, #{lcu}, NOW(3))
+        (#{appId}, #{title}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{knowledgeDocumentId}, #{knowledgeDocumentVersionId}, #{knowledgeDocumentTypeUuid}, #{status}, #{configStr}, #{lcu}, NOW(3))
     </insert>
 
     <update id="updateSyncDocument">
@@ -213,7 +213,7 @@
             `knowledge_document_version_id` = #{knowledgeDocumentVersionId},
             `knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid},
             `status` = #{status},
-            `config` = #{config},
+            `config` = #{configStr},
             `lcu` = #{lcu},
             `lcd` = NOW(3)
         WHERE `node_token` = #{nodeToken}

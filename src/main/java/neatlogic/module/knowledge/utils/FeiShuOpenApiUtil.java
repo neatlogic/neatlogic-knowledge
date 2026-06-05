@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.common.util.FileUtil;
+import neatlogic.framework.common.util.RC4Util;
 import neatlogic.framework.file.dto.FileVo;
 import neatlogic.framework.util.HttpRequestUtil;
 import org.apache.commons.collections4.CollectionUtils;
@@ -49,7 +50,7 @@ public class FeiShuOpenApiUtil {
     public static String getTenantAccessToken(String appId, String appSecret) {
         JSONObject body = new JSONObject();
         body.put("app_id", appId);
-        body.put("app_secret", appSecret);
+        body.put("app_secret", RC4Util.decrypt(appSecret));
         JSONObject result = HttpRequestUtil.post(TENANT_ACCESS_TOKEN_INTERNAL_URL)
                 .setPayload(body.toJSONString())
                 .sendRequest()

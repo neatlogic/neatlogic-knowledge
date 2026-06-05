@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.dto.BasePageVo;
+import neatlogic.framework.knowledge.dto.feishu.FeiShuAppCredentialsVo;
 import neatlogic.framework.knowledge.dto.feishu.FeishuNode;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
@@ -35,16 +37,24 @@ public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
     public String getName() { return "获取飞书Wiki节点列表"; }
 
     @Input({
-            @Param(name = "spaceId", type = ApiParamType.LONG, isRequired = true, desc = "Wiki空间ID")
+            @Param(name = "spaceId", type = ApiParamType.LONG, isRequired = true, desc = "Wiki空间ID"),
+            @Param(name = "parentNodeToken", type = ApiParamType.STRING, desc = "父节点nodeToken")
     })
     @Description(desc = "获取飞书Wiki节点列表")
     @Override
     public Object myDoService(JSONObject jsonObj) {
         Long spaceId = jsonObj.getLong("spaceId");
-        JSONObject feiShuAppCredentials = knowledgeFeishuSyncService.getFeiShuAppCredentials();
-        String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(feiShuAppCredentials.getString("appId"), feiShuAppCredentials.getString("appSecret"));
-        List<FeishuNode> feishuNodeList = loadWikiNodes(spaceId, null, new ArrayList<>(), tenantAccessToken);
-        return TableResultUtil.getResult(feishuNodeList);
+        String parentNodeToken = jsonObj.getString("parentNodeToken");
+        FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeishuSyncService.getFeiShuAppCredentials();
+        String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(feiShuAppCredentials.getAppId(), feiShuAppCredentials.getAppSecret());
+        List<FeishuNode> feishuNodeList = loadWikiNodes(spaceId, parentNodeToken, new ArrayList<>(), tenantAccessToken);
+        int rowNum = feishuNodeList.size();
+        int pageSize = ((rowNum / 20) + (rowNum % 20 > 0 ? 1 : 0)) * 20;
+        BasePageVo basePageVo = new BasePageVo();
+        basePageVo.setCurrentPage(1);
+        basePageVo.setPageSize(Math.min(pageSize, 100));
+        basePageVo.setRowNum(rowNum);
+        return TableResultUtil.getResult(feishuNodeList, basePageVo);
     }
 
     private List<FeishuNode> loadWikiNodes(Long spaceId, String parentNodeToken, List<String> path, String tenantAccessToken) {
@@ -64,11 +74,11 @@ public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
                     node.getPath().add(node.getTitle());
                 }
                 nodeList.add(node);
-                if (Objects.equals(item.getBoolean("has_child"), true)) {
-                    List<FeishuNode> children = loadWikiNodes(spaceId, node.getNodeToken(), node.getPath(), tenantAccessToken);
+//                if (Objects.equals(item.getBoolean("has_child"), true)) {
+//                    List<FeishuNode> children = loadWikiNodes(spaceId, node.getNodeToken(), node.getPath(), tenantAccessToken);
 //                    node.setChildren(children);
-                    nodeList.addAll(children);
-                }
+////                    nodeList.addAll(children);
+//                }
             }
         }
         return nodeList;

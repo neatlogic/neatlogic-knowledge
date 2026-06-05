@@ -46,6 +46,7 @@ public class GetFeiShuAppCredentialsApi extends PrivateApiComponentBase {
     @Output({
             @Param(name = "appId", type = ApiParamType.STRING, isRequired = true, desc = "App ID"),
             @Param(name = "appSecret", type = ApiParamType.STRING, isRequired = true, desc = "App Secret"),
+            @Param(name = "knowledgeCircleId", type = ApiParamType.LONG, isRequired = true, desc = "知识圈 ID"),
     })
     @Description(desc = "保存飞书应用凭证")
     @Override

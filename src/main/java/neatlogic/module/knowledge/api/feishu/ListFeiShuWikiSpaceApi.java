@@ -3,6 +3,7 @@ package neatlogic.module.knowledge.api.feishu;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.knowledge.dto.feishu.FeiShuAppCredentialsVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -31,8 +32,8 @@ public class ListFeiShuWikiSpaceApi extends PrivateApiComponentBase {
     @Description(desc = "获取飞书 Wiki 空间列表")
     @Override
     public Object myDoService(JSONObject jsonObj) {
-        JSONObject feiShuAppCredentials = knowledgeFeishuSyncService.getFeiShuAppCredentials();
-        String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(feiShuAppCredentials.getString("appId"), feiShuAppCredentials.getString("appSecret"));
+        FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeishuSyncService.getFeiShuAppCredentials();
+        String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(feiShuAppCredentials.getAppId(), feiShuAppCredentials.getAppSecret());
         JSONObject resultObj = FeiShuOpenApiUtil.getFeishuWikiSpaces(tenantAccessToken);
         JSONArray wikiSpaceList = new JSONArray();
         JSONObject data = resultObj.getJSONObject("data");

@@ -292,7 +292,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
     }
 
     private JSONObject saveFeishuDocument(KnowledgeFeishuSyncConfigVo config, FeiShuNodeVo node, String typeUuid, String tenantAccessToken) {
-        KnowledgeFeishuSyncDocumentVo mapping = knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(config.getId(), node.getNodeToken());
+        KnowledgeFeishuSyncDocumentVo mapping = knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(node.getNodeToken());
         KnowledgeDocumentVo documentVo = new KnowledgeDocumentVo();
         if (mapping == null) {
             documentVo.setTitle(node.getTitle());
@@ -347,7 +347,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         vo.setKnowledgeDocumentTypeUuid(typeUuid);
         vo.setTitle(node.getTitle());
         vo.setUpdateTime(node.getUpdateTime());
-        if (knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(config.getId(), node.getNodeToken()) == null) {
+        if (knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(node.getNodeToken()) == null) {
             knowledgeFeishuSyncMapper.insertSyncDocument(vo);
         } else {
             knowledgeFeishuSyncMapper.updateSyncDocument(vo);

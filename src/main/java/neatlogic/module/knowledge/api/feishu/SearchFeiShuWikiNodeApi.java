@@ -51,9 +51,12 @@ public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) {
         List<KnowledgeFeishuSyncDocumentVo> tbodyList = new ArrayList<>();
+        FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeishuSyncService.getFeiShuAppCredentials();
+        if (feiShuAppCredentials == null) {
+            return TableResultUtil.getResult(tbodyList);
+        }
         Long spaceId = jsonObj.getLong("spaceId");
         String parentNodeToken = jsonObj.getString("parentNodeToken");
-        FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeishuSyncService.getFeiShuAppCredentials();
         String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(feiShuAppCredentials.getAppId(), feiShuAppCredentials.getAppSecret());
         List<FeiShuNodeVo> feiShuNodeVoList = loadWikiNodes(spaceId, parentNodeToken, new ArrayList<>(), tenantAccessToken);
         if (CollectionUtils.isNotEmpty(feiShuNodeVoList)) {

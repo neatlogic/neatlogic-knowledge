@@ -32,15 +32,17 @@ public class ListFeiShuWikiSpaceApi extends PrivateApiComponentBase {
     @Description(desc = "获取飞书 Wiki 空间列表")
     @Override
     public Object myDoService(JSONObject jsonObj) {
-        FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeishuSyncService.getFeiShuAppCredentials();
-        String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(feiShuAppCredentials.getAppId(), feiShuAppCredentials.getAppSecret());
-        JSONObject resultObj = FeiShuOpenApiUtil.getFeishuWikiSpaces(tenantAccessToken);
         JSONArray wikiSpaceList = new JSONArray();
-        JSONObject data = resultObj.getJSONObject("data");
-        if (MapUtils.isNotEmpty(data)) {
-            JSONArray items = data.getJSONArray("items");
-            if (CollectionUtils.isNotEmpty(items)) {
-                wikiSpaceList.addAll(items);
+        FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeishuSyncService.getFeiShuAppCredentials();
+        if (feiShuAppCredentials != null) {
+            String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(feiShuAppCredentials.getAppId(), feiShuAppCredentials.getAppSecret());
+            JSONObject resultObj = FeiShuOpenApiUtil.getFeishuWikiSpaces(tenantAccessToken);
+            JSONObject data = resultObj.getJSONObject("data");
+            if (MapUtils.isNotEmpty(data)) {
+                JSONArray items = data.getJSONArray("items");
+                if (CollectionUtils.isNotEmpty(items)) {
+                    wikiSpaceList.addAll(items);
+                }
             }
         }
         return TableResultUtil.getResult(wikiSpaceList);

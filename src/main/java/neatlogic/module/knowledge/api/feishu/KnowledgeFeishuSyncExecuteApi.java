@@ -2,11 +2,9 @@ package neatlogic.module.knowledge.api.feishu;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.common.util.FileUtil;
 import neatlogic.framework.file.dao.mapper.FileMapper;
 import neatlogic.framework.file.dto.FileVo;
 import neatlogic.framework.fulltextindex.core.FullTextIndexHandlerFactory;
@@ -16,7 +14,7 @@ import neatlogic.framework.knowledge.constvalue.FeiShuBlockType;
 import neatlogic.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
-import neatlogic.framework.knowledge.dto.feishu.FeishuNode;
+import neatlogic.framework.knowledge.dto.feishu.FeiShuNodeVo;
 import neatlogic.module.knowledge.dao.mapper.KnowledgeFeishuSyncMapper;
 import neatlogic.framework.knowledge.dto.*;
 import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncAuditVo;
@@ -25,7 +23,6 @@ import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_FEISHU_SYNC_MODIFY;
 import neatlogic.module.knowledge.service.KnowledgeDocumentTypeService;
@@ -37,13 +34,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.*;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
 
 @Service
@@ -118,7 +111,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
 //                            continue;
 //                        }
                         KnowledgeDocumentTypeVo knowledgeType = getOrCreateKnowledgeType(spaceName, "0", knowledgeCircleId);
-                        List<FeishuNode> nodes = loadWikiNodes(spaceId, null, new ArrayList<>(), tenantAccessToken);
+                        List<FeiShuNodeVo> nodes = loadWikiNodes(spaceId, null, new ArrayList<>(), tenantAccessToken);
                         saveNodes(spaceId, spaceName, nodes, config, knowledgeType, audit, tenantAccessToken);
                     }
                 }
@@ -132,8 +125,8 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         knowledgeDocumentTypeService.rebuildLeftRightCode(knowledgeCircleId);
         return audit;
     }
-    private void saveNodes(Long spaceId, String spaceName, List<FeishuNode> nodes, KnowledgeFeishuSyncConfigVo config, KnowledgeDocumentTypeVo knowledgeType, KnowledgeFeishuSyncAuditVo auditVo, String tenantAccessToken) {
-        for (FeishuNode node : nodes) {
+    private void saveNodes(Long spaceId, String spaceName, List<FeiShuNodeVo> nodes, KnowledgeFeishuSyncConfigVo config, KnowledgeDocumentTypeVo knowledgeType, KnowledgeFeishuSyncAuditVo auditVo, String tenantAccessToken) {
+        for (FeiShuNodeVo node : nodes) {
             System.out.println("node = " + JSONArray.toJSON(node));
             if (!isDocumentNode(node)) {
                 continue;
@@ -252,8 +245,8 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         knowledgeFeishuSyncMapper.updateAudit(audit);
     }
 
-    private List<FeishuNode> loadWikiNodes(Long spaceId, String parentNodeToken, List<String> path, String tenantAccessToken) {
-        List<FeishuNode> nodeList = new ArrayList<>();
+    private List<FeiShuNodeVo> loadWikiNodes(Long spaceId, String parentNodeToken, List<String> path, String tenantAccessToken) {
+        List<FeiShuNodeVo> nodeList = new ArrayList<>();
         JSONObject result = FeiShuOpenApiUtil.getFeishuWikiNodes(spaceId, parentNodeToken, tenantAccessToken);
         JSONObject data = result.getJSONObject("data");
         if (data == null) {
@@ -263,14 +256,14 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(items)) {
             for (int i = 0; i < items.size(); i++) {
                 JSONObject item = items.getJSONObject(i);
-                FeishuNode node = new FeishuNode(item);
+                FeiShuNodeVo node = new FeiShuNodeVo(item);
                 node.getPath().addAll(path);
                 if (!isDocumentNode(node)) {
                     node.getPath().add(node.getTitle());
                 }
                 nodeList.add(node);
                 if (Objects.equals(item.getBoolean("has_child"), true)) {
-                    List<FeishuNode> children = loadWikiNodes(spaceId, node.getNodeToken(), node.getPath(), tenantAccessToken);
+                    List<FeiShuNodeVo> children = loadWikiNodes(spaceId, node.getNodeToken(), node.getPath(), tenantAccessToken);
                     node.setChildren(children);
                 }
             }
@@ -294,11 +287,11 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return fileVo;
     }
 
-    private boolean isDocumentNode(FeishuNode node) {
+    private boolean isDocumentNode(FeiShuNodeVo node) {
         return "docx".equals(node.getObjType()) || "doc".equals(node.getObjType());
     }
 
-    private JSONObject saveFeishuDocument(KnowledgeFeishuSyncConfigVo config, FeishuNode node, String typeUuid, String tenantAccessToken) {
+    private JSONObject saveFeishuDocument(KnowledgeFeishuSyncConfigVo config, FeiShuNodeVo node, String typeUuid, String tenantAccessToken) {
         KnowledgeFeishuSyncDocumentVo mapping = knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(config.getId(), node.getNodeToken());
         KnowledgeDocumentVo documentVo = new KnowledgeDocumentVo();
         if (mapping == null) {
@@ -344,7 +337,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return new JSONObject().fluentPut("knowledgeDocumentId", documentVo.getId()).fluentPut("unprocessedItems", unprocessedItems);
     }
 
-    private void upsertMapping(KnowledgeFeishuSyncConfigVo config, FeishuNode node, String typeUuid, Long documentId) {
+    private void upsertMapping(KnowledgeFeishuSyncConfigVo config, FeiShuNodeVo node, String typeUuid, Long documentId) {
         KnowledgeFeishuSyncDocumentVo vo = new neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo();
         vo.setConfigId(config.getId());
         vo.setNodeToken(node.getNodeToken());
@@ -353,7 +346,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         vo.setKnowledgeDocumentId(documentId);
         vo.setKnowledgeDocumentTypeUuid(typeUuid);
         vo.setTitle(node.getTitle());
-        vo.setFeishuUpdateTime(node.getUpdateTime());
+        vo.setUpdateTime(node.getUpdateTime());
         if (knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(config.getId(), node.getNodeToken()) == null) {
             knowledgeFeishuSyncMapper.insertSyncDocument(vo);
         } else {
@@ -875,7 +868,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         return knowledgeDocumentLineVo;
     }
 
-    private List<KnowledgeDocumentLineVo> getFeishuDocumentLines(KnowledgeFeishuSyncConfigVo config, FeishuNode node, String tenantAccessToken, JSONArray unprocessedItems) {
+    private List<KnowledgeDocumentLineVo> getFeishuDocumentLines(KnowledgeFeishuSyncConfigVo config, FeiShuNodeVo node, String tenantAccessToken, JSONArray unprocessedItems) {
         List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
         try {
             System.out.println("node.title = " + node.getTitle());

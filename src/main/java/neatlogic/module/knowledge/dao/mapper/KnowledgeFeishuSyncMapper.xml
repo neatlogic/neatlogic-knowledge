@@ -145,41 +145,78 @@
         </if>
     </select>
 
-    <select id="getSyncDocumentByNodeToken" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo">
-        SELECT `config_id` AS configId, `node_token` AS nodeToken, `obj_token` AS objToken, `obj_type` AS objType,
-               `knowledge_document_id` AS knowledgeDocumentId, `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
-               `title`, `feishu_update_time` AS feishuUpdateTime, `last_sync_time` AS lastSyncTime
+    <select id="getSyncDocumentListByNodeTokenList" parameterType="java.lang.String" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo">
+        SELECT
+            `app_id` AS appId,
+            `title`,
+            `node_token` AS nodeToken,
+            `obj_token` AS objToken,
+            `obj_type` AS objType,
+            `update_time` AS updateTime,
+            `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
+            `knowledge_document_id` AS knowledgeDocumentId,
+            `knowledge_document_version_id` AS knowledgeDocumentVersionId,
+            `status`,
+            `config`,
+            `lcu`,
+            `lcd`
         FROM `knowledge_feishu_sync_document`
-        WHERE `config_id` = #{configId}
-          AND `node_token` = #{nodeToken}
+        WHERE `node_token` IN
+        <foreach collection="list" item="nodeToken" open="(" separator="," close=")">
+            #{nodeToken}
+        </foreach>
     </select>
 
-    <select id="getSyncDocumentByDocumentId" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo">
+    <select id="getSyncDocumentByNodeToken" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo">
+        SELECT
+            `app_id` AS appId,
+            `title`,
+            `node_token` AS nodeToken,
+            `obj_token` AS objToken,
+            `obj_type` AS objType,
+            `update_time` AS updateTime,
+            `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
+            `knowledge_document_id` AS knowledgeDocumentId,
+            `knowledge_document_version_id` AS knowledgeDocumentVersionId,
+            `status`,
+            `config`,
+            `lcu`,
+            `lcd`
+        FROM `knowledge_feishu_sync_document`
+        where `node_token` = #{nodeToken}
+    </select>
+
+    <!--<select id="getSyncDocumentByDocumentId" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo">
         SELECT `config_id` AS configId, `node_token` AS nodeToken, `obj_token` AS objToken, `obj_type` AS objType,
                `knowledge_document_id` AS knowledgeDocumentId, `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
                `title`, `feishu_update_time` AS feishuUpdateTime, `last_sync_time` AS lastSyncTime
         FROM `knowledge_feishu_sync_document`
         WHERE `knowledge_document_id` = #{value}
-    </select>
+    </select>-->
 
     <insert id="insertSyncDocument">
         INSERT INTO `knowledge_feishu_sync_document`
-        (`config_id`, `node_token`, `obj_token`, `obj_type`, `knowledge_document_id`, `knowledge_document_type_uuid`, `title`, `feishu_update_time`, `last_sync_time`)
+        (`app_id`, `title`, `node_token`, `obj_token`, `obj_type`, `update_time`, `knowledge_document_id`, `knowledge_document_version_id`, `knowledge_document_type_uuid`, `status`, `config`, `lcu`, `lcd`)
         VALUES
-        (#{configId}, #{nodeToken}, #{objToken}, #{objType}, #{knowledgeDocumentId}, #{knowledgeDocumentTypeUuid}, #{title}, #{feishuUpdateTime}, NOW(3))
+        (#{appId}, #{title}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{knowledgeDocumentId}, #{knowledgeDocumentVersionId}, #{knowledgeDocumentTypeUuid}, #{status}, #{config}, #{lcu}, NOW(3))
     </insert>
 
     <update id="updateSyncDocument">
         UPDATE `knowledge_feishu_sync_document`
-        SET `obj_token` = #{objToken},
-            `obj_type` = #{objType},
-            `knowledge_document_id` = #{knowledgeDocumentId},
-            `knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid},
+        SET
+            `app_id` = #{appId},
             `title` = #{title},
-            `feishu_update_time` = #{feishuUpdateTime},
-            `last_sync_time` = NOW(3)
-        WHERE `config_id` = #{configId}
-          AND `node_token` = #{nodeToken}
+            `obj_token` = #{objToken},
+            `obj_type` = #{objType},
+            `update_time` = #{updateTime},
+            `knowledge_document_id` = #{knowledgeDocumentId},
+            `knowledge_document_version_id` = #{knowledgeDocumentVersionId},
+            `knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid},
+            `status` = #{status},
+            `config` = #{config},
+            `lcu` = #{lcu},
+            `lcd` = NOW(3)
+        WHERE `node_token` = #{nodeToken}
     </update>
 
     <insert id="insertSyncMediasMapping">

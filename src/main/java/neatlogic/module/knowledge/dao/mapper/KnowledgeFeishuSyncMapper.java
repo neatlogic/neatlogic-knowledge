@@ -49,9 +49,11 @@ public interface KnowledgeFeishuSyncMapper {
 
     List<KnowledgeFeishuSyncAuditVo> searchAudit(KnowledgeFeishuSyncAuditVo vo);
 
+    List<KnowledgeFeishuSyncDocumentVo> getSyncDocumentListByNodeTokenList(List<String> nodeTokenList);
+
     KnowledgeFeishuSyncDocumentVo getSyncDocumentByNodeToken(@Param("configId") Long configId, @Param("nodeToken") String nodeToken);
 
-    KnowledgeFeishuSyncDocumentVo getSyncDocumentByDocumentId(Long knowledgeDocumentId);
+//    KnowledgeFeishuSyncDocumentVo getSyncDocumentByDocumentId(Long knowledgeDocumentId);
 
     int insertSyncDocument(KnowledgeFeishuSyncDocumentVo vo);
 

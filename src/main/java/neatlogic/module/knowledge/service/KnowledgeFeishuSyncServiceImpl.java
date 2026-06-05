@@ -8,6 +8,7 @@ import neatlogic.framework.knowledge.constvalue.KnowledgeTenantConfig;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
+import neatlogic.framework.knowledge.dto.KnowledgeCircleVo;
 import neatlogic.framework.knowledge.dto.feishu.FeiShuAppCredentialsVo;
 import neatlogic.module.knowledge.dao.mapper.KnowledgeFeishuSyncMapper;
 import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncAuditVo;
@@ -62,9 +63,16 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
         String knowledgeCircleIdStr = ConfigManager.getConfig(KnowledgeTenantConfig.FEISHU_WIKI_KNOWLEDGE_CIRCLE_ID);
         Long knowledgeCircleId = null;
         if (StringUtils.isNumeric(knowledgeCircleIdStr)) {
-            knowledgeCircleId = Long.parseLong(knowledgeCircleIdStr);
+            Long circleId = Long.parseLong(knowledgeCircleIdStr);
+            KnowledgeCircleVo knowledgeCircleVo = knowledgeCircleMapper.getKnowledgeCircleById(circleId);
+            if (knowledgeCircleVo != null) {
+                knowledgeCircleId = knowledgeCircleVo.getId();
+            }
         }
-        return new FeiShuAppCredentialsVo(appId, appSecret, knowledgeCircleId);
+        if (StringUtils.isNotBlank(appId) && StringUtils.isNotBlank(appSecret) && knowledgeCircleId != null) {
+            return new FeiShuAppCredentialsVo(appId, appSecret, knowledgeCircleId);
+        }
+        return null;
 //        return new JSONObject().fluentPut("appId", appId).fluentPut("appSecret", appSecret).fluentPut("knowledgeCircleId", knowledgeCircleId);
     }
 

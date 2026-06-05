@@ -40,6 +40,7 @@ public class FeiShuOpenApiUtil {
     private static final String DOCUMENT_BLOCKS_URL = "https://open.feishu.cn/open-apis/docx/v1/documents/:document_id/blocks";
     private static final String GET_NODE_URL = "https://open.feishu.cn/open-apis/wiki/v2/spaces/get_node";
     private static final String MEDIAS_DOWNLOAD_URL = "https://open.feishu.cn/open-apis/drive/v1/medias/:file_token/download";
+    private static final String GET_SPACE_URL = "https://open.feishu.cn/open-apis/wiki/v2/spaces/:space_id";
 
     /**
      *
@@ -295,6 +296,35 @@ public class FeiShuOpenApiUtil {
         return resultObj;
     }
 
+    /**
+     * {
+     * 	"msg": "success",
+     * 	"code": 0,
+     * 	"data": {
+     * 		"node": {
+     * 			"owner": "ou_91b7dbc06db12a0e739bb61ef0d2ef4c",
+     * 			"creator": "ou_91b7dbc06db12a0e739bb61ef0d2ef4c",
+     * 			"node_creator": "ou_91b7dbc06db12a0e739bb61ef0d2ef4c",
+     * 			"obj_create_time": "1779071123",
+     * 			"node_token": "A1JXw9a6nisS7okNXuGciQQNnwc",
+     * 			"origin_space_id": "7397619128632180764",
+     * 			"title": "基础数据",
+     * 			"obj_edit_time": "1779275315",
+     * 			"node_type": "origin",
+     * 			"origin_node_token": "A1JXw9a6nisS7okNXuGciQQNnwc",
+     * 			"node_create_time": "1779071123",
+     * 			"obj_token": "DKJJddRlBoQEKQxGIOncoO8inqg",
+     * 			"obj_type": "docx",
+     * 			"has_child": false,
+     * 			"space_id": "7397619128632180764",
+     * 			"parent_node_token": "Lf9ywVj7ki2H91kmCNIc0WDFnhc"
+     * 		     }
+     *      }
+     * }
+     * @param nodeToken
+     * @param tenantAccessToken
+     * @return
+     */
     public static JSONObject getFeishuNodeInfo(String nodeToken, String tenantAccessToken) {
         JSONObject query = new JSONObject();
         query.put("token", nodeToken);
@@ -302,6 +332,27 @@ public class FeiShuOpenApiUtil {
                 .addHeader("Authorization", "Bearer " + tenantAccessToken)
                 .addHeader("Content-Type", "application/json; charset=utf-8")
                 .setQueryString(query);
+        JSONObject result = request.sendRequest().getResultJson();
+//        System.out.println("getFeishuNodeInfo result = " + result);
+        checkFeishuResult(result);
+        return result;
+    }
+
+    /**
+     *
+     * @param spaceId
+     * @param tenantAccessToken
+     * @return
+     */
+    public static JSONObject getFeishuSpaceInfo(Long spaceId, String tenantAccessToken) {
+//        JSONObject query = new JSONObject();
+//        query.put("token", nodeToken);
+        String url = GET_SPACE_URL.replace(":space_id", spaceId.toString());
+        HttpRequestUtil request = HttpRequestUtil.get(url)
+                .addHeader("Authorization", "Bearer " + tenantAccessToken)
+                .addHeader("Content-Type", "application/json; charset=utf-8")
+//                .setQueryString(query)
+                ;
         JSONObject result = request.sendRequest().getResultJson();
 //        System.out.println("getFeishuNodeInfo result = " + result);
         checkFeishuResult(result);

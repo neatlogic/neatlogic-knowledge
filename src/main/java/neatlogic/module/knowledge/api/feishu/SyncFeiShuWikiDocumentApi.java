@@ -215,7 +215,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
         JSONObject config = new JSONObject();
         KnowledgeDocumentVo documentVo = new KnowledgeDocumentVo();
         try {
-            KnowledgeFeishuSyncDocumentVo mapping = knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(node.getNodeToken());
+            KnowledgeFeiShuDocumentMappingVo mapping = knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(node.getNodeToken());
             if (mapping == null) {
                 documentVo.setTitle(node.getTitle());
                 documentVo.setKnowledgeCircleId(appCredentialsVo.getKnowledgeCircleId());
@@ -271,7 +271,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
     }
 
     private void upsertMapping(FeiShuAppCredentialsVo appCredentialsVo, FeiShuNodeVo node, KnowledgeDocumentVo documentVo, String status, JSONObject config) {
-        KnowledgeFeishuSyncDocumentVo vo = new neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo();
+        KnowledgeFeiShuDocumentMappingVo vo = new KnowledgeFeiShuDocumentMappingVo();
         vo.setAppId(appCredentialsVo.getAppId());
         vo.setTitle(node.getTitle());
         vo.setNodeToken(node.getNodeToken());

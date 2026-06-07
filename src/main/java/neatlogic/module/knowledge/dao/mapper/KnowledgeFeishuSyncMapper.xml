@@ -145,7 +145,7 @@
         </if>
     </select>
 
-    <select id="getSyncDocumentListByNodeTokenList" parameterType="java.lang.String" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo">
+    <select id="getSyncDocumentListByNodeTokenList" parameterType="java.lang.String" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         SELECT
             `app_id` AS appId,
             `title`,
@@ -160,14 +160,14 @@
             `config` AS configStr,
             `lcu`,
             `lcd`
-        FROM `knowledge_feishu_sync_document`
+        FROM `knowledge_feishu_document_mapping`
         WHERE `node_token` IN
         <foreach collection="list" item="nodeToken" open="(" separator="," close=")">
             #{nodeToken}
         </foreach>
     </select>
 
-    <select id="getSyncDocumentByNodeToken" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo">
+    <select id="getSyncDocumentByNodeToken" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         SELECT
             `app_id` AS appId,
             `title`,
@@ -182,11 +182,11 @@
             `config` AS configStr,
             `lcu`,
             `lcd`
-        FROM `knowledge_feishu_sync_document`
+        FROM `knowledge_feishu_document_mapping`
         where `node_token` = #{nodeToken}
     </select>
 
-    <!--<select id="getSyncDocumentByDocumentId" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo">
+    <!--<select id="getSyncDocumentByDocumentId" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         SELECT `config_id` AS configId, `node_token` AS nodeToken, `obj_token` AS objToken, `obj_type` AS objType,
                `knowledge_document_id` AS knowledgeDocumentId, `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
                `title`, `feishu_update_time` AS feishuUpdateTime, `last_sync_time` AS lastSyncTime
@@ -194,15 +194,15 @@
         WHERE `knowledge_document_id` = #{value}
     </select>-->
 
-    <insert id="insertSyncDocument">
-        INSERT INTO `knowledge_feishu_sync_document`
+    <insert id="insertSyncDocument" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+        INSERT INTO `knowledge_feishu_document_mapping`
         (`app_id`, `title`, `node_token`, `obj_token`, `obj_type`, `update_time`, `knowledge_document_id`, `knowledge_document_version_id`, `knowledge_document_type_uuid`, `status`, `config`, `lcu`, `lcd`)
         VALUES
         (#{appId}, #{title}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{knowledgeDocumentId}, #{knowledgeDocumentVersionId}, #{knowledgeDocumentTypeUuid}, #{status}, #{configStr}, #{lcu}, NOW(3))
     </insert>
 
-    <update id="updateSyncDocument">
-        UPDATE `knowledge_feishu_sync_document`
+    <update id="updateSyncDocument" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+        UPDATE `knowledge_feishu_document_mapping`
         SET
             `app_id` = #{appId},
             `title` = #{title},
@@ -220,7 +220,7 @@
     </update>
 
     <insert id="insertSyncMediasMapping">
-        INSERT INTO `knowledge_sync_medias_mapping` (`uuid`, `file_id`)
+        INSERT INTO `knowledge_feishu_medias_mapping` (`uuid`, `file_id`)
         VALUES
             (#{uuid}, #{fileId})
     </insert>
@@ -228,12 +228,12 @@
     <select id="getSyncMediasMappingFileIdByUuid" parameterType="java.lang.String" resultType="java.lang.Long">
         SELECT
             `file_id`
-        FROM `knowledge_sync_medias_mapping`
+        FROM `knowledge_feishu_medias_mapping`
         WHERE `uuid` = #{value}
     </select>
 
     <update id="updateSyncDocumentStatusByNodeToken">
-        UPDATE `knowledge_feishu_sync_document`
+        UPDATE `knowledge_feishu_document_mapping`
         SET
             `status` = #{status}
         WHERE `node_token` = #{nodeToken}

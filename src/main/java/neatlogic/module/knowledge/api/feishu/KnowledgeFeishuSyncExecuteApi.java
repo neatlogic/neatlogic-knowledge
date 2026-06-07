@@ -19,7 +19,7 @@ import neatlogic.module.knowledge.dao.mapper.KnowledgeFeishuSyncMapper;
 import neatlogic.framework.knowledge.dto.*;
 import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncAuditVo;
 import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncConfigVo;
-import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo;
+import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -292,7 +292,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
     }
 
     private JSONObject saveFeishuDocument(KnowledgeFeishuSyncConfigVo config, FeiShuNodeVo node, String typeUuid, String tenantAccessToken) {
-        KnowledgeFeishuSyncDocumentVo mapping = knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(node.getNodeToken());
+        KnowledgeFeiShuDocumentMappingVo mapping = knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(node.getNodeToken());
         KnowledgeDocumentVo documentVo = new KnowledgeDocumentVo();
         if (mapping == null) {
             documentVo.setTitle(node.getTitle());
@@ -338,7 +338,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
     }
 
     private void upsertMapping(KnowledgeFeishuSyncConfigVo config, FeiShuNodeVo node, String typeUuid, Long documentId) {
-        KnowledgeFeishuSyncDocumentVo vo = new neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo();
+        KnowledgeFeiShuDocumentMappingVo vo = new KnowledgeFeiShuDocumentMappingVo();
         vo.setConfigId(config.getId());
         vo.setNodeToken(node.getNodeToken());
         vo.setObjToken(node.getObjToken());

@@ -9,7 +9,7 @@ import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.knowledge.constvalue.Status;
 import neatlogic.framework.knowledge.dto.feishu.FeiShuAppCredentialsVo;
 import neatlogic.framework.knowledge.dto.feishu.FeiShuNodeVo;
-import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo;
+import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
 import neatlogic.framework.restful.annotation.OperationType;
@@ -51,7 +51,7 @@ public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
     @Description(desc = "获取飞书Wiki节点列表")
     @Override
     public Object myDoService(JSONObject jsonObj) {
-        List<KnowledgeFeishuSyncDocumentVo> tbodyList = new ArrayList<>();
+        List<KnowledgeFeiShuDocumentMappingVo> tbodyList = new ArrayList<>();
         FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeishuSyncService.getFeiShuAppCredentials();
         if (feiShuAppCredentials == null) {
             return TableResultUtil.getResult(tbodyList);
@@ -62,32 +62,32 @@ public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
         List<FeiShuNodeVo> feiShuNodeVoList = loadWikiNodes(spaceId, parentNodeToken, new ArrayList<>(), tenantAccessToken);
         if (CollectionUtils.isNotEmpty(feiShuNodeVoList)) {
             List<String> nodeTokenList = feiShuNodeVoList.stream().map(FeiShuNodeVo::getNodeToken).collect(Collectors.toList());
-            List<KnowledgeFeishuSyncDocumentVo> syncDocumentList = knowledgeFeishuSyncMapper.getSyncDocumentListByNodeTokenList(nodeTokenList);
-            Map<String, KnowledgeFeishuSyncDocumentVo> map = syncDocumentList.stream().collect(Collectors.toMap(KnowledgeFeishuSyncDocumentVo::getNodeToken, e -> e));
+            List<KnowledgeFeiShuDocumentMappingVo> syncDocumentList = knowledgeFeishuSyncMapper.getSyncDocumentListByNodeTokenList(nodeTokenList);
+            Map<String, KnowledgeFeiShuDocumentMappingVo> map = syncDocumentList.stream().collect(Collectors.toMap(KnowledgeFeiShuDocumentMappingVo::getNodeToken, e -> e));
             for (FeiShuNodeVo feiShuNodeVo : feiShuNodeVoList) {
-                KnowledgeFeishuSyncDocumentVo knowledgeFeishuSyncDocumentVo = map.get(feiShuNodeVo.getNodeToken());
-                if (knowledgeFeishuSyncDocumentVo != null) {
-                    knowledgeFeishuSyncDocumentVo.setTitle(feiShuNodeVo.getTitle());
-                    knowledgeFeishuSyncDocumentVo.setObjToken(feiShuNodeVo.getObjToken());
-                    knowledgeFeishuSyncDocumentVo.setObjType(feiShuNodeVo.getObjType());
-                    knowledgeFeishuSyncDocumentVo.setUpdateTime(feiShuNodeVo.getUpdateTime());
-                    knowledgeFeishuSyncDocumentVo.setHasChild(feiShuNodeVo.getHasChild());
-                    if (knowledgeFeishuSyncDocumentVo.getKnowledgeDocumentVersionId() == null) {
-                        knowledgeFeishuSyncDocumentVo.setKnowledgeDocumentVersionId(1L);
+                KnowledgeFeiShuDocumentMappingVo knowledgeFeiShuDocumentMappingVo = map.get(feiShuNodeVo.getNodeToken());
+                if (knowledgeFeiShuDocumentMappingVo != null) {
+                    knowledgeFeiShuDocumentMappingVo.setTitle(feiShuNodeVo.getTitle());
+                    knowledgeFeiShuDocumentMappingVo.setObjToken(feiShuNodeVo.getObjToken());
+                    knowledgeFeiShuDocumentMappingVo.setObjType(feiShuNodeVo.getObjType());
+                    knowledgeFeiShuDocumentMappingVo.setUpdateTime(feiShuNodeVo.getUpdateTime());
+                    knowledgeFeiShuDocumentMappingVo.setHasChild(feiShuNodeVo.getHasChild());
+                    if (knowledgeFeiShuDocumentMappingVo.getKnowledgeDocumentVersionId() == null) {
+                        knowledgeFeiShuDocumentMappingVo.setKnowledgeDocumentVersionId(1L);
                     }
-                    if (knowledgeFeishuSyncDocumentVo.getLcd() == null) {
-                        knowledgeFeishuSyncDocumentVo.setLcd(new Date());
+                    if (knowledgeFeiShuDocumentMappingVo.getLcd() == null) {
+                        knowledgeFeiShuDocumentMappingVo.setLcd(new Date());
                     }
-                    if (knowledgeFeishuSyncDocumentVo.getLcu() == null) {
-                        knowledgeFeishuSyncDocumentVo.setLcu(UserContext.get().getUserUuid());
+                    if (knowledgeFeiShuDocumentMappingVo.getLcu() == null) {
+                        knowledgeFeiShuDocumentMappingVo.setLcu(UserContext.get().getUserUuid());
                     }
-                    if (knowledgeFeishuSyncDocumentVo.getStatus() == null) {
-                        knowledgeFeishuSyncDocumentVo.setStatus(Status.NOT_SYNCED.getValue());
-                        knowledgeFeishuSyncDocumentVo.setStatusText(Status.NOT_SYNCED.getText());
+                    if (knowledgeFeiShuDocumentMappingVo.getStatus() == null) {
+                        knowledgeFeiShuDocumentMappingVo.setStatus(Status.NOT_SYNCED.getValue());
+                        knowledgeFeiShuDocumentMappingVo.setStatusText(Status.NOT_SYNCED.getText());
                     }
-                    tbodyList.add(knowledgeFeishuSyncDocumentVo);
+                    tbodyList.add(knowledgeFeiShuDocumentMappingVo);
                 } else {
-                    tbodyList.add(new KnowledgeFeishuSyncDocumentVo(feiShuAppCredentials.getAppId(), feiShuNodeVo));
+                    tbodyList.add(new KnowledgeFeiShuDocumentMappingVo(feiShuAppCredentials.getAppId(), feiShuNodeVo));
                 }
             }
         }

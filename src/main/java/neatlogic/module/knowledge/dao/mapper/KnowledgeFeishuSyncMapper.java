@@ -10,9 +10,9 @@
 
 package neatlogic.module.knowledge.dao.mapper;
 
+import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo;
 import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncAuditVo;
 import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncConfigVo;
-import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -49,15 +49,15 @@ public interface KnowledgeFeishuSyncMapper {
 
     List<KnowledgeFeishuSyncAuditVo> searchAudit(KnowledgeFeishuSyncAuditVo vo);
 
-    List<KnowledgeFeishuSyncDocumentVo> getSyncDocumentListByNodeTokenList(List<String> nodeTokenList);
+    List<KnowledgeFeiShuDocumentMappingVo> getSyncDocumentListByNodeTokenList(List<String> nodeTokenList);
 
-    KnowledgeFeishuSyncDocumentVo getSyncDocumentByNodeToken(String nodeToken);
+    KnowledgeFeiShuDocumentMappingVo getSyncDocumentByNodeToken(String nodeToken);
 
 //    KnowledgeFeishuSyncDocumentVo getSyncDocumentByDocumentId(Long knowledgeDocumentId);
 
-    int insertSyncDocument(KnowledgeFeishuSyncDocumentVo vo);
+    int insertSyncDocument(KnowledgeFeiShuDocumentMappingVo vo);
 
-    int updateSyncDocument(KnowledgeFeishuSyncDocumentVo vo);
+    int updateSyncDocument(KnowledgeFeiShuDocumentMappingVo vo);
 
     int insertSyncMediasMapping(@Param("uuid") String uuid, @Param("fileId") Long fileId);
 

@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_feishu_sync_config`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='飞书云文档同步配置';
 
-CREATE TABLE IF NOT EXISTS `knowledge_feishu_sync_document`
+CREATE TABLE IF NOT EXISTS `knowledge_feishu_document_mapping`
 (
     `config_id`                    BIGINT       NOT NULL COMMENT '同步配置 ID',
     `node_token`                   VARCHAR(100) NOT NULL COMMENT 'Wiki 节点 token',

@@ -178,6 +178,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         vo.setAppId(appCredentialsVo.getAppId());
         vo.setSpaceId(node.getSpaceId());
         vo.setTitle(node.getTitle());
+        vo.setParentNodeToken(node.getParentNodeToken());
         vo.setNodeToken(node.getNodeToken());
         vo.setObjToken(node.getObjToken());
         vo.setObjType(node.getObjType());

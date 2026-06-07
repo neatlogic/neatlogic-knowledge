@@ -53,13 +53,13 @@ public class FeiShuWikiThread extends NeatLogicThread {
         FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeiShuService.getFeiShuAppCredentials();
         String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(feiShuAppCredentials.getAppId(), feiShuAppCredentials.getAppSecret());
         for (FeiShuNodeVo feiShuNodeVo : feiShuNodeList) {
-            aaa(feiShuNodeVo, feiShuAppCredentials, tenantAccessToken);
+            saveNode(feiShuNodeVo, feiShuAppCredentials, tenantAccessToken);
         }
         knowledgeDocumentTypeService.rebuildLeftRightCode(feiShuAppCredentials.getKnowledgeCircleId());
     }
 
 
-    private void aaa(FeiShuNodeVo feiShuNodeVo, FeiShuAppCredentialsVo feiShuAppCredentials, String tenantAccessToken) {
+    private void saveNode(FeiShuNodeVo feiShuNodeVo, FeiShuAppCredentialsVo feiShuAppCredentials, String tenantAccessToken) {
         KnowledgeDocumentTypeVo knowledgeType = knowledgeFeiShuService.getOrCreateKnowledgeType(feiShuNodeVo.getSpaceName(), "0", feiShuAppCredentials.getKnowledgeCircleId());
         List<FeiShuNodeVo> parentList = new ArrayList<>();
         FeiShuNodeVo parent = feiShuNodeVo.getParent();

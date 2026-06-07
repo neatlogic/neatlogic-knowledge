@@ -64,7 +64,7 @@ public class FeiShuOpenApiUtil {
             "tenant_access_token": "t-g10462hfSE4CYZ3Y5DD6CCQNPSH3S4GOZZBPA4FG"
         }
          */
-        checkFeishuResult(result);
+        checkFeishuResult(TENANT_ACCESS_TOKEN_INTERNAL_URL, body, result);
         return result.getString("tenant_access_token");
     }
 
@@ -185,7 +185,7 @@ public class FeiShuOpenApiUtil {
                     .addHeader("Authorization", "Bearer " + tenantAccessToken)
                     .setQueryString(query);
             JSONObject result = request.sendRequest().getResultJson();
-            checkFeishuResult(result);
+            checkFeishuResult(WIKI_V2_SPACES_URL, query, result);
             JSONObject data = result.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {
                 pageToken = data.getString("page_token");
@@ -273,7 +273,7 @@ public class FeiShuOpenApiUtil {
                     .addHeader("Authorization", "Bearer " + tenantAccessToken)
                     .setQueryString(query);
             JSONObject result = request.sendRequest().getResultJson();
-            checkFeishuResult(result);
+            checkFeishuResult(url, query, result);
             JSONObject data = result.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {
                 hasMore = data.getBoolean("has_more");
@@ -330,7 +330,7 @@ public class FeiShuOpenApiUtil {
                 .addHeader("Content-Type", "application/json; charset=utf-8")
                 .setQueryString(query);
         JSONObject result = request.sendRequest().getResultJson();
-        checkFeishuResult(result);
+        checkFeishuResult(GET_NODE_URL, query, result);
         return result;
     }
 
@@ -350,7 +350,7 @@ public class FeiShuOpenApiUtil {
 //                .setQueryString(query)
                 ;
         JSONObject result = request.sendRequest().getResultJson();
-        checkFeishuResult(result);
+        checkFeishuResult(url, null, result);
         return result;
     }
 
@@ -369,7 +369,7 @@ public class FeiShuOpenApiUtil {
                     .addHeader("Authorization", "Bearer " + tenantAccessToken)
                     .setQueryString(query);
             JSONObject result = request.sendRequest().getResultJson();
-            checkFeishuResult(result);
+            checkFeishuResult(url, query, result);
             JSONObject data = result.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {
                 hasMore = data.getBoolean("has_more");
@@ -504,9 +504,9 @@ public class FeiShuOpenApiUtil {
         return result;
     }
 
-    public static void checkFeishuResult(JSONObject result) {
+    public static void checkFeishuResult(String url, JSONObject query, JSONObject result) {
         if (result == null) {
-            throw new RuntimeException("飞书接口无返回");
+            throw new RuntimeException("访问飞书接口无返回");
         }
         Integer code = result.getInteger("code");
         if (code != null && code != 0) {

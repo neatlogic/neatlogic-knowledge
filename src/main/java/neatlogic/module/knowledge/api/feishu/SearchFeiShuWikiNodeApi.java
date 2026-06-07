@@ -18,8 +18,8 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_FEISHU_SYNC_MODIFY;
-import neatlogic.module.knowledge.dao.mapper.KnowledgeFeishuSyncMapper;
-import neatlogic.module.knowledge.service.KnowledgeFeishuSyncService;
+import neatlogic.module.knowledge.dao.mapper.KnowledgeFeiShuMapper;
+import neatlogic.module.knowledge.service.KnowledgeFeiShuService;
 import neatlogic.module.knowledge.utils.FeiShuOpenApiUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -36,9 +36,9 @@ import java.util.stream.Collectors;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
     @Resource
-    private KnowledgeFeishuSyncService knowledgeFeishuSyncService;
+    private KnowledgeFeiShuService knowledgeFeiShuService;
     @Resource
-    private KnowledgeFeishuSyncMapper knowledgeFeishuSyncMapper;
+    private KnowledgeFeiShuMapper knowledgeFeiShuMapper;
     @Override
     public String getToken() { return "knowledge/feishu/wiki/node/list"; }
     @Override
@@ -52,7 +52,7 @@ public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) {
         List<KnowledgeFeiShuDocumentMappingVo> tbodyList = new ArrayList<>();
-        FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeishuSyncService.getFeiShuAppCredentials();
+        FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeiShuService.getFeiShuAppCredentials();
         if (feiShuAppCredentials == null) {
             return TableResultUtil.getResult(tbodyList);
         }
@@ -62,7 +62,7 @@ public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
         List<FeiShuNodeVo> feiShuNodeVoList = loadWikiNodes(spaceId, parentNodeToken, new ArrayList<>(), tenantAccessToken);
         if (CollectionUtils.isNotEmpty(feiShuNodeVoList)) {
             List<String> nodeTokenList = feiShuNodeVoList.stream().map(FeiShuNodeVo::getNodeToken).collect(Collectors.toList());
-            List<KnowledgeFeiShuDocumentMappingVo> syncDocumentList = knowledgeFeishuSyncMapper.getSyncDocumentListByNodeTokenList(nodeTokenList);
+            List<KnowledgeFeiShuDocumentMappingVo> syncDocumentList = knowledgeFeiShuMapper.getSyncDocumentListByNodeTokenList(nodeTokenList);
             Map<String, KnowledgeFeiShuDocumentMappingVo> map = syncDocumentList.stream().collect(Collectors.toMap(KnowledgeFeiShuDocumentMappingVo::getNodeToken, e -> e));
             for (FeiShuNodeVo feiShuNodeVo : feiShuNodeVoList) {
                 KnowledgeFeiShuDocumentMappingVo knowledgeFeiShuDocumentMappingVo = map.get(feiShuNodeVo.getNodeToken());

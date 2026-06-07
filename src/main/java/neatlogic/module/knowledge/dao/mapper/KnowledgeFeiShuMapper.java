@@ -15,7 +15,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface KnowledgeFeishuSyncMapper {
+public interface KnowledgeFeiShuMapper {
 
     List<KnowledgeFeiShuDocumentMappingVo> getSyncDocumentListByNodeTokenList(List<String> nodeTokenList);
 

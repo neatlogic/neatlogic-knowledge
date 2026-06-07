@@ -13,13 +13,11 @@ package neatlogic.module.knowledge.api.feishu;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.config.ConfigManager;
-import neatlogic.framework.knowledge.constvalue.KnowledgeTenantConfig;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_FEISHU_SYNC_MODIFY;
-import neatlogic.module.knowledge.service.KnowledgeFeishuSyncService;
+import neatlogic.module.knowledge.service.KnowledgeFeiShuService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -30,7 +28,7 @@ import javax.annotation.Resource;
 public class GetFeiShuAppCredentialsApi extends PrivateApiComponentBase {
 
     @Resource
-    private KnowledgeFeishuSyncService knowledgeFeishuSyncService;
+    private KnowledgeFeiShuService knowledgeFeiShuService;
 
     @Override
     public String getToken() {
@@ -51,6 +49,6 @@ public class GetFeiShuAppCredentialsApi extends PrivateApiComponentBase {
     @Description(desc = "保存飞书应用凭证")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        return knowledgeFeishuSyncService.getFeiShuAppCredentials();
+        return knowledgeFeiShuService.getFeiShuAppCredentials();
     }
 }

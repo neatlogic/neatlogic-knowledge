@@ -9,7 +9,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_FEISHU_SYNC_MODIFY;
-import neatlogic.module.knowledge.service.KnowledgeFeishuSyncService;
+import neatlogic.module.knowledge.service.KnowledgeFeiShuService;
 import neatlogic.module.knowledge.utils.FeiShuOpenApiUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -22,7 +22,7 @@ import javax.annotation.Resource;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListFeiShuWikiSpaceApi extends PrivateApiComponentBase {
     @Resource
-    private KnowledgeFeishuSyncService knowledgeFeishuSyncService;
+    private KnowledgeFeiShuService knowledgeFeiShuService;
     @Override
     public String getToken() { return "knowledge/feishu/wiki/space/list"; }
     @Override
@@ -33,7 +33,7 @@ public class ListFeiShuWikiSpaceApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) {
         JSONArray wikiSpaceList = new JSONArray();
-        FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeishuSyncService.getFeiShuAppCredentials();
+        FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeiShuService.getFeiShuAppCredentials();
         if (feiShuAppCredentials != null) {
             String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(feiShuAppCredentials.getAppId(), feiShuAppCredentials.getAppSecret());
             JSONObject resultObj = FeiShuOpenApiUtil.getFeishuWikiSpaces(tenantAccessToken);

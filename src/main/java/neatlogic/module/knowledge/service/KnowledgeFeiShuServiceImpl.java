@@ -7,22 +7,21 @@ import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import neatlogic.framework.knowledge.dto.KnowledgeCircleVo;
 import neatlogic.framework.knowledge.dto.feishu.FeiShuAppCredentialsVo;
-import neatlogic.module.knowledge.dao.mapper.KnowledgeFeishuSyncMapper;
+import neatlogic.module.knowledge.dao.mapper.KnowledgeFeiShuMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
 
 @Service
-public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncService {
+public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
 
-    private final Logger logger = LoggerFactory.getLogger(KnowledgeFeishuSyncServiceImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(KnowledgeFeiShuServiceImpl.class);
 
     @Resource
-    private KnowledgeFeishuSyncMapper knowledgeFeishuSyncMapper;
+    private KnowledgeFeiShuMapper knowledgeFeiShuMapper;
     @Resource
     private KnowledgeCircleMapper knowledgeCircleMapper;
     @Resource

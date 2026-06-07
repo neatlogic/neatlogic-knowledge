@@ -53,20 +53,20 @@
         VALUES
         (#{appId}, #{spaceId}, #{title}, #{parentNodeToken}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{knowledgeDocumentId}, #{knowledgeDocumentVersionId}, #{knowledgeDocumentTypeUuid}, #{status}, #{configStr}, #{lcu}, NOW(3))
         ON DUPLICATE KEY UPDATE
-            `status` = VALUES(`app_id`)
-            `status` = VALUES(`space_id`)
-            `status` = VALUES(`title`)
-            `status` = VALUES(`parent_node_token`)
-            `status` = VALUES(`obj_token`)
-            `status` = VALUES(`obj_type`)
-            `status` = VALUES(`update_time`)
-            `status` = VALUES(`knowledge_document_id`)
-            `status` = VALUES(`knowledge_document_version_id`)
-            `status` = VALUES(`knowledge_document_type_uuid`)
+            `app_id` = VALUES(`app_id`)
+            `space_id` = VALUES(`space_id`)
+            `title` = VALUES(`title`)
+            `parent_node_token` = VALUES(`parent_node_token`)
+            `obj_token` = VALUES(`obj_token`)
+            `obj_type` = VALUES(`obj_type`)
+            `update_time` = VALUES(`update_time`)
+            `knowledge_document_id` = VALUES(`knowledge_document_id`)
+            `knowledge_document_version_id` = VALUES(`knowledge_document_version_id`)
+            `knowledge_document_type_uuid` = VALUES(`knowledge_document_type_uuid`)
             `status` = VALUES(`status`)
-            `status` = VALUES(`config`)
-            `status` = VALUES(`lcu`)
-            `status` = VALUES(`lcd`)
+            `config` = VALUES(`config`)
+            `lcu` = VALUES(`lcu`)
+            `lcd` = VALUES(`lcd`)
     </insert>
 
     <insert id="insertFeiShuDocumentMappingStatus" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">

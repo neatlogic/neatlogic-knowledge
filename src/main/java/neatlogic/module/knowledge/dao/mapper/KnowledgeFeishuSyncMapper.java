@@ -62,4 +62,6 @@ public interface KnowledgeFeishuSyncMapper {
     int insertSyncMediasMapping(@Param("uuid") String uuid, @Param("fileId") Long fileId);
 
     Long getSyncMediasMappingFileIdByUuid(String uuid);
+
+    int updateSyncDocumentStatusByNodeToken(@Param("nodeToken") String nodeToken, @Param("status") String value);
 }

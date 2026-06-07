@@ -231,4 +231,11 @@
         FROM `knowledge_sync_medias_mapping`
         WHERE `uuid` = #{value}
     </select>
+
+    <update id="updateSyncDocumentStatusByNodeToken">
+        UPDATE `knowledge_feishu_sync_document`
+        SET
+            `status` = #{status}
+        WHERE `node_token` = #{nodeToken}
+    </update>
 </mapper>

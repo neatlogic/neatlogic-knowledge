@@ -109,7 +109,8 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
                 if (feiShuSpaceVo != null) {
                     KnowledgeDocumentTypeVo knowledgeType = getOrCreateKnowledgeType(feiShuSpaceVo.getName(), "0", feiShuAppCredentials.getKnowledgeCircleId());
                     List<FeiShuNodeVo> nodes = loadWikiNodes(spaceId, null, new ArrayList<>(), tenantAccessToken);
-                    saveNodes(spaceId, feiShuSpaceVo.getName(), nodes, feiShuAppCredentials, knowledgeType, tenantAccessToken);
+//                    knowledgeFeishuSyncMapper.updateSyncDocumentStatusByNodeToken(feiShuNodeVo.getNodeToken(), Status.RUNNING.getValue());
+                    saveNodes(nodes, feiShuAppCredentials, knowledgeType, tenantAccessToken);
                 }
             }
         }
@@ -188,7 +189,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
         return feiShuNodeVo;
     }
 
-    private void saveNodes(Long spaceId, String spaceName, List<FeiShuNodeVo> nodes, FeiShuAppCredentialsVo config, KnowledgeDocumentTypeVo knowledgeType, String tenantAccessToken) {
+    private void saveNodes(List<FeiShuNodeVo> nodes, FeiShuAppCredentialsVo config, KnowledgeDocumentTypeVo knowledgeType, String tenantAccessToken) {
         for (FeiShuNodeVo node : nodes) {
             System.out.println("node = " + JSONArray.toJSON(node));
             if (!isDocumentNode(node)) {
@@ -197,34 +198,15 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
 //            if (!Objects.equals(node.getNodeToken(), "EnH5wTCBMiZibmkDu6lcmI94n8g")) {
 //                continue;
 //            }
-//            JSONObject item = new JSONObject();
-//            Long documentId = null;
-//            String status = null;
             try {
                 saveFeishuDocument(config, node, knowledgeType.getUuid(), tenantAccessToken);
-//                documentId = resultObj.getLong("knowledgeDocumentId");
-//                status = "succeed";
-//                JSONArray unprocessedItems = resultObj.getJSONArray("unprocessedItems");
-//                if (CollectionUtils.isNotEmpty(unprocessedItems)) {
-//                    item.put("unprocessedItems", unprocessedItems);
-//                }
                 if (CollectionUtils.isNotEmpty(node.getChildren())) {
                     KnowledgeDocumentTypeVo childType = getOrCreateKnowledgeType(node.getTitle(), knowledgeType.getUuid(), config.getKnowledgeCircleId());
-                    saveNodes(spaceId, spaceName, node.getChildren(), config, childType, tenantAccessToken);
+                    saveNodes(node.getChildren(), config, childType, tenantAccessToken);
                 }
             } catch (Exception ex) {
                 logger.error(ex.getMessage(), ex);
-//                status = "failed";
-//                item.put("error", ex.getMessage());
             }
-//            if (MapUtils.isNotEmpty(item)) {
-//                item.put("spaceId", spaceId);
-//                item.put("spaceName", spaceName);
-//                item.put("title", node.getTitle());
-//                item.put("nodeToken", node.getNodeToken());
-//                item.put("knowledgeDocumentId", documentId);
-//                item.put("status", status);
-//            }
         }
     }
 
@@ -250,7 +232,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
                 knowledgeDocumentMapper.updateKnowledgeDocumentTitleById(documentVo);
                 knowledgeDocumentMapper.updateKnowledgeDocumentTypeUuidById(documentVo);
             }
-
+            knowledgeFeishuSyncMapper.updateSyncDocumentStatusByNodeToken(node.getNodeToken(), Status.RUNNING.getValue());
             KnowledgeDocumentVersionVo versionVo = new KnowledgeDocumentVersionVo();
             versionVo.setTitle(node.getTitle());
             versionVo.setKnowledgeDocumentId(documentVo.getId());

@@ -62,7 +62,7 @@ public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
         List<FeiShuNodeVo> feiShuNodeVoList = loadWikiNodes(spaceId, parentNodeToken, new ArrayList<>(), tenantAccessToken);
         if (CollectionUtils.isNotEmpty(feiShuNodeVoList)) {
             List<String> nodeTokenList = feiShuNodeVoList.stream().map(FeiShuNodeVo::getNodeToken).collect(Collectors.toList());
-            List<KnowledgeFeiShuDocumentMappingVo> syncDocumentList = knowledgeFeiShuMapper.getSyncDocumentListByNodeTokenList(nodeTokenList);
+            List<KnowledgeFeiShuDocumentMappingVo> syncDocumentList = knowledgeFeiShuMapper.getFeiShuDocumentMappingListByNodeTokenList(nodeTokenList);
             Map<String, KnowledgeFeiShuDocumentMappingVo> map = syncDocumentList.stream().collect(Collectors.toMap(KnowledgeFeiShuDocumentMappingVo::getNodeToken, e -> e));
             for (FeiShuNodeVo feiShuNodeVo : feiShuNodeVoList) {
                 KnowledgeFeiShuDocumentMappingVo knowledgeFeiShuDocumentMappingVo = map.get(feiShuNodeVo.getNodeToken());

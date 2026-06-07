@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.knowledge.dao.mapper.KnowledgeFeiShuMapper">
 
-    <select id="getSyncDocumentListByNodeTokenList" parameterType="java.lang.String" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+    <select id="getFeiShuDocumentMappingListByNodeTokenList" parameterType="java.lang.String" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         SELECT
             `app_id` AS appId,
             `title`,
@@ -24,7 +24,7 @@
         </foreach>
     </select>
 
-    <select id="getSyncDocumentByNodeToken" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+    <select id="getFeiShuDocumentMappingByNodeToken" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         SELECT
             `app_id` AS appId,
             `title`,
@@ -43,14 +43,14 @@
         where `node_token` = #{nodeToken}
     </select>
 
-    <insert id="insertSyncDocument" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+    <insert id="insertFeiShuDocumentMapping" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         INSERT INTO `knowledge_feishu_document_mapping`
         (`app_id`, `title`, `node_token`, `obj_token`, `obj_type`, `update_time`, `knowledge_document_id`, `knowledge_document_version_id`, `knowledge_document_type_uuid`, `status`, `config`, `lcu`, `lcd`)
         VALUES
         (#{appId}, #{title}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{knowledgeDocumentId}, #{knowledgeDocumentVersionId}, #{knowledgeDocumentTypeUuid}, #{status}, #{configStr}, #{lcu}, NOW(3))
     </insert>
 
-    <update id="updateSyncDocument" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+    <update id="updateFeiShuDocumentMapping" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         UPDATE `knowledge_feishu_document_mapping`
         SET
             `app_id` = #{appId},
@@ -68,23 +68,23 @@
         WHERE `node_token` = #{nodeToken}
     </update>
 
-    <update id="updateSyncDocumentStatusByNodeToken">
+    <update id="updateFeiShuDocumentMappingStatusByNodeToken">
         UPDATE `knowledge_feishu_document_mapping`
         SET
             `status` = #{status}
         WHERE `node_token` = #{nodeToken}
     </update>
 
-    <insert id="insertSyncMediasMapping">
-        INSERT INTO `knowledge_feishu_medias_mapping` (`uuid`, `file_id`)
+    <insert id="insertFeiShuMediasMapping">
+        INSERT INTO `knowledge_feishu_medias_mapping` (`file_token`, `file_id`)
         VALUES
-            (#{uuid}, #{fileId})
+            (#{fileToken}, #{fileId})
     </insert>
 
-    <select id="getSyncMediasMappingFileIdByUuid" parameterType="java.lang.String" resultType="java.lang.Long">
+    <select id="getFeiShuMediasMappingFileIdByFileToken" parameterType="java.lang.String" resultType="java.lang.Long">
         SELECT
             `file_id`
         FROM `knowledge_feishu_medias_mapping`
-        WHERE `uuid` = #{value}
+        WHERE `file_token` = #{value}
     </select>
 </mapper>

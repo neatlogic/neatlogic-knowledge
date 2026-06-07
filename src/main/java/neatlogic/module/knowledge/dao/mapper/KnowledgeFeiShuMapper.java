@@ -17,17 +17,17 @@ import java.util.List;
 
 public interface KnowledgeFeiShuMapper {
 
-    List<KnowledgeFeiShuDocumentMappingVo> getSyncDocumentListByNodeTokenList(List<String> nodeTokenList);
+    List<KnowledgeFeiShuDocumentMappingVo> getFeiShuDocumentMappingListByNodeTokenList(List<String> nodeTokenList);
 
-    KnowledgeFeiShuDocumentMappingVo getSyncDocumentByNodeToken(String nodeToken);
+    KnowledgeFeiShuDocumentMappingVo getFeiShuDocumentMappingByNodeToken(String nodeToken);
 
-    int insertSyncDocument(KnowledgeFeiShuDocumentMappingVo vo);
+    int insertFeiShuDocumentMapping(KnowledgeFeiShuDocumentMappingVo vo);
 
-    int updateSyncDocument(KnowledgeFeiShuDocumentMappingVo vo);
+    int updateFeiShuDocumentMapping(KnowledgeFeiShuDocumentMappingVo vo);
 
-    int updateSyncDocumentStatusByNodeToken(@Param("nodeToken") String nodeToken, @Param("status") String value);
+    int updateFeiShuDocumentMappingStatusByNodeToken(@Param("nodeToken") String nodeToken, @Param("status") String value);
 
-    int insertSyncMediasMapping(@Param("uuid") String uuid, @Param("fileId") Long fileId);
+    int insertFeiShuMediasMapping(@Param("fileToken") String fileToken, @Param("fileId") Long fileId);
 
-    Long getSyncMediasMappingFileIdByUuid(String uuid);
+    Long getFeiShuMediasMappingFileIdByFileToken(String fileToken);
 }

@@ -215,7 +215,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
         JSONObject config = new JSONObject();
         KnowledgeDocumentVo documentVo = new KnowledgeDocumentVo();
         try {
-            KnowledgeFeiShuDocumentMappingVo mapping = knowledgeFeiShuMapper.getSyncDocumentByNodeToken(node.getNodeToken());
+            KnowledgeFeiShuDocumentMappingVo mapping = knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(node.getNodeToken());
             if (mapping == null) {
                 documentVo.setTitle(node.getTitle());
                 documentVo.setKnowledgeCircleId(appCredentialsVo.getKnowledgeCircleId());
@@ -232,7 +232,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
                 knowledgeDocumentMapper.updateKnowledgeDocumentTitleById(documentVo);
                 knowledgeDocumentMapper.updateKnowledgeDocumentTypeUuidById(documentVo);
             }
-            knowledgeFeiShuMapper.updateSyncDocumentStatusByNodeToken(node.getNodeToken(), Status.RUNNING.getValue());
+            knowledgeFeiShuMapper.updateFeiShuDocumentMappingStatusByNodeToken(node.getNodeToken(), Status.RUNNING.getValue());
             KnowledgeDocumentVersionVo versionVo = new KnowledgeDocumentVersionVo();
             versionVo.setTitle(node.getTitle());
             versionVo.setKnowledgeDocumentId(documentVo.getId());
@@ -286,16 +286,16 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
             vo.setConfig(config);
         }
         vo.setLcu(UserContext.get().getUserUuid());
-        if (knowledgeFeiShuMapper.getSyncDocumentByNodeToken(node.getNodeToken()) == null) {
-            knowledgeFeiShuMapper.insertSyncDocument(vo);
+        if (knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(node.getNodeToken()) == null) {
+            knowledgeFeiShuMapper.insertFeiShuDocumentMapping(vo);
         } else {
-            knowledgeFeiShuMapper.updateSyncDocument(vo);
+            knowledgeFeiShuMapper.updateFeiShuDocumentMapping(vo);
         }
     }
 
 
     private FileVo downloadMedias(String fileToken, String tenantAccessToken) {
-        Long fileId = knowledgeFeiShuMapper.getSyncMediasMappingFileIdByUuid(fileToken);
+        Long fileId = knowledgeFeiShuMapper.getFeiShuMediasMappingFileIdByFileToken(fileToken);
         System.out.println("getSyncMediasMappingFileIdByUuid fileId = " + fileId);
         if (fileId != null) {
             FileVo fileVo = fileMapper.getFileById(fileId);
@@ -305,7 +305,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
         }
         FileVo fileVo = FeiShuOpenApiUtil.downloadMedias(fileToken, tenantAccessToken);
         fileMapper.insertFile(fileVo);
-        knowledgeFeiShuMapper.insertSyncMediasMapping(fileToken, fileVo.getId());
+        knowledgeFeiShuMapper.insertFeiShuMediasMapping(fileToken, fileVo.getId());
         System.out.println("insertSyncMediasMapping fileId = " + fileVo.getId());
         return fileVo;
     }

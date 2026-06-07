@@ -5,6 +5,7 @@
     <select id="getFeiShuDocumentMappingListByNodeTokenList" parameterType="java.lang.String" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         SELECT
             `app_id` AS appId,
+            `space_id` AS spaceId,
             `title`,
             `node_token` AS nodeToken,
             `obj_token` AS objToken,
@@ -27,6 +28,7 @@
     <select id="getFeiShuDocumentMappingByNodeToken" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         SELECT
             `app_id` AS appId,
+            `space_id` AS spaceId,
             `title`,
             `node_token` AS nodeToken,
             `obj_token` AS objToken,
@@ -45,15 +47,16 @@
 
     <insert id="insertFeiShuDocumentMapping" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         INSERT INTO `knowledge_feishu_document_mapping`
-        (`app_id`, `title`, `node_token`, `obj_token`, `obj_type`, `update_time`, `knowledge_document_id`, `knowledge_document_version_id`, `knowledge_document_type_uuid`, `status`, `config`, `lcu`, `lcd`)
+        (`app_id`, `space_id`, `title`, `node_token`, `obj_token`, `obj_type`, `update_time`, `knowledge_document_id`, `knowledge_document_version_id`, `knowledge_document_type_uuid`, `status`, `config`, `lcu`, `lcd`)
         VALUES
-        (#{appId}, #{title}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{knowledgeDocumentId}, #{knowledgeDocumentVersionId}, #{knowledgeDocumentTypeUuid}, #{status}, #{configStr}, #{lcu}, NOW(3))
+        (#{appId}, #{spaceId}, #{title}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{knowledgeDocumentId}, #{knowledgeDocumentVersionId}, #{knowledgeDocumentTypeUuid}, #{status}, #{configStr}, #{lcu}, NOW(3))
     </insert>
 
     <update id="updateFeiShuDocumentMapping" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         UPDATE `knowledge_feishu_document_mapping`
         SET
             `app_id` = #{appId},
+            `space_id` = #{spaceId},
             `title` = #{title},
             `obj_token` = #{objToken},
             `obj_type` = #{objType},

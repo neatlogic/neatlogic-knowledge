@@ -16,6 +16,7 @@ import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.common.util.FileUtil;
 import neatlogic.framework.common.util.RC4Util;
+import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.file.dto.FileVo;
 import neatlogic.framework.util.HttpRequestUtil;
 import org.apache.commons.collections4.CollectionUtils;
@@ -390,7 +391,9 @@ public class FeiShuOpenApiUtil {
      * @return
      */
     public static FileVo downloadMedias(String fileToken, String tenantAccessToken) {
-//        String url = "https://open.feishu.cn/open-apis/drive/v1/medias/:file_token/download";
+        if (StringUtils.isBlank(fileToken)) {
+            return null;
+        }
         String url = MEDIAS_DOWNLOAD_URL.replace(":file_token", fileToken);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         HttpRequestUtil request = HttpRequestUtil.get(url)
@@ -506,11 +509,13 @@ public class FeiShuOpenApiUtil {
 
     public static void checkFeishuResult(String url, JSONObject query, JSONObject result) {
         if (result == null) {
-            throw new RuntimeException("访问飞书接口无返回");
+            String message = String.format("访问飞书接口无返回值，url: %s, query: %s", url, query.toJSONString());
+            throw new ApiRuntimeException(message);
         }
         Integer code = result.getInteger("code");
         if (code != null && code != 0) {
-            throw new RuntimeException(result.getString("msg"));
+            String message = String.format("访问飞书接口返回异常，result: %s, url: %s, query: %s", result.toJSONString(), url, query.toJSONString());
+            throw new ApiRuntimeException(message);
         }
     }
 

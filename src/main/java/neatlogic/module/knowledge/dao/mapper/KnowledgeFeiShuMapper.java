@@ -23,7 +23,9 @@ public interface KnowledgeFeiShuMapper {
 
     int insertFeiShuDocumentMapping(KnowledgeFeiShuDocumentMappingVo vo);
 
-    int updateFeiShuDocumentMapping(KnowledgeFeiShuDocumentMappingVo vo);
+    int insertFeiShuDocumentMappingStatus(KnowledgeFeiShuDocumentMappingVo vo);
+
+//    int updateFeiShuDocumentMapping(KnowledgeFeiShuDocumentMappingVo vo);
 
     int updateFeiShuDocumentMappingStatusByNodeToken(@Param("nodeToken") String nodeToken, @Param("status") String value);
 

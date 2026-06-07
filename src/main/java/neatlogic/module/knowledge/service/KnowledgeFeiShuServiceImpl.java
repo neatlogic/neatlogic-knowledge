@@ -118,8 +118,19 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         JSONObject config = new JSONObject();
         KnowledgeDocumentVo documentVo = new KnowledgeDocumentVo();
         try {
+            knowledgeFeiShuMapper.updateFeiShuDocumentMappingStatusByNodeToken(node.getNodeToken(), Status.RUNNING.getValue());
             KnowledgeFeiShuDocumentMappingVo mapping = knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(node.getNodeToken());
-            if (mapping == null) {
+            if (mapping != null && mapping.getKnowledgeDocumentId() != null) {
+                documentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(mapping.getKnowledgeDocumentId());
+            }
+            if (documentVo != null) {
+                documentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(mapping.getKnowledgeDocumentId());
+                documentVo.setTitle(node.getTitle());
+                documentVo.setKnowledgeDocumentTypeUuid(typeUuid);
+                knowledgeDocumentMapper.updateKnowledgeDocumentTitleById(documentVo);
+                knowledgeDocumentMapper.updateKnowledgeDocumentTypeUuidById(documentVo);
+            } else {
+                documentVo = new KnowledgeDocumentVo();
                 documentVo.setTitle(node.getTitle());
                 documentVo.setKnowledgeCircleId(appCredentialsVo.getKnowledgeCircleId());
                 documentVo.setKnowledgeDocumentTypeUuid(typeUuid);
@@ -128,14 +139,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                 documentVo.setSource(FeishuSyncSource.SOURCE);
                 knowledgeDocumentMapper.insertKnowledgeDocument(documentVo);
                 knowledgeDocumentMapper.insertKnowledgeDocumentViewCount(documentVo.getId(), 0);
-            } else {
-                documentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(mapping.getKnowledgeDocumentId());
-                documentVo.setTitle(node.getTitle());
-                documentVo.setKnowledgeDocumentTypeUuid(typeUuid);
-                knowledgeDocumentMapper.updateKnowledgeDocumentTitleById(documentVo);
-                knowledgeDocumentMapper.updateKnowledgeDocumentTypeUuidById(documentVo);
             }
-            knowledgeFeiShuMapper.updateFeiShuDocumentMappingStatusByNodeToken(node.getNodeToken(), Status.RUNNING.getValue());
             KnowledgeDocumentVersionVo versionVo = new KnowledgeDocumentVersionVo();
             versionVo.setTitle(node.getTitle());
             versionVo.setKnowledgeDocumentId(documentVo.getId());
@@ -152,7 +156,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
             knowledgeDocumentMapper.updateKnowledgeDocumentById(documentVo);
 
             JSONArray unprocessedItems = new JSONArray();
-            List<KnowledgeDocumentLineVo> feishuDocumentLines = getFeishuDocumentLines(node, tenantAccessToken, unprocessedItems);
+            List<KnowledgeDocumentLineVo> feishuDocumentLines = getFeiShuDocumentLines(node, tenantAccessToken, unprocessedItems);
             saveLines(documentVo.getId(), versionVo.getId(), feishuDocumentLines);
             if (CollectionUtils.isNotEmpty(unprocessedItems)) {
                 config.put("unprocessedItems", unprocessedItems);
@@ -183,19 +187,22 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         vo.setObjToken(node.getObjToken());
         vo.setObjType(node.getObjType());
         vo.setUpdateTime(node.getUpdateTime());
-        vo.setKnowledgeDocumentId(documentVo.getId());
-        vo.setKnowledgeDocumentVersionId(documentVo.getKnowledgeDocumentVersionId());
-        vo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
+        if (documentVo != null) {
+            vo.setKnowledgeDocumentId(documentVo.getId());
+            vo.setKnowledgeDocumentVersionId(documentVo.getKnowledgeDocumentVersionId());
+            vo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
+        }
         vo.setStatus(status);
         if (MapUtils.isNotEmpty(config)) {
             vo.setConfig(config);
         }
         vo.setLcu(UserContext.get().getUserUuid());
-        if (knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(node.getNodeToken()) == null) {
-            knowledgeFeiShuMapper.insertFeiShuDocumentMapping(vo);
-        } else {
-            knowledgeFeiShuMapper.updateFeiShuDocumentMapping(vo);
-        }
+        knowledgeFeiShuMapper.insertFeiShuDocumentMapping(vo);
+//        if (knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(node.getNodeToken()) == null) {
+//            knowledgeFeiShuMapper.insertFeiShuDocumentMapping(vo);
+//        } else {
+//            knowledgeFeiShuMapper.updateFeiShuDocumentMapping(vo);
+//        }
     }
 
 
@@ -208,8 +215,10 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
             }
         }
         FileVo fileVo = FeiShuOpenApiUtil.downloadMedias(fileToken, tenantAccessToken);
-        fileMapper.insertFile(fileVo);
-        knowledgeFeiShuMapper.insertFeiShuMediasMapping(fileToken, fileVo.getId());
+        if (fileVo != null) {
+            fileMapper.insertFile(fileVo);
+            knowledgeFeiShuMapper.insertFeiShuMediasMapping(fileToken, fileVo.getId());
+        }
         return fileVo;
     }
 
@@ -727,9 +736,9 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         return knowledgeDocumentLineVo;
     }
 
-    private List<KnowledgeDocumentLineVo> getFeishuDocumentLines(FeiShuNodeVo node, String tenantAccessToken, JSONArray unprocessedItems) {
+    private List<KnowledgeDocumentLineVo> getFeiShuDocumentLines(FeiShuNodeVo node, String tenantAccessToken, JSONArray unprocessedItems) {
         List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
-        try {
+//        try {
             JSONObject blockResult = FeiShuOpenApiUtil.getDocumentBlocks(node.getObjToken(), tenantAccessToken);
             JSONArray items = blockResult.getJSONObject("data") == null ? null : blockResult.getJSONObject("data").getJSONArray("items");
             if (CollectionUtils.isNotEmpty(items)) {
@@ -968,9 +977,9 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                     }
                 }
             }
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
+//        } catch (Exception e) {
+//            logger.error(e.getMessage(), e);
+//        }
         return lineList;
     }
 

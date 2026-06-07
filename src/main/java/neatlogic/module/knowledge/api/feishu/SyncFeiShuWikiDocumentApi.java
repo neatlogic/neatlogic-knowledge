@@ -100,67 +100,21 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(nodeTokenArray)) {
             nodeTokenList = nodeTokenArray.toJavaList(String.class);
         }
-//        Map<String, FeiShuNodeVo> feiShuNodeMap = new HashMap<>();
-//        Map<Long, FeiShuSpaceVo> feiShuSpaceMap = new HashMap<>();
-//        List<String> allNodeTokenList = new ArrayList<>();
-//        JSONArray spaceIdArray = paramObj.getJSONArray("spaceIdList");
-//        if (CollectionUtils.isNotEmpty(spaceIdArray)) {
-//            List<Long> spaceIdList = spaceIdArray.toJavaList(Long.class);
-//            for (Long spaceId : spaceIdList) {
-//                FeiShuSpaceVo feiShuSpaceVo = getFeiShuSpaceBySpaceId(spaceId, tenantAccessToken, feiShuSpaceMap);
-//                if (feiShuSpaceVo != null) {
-//                    KnowledgeDocumentTypeVo knowledgeType = knowledgeFeiShuService.getOrCreateKnowledgeType(feiShuSpaceVo.getName(), "0", feiShuAppCredentials.getKnowledgeCircleId());
-//                    List<FeiShuNodeVo> nodes = knowledgeFeiShuService.loadWikiNodes(spaceId, null, new ArrayList<>(), tenantAccessToken);
-//                    knowledgeFeiShuService.saveNodes(nodes, feiShuAppCredentials, knowledgeType, tenantAccessToken);
-//                }
-//            }
-//        }
-//        JSONArray nodeTokenArray = paramObj.getJSONArray("nodeTokenList");
-//        if (CollectionUtils.isNotEmpty(nodeTokenArray)) {
-//            List<String> nodeTokenList = nodeTokenArray.toJavaList(String.class);
-//            List<String> list = ListUtils.removeAll(nodeTokenList, allNodeTokenList);
-//            if (CollectionUtils.isNotEmpty(list)) {
-//                for (String nodeToken : list) {
-//                    FeiShuNodeVo feiShuNodeVo = getFeiShuNodeByNodeToken(nodeToken, tenantAccessToken, feiShuNodeMap);
-//                    if (feiShuNodeVo != null) {
-//                        FeiShuSpaceVo feiShuSpaceVo = getFeiShuSpaceBySpaceId(feiShuNodeVo.getSpaceId(), tenantAccessToken, feiShuSpaceMap);
-//                        if (feiShuSpaceVo != null) {
-//                            KnowledgeDocumentTypeVo knowledgeType = knowledgeFeiShuService.getOrCreateKnowledgeType(feiShuSpaceVo.getName(), "0", feiShuAppCredentials.getKnowledgeCircleId());
-//                            List<FeiShuNodeVo> parentList = new ArrayList<>();
-//                            FeiShuNodeVo parent = feiShuNodeVo.getParent();
-//                            while (parent != null) {
-//                                parentList.add(parent);
-//                                parent = parent.getParent();
-//                            }
-//                            if (CollectionUtils.isNotEmpty(parentList)) {
-//                                String parentUuid = knowledgeType.getUuid();
-//                                for (int i = parentList.size() - 1; i >= 0; i--) {
-//                                    FeiShuNodeVo parentVo = parentList.get(i);
-//                                    knowledgeType = knowledgeFeiShuService.getOrCreateKnowledgeType(parentVo.getTitle(), parentUuid, feiShuAppCredentials.getKnowledgeCircleId());
-//                                    parentUuid = knowledgeType.getUuid();
-//                                }
-//                            }
-//                            knowledgeFeiShuService.saveFeiShuDocument(feiShuAppCredentials, feiShuNodeVo, knowledgeType.getUuid(), tenantAccessToken);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        knowledgeDocumentTypeService.rebuildLeftRightCode(feiShuAppCredentials.getKnowledgeCircleId());
-
         List<FeiShuNodeVo> feiShuNodeList = getFeiShuNodeList(spaceIdList, nodeTokenList, tenantAccessToken, feiShuAppCredentials);
         if (CollectionUtils.isNotEmpty(feiShuNodeList)) {
             for (int i = feiShuNodeList.size() - 1; i >= 0; i--) {
                 FeiShuNodeVo feiShuNodeVo = feiShuNodeList.get(i);
-                KnowledgeFeiShuDocumentMappingVo feiShuDocumentMapping = knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(feiShuNodeVo.getNodeToken());
-                if (feiShuDocumentMapping != null) {
-                    if (Objects.equals(feiShuDocumentMapping.getStatus(), Status.WAITING.getValue())
-                            || Objects.equals(feiShuDocumentMapping.getStatus(), Status.RUNNING.getValue())) {
-                        feiShuNodeList.remove(i);
-                        continue;
-                    }
-                }
-                knowledgeFeiShuMapper.updateFeiShuDocumentMappingStatusByNodeToken(feiShuNodeVo.getNodeToken(), Status.WAITING.getValue());
+//                KnowledgeFeiShuDocumentMappingVo feiShuDocumentMapping = knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(feiShuNodeVo.getNodeToken());
+//                if (feiShuDocumentMapping != null) {
+//                    if (Objects.equals(feiShuDocumentMapping.getStatus(), Status.WAITING.getValue())
+//                            || Objects.equals(feiShuDocumentMapping.getStatus(), Status.RUNNING.getValue())) {
+//                        feiShuNodeList.remove(i);
+//                        continue;
+//                    }
+//                }
+                KnowledgeFeiShuDocumentMappingVo documentMappingVo = new KnowledgeFeiShuDocumentMappingVo(feiShuAppCredentials.getAppId(), feiShuNodeVo);
+                documentMappingVo.setStatus(Status.WAITING.getValue());
+                knowledgeFeiShuMapper.insertFeiShuDocumentMappingStatus(documentMappingVo);
             }
             if (CollectionUtils.isNotEmpty(feiShuNodeList)) {
                 CachedThreadPool.execute(new FeiShuWikiThread(feiShuNodeList));
@@ -174,16 +128,12 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
         Map<String, FeiShuNodeVo> feiShuNodeMap = new HashMap<>();
         List<FeiShuSpaceVo> allFeiShuSpaceList = knowledgeFeiShuService.getFeiShuSpaceList(feiShuAppCredentials);
         Map<Long, FeiShuSpaceVo> feiShuSpaceMap = allFeiShuSpaceList.stream().collect(Collectors.toMap(FeiShuSpaceVo::getSpaceId, e -> e));
-//        List<String> allNodeTokenList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(spaceIdList)) {
             for (Long spaceId : spaceIdList) {
-//                FeiShuSpaceVo feiShuSpaceVo = getFeiShuSpaceBySpaceId(spaceId, tenantAccessToken, feiShuSpaceMap);
                 FeiShuSpaceVo feiShuSpaceVo = feiShuSpaceMap.get(spaceId);
                 if (feiShuSpaceVo != null) {
-//                    KnowledgeDocumentTypeVo knowledgeType = knowledgeFeiShuService.getOrCreateKnowledgeType(feiShuSpaceVo.getName(), "0", feiShuAppCredentials.getKnowledgeCircleId());
                     List<FeiShuNodeVo> nodes = loadWikiNodes(feiShuSpaceVo, null, new ArrayList<>(), tenantAccessToken);
                     feiShuNodeList.addAll(nodes);
-//                    knowledgeFeiShuService.saveNodes(nodes, feiShuAppCredentials, knowledgeType, tenantAccessToken);
                 }
             }
         }
@@ -228,7 +178,6 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
                 if (Objects.equals(item.getBoolean("has_child"), true)) {
                     List<FeiShuNodeVo> children = loadWikiNodes(feiShuSpaceVo, node, node.getPath(), tenantAccessToken);
                     nodeList.addAll(children);
-//                    node.setChildren(children);
                 }
             }
         }

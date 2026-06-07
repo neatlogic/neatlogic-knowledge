@@ -52,9 +52,33 @@
         (`app_id`, `space_id`, `title`, `parent_node_token`, `node_token`, `obj_token`, `obj_type`, `update_time`, `knowledge_document_id`, `knowledge_document_version_id`, `knowledge_document_type_uuid`, `status`, `config`, `lcu`, `lcd`)
         VALUES
         (#{appId}, #{spaceId}, #{title}, #{parentNodeToken}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{knowledgeDocumentId}, #{knowledgeDocumentVersionId}, #{knowledgeDocumentTypeUuid}, #{status}, #{configStr}, #{lcu}, NOW(3))
+        ON DUPLICATE KEY UPDATE
+            `status` = VALUES(`app_id`)
+            `status` = VALUES(`space_id`)
+            `status` = VALUES(`title`)
+            `status` = VALUES(`parent_node_token`)
+            `status` = VALUES(`obj_token`)
+            `status` = VALUES(`obj_type`)
+            `status` = VALUES(`update_time`)
+            `status` = VALUES(`knowledge_document_id`)
+            `status` = VALUES(`knowledge_document_version_id`)
+            `status` = VALUES(`knowledge_document_type_uuid`)
+            `status` = VALUES(`status`)
+            `status` = VALUES(`config`)
+            `status` = VALUES(`lcu`)
+            `status` = VALUES(`lcd`)
     </insert>
 
-    <update id="updateFeiShuDocumentMapping" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+    <insert id="insertFeiShuDocumentMappingStatus" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+        INSERT INTO `knowledge_feishu_document_mapping`
+        (`app_id`, `space_id`, `title`, `parent_node_token`, `node_token`, `obj_token`, `obj_type`, `update_time`, `status`)
+        VALUES
+            (#{appId}, #{spaceId}, #{title}, #{parentNodeToken}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{status})
+        ON DUPLICATE KEY UPDATE
+            `status` = VALUES(`status`)
+    </insert>
+
+    <!--<update id="updateFeiShuDocumentMapping" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         UPDATE `knowledge_feishu_document_mapping`
         SET
             `app_id` = #{appId},
@@ -72,7 +96,7 @@
             `lcu` = #{lcu},
             `lcd` = NOW(3)
         WHERE `node_token` = #{nodeToken}
-    </update>
+    </update>-->
 
     <update id="updateFeiShuDocumentMappingStatusByNodeToken">
         UPDATE `knowledge_feishu_document_mapping`

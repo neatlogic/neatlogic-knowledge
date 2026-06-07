@@ -11,8 +11,6 @@
 package neatlogic.module.knowledge.dao.mapper;
 
 import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo;
-import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncAuditVo;
-import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncConfigVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

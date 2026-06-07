@@ -72,6 +72,26 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
     }
 
     @Override
+    public List<FeiShuSpaceVo> getFeiShuSpaceList(FeiShuAppCredentialsVo feiShuAppCredentials) {
+        List<FeiShuSpaceVo> feiShuSpaceList = new ArrayList<>();
+        if (feiShuAppCredentials != null) {
+            String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(feiShuAppCredentials.getAppId(), feiShuAppCredentials.getAppSecret());
+            JSONObject resultObj = FeiShuOpenApiUtil.getFeishuWikiSpaces(tenantAccessToken);
+            JSONObject data = resultObj.getJSONObject("data");
+            if (MapUtils.isNotEmpty(data)) {
+                JSONArray items = data.getJSONArray("items");
+                if (CollectionUtils.isNotEmpty(items)) {
+                    for (int i = 0; i < items.size(); i++) {
+                        JSONObject item = items.getJSONObject(i);
+                        feiShuSpaceList.add(new FeiShuSpaceVo(item));
+                    }
+                }
+            }
+        }
+        return feiShuSpaceList;
+    }
+
+    @Override
     public void saveNodes(List<FeiShuNodeVo> nodes, FeiShuAppCredentialsVo config, KnowledgeDocumentTypeVo knowledgeType, String tenantAccessToken) {
         for (FeiShuNodeVo node : nodes) {
             System.out.println("node = " + JSONArray.toJSON(node));

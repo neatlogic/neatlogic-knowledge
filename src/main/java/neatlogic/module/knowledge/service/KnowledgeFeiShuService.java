@@ -3,12 +3,15 @@ package neatlogic.module.knowledge.service;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentTypeVo;
 import neatlogic.framework.knowledge.dto.feishu.FeiShuAppCredentialsVo;
 import neatlogic.framework.knowledge.dto.feishu.FeiShuNodeVo;
+import neatlogic.framework.knowledge.dto.feishu.FeiShuSpaceVo;
 
 import java.util.List;
 
 public interface KnowledgeFeiShuService {
 
     FeiShuAppCredentialsVo getFeiShuAppCredentials();
+
+    List<FeiShuSpaceVo> getFeiShuSpaceList(FeiShuAppCredentialsVo feiShuAppCredentials);
 
     KnowledgeDocumentTypeVo getOrCreateKnowledgeType(String name, String parentUuid, Long knowledgeCircleId);
 

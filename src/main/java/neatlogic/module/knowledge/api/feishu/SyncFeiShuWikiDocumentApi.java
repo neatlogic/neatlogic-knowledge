@@ -232,7 +232,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
 
     private void saveFeishuDocument(FeiShuAppCredentialsVo appCredentialsVo, FeiShuNodeVo node, String typeUuid, String tenantAccessToken) {
         String status = null;
-        JSONObject config = null;
+        JSONObject config = new JSONObject();
         KnowledgeDocumentVo documentVo = new KnowledgeDocumentVo();
         try {
             KnowledgeFeishuSyncDocumentVo mapping = knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(node.getNodeToken());
@@ -285,7 +285,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
         upsertMapping(appCredentialsVo, node, documentVo, status, config);
         IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getHandler(KnowledgeFullTextIndexType.KNOW_DOCUMENT_VERSION);
         if (handler != null) {
-            handler.createIndex(documentVo.getId());
+            handler.createIndex(documentVo.getKnowledgeDocumentVersionId());
         }
 //        return new JSONObject().fluentPut("knowledgeDocumentId", documentVo.getId()).fluentPut("unprocessedItems", unprocessedItems);
     }
@@ -847,7 +847,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
         try {
             System.out.println("node.title = " + node.getTitle());
             JSONObject blockResult = FeiShuOpenApiUtil.getDocumentBlocks(node.getObjToken(), tenantAccessToken);
-            System.out.println("blockResult = " + blockResult);
+//            System.out.println("blockResult = " + blockResult);
             JSONArray items = blockResult.getJSONObject("data") == null ? null : blockResult.getJSONObject("data").getJSONArray("items");
             if (CollectionUtils.isNotEmpty(items)) {
                 JSONObject pageItem = null;

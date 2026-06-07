@@ -873,7 +873,7 @@ public class KnowledgeFeishuSyncExecuteApi extends PrivateApiComponentBase {
         try {
             System.out.println("node.title = " + node.getTitle());
             JSONObject blockResult = FeiShuOpenApiUtil.getDocumentBlocks(node.getObjToken(), tenantAccessToken);
-            System.out.println("blockResult = " + blockResult);
+//            System.out.println("blockResult = " + blockResult);
             JSONArray items = blockResult.getJSONObject("data") == null ? null : blockResult.getJSONObject("data").getJSONArray("items");
             if (CollectionUtils.isNotEmpty(items)) {
                 JSONObject pageItem = null;

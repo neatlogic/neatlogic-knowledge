@@ -22,6 +22,7 @@ import neatlogic.framework.fulltextindex.core.IFullTextIndexHandler;
 import neatlogic.framework.knowledge.constvalue.FeiShuAlignType;
 import neatlogic.framework.knowledge.constvalue.FeiShuBlockType;
 import neatlogic.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
+import neatlogic.framework.knowledge.constvalue.Status;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import neatlogic.framework.knowledge.dto.*;
@@ -43,6 +44,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -102,7 +104,6 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
         JSONArray spaceIdArray = paramObj.getJSONArray("spaceIdList");
         if (CollectionUtils.isNotEmpty(spaceIdArray)) {
             List<Long> spaceIdList = spaceIdArray.toJavaList(Long.class);
-//            aaa(spaceIdList, feiShuAppCredentials, tenantAccessToken);
             for (Long spaceId : spaceIdList) {
                 FeiShuSpaceVo feiShuSpaceVo = getFeiShuSpaceBySpaceId(spaceId, tenantAccessToken, feiShuSpaceMap);
                 if (feiShuSpaceVo != null) {
@@ -141,13 +142,10 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
                             saveFeishuDocument(feiShuAppCredentials, feiShuNodeVo, knowledgeType.getUuid(), tenantAccessToken);
                         }
                     }
-//                    KnowledgeDocumentTypeVo knowledgeType = getOrCreateKnowledgeType("node.getTitle()", "knowledgeType.getUuid()", feiShuAppCredentials.getKnowledgeCircleId());
-//                    saveFeishuDocument(feiShuAppCredentials, node, knowledgeType.getUuid(), tenantAccessToken);
                 }
             }
         }
-        // TODO
-//        FeiShuOpenApiUtil.getFeishuNodeInfo();
+        knowledgeDocumentTypeService.rebuildLeftRightCode(feiShuAppCredentials.getKnowledgeCircleId());
         return null;
     }
 
@@ -273,14 +271,14 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
             saveLines(documentVo.getId(), versionVo.getId(), feishuDocumentLines);
             if (CollectionUtils.isNotEmpty(unprocessedItems)) {
                 config.put("unprocessedItems", unprocessedItems);
-                status = "";
+                status = Status.UNSUPPORTED.getValue();
             } else {
-                status = "succeed";
+                status = Status.SUCCEED.getValue();
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            config.put("error", "");
-            status = "failed";
+            config.put("error", ExceptionUtils.getStackFrames(e));
+            status = Status.FAILED.getValue();
         }
         upsertMapping(appCredentialsVo, node, documentVo, status, config);
         IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getHandler(KnowledgeFullTextIndexType.KNOW_DOCUMENT_VERSION);
@@ -302,7 +300,9 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
         vo.setKnowledgeDocumentVersionId(documentVo.getKnowledgeDocumentVersionId());
         vo.setKnowledgeDocumentTypeUuid(documentVo.getKnowledgeDocumentTypeUuid());
         vo.setStatus(status);
-        vo.setConfig(config);
+        if (MapUtils.isNotEmpty(config)) {
+            vo.setConfig(config);
+        }
         vo.setLcu(UserContext.get().getUserUuid());
         if (knowledgeFeishuSyncMapper.getSyncDocumentByNodeToken(node.getNodeToken()) == null) {
             knowledgeFeishuSyncMapper.insertSyncDocument(vo);

@@ -6,6 +6,7 @@ import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
+import neatlogic.framework.knowledge.constvalue.Status;
 import neatlogic.framework.knowledge.dto.feishu.FeiShuAppCredentialsVo;
 import neatlogic.framework.knowledge.dto.feishu.FeiShuNodeVo;
 import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeishuSyncDocumentVo;
@@ -81,8 +82,8 @@ public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
                         knowledgeFeishuSyncDocumentVo.setLcu(UserContext.get().getUserUuid());
                     }
                     if (knowledgeFeishuSyncDocumentVo.getStatus() == null) {
-                        knowledgeFeishuSyncDocumentVo.setStatus("succeed");
-                        knowledgeFeishuSyncDocumentVo.setStatusText("已成功");
+                        knowledgeFeishuSyncDocumentVo.setStatus(Status.NOT_SYNCED.getValue());
+                        knowledgeFeishuSyncDocumentVo.setStatusText(Status.NOT_SYNCED.getText());
                     }
                     tbodyList.add(knowledgeFeishuSyncDocumentVo);
                 } else {

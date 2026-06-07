@@ -36,25 +36,9 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
     @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
+
     @Resource
     private KnowledgeDocumentTypeService knowledgeDocumentTypeService;
-
-    @Override
-    public JSONObject searchConfig(KnowledgeFeishuSyncConfigVo vo) {
-        int count = knowledgeFeishuSyncMapper.searchConfigCount(vo);
-        List<KnowledgeFeishuSyncConfigVo> list = count > 0 ? knowledgeFeishuSyncMapper.searchConfig(vo) : new ArrayList<>();
-        JSONObject result = new JSONObject();
-        result.put("tbodyList", list);
-        result.put("rowNum", count);
-        result.put("currentPage", vo.getCurrentPage());
-        result.put("pageSize", vo.getPageSize());
-        return result;
-    }
-
-    @Override
-    public KnowledgeFeishuSyncConfigVo getConfig(Long id) {
-        return knowledgeFeishuSyncMapper.getConfigById(id);
-    }
 
     @Override
     public FeiShuAppCredentialsVo getFeiShuAppCredentials() {
@@ -73,53 +57,7 @@ public class KnowledgeFeishuSyncServiceImpl implements KnowledgeFeishuSyncServic
             return new FeiShuAppCredentialsVo(appId, appSecret, knowledgeCircleId);
         }
         return null;
-//        return new JSONObject().fluentPut("appId", appId).fluentPut("appSecret", appSecret).fluentPut("knowledgeCircleId", knowledgeCircleId);
     }
 
-    @Override
-    @Transactional
-    public Long saveConfig(KnowledgeFeishuSyncConfigVo vo) {
-        if (knowledgeFeishuSyncMapper.checkNameIsRepeat(vo) > 0) {
-            throw new RuntimeException("同步配置名称已存在");
-        }
-        String userUuid = UserContext.get().getUserUuid(true);
-        vo.setLcu(userUuid);
-        if (vo.getIsActive() == null) {
-            vo.setIsActive(1);
-        }
-        if (vo.getId() == null) {
-            vo.setId(SnowflakeUtil.uniqueLong());
-            if (StringUtils.isBlank(vo.getAppSecret())) {
-                throw new ParamNotExistsException("appSecret");
-            }
-            vo.setFcu(userUuid);
-            knowledgeFeishuSyncMapper.insertConfig(vo);
-        } else {
-            knowledgeFeishuSyncMapper.updateConfig(vo);
-        }
-        return vo.getId();
-    }
-
-    @Override
-    public void updateStatus(Long id, Integer isActive) {
-        knowledgeFeishuSyncMapper.updateConfigStatus(id, isActive, UserContext.get().getUserUuid(true));
-    }
-
-    @Override
-    public void deleteConfig(Long id) {
-        knowledgeFeishuSyncMapper.deleteConfig(id);
-    }
-
-    @Override
-    public JSONObject searchAudit(KnowledgeFeishuSyncAuditVo vo) {
-        int count = knowledgeFeishuSyncMapper.searchAuditCount(vo);
-        List<KnowledgeFeishuSyncAuditVo> list = count > 0 ? knowledgeFeishuSyncMapper.searchAudit(vo) : new ArrayList<>();
-        JSONObject result = new JSONObject();
-        result.put("tbodyList", list);
-        result.put("rowNum", count);
-        result.put("currentPage", vo.getCurrentPage());
-        result.put("pageSize", vo.getPageSize());
-        return result;
-    }
 
 }

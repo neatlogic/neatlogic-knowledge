@@ -19,49 +19,17 @@ import java.util.List;
 
 public interface KnowledgeFeishuSyncMapper {
 
-    int searchConfigCount(KnowledgeFeishuSyncConfigVo vo);
-
-    List<KnowledgeFeishuSyncConfigVo> searchConfig(KnowledgeFeishuSyncConfigVo vo);
-
-    KnowledgeFeishuSyncConfigVo getConfigById(Long id);
-
-    KnowledgeFeishuSyncConfigVo getConfigByName(String name);
-
-    int checkNameIsRepeat(KnowledgeFeishuSyncConfigVo vo);
-
-    int insertConfig(KnowledgeFeishuSyncConfigVo vo);
-
-    int updateConfig(KnowledgeFeishuSyncConfigVo vo);
-
-    int updateConfigStatus(@Param("id") Long id, @Param("isActive") Integer isActive, @Param("lcu") String lcu);
-
-//    int updateConfigLastSync(KnowledgeFeishuSyncConfigVo vo);
-
-    int deleteConfig(Long id);
-
-    int insertAudit(KnowledgeFeishuSyncAuditVo vo);
-
-    int updateAudit(KnowledgeFeishuSyncAuditVo vo);
-
-    KnowledgeFeishuSyncAuditVo getAuditById(Long id);
-
-    int searchAuditCount(KnowledgeFeishuSyncAuditVo vo);
-
-    List<KnowledgeFeishuSyncAuditVo> searchAudit(KnowledgeFeishuSyncAuditVo vo);
-
     List<KnowledgeFeiShuDocumentMappingVo> getSyncDocumentListByNodeTokenList(List<String> nodeTokenList);
 
     KnowledgeFeiShuDocumentMappingVo getSyncDocumentByNodeToken(String nodeToken);
-
-//    KnowledgeFeishuSyncDocumentVo getSyncDocumentByDocumentId(Long knowledgeDocumentId);
 
     int insertSyncDocument(KnowledgeFeiShuDocumentMappingVo vo);
 
     int updateSyncDocument(KnowledgeFeiShuDocumentMappingVo vo);
 
+    int updateSyncDocumentStatusByNodeToken(@Param("nodeToken") String nodeToken, @Param("status") String value);
+
     int insertSyncMediasMapping(@Param("uuid") String uuid, @Param("fileId") Long fileId);
 
     Long getSyncMediasMappingFileIdByUuid(String uuid);
-
-    int updateSyncDocumentStatusByNodeToken(@Param("nodeToken") String nodeToken, @Param("status") String value);
 }

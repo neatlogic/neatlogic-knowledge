@@ -56,7 +56,6 @@ public class FeiShuOpenApiUtil {
                 .setPayload(body.toJSONString())
                 .sendRequest()
                 .getResultJson();
-        System.out.println("getTenantAccessToken result = " + result);
         /*
         {
             "msg": "ok",
@@ -186,7 +185,6 @@ public class FeiShuOpenApiUtil {
                     .addHeader("Authorization", "Bearer " + tenantAccessToken)
                     .setQueryString(query);
             JSONObject result = request.sendRequest().getResultJson();
-//            System.out.println("feishuWikiSpaces result = " + result);
             checkFeishuResult(result);
             JSONObject data = result.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {
@@ -275,7 +273,6 @@ public class FeiShuOpenApiUtil {
                     .addHeader("Authorization", "Bearer " + tenantAccessToken)
                     .setQueryString(query);
             JSONObject result = request.sendRequest().getResultJson();
-    //        System.out.println("getFeishuWikiNodes result = " + result);
             checkFeishuResult(result);
             JSONObject data = result.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {
@@ -333,7 +330,6 @@ public class FeiShuOpenApiUtil {
                 .addHeader("Content-Type", "application/json; charset=utf-8")
                 .setQueryString(query);
         JSONObject result = request.sendRequest().getResultJson();
-//        System.out.println("getFeishuNodeInfo result = " + result);
         checkFeishuResult(result);
         return result;
     }
@@ -354,7 +350,6 @@ public class FeiShuOpenApiUtil {
 //                .setQueryString(query)
                 ;
         JSONObject result = request.sendRequest().getResultJson();
-//        System.out.println("getFeishuNodeInfo result = " + result);
         checkFeishuResult(result);
         return result;
     }
@@ -370,12 +365,10 @@ public class FeiShuOpenApiUtil {
             if (StringUtils.isNotBlank(pageToken)) {
                 query.put("page_token", pageToken);
             }
-//            System.out.println("url = " + url);
             HttpRequestUtil request = HttpRequestUtil.get(url)
                     .addHeader("Authorization", "Bearer " + tenantAccessToken)
                     .setQueryString(query);
             JSONObject result = request.sendRequest().getResultJson();
-//            System.out.println("getDocumentBlocks result = " + result);
             checkFeishuResult(result);
             JSONObject data = result.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {

@@ -94,7 +94,6 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
     @Override
     public void saveNodes(List<FeiShuNodeVo> nodes, FeiShuAppCredentialsVo config, KnowledgeDocumentTypeVo knowledgeType, String tenantAccessToken) {
         for (FeiShuNodeVo node : nodes) {
-            System.out.println("node = " + JSONArray.toJSON(node));
             if (!isDocumentNode(node)) {
                 continue;
             }
@@ -201,7 +200,6 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
 
     private FileVo downloadMedias(String fileToken, String tenantAccessToken) {
         Long fileId = knowledgeFeiShuMapper.getFeiShuMediasMappingFileIdByFileToken(fileToken);
-        System.out.println("getSyncMediasMappingFileIdByUuid fileId = " + fileId);
         if (fileId != null) {
             FileVo fileVo = fileMapper.getFileById(fileId);
             if (fileVo != null) {
@@ -211,7 +209,6 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         FileVo fileVo = FeiShuOpenApiUtil.downloadMedias(fileToken, tenantAccessToken);
         fileMapper.insertFile(fileVo);
         knowledgeFeiShuMapper.insertFeiShuMediasMapping(fileToken, fileVo.getId());
-        System.out.println("insertSyncMediasMapping fileId = " + fileVo.getId());
         return fileVo;
     }
 
@@ -732,9 +729,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
     private List<KnowledgeDocumentLineVo> getFeishuDocumentLines(FeiShuNodeVo node, String tenantAccessToken, JSONArray unprocessedItems) {
         List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
         try {
-            System.out.println("node.title = " + node.getTitle());
             JSONObject blockResult = FeiShuOpenApiUtil.getDocumentBlocks(node.getObjToken(), tenantAccessToken);
-//            System.out.println("blockResult = " + blockResult);
             JSONArray items = blockResult.getJSONObject("data") == null ? null : blockResult.getJSONObject("data").getJSONArray("items");
             if (CollectionUtils.isNotEmpty(items)) {
                 JSONObject pageItem = null;

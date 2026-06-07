@@ -7,6 +7,7 @@
             `app_id` AS appId,
             `space_id` AS spaceId,
             `title`,
+            `parent_node_token` AS parentNodeToken,
             `node_token` AS nodeToken,
             `obj_token` AS objToken,
             `obj_type` AS objType,
@@ -30,6 +31,7 @@
             `app_id` AS appId,
             `space_id` AS spaceId,
             `title`,
+            `parent_node_token` AS parentNodeToken,
             `node_token` AS nodeToken,
             `obj_token` AS objToken,
             `obj_type` AS objType,
@@ -47,9 +49,9 @@
 
     <insert id="insertFeiShuDocumentMapping" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         INSERT INTO `knowledge_feishu_document_mapping`
-        (`app_id`, `space_id`, `title`, `node_token`, `obj_token`, `obj_type`, `update_time`, `knowledge_document_id`, `knowledge_document_version_id`, `knowledge_document_type_uuid`, `status`, `config`, `lcu`, `lcd`)
+        (`app_id`, `space_id`, `title`, `parent_node_token`, `node_token`, `obj_token`, `obj_type`, `update_time`, `knowledge_document_id`, `knowledge_document_version_id`, `knowledge_document_type_uuid`, `status`, `config`, `lcu`, `lcd`)
         VALUES
-        (#{appId}, #{spaceId}, #{title}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{knowledgeDocumentId}, #{knowledgeDocumentVersionId}, #{knowledgeDocumentTypeUuid}, #{status}, #{configStr}, #{lcu}, NOW(3))
+        (#{appId}, #{spaceId}, #{title}, #{parentNodeToken}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{knowledgeDocumentId}, #{knowledgeDocumentVersionId}, #{knowledgeDocumentTypeUuid}, #{status}, #{configStr}, #{lcu}, NOW(3))
     </insert>
 
     <update id="updateFeiShuDocumentMapping" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
@@ -58,6 +60,7 @@
             `app_id` = #{appId},
             `space_id` = #{spaceId},
             `title` = #{title},
+            `parent_node_token` = #{parentNodeToken},
             `obj_token` = #{objToken},
             `obj_type` = #{objType},
             `update_time` = #{updateTime},

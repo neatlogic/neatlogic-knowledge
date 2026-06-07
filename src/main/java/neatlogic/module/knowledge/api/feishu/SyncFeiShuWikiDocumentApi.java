@@ -122,7 +122,6 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
 //            if (CollectionUtils.isNotEmpty(list)) {
 //                for (String nodeToken : list) {
 //                    FeiShuNodeVo feiShuNodeVo = getFeiShuNodeByNodeToken(nodeToken, tenantAccessToken, feiShuNodeMap);
-//                    System.out.println("feiShuNodeVo = " + JSONObject.toJSONString(feiShuNodeVo));
 //                    if (feiShuNodeVo != null) {
 //                        FeiShuSpaceVo feiShuSpaceVo = getFeiShuSpaceBySpaceId(feiShuNodeVo.getSpaceId(), tenantAccessToken, feiShuSpaceMap);
 //                        if (feiShuSpaceVo != null) {
@@ -193,9 +192,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
             if (CollectionUtils.isNotEmpty(list)) {
                 for (String nodeToken : list) {
                     FeiShuNodeVo feiShuNodeVo = getFeiShuNodeByNodeToken(nodeToken, tenantAccessToken, feiShuNodeMap);
-                    System.out.println("feiShuNodeVo = " + JSONObject.toJSONString(feiShuNodeVo));
                     if (feiShuNodeVo != null) {
-//                        FeiShuSpaceVo feiShuSpaceVo = getFeiShuSpaceBySpaceId(feiShuNodeVo.getSpaceId(), tenantAccessToken, feiShuSpaceMap);
                         FeiShuSpaceVo feiShuSpaceVo = feiShuSpaceMap.get(feiShuNodeVo.getSpaceId());
                         if (feiShuSpaceVo != null) {
                             feiShuNodeVo.setSpaceName(feiShuSpaceVo.getName());
@@ -262,7 +259,6 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
         FeiShuNodeVo feiShuNodeVo = feiShuNodeMap.get(nodeToken);
         if (feiShuNodeVo == null) {
             JSONObject feishuNodeInfo = FeiShuOpenApiUtil.getFeishuNodeInfo(nodeToken, tenantAccessToken);
-            System.out.println("feishuNodeInfo = " + feishuNodeInfo);
             JSONObject data = feishuNodeInfo.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {
                 JSONObject node = data.getJSONObject("node");

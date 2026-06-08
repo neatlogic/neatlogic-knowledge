@@ -19,7 +19,6 @@ import neatlogic.framework.file.dao.mapper.FileMapper;
 import neatlogic.framework.knowledge.constvalue.Status;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
-import neatlogic.framework.knowledge.dto.*;
 import neatlogic.framework.knowledge.dto.feishu.*;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
@@ -158,7 +157,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
     private List<FeiShuNodeVo> loadWikiNodes(FeiShuSpaceVo feiShuSpaceVo, FeiShuNodeVo parent, List<String> path, String tenantAccessToken) {
         List<FeiShuNodeVo> nodeList = new ArrayList<>();
         String parentNodeToken = parent != null ? parent.getNodeToken() : null;
-        JSONObject result = FeiShuOpenApiUtil.getFeishuWikiNodes(feiShuSpaceVo.getSpaceId(), parentNodeToken, tenantAccessToken);
+        JSONObject result = FeiShuOpenApiUtil.getFeiShuWikiNodes(feiShuSpaceVo.getSpaceId(), parentNodeToken, tenantAccessToken);
         JSONObject data = result.getJSONObject("data");
         if (data == null) {
             return nodeList;
@@ -191,7 +190,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
     private FeiShuSpaceVo getFeiShuSpaceBySpaceId(Long spaceId, String tenantAccessToken, Map<Long, FeiShuSpaceVo> feiShuSpaceMap) {
         FeiShuSpaceVo feiShuSpaceVo = feiShuSpaceMap.get(spaceId);
         if (feiShuSpaceVo == null) {
-            JSONObject feishuSpaceInfo = FeiShuOpenApiUtil.getFeishuSpaceInfo(spaceId, tenantAccessToken);
+            JSONObject feishuSpaceInfo = FeiShuOpenApiUtil.getFeiShuSpaceInfo(spaceId, tenantAccessToken);
             JSONObject data = feishuSpaceInfo.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {
                 JSONObject space = data.getJSONObject("space");
@@ -207,7 +206,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
     private FeiShuNodeVo getFeiShuNodeByNodeToken(String nodeToken, String tenantAccessToken, Map<String, FeiShuNodeVo> feiShuNodeMap) {
         FeiShuNodeVo feiShuNodeVo = feiShuNodeMap.get(nodeToken);
         if (feiShuNodeVo == null) {
-            JSONObject feishuNodeInfo = FeiShuOpenApiUtil.getFeishuNodeInfo(nodeToken, tenantAccessToken);
+            JSONObject feishuNodeInfo = FeiShuOpenApiUtil.getFeiShuNodeInfo(nodeToken, tenantAccessToken);
             JSONObject data = feishuNodeInfo.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {
                 JSONObject node = data.getJSONObject("node");

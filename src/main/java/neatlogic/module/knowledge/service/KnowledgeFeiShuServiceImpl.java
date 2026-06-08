@@ -76,7 +76,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         List<FeiShuSpaceVo> feiShuSpaceList = new ArrayList<>();
         if (feiShuAppCredentials != null) {
             String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(feiShuAppCredentials.getAppId(), feiShuAppCredentials.getAppSecret());
-            JSONObject resultObj = FeiShuOpenApiUtil.getFeishuWikiSpaces(tenantAccessToken);
+            JSONObject resultObj = FeiShuOpenApiUtil.getFeiShuWikiSpaces(tenantAccessToken);
             JSONObject data = resultObj.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {
                 JSONArray items = data.getJSONArray("items");
@@ -116,15 +116,16 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
     public void saveFeiShuDocument(FeiShuAppCredentialsVo appCredentialsVo, FeiShuNodeVo node, String typeUuid, String tenantAccessToken) {
         String status = null;
         JSONObject config = new JSONObject();
-        KnowledgeDocumentVo documentVo = new KnowledgeDocumentVo();
+        KnowledgeDocumentVo documentVo = null;
         try {
+            JSONArray unprocessedItems = new JSONArray();
+            List<KnowledgeDocumentLineVo> feishuDocumentLines = getFeiShuDocumentLines(node, tenantAccessToken, unprocessedItems);
             knowledgeFeiShuMapper.updateFeiShuDocumentMappingStatusByNodeToken(node.getNodeToken(), Status.RUNNING.getValue());
             KnowledgeFeiShuDocumentMappingVo mapping = knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(node.getNodeToken());
             if (mapping != null && mapping.getKnowledgeDocumentId() != null) {
                 documentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(mapping.getKnowledgeDocumentId());
             }
             if (documentVo != null) {
-                documentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(mapping.getKnowledgeDocumentId());
                 documentVo.setTitle(node.getTitle());
                 documentVo.setKnowledgeDocumentTypeUuid(typeUuid);
                 knowledgeDocumentMapper.updateKnowledgeDocumentTitleById(documentVo);
@@ -155,8 +156,6 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
             documentVo.setVersion(versionVo.getVersion());
             knowledgeDocumentMapper.updateKnowledgeDocumentById(documentVo);
 
-            JSONArray unprocessedItems = new JSONArray();
-            List<KnowledgeDocumentLineVo> feishuDocumentLines = getFeiShuDocumentLines(node, tenantAccessToken, unprocessedItems);
             saveLines(documentVo.getId(), versionVo.getId(), feishuDocumentLines);
             if (CollectionUtils.isNotEmpty(unprocessedItems)) {
                 config.put("unprocessedItems", unprocessedItems);
@@ -171,10 +170,9 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         }
         upsertMapping(appCredentialsVo, node, documentVo, status, config);
         IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getHandler(KnowledgeFullTextIndexType.KNOW_DOCUMENT_VERSION);
-        if (handler != null) {
+        if (handler != null && documentVo != null) {
             handler.createIndex(documentVo.getKnowledgeDocumentVersionId());
         }
-//        return new JSONObject().fluentPut("knowledgeDocumentId", documentVo.getId()).fluentPut("unprocessedItems", unprocessedItems);
     }
 
     private void upsertMapping(FeiShuAppCredentialsVo appCredentialsVo, FeiShuNodeVo node, KnowledgeDocumentVo documentVo, String status, JSONObject config) {
@@ -1073,7 +1071,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
     @Override
     public List<FeiShuNodeVo> loadWikiNodes(Long spaceId, String parentNodeToken, List<String> path, String tenantAccessToken) {
         List<FeiShuNodeVo> nodeList = new ArrayList<>();
-        JSONObject result = FeiShuOpenApiUtil.getFeishuWikiNodes(spaceId, parentNodeToken, tenantAccessToken);
+        JSONObject result = FeiShuOpenApiUtil.getFeiShuWikiNodes(spaceId, parentNodeToken, tenantAccessToken);
         JSONObject data = result.getJSONObject("data");
         if (data == null) {
             return nodeList;

@@ -65,7 +65,7 @@ public class FeiShuOpenApiUtil {
             "tenant_access_token": "t-g10462hfSE4CYZ3Y5DD6CCQNPSH3S4GOZZBPA4FG"
         }
          */
-        checkFeishuResult(TENANT_ACCESS_TOKEN_INTERNAL_URL, body, result);
+        checkFeiShuResult(TENANT_ACCESS_TOKEN_INTERNAL_URL, body, result);
         return result.getString("tenant_access_token");
     }
 
@@ -172,7 +172,7 @@ public class FeiShuOpenApiUtil {
      * @param tenantAccessToken
      * @return
      */
-    public static JSONObject getFeishuWikiSpaces(String tenantAccessToken) {
+    public static JSONObject getFeiShuWikiSpaces(String tenantAccessToken) {
         JSONArray allItems = new JSONArray();
         String pageToken = null;
         Boolean hasMore = false;
@@ -186,7 +186,7 @@ public class FeiShuOpenApiUtil {
                     .addHeader("Authorization", "Bearer " + tenantAccessToken)
                     .setQueryString(query);
             JSONObject result = request.sendRequest().getResultJson();
-            checkFeishuResult(WIKI_V2_SPACES_URL, query, result);
+            checkFeiShuResult(WIKI_V2_SPACES_URL, query, result);
             JSONObject data = result.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {
                 pageToken = data.getString("page_token");
@@ -256,7 +256,7 @@ public class FeiShuOpenApiUtil {
      * @param parentNodeToken
      * @return
      */
-    public static JSONObject getFeishuWikiNodes(Long spaceId, String parentNodeToken, String tenantAccessToken) {
+    public static JSONObject getFeiShuWikiNodes(Long spaceId, String parentNodeToken, String tenantAccessToken) {
         String url = SPACE_NODES_URL.replace(":space_id", spaceId.toString());
         JSONArray allItems = new JSONArray();
         String pageToken = null;
@@ -274,7 +274,7 @@ public class FeiShuOpenApiUtil {
                     .addHeader("Authorization", "Bearer " + tenantAccessToken)
                     .setQueryString(query);
             JSONObject result = request.sendRequest().getResultJson();
-            checkFeishuResult(url, query, result);
+            checkFeiShuResult(url, query, result);
             JSONObject data = result.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {
                 hasMore = data.getBoolean("has_more");
@@ -323,7 +323,7 @@ public class FeiShuOpenApiUtil {
      * @param tenantAccessToken
      * @return
      */
-    public static JSONObject getFeishuNodeInfo(String nodeToken, String tenantAccessToken) {
+    public static JSONObject getFeiShuNodeInfo(String nodeToken, String tenantAccessToken) {
         JSONObject query = new JSONObject();
         query.put("token", nodeToken);
         HttpRequestUtil request = HttpRequestUtil.get(GET_NODE_URL)
@@ -331,7 +331,7 @@ public class FeiShuOpenApiUtil {
                 .addHeader("Content-Type", "application/json; charset=utf-8")
                 .setQueryString(query);
         JSONObject result = request.sendRequest().getResultJson();
-        checkFeishuResult(GET_NODE_URL, query, result);
+        checkFeiShuResult(GET_NODE_URL, query, result);
         return result;
     }
 
@@ -341,7 +341,7 @@ public class FeiShuOpenApiUtil {
      * @param tenantAccessToken
      * @return
      */
-    public static JSONObject getFeishuSpaceInfo(Long spaceId, String tenantAccessToken) {
+    public static JSONObject getFeiShuSpaceInfo(Long spaceId, String tenantAccessToken) {
 //        JSONObject query = new JSONObject();
 //        query.put("token", nodeToken);
         String url = GET_SPACE_URL.replace(":space_id", spaceId.toString());
@@ -351,7 +351,7 @@ public class FeiShuOpenApiUtil {
 //                .setQueryString(query)
                 ;
         JSONObject result = request.sendRequest().getResultJson();
-        checkFeishuResult(url, null, result);
+        checkFeiShuResult(url, null, result);
         return result;
     }
 
@@ -370,7 +370,7 @@ public class FeiShuOpenApiUtil {
                     .addHeader("Authorization", "Bearer " + tenantAccessToken)
                     .setQueryString(query);
             JSONObject result = request.sendRequest().getResultJson();
-            checkFeishuResult(url, query, result);
+            checkFeiShuResult(url, query, result);
             JSONObject data = result.getJSONObject("data");
             if (MapUtils.isNotEmpty(data)) {
                 hasMore = data.getBoolean("has_more");
@@ -402,15 +402,18 @@ public class FeiShuOpenApiUtil {
                 .setOutputStream(outputStream)
                 .sendRequest();
         if (StringUtils.isNotBlank(request.getError())) {
-            throw new RuntimeException(request.getError());
+            String message = String.format("访问飞书接口返回异常，error: %s, url: %s, query: %s", request.getError(), url, null);
+            throw new ApiRuntimeException(message);
         }
         if (request.getResponseCode() != 200 && request.getResponseCode() != 206) {
-            throw new RuntimeException("Feishu media download failed, responseCode:" + request.getResponseCode());
+            String message = String.format("访问飞书接口返回异常，responseCode: %s, url: %s, query: %s", request.getResponseCode(), url, null);
+            throw new ApiRuntimeException(message);
+//            throw new RuntimeException("FeiShu media download failed, responseCode:" + request.getResponseCode());
         }
         Map<String, List<String>> responseHeaderMap = request.getResponseHeaderMap();
         String contentType = getFirstResponseHeader(responseHeaderMap, "content-type");
         String contentDisposition = getFirstResponseHeader(responseHeaderMap, "content-disposition");
-        String fileName = parseFeishuMediaFileName(contentDisposition, fileToken);
+        String fileName = parseFeiShuMediaFileName(contentDisposition, fileToken);
         byte[] data = outputStream.toByteArray();
         try {
             FileVo fileVo = new FileVo();
@@ -427,7 +430,9 @@ public class FeiShuOpenApiUtil {
             return fileVo;
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
-            throw new RuntimeException("Feishu media save failed, fileToken:" + fileToken, ex);
+            String message = String.format("保存飞书素材异常，fileToken: %s, error: %s", fileToken, ex.getMessage());
+            throw new ApiRuntimeException(message);
+//            throw new RuntimeException("FeiShu media save failed, fileToken:" + fileToken, ex);
         }
     }
 
@@ -457,7 +462,7 @@ public class FeiShuOpenApiUtil {
      * @param fileToken          素材 token
      * @return 素材文件名
      */
-    public static String parseFeishuMediaFileName(String contentDisposition, String fileToken) {
+    public static String parseFeiShuMediaFileName(String contentDisposition, String fileToken) {
         String fileName = null;
         if (StringUtils.isNotBlank(contentDisposition)) {
             String[] partArray = contentDisposition.split(";");
@@ -507,7 +512,7 @@ public class FeiShuOpenApiUtil {
         return result;
     }
 
-    public static void checkFeishuResult(String url, JSONObject query, JSONObject result) {
+    public static void checkFeiShuResult(String url, JSONObject query, JSONObject result) {
         if (result == null) {
             String message = String.format("访问飞书接口无返回值，url: %s, query: %s", url, query.toJSONString());
             throw new ApiRuntimeException(message);

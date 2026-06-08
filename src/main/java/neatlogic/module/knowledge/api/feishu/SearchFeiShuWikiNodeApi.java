@@ -102,7 +102,7 @@ public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
 
     private List<FeiShuNodeVo> loadWikiNodes(Long spaceId, String parentNodeToken, List<String> path, String tenantAccessToken) {
         List<FeiShuNodeVo> nodeList = new ArrayList<>();
-        JSONObject result = FeiShuOpenApiUtil.getFeishuWikiNodes(spaceId, parentNodeToken, tenantAccessToken);
+        JSONObject result = FeiShuOpenApiUtil.getFeiShuWikiNodes(spaceId, parentNodeToken, tenantAccessToken);
         JSONObject data = result.getJSONObject("data");
         if (data == null) {
             return nodeList;

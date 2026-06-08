@@ -53,19 +53,19 @@
         VALUES
         (#{appId}, #{spaceId}, #{title}, #{parentNodeToken}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{knowledgeDocumentId}, #{knowledgeDocumentVersionId}, #{knowledgeDocumentTypeUuid}, #{status}, #{configStr}, #{lcu}, NOW(3))
         ON DUPLICATE KEY UPDATE
-            `app_id` = VALUES(`app_id`)
-            `space_id` = VALUES(`space_id`)
-            `title` = VALUES(`title`)
-            `parent_node_token` = VALUES(`parent_node_token`)
-            `obj_token` = VALUES(`obj_token`)
-            `obj_type` = VALUES(`obj_type`)
-            `update_time` = VALUES(`update_time`)
-            `knowledge_document_id` = VALUES(`knowledge_document_id`)
-            `knowledge_document_version_id` = VALUES(`knowledge_document_version_id`)
-            `knowledge_document_type_uuid` = VALUES(`knowledge_document_type_uuid`)
-            `status` = VALUES(`status`)
-            `config` = VALUES(`config`)
-            `lcu` = VALUES(`lcu`)
+            `app_id` = VALUES(`app_id`),
+            `space_id` = VALUES(`space_id`),
+            `title` = VALUES(`title`),
+            `parent_node_token` = VALUES(`parent_node_token`),
+            `obj_token` = VALUES(`obj_token`),
+            `obj_type` = VALUES(`obj_type`),
+            `update_time` = VALUES(`update_time`),
+            `knowledge_document_id` = VALUES(`knowledge_document_id`),
+            `knowledge_document_version_id` = VALUES(`knowledge_document_version_id`),
+            `knowledge_document_type_uuid` = VALUES(`knowledge_document_type_uuid`),
+            `status` = VALUES(`status`),
+            `config` = VALUES(`config`),
+            `lcu` = VALUES(`lcu`),
             `lcd` = VALUES(`lcd`)
     </insert>
 

@@ -118,9 +118,9 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         JSONObject config = new JSONObject();
         KnowledgeDocumentVo documentVo = null;
         try {
+            knowledgeFeiShuMapper.updateFeiShuDocumentMappingStatusByNodeToken(node.getNodeToken(), Status.RUNNING.getValue());
             JSONArray unprocessedItems = new JSONArray();
             List<KnowledgeDocumentLineVo> feishuDocumentLines = getFeiShuDocumentLines(node, tenantAccessToken, unprocessedItems);
-            knowledgeFeiShuMapper.updateFeiShuDocumentMappingStatusByNodeToken(node.getNodeToken(), Status.RUNNING.getValue());
             KnowledgeFeiShuDocumentMappingVo mapping = knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(node.getNodeToken());
             if (mapping != null && mapping.getKnowledgeDocumentId() != null) {
                 documentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(mapping.getKnowledgeDocumentId());

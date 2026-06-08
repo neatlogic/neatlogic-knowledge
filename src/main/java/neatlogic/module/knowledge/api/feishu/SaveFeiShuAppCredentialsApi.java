@@ -35,6 +35,7 @@ public class SaveFeiShuAppCredentialsApi extends PrivateApiComponentBase {
     })
     @Output({})
     @Description(desc = "nmkaf.savefeishuappcredentialsapi.getname")
+    @ResubmitInterval(5)
     @Override
     public Object myDoService(JSONObject jsonObj) {
         String appId = jsonObj.getString("appId");

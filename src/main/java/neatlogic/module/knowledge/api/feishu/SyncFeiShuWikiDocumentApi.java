@@ -17,10 +17,7 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.knowledge.constvalue.Status;
 import neatlogic.framework.knowledge.dto.feishu.*;
-import neatlogic.framework.restful.annotation.Description;
-import neatlogic.framework.restful.annotation.Input;
-import neatlogic.framework.restful.annotation.OperationType;
-import neatlogic.framework.restful.annotation.Param;
+import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_FEISHU_SYNC_MODIFY;
@@ -64,6 +61,7 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
 
     })
     @Description(desc = "nmkaf.syncfeishuwikidocumentapi.getname")
+    @ResubmitInterval(5)
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeiShuService.getFeiShuAppCredentials();

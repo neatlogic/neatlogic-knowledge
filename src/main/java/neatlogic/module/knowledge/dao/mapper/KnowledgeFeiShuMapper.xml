@@ -117,7 +117,29 @@
             `lcu`,
             `lcd`
         FROM `knowledge_feishu_document_mapping`
-        where `node_token` = #{nodeToken}
+        WHERE `node_token` = #{nodeToken}
+    </select>
+
+    <select id="getFeiShuDocumentMappingForLockByNodeToken" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+        SELECT
+            `app_id` AS appId,
+            `space_id` AS spaceId,
+            `title`,
+            `parent_node_token` AS parentNodeToken,
+            `node_token` AS nodeToken,
+            `obj_token` AS objToken,
+            `obj_type` AS objType,
+            `update_time` AS updateTime,
+            `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
+            `knowledge_document_id` AS knowledgeDocumentId,
+            `knowledge_document_version_id` AS knowledgeDocumentVersionId,
+            `status`,
+            `config` AS configStr,
+            `lcu`,
+            `lcd`
+        FROM `knowledge_feishu_document_mapping`
+        WHERE `node_token` = #{nodeToken}
+        FOR UPDATE
     </select>
 
     <insert id="insertFeiShuDocumentMapping" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">

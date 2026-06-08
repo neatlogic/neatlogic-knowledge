@@ -1,5 +1,6 @@
 package neatlogic.module.knowledge.service;
 
+import neatlogic.framework.knowledge.constvalue.Status;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentTypeVo;
 import neatlogic.framework.knowledge.dto.feishu.FeiShuAppCredentialsVo;
 import neatlogic.framework.knowledge.dto.feishu.FeiShuNodeVo;
@@ -20,4 +21,6 @@ public interface KnowledgeFeiShuService {
     void saveNodes(List<FeiShuNodeVo> nodes, FeiShuAppCredentialsVo config, KnowledgeDocumentTypeVo knowledgeType, String tenantAccessToken);
 
     void saveFeiShuDocument(FeiShuAppCredentialsVo appCredentialsVo, FeiShuNodeVo node, String typeUuid, String tenantAccessToken);
+
+    boolean updateFeiShuDocumentMappingStatusByNodeToken(String nodeToken, Status fromStatus, Status toStatus);
 }

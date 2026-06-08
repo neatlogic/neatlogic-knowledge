@@ -28,6 +28,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
@@ -118,7 +119,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         JSONObject config = new JSONObject();
         KnowledgeDocumentVo documentVo = null;
         try {
-            knowledgeFeiShuMapper.updateFeiShuDocumentMappingStatusByNodeToken(node.getNodeToken(), Status.RUNNING.getValue());
+//            knowledgeFeiShuMapper.updateFeiShuDocumentMappingStatusByNodeToken(node.getNodeToken(), Status.RUNNING.getValue());
             JSONArray unprocessedItems = new JSONArray();
             List<KnowledgeDocumentLineVo> feishuDocumentLines = getFeiShuDocumentLines(node, tenantAccessToken, unprocessedItems);
             KnowledgeFeiShuDocumentMappingVo mapping = knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(node.getNodeToken());
@@ -173,6 +174,17 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         if (handler != null && documentVo != null) {
             handler.createIndex(documentVo.getKnowledgeDocumentVersionId());
         }
+    }
+
+    @Override
+    @Transactional
+    public boolean updateFeiShuDocumentMappingStatusByNodeToken(String nodeToken, Status fromStatus, Status toStatus) {
+        KnowledgeFeiShuDocumentMappingVo feiShuDocumentMapping = knowledgeFeiShuMapper.getFeiShuDocumentMappingForLockByNodeToken(nodeToken);
+        if (feiShuDocumentMapping != null && Objects.equals(feiShuDocumentMapping.getStatus(), fromStatus.getValue())) {
+            knowledgeFeiShuMapper.updateFeiShuDocumentMappingStatusByNodeToken(nodeToken, toStatus.getValue());
+            return true;
+        }
+        return false;
     }
 
     private void upsertMapping(FeiShuAppCredentialsVo appCredentialsVo, FeiShuNodeVo node, KnowledgeDocumentVo documentVo, String status, JSONObject config) {

@@ -26,6 +26,8 @@ public interface KnowledgeFeiShuMapper {
 
     KnowledgeFeiShuDocumentMappingVo getFeiShuDocumentMappingByNodeToken(String nodeToken);
 
+    KnowledgeFeiShuDocumentMappingVo getFeiShuDocumentMappingForLockByNodeToken(String nodeToken);
+
     int insertFeiShuDocumentMapping(KnowledgeFeiShuDocumentMappingVo vo);
 
     int insertFeiShuDocumentMappingStatus(KnowledgeFeiShuDocumentMappingVo vo);

@@ -85,14 +85,14 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(feiShuNodeList)) {
             for (int i = feiShuNodeList.size() - 1; i >= 0; i--) {
                 FeiShuNodeVo feiShuNodeVo = feiShuNodeList.get(i);
-//                KnowledgeFeiShuDocumentMappingVo feiShuDocumentMapping = knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(feiShuNodeVo.getNodeToken());
-//                if (feiShuDocumentMapping != null) {
-//                    if (Objects.equals(feiShuDocumentMapping.getStatus(), Status.WAITING.getValue())
-//                            || Objects.equals(feiShuDocumentMapping.getStatus(), Status.RUNNING.getValue())) {
-//                        feiShuNodeList.remove(i);
-//                        continue;
-//                    }
-//                }
+                KnowledgeFeiShuDocumentMappingVo feiShuDocumentMapping = knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(feiShuNodeVo.getNodeToken());
+                if (feiShuDocumentMapping != null) {
+                    if (Objects.equals(feiShuDocumentMapping.getStatus(), Status.WAITING.getValue())
+                            || Objects.equals(feiShuDocumentMapping.getStatus(), Status.RUNNING.getValue())) {
+                        feiShuNodeList.remove(i);
+                        continue;
+                    }
+                }
                 KnowledgeFeiShuDocumentMappingVo documentMappingVo = new KnowledgeFeiShuDocumentMappingVo(feiShuAppCredentials.getAppId(), feiShuNodeVo);
                 documentMappingVo.setStatus(Status.WAITING.getValue());
                 knowledgeFeiShuMapper.insertFeiShuDocumentMappingStatus(documentMappingVo);

@@ -11,6 +11,7 @@
 package neatlogic.module.knowledge.thread;
 
 import neatlogic.framework.asynchronization.thread.NeatLogicThread;
+import neatlogic.framework.knowledge.constvalue.Status;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentTypeVo;
 import neatlogic.framework.knowledge.dto.feishu.FeiShuAppCredentialsVo;
 import neatlogic.framework.knowledge.dto.feishu.FeiShuNodeVo;
@@ -60,6 +61,10 @@ public class FeiShuWikiThread extends NeatLogicThread {
 
 
     private void saveNode(FeiShuNodeVo feiShuNodeVo, FeiShuAppCredentialsVo feiShuAppCredentials, String tenantAccessToken) {
+        boolean flag = knowledgeFeiShuService.updateFeiShuDocumentMappingStatusByNodeToken(feiShuNodeVo.getNodeToken(), Status.WAITING, Status.RUNNING);
+        if (!flag) {
+            return;
+        }
         KnowledgeDocumentTypeVo knowledgeType = knowledgeFeiShuService.getOrCreateKnowledgeType(feiShuNodeVo.getSpaceName(), "0", feiShuAppCredentials.getKnowledgeCircleId());
         List<FeiShuNodeVo> parentList = new ArrayList<>();
         FeiShuNodeVo parent = feiShuNodeVo.getParent();

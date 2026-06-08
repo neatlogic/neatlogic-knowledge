@@ -77,6 +77,8 @@ public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
         List<KnowledgeFeiShuDocumentMappingVo> tbodyList = new ArrayList<>();
         Long spaceId = feiShuNodeSearchVo.getSpaceId();
         String parentNodeToken = feiShuNodeSearchVo.getParentNodeToken();
+        String keyword = feiShuNodeSearchVo.getKeyword();
+        String status = feiShuNodeSearchVo.getStatus();
         String tenantAccessToken = FeiShuOpenApiUtil.getTenantAccessToken(feiShuAppCredentials.getAppId(), feiShuAppCredentials.getAppSecret());
         List<FeiShuNodeVo> feiShuNodeVoList = loadWikiNodes(spaceId, parentNodeToken, new ArrayList<>(), tenantAccessToken);
         if (CollectionUtils.isNotEmpty(feiShuNodeVoList)) {
@@ -110,18 +112,38 @@ public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
                 }
             }
         }
+        if (StringUtils.isNotBlank(keyword) || StringUtils.isNotBlank(status)) {
+            // Filter after loading FeiShu nodes so unsynced nodes can also match keyword/status.
+            tbodyList = tbodyList.stream().filter(item -> {
+                boolean isKeywordMatched = StringUtils.isBlank(keyword)
+                        || StringUtils.containsIgnoreCase(item.getTitle(), keyword)
+                        || Objects.equals(item.getNodeToken(), keyword)
+                        || Objects.equals(item.getObjToken(), keyword)
+                        || StringUtils.containsIgnoreCase(item.getConfigStr(), keyword);
+                boolean isStatusMatched = StringUtils.isBlank(status) || Objects.equals(item.getStatus(), status);
+                return isKeywordMatched && isStatusMatched;
+            }).collect(Collectors.toList());
+        }
         int rowNum = tbodyList.size();
-        int pageSize = ((rowNum / 20) + (rowNum % 20 > 0 ? 1 : 0)) * 20;
         BasePageVo basePageVo = new BasePageVo();
-        basePageVo.setCurrentPage(1);
-        basePageVo.setPageSize(Math.min(pageSize, 100));
+//        int pageSize = ((rowNum / 20) + (rowNum % 20 > 0 ? 1 : 0)) * 20;
+//        basePageVo.setCurrentPage(1);
+//        basePageVo.setPageSize(Math.min(pageSize, 100));
+        basePageVo.setCurrentPage(feiShuNodeSearchVo.getCurrentPage());
+        basePageVo.setPageSize(feiShuNodeSearchVo.getPageSize());
         basePageVo.setRowNum(rowNum);
-        return TableResultUtil.getResult(tbodyList, basePageVo);
+        // Return only the current page and calculate page metadata with the filtered row count.
+        int fromIndex = Math.min(basePageVo.getStartNum(), rowNum);
+        int toIndex = Math.min(fromIndex + basePageVo.getPageSize(), rowNum);
+        return TableResultUtil.getResult(tbodyList.subList(fromIndex, toIndex), basePageVo);
     }
 
     private JSONObject searchForDB(FeiShuNodeSearchVo feiShuNodeSearchVo, FeiShuAppCredentialsVo feiShuAppCredentials) {
-
-        return null;
+        // DB search reads knowledge_feishu_document_mapping directly and avoids FeiShu OpenAPI calls.
+        int rowNum = knowledgeFeiShuMapper.searchFeiShuDocumentMappingCount(feiShuNodeSearchVo);
+        feiShuNodeSearchVo.setRowNum(rowNum);
+        List<KnowledgeFeiShuDocumentMappingVo> tbodyList = knowledgeFeiShuMapper.searchFeiShuDocumentMappingList(feiShuNodeSearchVo);
+        return TableResultUtil.getResult(tbodyList, feiShuNodeSearchVo);
     }
 
     private List<FeiShuNodeVo> loadWikiNodes(Long spaceId, String parentNodeToken, List<String> path, String tenantAccessToken) {

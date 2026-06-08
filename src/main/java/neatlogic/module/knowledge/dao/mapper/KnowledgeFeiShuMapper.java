@@ -11,6 +11,7 @@
 package neatlogic.module.knowledge.dao.mapper;
 
 import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo;
+import neatlogic.framework.knowledge.dto.feishu.FeiShuNodeSearchVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -18,6 +19,10 @@ import java.util.List;
 public interface KnowledgeFeiShuMapper {
 
     List<KnowledgeFeiShuDocumentMappingVo> getFeiShuDocumentMappingListByNodeTokenList(List<String> nodeTokenList);
+
+    List<KnowledgeFeiShuDocumentMappingVo> searchFeiShuDocumentMappingList(FeiShuNodeSearchVo searchVo);
+
+    int searchFeiShuDocumentMappingCount(FeiShuNodeSearchVo searchVo);
 
     KnowledgeFeiShuDocumentMappingVo getFeiShuDocumentMappingByNodeToken(String nodeToken);
 

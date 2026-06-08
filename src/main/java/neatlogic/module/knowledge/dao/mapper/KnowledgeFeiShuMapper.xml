@@ -26,6 +26,79 @@
         </foreach>
     </select>
 
+    <select id="searchFeiShuDocumentMappingList" parameterType="neatlogic.framework.knowledge.dto.feishu.FeiShuNodeSearchVo" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+        SELECT
+            `app_id` AS appId,
+            `space_id` AS spaceId,
+            `title`,
+            `parent_node_token` AS parentNodeToken,
+            `node_token` AS nodeToken,
+            `obj_token` AS objToken,
+            `obj_type` AS objType,
+            `update_time` AS updateTime,
+            `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
+            `knowledge_document_id` AS knowledgeDocumentId,
+            `knowledge_document_version_id` AS knowledgeDocumentVersionId,
+            `status`,
+            `config` AS configStr,
+            `lcu`,
+            `lcd`
+        FROM `knowledge_feishu_document_mapping`
+        <where>
+            `space_id` = #{spaceId}
+            <!--<choose>
+                <when test="parentNodeToken != null and parentNodeToken != ''">
+                    AND `parent_node_token` = #{parentNodeToken}
+                </when>
+                <otherwise>
+                    AND (`parent_node_token` IS NULL OR `parent_node_token` = '')
+                </otherwise>
+            </choose>-->
+            <if test="status != null and status != ''">
+                AND `status` = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    `title` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `node_token` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `obj_token` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `obj_type` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `config` LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY `update_time` DESC, `lcd` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchFeiShuDocumentMappingCount" parameterType="neatlogic.framework.knowledge.dto.feishu.FeiShuNodeSearchVo" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM `knowledge_feishu_document_mapping`
+        <where>
+            `space_id` = #{spaceId}
+            <!--<choose>
+                <when test="parentNodeToken != null and parentNodeToken != ''">
+                    AND `parent_node_token` = #{parentNodeToken}
+                </when>
+                <otherwise>
+                    AND (`parent_node_token` IS NULL OR `parent_node_token` = '')
+                </otherwise>
+            </choose>-->
+            <if test="status != null and status != ''">
+                AND `status` = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    `title` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `node_token` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `obj_token` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `obj_type` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `config` LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+    </select>
+
     <select id="getFeiShuDocumentMappingByNodeToken" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
         SELECT
             `app_id` AS appId,

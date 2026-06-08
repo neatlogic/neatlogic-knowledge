@@ -19,7 +19,7 @@ import neatlogic.framework.knowledge.dto.feishu.FeiShuSpaceVo;
 import neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo;
 import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.knowledge.dao.mapper.KnowledgeFeiShuMapper;
-import neatlogic.module.knowledge.source.FeishuSyncSource;
+import neatlogic.module.knowledge.source.FeiShuSyncSource;
 import neatlogic.module.knowledge.utils.FeiShuOpenApiUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -137,7 +137,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                 documentVo.setKnowledgeDocumentTypeUuid(typeUuid);
                 documentVo.setVersion(0);
                 documentVo.setFcu(UserContext.get().getUserUuid(true));
-                documentVo.setSource(FeishuSyncSource.SOURCE);
+                documentVo.setSource(FeiShuSyncSource.SOURCE);
                 knowledgeDocumentMapper.insertKnowledgeDocument(documentVo);
                 knowledgeDocumentMapper.insertKnowledgeDocumentViewCount(documentVo.getId(), 0);
             }

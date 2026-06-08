@@ -6,7 +6,7 @@ import neatlogic.framework.knowledge.source.ISyncSource;
 import java.util.Collections;
 import java.util.List;
 
-public enum FeishuSyncSource implements ISyncSource {
+public enum FeiShuSyncSource implements ISyncSource {
     INSTANCE;
 
     public static final String SOURCE = "feishu";

@@ -53,7 +53,9 @@ public class DocumentLineFullTextIndexHandler extends FullTextIndexHandlerBase {
         }
         fullTextIndexVo.addFieldContent("content", new FullTextIndexVo.WordVo(sb.toString()));
         KnowledgeDocumentVersionVo versionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(fullTextIndexVo.getTargetId());
-        fullTextIndexVo.addFieldContent("title", new FullTextIndexVo.WordVo(versionVo.getTitle()));
+        if (versionVo != null && StringUtils.isNotBlank(versionVo.getTitle())) {
+            fullTextIndexVo.addFieldContent("title", new FullTextIndexVo.WordVo(versionVo.getTitle()));
+        }
     }
 
     @Override

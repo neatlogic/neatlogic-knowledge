@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.knowledge.dao.mapper.KnowledgeFeiShuMapper">
+
+    <select id="getFeiShuDocumentMappingListByNodeTokenList" parameterType="java.lang.String" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+        SELECT
+            `app_id` AS appId,
+            `space_id` AS spaceId,
+            `title`,
+            `parent_node_token` AS parentNodeToken,
+            `node_token` AS nodeToken,
+            `obj_token` AS objToken,
+            `obj_type` AS objType,
+            `update_time` AS updateTime,
+            `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
+            `knowledge_document_id` AS knowledgeDocumentId,
+            `knowledge_document_version_id` AS knowledgeDocumentVersionId,
+            `status`,
+            `config` AS configStr,
+            `lcu`,
+            `lcd`
+        FROM `knowledge_feishu_document_mapping`
+        WHERE `node_token` IN
+        <foreach collection="list" item="nodeToken" open="(" separator="," close=")">
+            #{nodeToken}
+        </foreach>
+    </select>
+
+    <select id="searchFeiShuDocumentMappingList" parameterType="neatlogic.framework.knowledge.dto.feishu.FeiShuNodeSearchVo" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+        SELECT
+            `app_id` AS appId,
+            `space_id` AS spaceId,
+            `title`,
+            `parent_node_token` AS parentNodeToken,
+            `node_token` AS nodeToken,
+            `obj_token` AS objToken,
+            `obj_type` AS objType,
+            `update_time` AS updateTime,
+            `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
+            `knowledge_document_id` AS knowledgeDocumentId,
+            `knowledge_document_version_id` AS knowledgeDocumentVersionId,
+            `status`,
+            `config` AS configStr,
+            `lcu`,
+            `lcd`
+        FROM `knowledge_feishu_document_mapping`
+        <where>
+            `space_id` = #{spaceId}
+            <!--<choose>
+                <when test="parentNodeToken != null and parentNodeToken != ''">
+                    AND `parent_node_token` = #{parentNodeToken}
+                </when>
+                <otherwise>
+                    AND (`parent_node_token` IS NULL OR `parent_node_token` = '')
+                </otherwise>
+            </choose>-->
+            <if test="status != null and status != ''">
+                AND `status` = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    `title` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `node_token` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `obj_token` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `obj_type` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `config` LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY `update_time` DESC, `lcd` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchFeiShuDocumentMappingCount" parameterType="neatlogic.framework.knowledge.dto.feishu.FeiShuNodeSearchVo" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM `knowledge_feishu_document_mapping`
+        <where>
+            `space_id` = #{spaceId}
+            <!--<choose>
+                <when test="parentNodeToken != null and parentNodeToken != ''">
+                    AND `parent_node_token` = #{parentNodeToken}
+                </when>
+                <otherwise>
+                    AND (`parent_node_token` IS NULL OR `parent_node_token` = '')
+                </otherwise>
+            </choose>-->
+            <if test="status != null and status != ''">
+                AND `status` = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    `title` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `node_token` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `obj_token` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `obj_type` LIKE CONCAT('%', #{keyword}, '%')
+                    OR `config` LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+    </select>
+
+    <select id="getFeiShuDocumentMappingByNodeToken" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+        SELECT
+            `app_id` AS appId,
+            `space_id` AS spaceId,
+            `title`,
+            `parent_node_token` AS parentNodeToken,
+            `node_token` AS nodeToken,
+            `obj_token` AS objToken,
+            `obj_type` AS objType,
+            `update_time` AS updateTime,
+            `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
+            `knowledge_document_id` AS knowledgeDocumentId,
+            `knowledge_document_version_id` AS knowledgeDocumentVersionId,
+            `status`,
+            `config` AS configStr,
+            `lcu`,
+            `lcd`
+        FROM `knowledge_feishu_document_mapping`
+        WHERE `node_token` = #{nodeToken}
+    </select>
+
+    <select id="getFeiShuDocumentMappingForLockByNodeToken" resultType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+        SELECT
+            `app_id` AS appId,
+            `space_id` AS spaceId,
+            `title`,
+            `parent_node_token` AS parentNodeToken,
+            `node_token` AS nodeToken,
+            `obj_token` AS objToken,
+            `obj_type` AS objType,
+            `update_time` AS updateTime,
+            `knowledge_document_type_uuid` AS knowledgeDocumentTypeUuid,
+            `knowledge_document_id` AS knowledgeDocumentId,
+            `knowledge_document_version_id` AS knowledgeDocumentVersionId,
+            `status`,
+            `config` AS configStr,
+            `lcu`,
+            `lcd`
+        FROM `knowledge_feishu_document_mapping`
+        WHERE `node_token` = #{nodeToken}
+        FOR UPDATE
+    </select>
+
+    <insert id="insertFeiShuDocumentMapping" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+        INSERT INTO `knowledge_feishu_document_mapping`
+        (`app_id`, `space_id`, `title`, `parent_node_token`, `node_token`, `obj_token`, `obj_type`, `update_time`, `knowledge_document_id`, `knowledge_document_version_id`, `knowledge_document_type_uuid`, `status`, `config`, `lcu`, `lcd`)
+        VALUES
+        (#{appId}, #{spaceId}, #{title}, #{parentNodeToken}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{knowledgeDocumentId}, #{knowledgeDocumentVersionId}, #{knowledgeDocumentTypeUuid}, #{status}, #{configStr}, #{lcu}, NOW(3))
+        ON DUPLICATE KEY UPDATE
+            `app_id` = VALUES(`app_id`),
+            `space_id` = VALUES(`space_id`),
+            `title` = VALUES(`title`),
+            `parent_node_token` = VALUES(`parent_node_token`),
+            `obj_token` = VALUES(`obj_token`),
+            `obj_type` = VALUES(`obj_type`),
+            `update_time` = VALUES(`update_time`),
+            `knowledge_document_id` = VALUES(`knowledge_document_id`),
+            `knowledge_document_version_id` = VALUES(`knowledge_document_version_id`),
+            `knowledge_document_type_uuid` = VALUES(`knowledge_document_type_uuid`),
+            `status` = VALUES(`status`),
+            `config` = VALUES(`config`),
+            `lcu` = VALUES(`lcu`),
+            `lcd` = VALUES(`lcd`)
+    </insert>
+
+    <insert id="insertFeiShuDocumentMappingStatus" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+        INSERT INTO `knowledge_feishu_document_mapping`
+        (`app_id`, `space_id`, `title`, `parent_node_token`, `node_token`, `obj_token`, `obj_type`, `update_time`, `status`)
+        VALUES
+            (#{appId}, #{spaceId}, #{title}, #{parentNodeToken}, #{nodeToken}, #{objToken}, #{objType}, #{updateTime}, #{status})
+        ON DUPLICATE KEY UPDATE
+            `status` = VALUES(`status`)
+    </insert>
+
+    <!--<update id="updateFeiShuDocumentMapping" parameterType="neatlogic.framework.knowledge.dto.feishu.KnowledgeFeiShuDocumentMappingVo">
+        UPDATE `knowledge_feishu_document_mapping`
+        SET
+            `app_id` = #{appId},
+            `space_id` = #{spaceId},
+            `title` = #{title},
+            `parent_node_token` = #{parentNodeToken},
+            `obj_token` = #{objToken},
+            `obj_type` = #{objType},
+            `update_time` = #{updateTime},
+            `knowledge_document_id` = #{knowledgeDocumentId},
+            `knowledge_document_version_id` = #{knowledgeDocumentVersionId},
+            `knowledge_document_type_uuid` = #{knowledgeDocumentTypeUuid},
+            `status` = #{status},
+            `config` = #{configStr},
+            `lcu` = #{lcu},
+            `lcd` = NOW(3)
+        WHERE `node_token` = #{nodeToken}
+    </update>-->
+
+    <update id="updateFeiShuDocumentMappingStatusByNodeToken">
+        UPDATE `knowledge_feishu_document_mapping`
+        SET
+            `status` = #{status}
+        WHERE `node_token` = #{nodeToken}
+    </update>
+
+    <insert id="insertFeiShuMediasMapping">
+        INSERT INTO `knowledge_feishu_medias_mapping` (`file_token`, `file_id`)
+        VALUES
+            (#{fileToken}, #{fileId})
+    </insert>
+
+    <select id="getFeiShuMediasMappingFileIdByFileToken" parameterType="java.lang.String" resultType="java.lang.Long">
+        SELECT
+            `file_id`
+        FROM `knowledge_feishu_medias_mapping`
+        WHERE `file_token` = #{value}
+    </select>
+</mapper>

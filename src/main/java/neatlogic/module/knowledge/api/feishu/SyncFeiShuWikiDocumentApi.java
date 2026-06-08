@@ -15,10 +15,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadpool.CachedThreadPool;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.file.dao.mapper.FileMapper;
 import neatlogic.framework.knowledge.constvalue.Status;
-import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
-import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import neatlogic.framework.knowledge.dto.feishu.*;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
@@ -28,7 +25,6 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_FEISHU_SYNC_MODIFY;
 import neatlogic.module.knowledge.dao.mapper.KnowledgeFeiShuMapper;
-import neatlogic.module.knowledge.service.KnowledgeDocumentTypeService;
 import neatlogic.module.knowledge.service.KnowledgeFeiShuService;
 import neatlogic.module.knowledge.thread.FeiShuWikiThread;
 import neatlogic.module.knowledge.utils.FeiShuOpenApiUtil;
@@ -36,8 +32,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -49,22 +43,10 @@ import java.util.stream.Collectors;
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
 
-    private final Logger logger = LoggerFactory.getLogger(SyncFeiShuWikiDocumentApi.class);
-
     @Resource
     private KnowledgeFeiShuService knowledgeFeiShuService;
     @Resource
     private KnowledgeFeiShuMapper knowledgeFeiShuMapper;
-    @Resource
-    private FileMapper fileMapper;
-    //    @Resource
-//    private KnowledgeCircleMapper knowledgeCircleMapper;
-    @Resource
-    private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
-    @Resource
-    private KnowledgeDocumentMapper knowledgeDocumentMapper;
-    @Resource
-    private KnowledgeDocumentTypeService knowledgeDocumentTypeService;
 
     @Override
     public String getToken() {
@@ -73,15 +55,15 @@ public class SyncFeiShuWikiDocumentApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "同步飞书Wiki文档";
+        return "nmkaf.syncfeishuwikidocumentapi.getname";
     }
 
     @Input({
-            @Param(name = "spaceIdList", type = ApiParamType.JSONARRAY, desc = "空间ID列表"),
-            @Param(name = "nodeTokenList", type = ApiParamType.JSONARRAY, desc = "节点token列表"),
+            @Param(name = "spaceIdList", type = ApiParamType.JSONARRAY, desc = "nmkaf.syncfeishuwikidocumentapi.input.param.desc.spaceidlist"),
+            @Param(name = "nodeTokenList", type = ApiParamType.JSONARRAY, desc = "nmkaf.syncfeishuwikidocumentapi.input.param.desc.nodetokenlist"),
 
     })
-    @Description(desc = "同步飞书Wiki文档")
+    @Description(desc = "nmkaf.syncfeishuwikidocumentapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         FeiShuAppCredentialsVo feiShuAppCredentials = knowledgeFeiShuService.getFeiShuAppCredentials();

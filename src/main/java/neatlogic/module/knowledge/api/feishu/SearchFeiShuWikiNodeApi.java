@@ -42,17 +42,17 @@ public class SearchFeiShuWikiNodeApi extends PrivateApiComponentBase {
     @Override
     public String getToken() { return "knowledge/feishu/wiki/node/list"; }
     @Override
-    public String getName() { return "获取飞书Wiki节点列表"; }
+    public String getName() { return "nmkaf.searchfeishuwikinodeapi.getname"; }
 
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
             @Param(name = "status", type = ApiParamType.ENUM, member = Status.class, desc = "common.status"),
-            @Param(name = "spaceId", type = ApiParamType.LONG, isRequired = true, desc = "Wiki空间ID"),
-            @Param(name = "parentNodeToken", type = ApiParamType.STRING, desc = "父节点nodeToken")
+            @Param(name = "spaceId", type = ApiParamType.LONG, isRequired = true, desc = "nmkaf.searchfeishuwikinodeapi.input.param.desc.spaceid"),
+            @Param(name = "parentNodeToken", type = ApiParamType.STRING, desc = "nmkaf.searchfeishuwikinodeapi.input.param.desc.parentnodetoken")
     })
-    @Description(desc = "获取飞书Wiki节点列表")
+    @Description(desc = "nmkaf.searchfeishuwikinodeapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) {
         List<KnowledgeFeiShuDocumentMappingVo> tbodyList = new ArrayList<>();

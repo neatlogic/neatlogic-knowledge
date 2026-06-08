@@ -37,16 +37,16 @@ public class GetFeiShuAppCredentialsApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取飞书应用凭证";
+        return "nmkaf.getfeishuappcredentialsapi.getname";
     }
 
     @Input({})
     @Output({
             @Param(name = "appId", type = ApiParamType.STRING, isRequired = true, desc = "App ID"),
             @Param(name = "appSecret", type = ApiParamType.STRING, isRequired = true, desc = "App Secret"),
-            @Param(name = "knowledgeCircleId", type = ApiParamType.LONG, isRequired = true, desc = "知识圈 ID"),
+            @Param(name = "knowledgeCircleId", type = ApiParamType.LONG, isRequired = true, desc = "nmkaf.savefeishuappcredentialsapi.input.param.desc.knowledgecircleid"),
     })
-    @Description(desc = "保存飞书应用凭证")
+    @Description(desc = "nmkaf.getfeishuappcredentialsapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         return knowledgeFeiShuService.getFeiShuAppCredentials();

@@ -29,12 +29,12 @@ public class ListFeiShuWikiSpaceApi extends PrivateApiComponentBase {
     @Override
     public String getToken() { return "knowledge/feishu/wiki/space/list"; }
     @Override
-    public String getName() { return "获取飞书 Wiki 空间列表"; }
+    public String getName() { return "nmkaf.listfeishuwikispaceapi.getname"; }
     @Input({})
     @Output({
             @Param(name = "tbodyList", explode = FeiShuSpaceVo[].class, desc = "common.tbodylist")
     })
-    @Description(desc = "获取飞书 Wiki 空间列表")
+    @Description(desc = "nmkaf.listfeishuwikispaceapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) {
         JSONArray wikiSpaceList = new JSONArray();

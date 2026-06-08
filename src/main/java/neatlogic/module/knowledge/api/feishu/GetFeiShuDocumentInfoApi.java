@@ -34,20 +34,16 @@ public class GetFeiShuDocumentInfoApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取飞书文档信息";
+        return "nmkaf.getfeishudocumentinfoapi.getname";
     }
 
     @Input({
-//            @Param(name = "appId", type = ApiParamType.STRING, isRequired = true, desc = "App ID"),
-//            @Param(name = "appSecret", type = ApiParamType.STRING, isRequired = true, desc = "App Secret"),
-            @Param(name = "documentId", type = ApiParamType.STRING, isRequired = true, desc = "飞书文档ID"),
+            @Param(name = "nodeToken", type = ApiParamType.STRING, isRequired = true, desc = "nmkaf.getfeishudocumentinfoapi.input.param.desc.nodetoken"),
     })
-    @Description(desc = "获取飞书文档信息")
+    @Description(desc = "nmkaf.getfeishudocumentinfoapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-//        String appId = paramObj.getString("appId");
-//        String appSecret = paramObj.getString("appSecret");
-        String documentId = paramObj.getString("documentId");
+        String nodeToken = paramObj.getString("nodeToken");
         return null;
     }
 }

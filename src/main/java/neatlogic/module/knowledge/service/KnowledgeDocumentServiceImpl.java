@@ -387,8 +387,10 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         StringBuilder contentSb = new StringBuilder();
         if (CollectionUtils.isNotEmpty(lineVoList)) {
             for (KnowledgeDocumentLineVo lineVo : lineVoList) {
-                String contentTmp = HtmlUtil.removeHtml(lineVo.getContent());
-                contentSb.append(contentTmp);
+                if(StringUtils.isNotBlank(lineVo.getContent())) {
+                    String contentTmp = HtmlUtil.removeHtml(lineVo.getContent());
+                    contentSb.append(contentTmp);
+                }
             }
         }
         return contentSb.toString();

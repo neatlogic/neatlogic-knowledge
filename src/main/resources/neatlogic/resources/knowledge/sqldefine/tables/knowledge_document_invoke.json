@@ -1,0 +1,45 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document_invoke",
+  "label": "知识文档调用",
+  "description": "知识文档调用 可用于知识库相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "knowledge_document_id",
+      "type": "bigint",
+      "description": "知识文档id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "invoke_id",
+      "type": "bigint",
+      "description": "调用者id，数据库中要求唯一，适合用于精确查询和去重判断。"
+    },
+    {
+      "name": "source",
+      "type": "varchar(50)",
+      "description": "来源。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "knowledge_document_id"
+      ],
+      "description": "主键索引，覆盖 knowledge_document_id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_invoke_id",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "invoke_id"
+      ],
+      "description": "唯一索引，覆盖 invoke_id 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

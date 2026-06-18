@@ -1,0 +1,80 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document",
+  "label": "知识文档",
+  "description": "知识文档 可用于知识库相关的时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "文档主键id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "title",
+      "type": "varchar(255)",
+      "description": "标题。"
+    },
+    {
+      "name": "knowledge_document_version_id",
+      "type": "bigint",
+      "description": "激活版本id。"
+    },
+    {
+      "name": "knowledge_document_type_uuid",
+      "type": "char(32)",
+      "description": "分类id。"
+    },
+    {
+      "name": "knowledge_circle_id",
+      "type": "bigint",
+      "description": "知识圈id。"
+    },
+    {
+      "name": "is_delete",
+      "type": "tinyint(1)",
+      "description": "是否删除。"
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "description": "激活版本号。"
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "创建人。"
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "创建时间。"
+    },
+    {
+      "name": "source",
+      "type": "varchar(50)",
+      "description": "文档来源，已建立普通索引，适合用于过滤、关联或排序查询。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "source_idx",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "source"
+      ],
+      "description": "普通索引，覆盖 source 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

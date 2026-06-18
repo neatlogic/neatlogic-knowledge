@@ -1,0 +1,55 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document_type",
+  "label": "知识类型表",
+  "description": "知识类型表 可用于知识库相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "主键ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "名称。"
+    },
+    {
+      "name": "knowledge_circle_id",
+      "type": "bigint",
+      "description": "知识圈ID。"
+    },
+    {
+      "name": "parent_uuid",
+      "type": "char(32)",
+      "description": "父类型ID。"
+    },
+    {
+      "name": "lft",
+      "type": "int",
+      "description": "左编码。"
+    },
+    {
+      "name": "rht",
+      "type": "int",
+      "description": "右编码。"
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "排序（相对于同级节点的顺序）。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "uuid"
+      ],
+      "description": "主键索引，覆盖 uuid 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

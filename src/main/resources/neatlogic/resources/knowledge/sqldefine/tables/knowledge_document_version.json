@@ -1,0 +1,95 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document_version",
+  "label": "知识库版本表",
+  "description": "知识库版本表 可用于知识库相关的状态跟踪、时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "文档版本主键id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "title",
+      "type": "varchar(255)",
+      "description": "标题。"
+    },
+    {
+      "name": "knowledge_document_type_uuid",
+      "type": "char(32)",
+      "description": "文档类型uuid。"
+    },
+    {
+      "name": "knowledge_document_id",
+      "type": "bigint",
+      "description": "文档id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "from_version",
+      "type": "int",
+      "description": "原版本号。"
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "description": "版本号。"
+    },
+    {
+      "name": "status",
+      "type": "enum('draft','submitted','rejected','passed','expired')",
+      "description": "状态，(草稿、提交审核、审核通过)。"
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "最后修改人。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "最后修改时间。"
+    },
+    {
+      "name": "size",
+      "type": "int",
+      "description": "文档大小，单位字节byte。"
+    },
+    {
+      "name": "reviewer",
+      "type": "char(32)",
+      "description": "审批人。"
+    },
+    {
+      "name": "review_time",
+      "type": "timestamp(3)",
+      "description": "审批时间。"
+    },
+    {
+      "name": "is_delete",
+      "type": "tinyint(1)",
+      "description": "是否已删除。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_knowledge_document_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "knowledge_document_id"
+      ],
+      "description": "普通索引，覆盖 knowledge_document_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document_line",
+  "label": "知识文档行",
+  "description": "知识文档行 可用于知识库相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "行uuid，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "handler",
+      "type": "varchar(100)",
+      "description": "行组件。"
+    },
+    {
+      "name": "knowledge_document_id",
+      "type": "bigint",
+      "description": "文档id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "knowledge_document_version_id",
+      "type": "bigint",
+      "description": "文档版本id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "content_hash",
+      "type": "char(32)",
+      "description": "内容hash。"
+    },
+    {
+      "name": "config_hash",
+      "type": "char(32)",
+      "description": "配置hash。"
+    },
+    {
+      "name": "line_number",
+      "type": "int",
+      "description": "行号，已建立普通索引，适合用于过滤、关联或排序查询。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "uuid"
+      ],
+      "description": "主键索引，覆盖 uuid 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_document_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "knowledge_document_id"
+      ],
+      "description": "普通索引，覆盖 knowledge_document_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_document_linenum",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "line_number"
+      ],
+      "description": "普通索引，覆盖 line_number 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_document_version_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "knowledge_document_version_id"
+      ],
+      "description": "普通索引，覆盖 knowledge_document_version_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

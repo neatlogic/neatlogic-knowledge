@@ -1,0 +1,36 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document_favor",
+  "label": "知识文档收藏",
+  "description": "知识文档收藏 可用于知识库相关的时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "knowledge_document_id",
+      "type": "bigint",
+      "description": "文档主键，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "user_uuid",
+      "type": "char(32)",
+      "description": "用户UUID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "点赞时间。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "knowledge_document_id",
+        "user_uuid"
+      ],
+      "description": "主键索引，覆盖 knowledge_document_id、user_uuid 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

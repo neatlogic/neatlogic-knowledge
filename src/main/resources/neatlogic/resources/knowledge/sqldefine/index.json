@@ -1,0 +1,105 @@
+{
+  "moduleId": "knowledge",
+  "tables": [
+    {
+      "name": "knowledge_circle",
+      "label": "知识圈表",
+      "description": "知识圈表 可用于知识库相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "knowledge_circle_user",
+      "label": "知识圈用户表",
+      "description": "知识圈用户表 可用于知识库相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_document",
+      "label": "知识文档",
+      "description": "知识文档 可用于知识库相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_document_audit",
+      "label": "知识库操作记录表",
+      "description": "知识库操作记录表 可用于知识库相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_document_audit_detail",
+      "label": "知识库操作记录详情表",
+      "description": "知识库操作记录详情表 可用于知识库相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "knowledge_document_collect",
+      "label": "知识文档收集",
+      "description": "知识文档收集 可用于知识库相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_document_favor",
+      "label": "知识文档收藏",
+      "description": "知识文档收藏 可用于知识库相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_document_file",
+      "label": "知识文档附件",
+      "description": "知识文档附件 可用于知识库相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_document_invoke",
+      "label": "知识文档调用",
+      "description": "知识文档调用 可用于知识库相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_document_line",
+      "label": "知识文档行",
+      "description": "知识文档行 可用于知识库相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_document_line_config",
+      "label": "知识文档行配置",
+      "description": "知识文档行配置 可用于知识库相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "knowledge_document_line_content",
+      "label": "知识文档行内容",
+      "description": "知识文档行内容 可用于知识库相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "knowledge_document_tag",
+      "label": "知识文档标签",
+      "description": "知识文档标签 可用于知识库相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_document_type",
+      "label": "知识类型表",
+      "description": "知识类型表 可用于知识库相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_document_version",
+      "label": "知识库版本表",
+      "description": "知识库版本表 可用于知识库相关的状态跟踪、时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_document_view_count",
+      "label": "知识查看次数",
+      "description": "知识查看次数 可用于知识库相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_feishu_document_mapping",
+      "label": "飞书云文档与知识文档映射",
+      "description": "飞书云文档与知识文档映射 可用于知识库相关的状态跟踪、时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_feishu_medias_mapping",
+      "label": "知识库feishu_medias_mapping表",
+      "description": "知识库feishu_medias_mapping表，属于知识库模块的数据表。 可用于知识库相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "knowledge_tag",
+      "label": "知识库标签表",
+      "description": "知识库标签表 可用于知识库相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "knowledge_template",
+      "label": "知识库模版",
+      "description": "知识库模版 可用于知识库相关的启用状态筛选、时间维度统计等报表查询场景。"
+    }
+  ]
+}

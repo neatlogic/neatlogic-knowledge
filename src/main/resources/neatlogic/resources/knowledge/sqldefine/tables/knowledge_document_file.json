@@ -1,0 +1,37 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document_file",
+  "label": "知识文档附件",
+  "description": "知识文档附件 可用于知识库相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "knowledge_document_id",
+      "type": "bigint",
+      "description": "文档id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "knowledge_document_version_id",
+      "type": "bigint",
+      "description": "文档版本id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "file_id",
+      "type": "bigint",
+      "description": "附件id，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "knowledge_document_id",
+        "knowledge_document_version_id",
+        "file_id"
+      ],
+      "description": "主键索引，覆盖 knowledge_document_id、knowledge_document_version_id、file_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

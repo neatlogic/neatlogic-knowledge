@@ -1,0 +1,95 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_feishu_document_mapping",
+  "label": "飞书云文档与知识文档映射",
+  "description": "飞书云文档与知识文档映射 可用于知识库相关的状态跟踪、时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "app_id",
+      "type": "varchar(255)",
+      "description": "飞书应用ID。"
+    },
+    {
+      "name": "space_id",
+      "type": "bigint",
+      "description": "知识库空间ID。"
+    },
+    {
+      "name": "title",
+      "type": "varchar(255)",
+      "description": "标题。"
+    },
+    {
+      "name": "parent_node_token",
+      "type": "varchar(100)",
+      "description": "父节点token。"
+    },
+    {
+      "name": "node_token",
+      "type": "varchar(100)",
+      "description": "Wiki 节点 token，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "obj_token",
+      "type": "varchar(100)",
+      "description": "云文档 token。"
+    },
+    {
+      "name": "obj_type",
+      "type": "varchar(50)",
+      "description": "云文档类型。"
+    },
+    {
+      "name": "update_time",
+      "type": "timestamp(3)",
+      "description": "飞书更新时间。"
+    },
+    {
+      "name": "knowledge_document_type_uuid",
+      "type": "char(32)",
+      "description": "知识分类 UUID。"
+    },
+    {
+      "name": "knowledge_document_id",
+      "type": "bigint",
+      "description": "知识文档 ID。"
+    },
+    {
+      "name": "knowledge_document_version_id",
+      "type": "bigint",
+      "description": "知识文档版本ID。"
+    },
+    {
+      "name": "status",
+      "type": "varchar(255)",
+      "description": "状态。"
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "信息。"
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "修改人。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "修改时间。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "node_token"
+      ],
+      "description": "主键索引，覆盖 node_token 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

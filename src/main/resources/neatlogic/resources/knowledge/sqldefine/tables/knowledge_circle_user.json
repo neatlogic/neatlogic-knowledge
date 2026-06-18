@@ -1,0 +1,43 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_circle_user",
+  "label": "知识圈用户表",
+  "description": "知识圈用户表 可用于知识库相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "knowledge_circle_id",
+      "type": "bigint",
+      "description": "知识圈ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "用户/角色/分组UUID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "type",
+      "type": "enum('common','user','team','role')",
+      "description": "类型，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "auth_type",
+      "type": "enum('approver','member')",
+      "description": "区分审批人与成员字段（approver：审批人；member：成员），作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "knowledge_circle_id",
+        "uuid",
+        "type",
+        "auth_type"
+      ],
+      "description": "主键索引，覆盖 knowledge_circle_id、uuid、type、auth_type 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

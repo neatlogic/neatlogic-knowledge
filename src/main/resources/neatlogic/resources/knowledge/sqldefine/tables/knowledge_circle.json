@@ -1,0 +1,30 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_circle",
+  "label": "知识圈表",
+  "description": "知识圈表 可用于知识库相关数据的查询、筛选和报表展示。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "主键，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "名称。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

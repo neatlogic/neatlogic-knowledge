@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.common.constvalue.FormHandlerType;
 import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentVersionStatus;
+import neatlogic.framework.knowledge.constvalue.KnowledgeSource;
 import neatlogic.framework.knowledge.constvalue.KnowledgeType;
 
 public class KnowledgeConditionBuilder {
@@ -114,17 +115,13 @@ public class KnowledgeConditionBuilder {
            conditionJson.put("handlerName", "来源");
            conditionJson.put("handlerType", FormHandlerType.SELECT.toString());
            
-           //TODO 后续从枚举类获取，暂时写shi
-           JSONArray dataList = new JSONArray();
-           dataList.add(new ValueTextVo("processtask", "工单"));
-           
            JSONObject config = new JSONObject();
            config.put("type", FormHandlerType.SELECT.toString());
            config.put("search", false);
            config.put("multiple", true);
            config.put("value", "");
            config.put("defaultValue", new ArrayList<String>());
-           config.put("dataList", dataList);
+           config.put("dataList", KnowledgeSource.getList());
            conditionJson.put("config", config);
            conditionJson.put("sort", 6);
            conditionArray.add(conditionJson);

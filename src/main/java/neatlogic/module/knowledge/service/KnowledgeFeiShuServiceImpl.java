@@ -805,7 +805,6 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
 
     private List<KnowledgeDocumentLineVo> getFeiShuDocumentLines(FeiShuNodeVo node, String tenantAccessToken, JSONArray unprocessedItems, JSONObject blockResult2) {
         List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
-//        try {
             JSONObject blockResult = FeiShuOpenApiUtil.getDocumentBlocks(node.getObjToken(), tenantAccessToken);
             blockResult2.putAll(JSONObject.parseObject(blockResult.toJSONString()));
             JSONArray items = blockResult.getJSONObject("data") == null ? null : blockResult.getJSONObject("data").getJSONArray("items");
@@ -848,16 +847,6 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                                 unprocessedItems.add(item);
                                 List<JSONObject> childItemList = collectChildItemList(item, itemMap);
                                 handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
-//                                if (CollectionUtils.isNotEmpty(childItemList)) {
-//                                    for (JSONObject childItem : childItemList) {
-//                                        handledBlockIdList.add(childItem.getString("block_id"));
-////                                        FeiShuBlockType childBlockType = FeiShuBlockType.getFeiShuBlockType(childItem.getInteger("block_type"));
-////                                        if (childBlockType != null) {
-////                                            childItem.put("block_type_text", childBlockType.getText());
-////                                            childItem.put("block_type_description", childBlockType.getDescription());
-////                                        }
-//                                    }
-//                                }
                                 unprocessedItems.addAll(childItemList);
                                 continue;
                             }
@@ -986,11 +975,6 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                             } else if (feiShuBlockType == FeiShuBlockType.QUOTE_CONTAINER) {
                                 List<JSONObject> childItemList = collectChildItemList(item, itemMap);
                                 handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
-//                                if (CollectionUtils.isNotEmpty(childItemList)) {
-//                                    for (JSONObject childItem : childItemList) {
-//                                        handledBlockIdList.add(childItem.getString("block_id"));
-//                                    }
-//                                }
                                 List<KnowledgeDocumentLineVo> lines = handleQuoteContainer(item, childItemList);
                                 lineList.addAll(lines);
                             } else if (feiShuBlockType == FeiShuBlockType.TODO) {
@@ -1026,11 +1010,6 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                             } else if (feiShuBlockType == FeiShuBlockType.CALLOUT) {
                                 List<JSONObject> childItemList = collectChildItemList(item, itemMap);
                                 handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
-//                                if (CollectionUtils.isNotEmpty(childItemList)) {
-//                                    for (JSONObject childItem : childItemList) {
-//                                        handledBlockIdList.add(childItem.getString("block_id"));
-//                                    }
-//                                }
                                 List<KnowledgeDocumentLineVo> lines = handleCallOut(item, childItemList);
                                 lineList.addAll(lines);
                             } else if (feiShuBlockType == FeiShuBlockType.DIVIDER) {
@@ -1041,17 +1020,9 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                                 line.setConfig(configObj.toJSONString());
                                 line.setHandler("divider");
                                 lineList.add(line);
-//                            } else if (feiShuBlockType == FeiShuBlockType.IFRAME) {
-//                                KnowledgeDocumentLineVo line = handleIframe(item);
-//                                lineList.add(line);
                             } else if (feiShuBlockType == FeiShuBlockType.VIEW) {
                                 List<JSONObject> childItemList = collectChildItemList(item, itemMap);
                                 handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
-//                                if (CollectionUtils.isNotEmpty(childItemList)) {
-//                                    for (JSONObject childItem : childItemList) {
-//                                        handledBlockIdList.add(childItem.getString("block_id"));
-//                                    }
-//                                }
                                 List<KnowledgeDocumentLineVo> lines = handleView(item, childItemList);
                                 lineList.addAll(lines);
                             } else if (feiShuBlockType == FeiShuBlockType.IMAGE) {
@@ -1062,45 +1033,18 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                             } else if (feiShuBlockType == FeiShuBlockType.TABLE) {
                                 List<JSONObject> childItemList = collectChildItemList(item, itemMap);
                                 handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
-//                                if (CollectionUtils.isNotEmpty(childItemList)) {
-//                                    for (JSONObject childItem : childItemList) {
-//                                        handledBlockIdList.add(childItem.getString("block_id"));
-//                                    }
-//                                }
                                 List<KnowledgeDocumentLineVo> lines = handleTable(item, childItemList);
                                 lineList.addAll(lines);
                             } else {
                                 unprocessedItems.add(item);
                                 List<JSONObject> childItemList = collectChildItemList(item, itemMap);
                                 handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
-//                                if (CollectionUtils.isNotEmpty(childItemList)) {
-//                                    for (JSONObject childItem : childItemList) {
-//                                        handledBlockIdList.add(childItem.getString("block_id"));
-////                                        FeiShuBlockType childBlockType = FeiShuBlockType.getFeiShuBlockType(childItem.getInteger("block_type"));
-////                                        if (childBlockType != null) {
-////                                            childItem.put("block_type_text", childBlockType.getText());
-////                                            childItem.put("block_type_description", childBlockType.getDescription());
-////                                        }
-//                                    }
-//                                }
                                 unprocessedItems.addAll(childItemList);
-//                                KnowledgeDocumentLineVo line = new KnowledgeDocumentLineVo();
-//                                JSONObject configObj = new JSONObject();
-//                                configObj.put("blockType", feiShuBlockType.getText());
-//                                configObj.put("blockUuid", blockId);
-//                                configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item).fluentAddAll(childItemList));
-//                                line.setConfig(configObj.toJSONString());
-//                                line.setHandler("paragraph");
-//                                line.setContent(item.toJSONString());
-//                                lineList.add(line);
                             }
                         }
                     }
                 }
             }
-//        } catch (Exception e) {
-//            logger.error(e.getMessage(), e);
-//        }
         return lineList;
     }
 

@@ -299,9 +299,6 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
     }
 
     private List<KnowledgeDocumentLineVo> handleText(JSONObject item, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
-        if (CollectionUtils.isNotEmpty(childItemList)) {
-            logger.error("handleText 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
-        }
         List<KnowledgeDocumentLineVo> resultList = new ArrayList<>();
         Integer blockType = item.getInteger("block_type");
         FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
@@ -321,13 +318,17 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         }
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
+        if (CollectionUtils.isNotEmpty(childItemList)) {
+//            logger.error("handleText 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
+            List<KnowledgeDocumentLineVo> lines = handleChildItemList(item, childItemList, unprocessedItems, allBlockIdList);
+            if (CollectionUtils.isNotEmpty(lines)) {
+                resultList.addAll(lines);
+            }
+        }
         return resultList;
     }
 
     private List<KnowledgeDocumentLineVo> handleHeading(JSONObject item, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
-        if (CollectionUtils.isNotEmpty(childItemList)) {
-            logger.error("handleHeading 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
-        }
         List<KnowledgeDocumentLineVo> resultList = new ArrayList<>();
         Integer blockType = item.getInteger("block_type");
         FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
@@ -349,7 +350,13 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         }
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
-//        resultList.addAll(handleHeadingChildItemList(childItemList, tenantAccessToken));
+        if (CollectionUtils.isNotEmpty(childItemList)) {
+//            logger.error("handleHeading 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
+            List<KnowledgeDocumentLineVo> lines = handleChildItemList(item, childItemList, unprocessedItems, allBlockIdList);
+            if (CollectionUtils.isNotEmpty(lines)) {
+                resultList.addAll(lines);
+            }
+        }
         return resultList;
     }
 
@@ -383,9 +390,6 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
 //    }
 
     private List<KnowledgeDocumentLineVo> handleOrderedList(List<JSONObject> orderedList, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
-        if (CollectionUtils.isNotEmpty(childItemList)) {
-            logger.error("handleOrderedList 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
-        }
         List<KnowledgeDocumentLineVo> resultList = new ArrayList<>();
         KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
         knowledgeDocumentLineVo.setHandler("orderedList");
@@ -425,13 +429,17 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         }
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
+        if (CollectionUtils.isNotEmpty(childItemList)) {
+            logger.error("handleOrderedList 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
+//            List<KnowledgeDocumentLineVo> lines = handleChildItemList(item, childItemList, unprocessedItems, allBlockIdList);
+//            if (CollectionUtils.isNotEmpty(lines)) {
+//                resultList.addAll(lines);
+//            }
+        }
         return resultList;
     }
 
     private List<KnowledgeDocumentLineVo> handleBulletList(List<JSONObject> bulletList, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
-        if (CollectionUtils.isNotEmpty(childItemList)) {
-            logger.error("handleBulletList 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
-        }
         List<KnowledgeDocumentLineVo> resultList = new ArrayList<>();
         KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
         knowledgeDocumentLineVo.setHandler("bulletList");
@@ -471,13 +479,13 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         }
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
+        if (CollectionUtils.isNotEmpty(childItemList)) {
+            logger.error("handleBulletList 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
+        }
         return resultList;
     }
 
     private List<KnowledgeDocumentLineVo> handleTodoList(List<JSONObject> todoList, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
-        if (CollectionUtils.isNotEmpty(childItemList)) {
-            logger.error("handleTodoList 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
-        }
         List<KnowledgeDocumentLineVo> resultList = new ArrayList<>();
         KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
         knowledgeDocumentLineVo.setHandler("taskList");
@@ -515,13 +523,13 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         }
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
+        if (CollectionUtils.isNotEmpty(childItemList)) {
+            logger.error("handleTodoList 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
+        }
         return resultList;
     }
 
     private List<KnowledgeDocumentLineVo> handleCode(JSONObject item, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
-        if (CollectionUtils.isNotEmpty(childItemList)) {
-            logger.error("handleCode 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
-        }
         List<KnowledgeDocumentLineVo> resultList = new ArrayList<>();
         Integer blockType = item.getInteger("block_type");
         FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
@@ -549,6 +557,13 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         }
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
+        if (CollectionUtils.isNotEmpty(childItemList)) {
+//            logger.error("handleCode 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
+            List<KnowledgeDocumentLineVo> lines = handleChildItemList(item, childItemList, unprocessedItems, allBlockIdList);
+            if (CollectionUtils.isNotEmpty(lines)) {
+                resultList.addAll(lines);
+            }
+        }
         return resultList;
     }
 
@@ -577,13 +592,17 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         knowledgeDocumentLineVo.setContent(String.join("", list));
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
+        if (CollectionUtils.isNotEmpty(childItemList)) {
+//            logger.error("handleCallOut 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
+            List<KnowledgeDocumentLineVo> lines = handleChildItemList(item, childItemList, unprocessedItems, allBlockIdList);
+            if (CollectionUtils.isNotEmpty(lines)) {
+                resultList.addAll(lines);
+            }
+        }
         return resultList;
     }
 
     private List<KnowledgeDocumentLineVo> handleQuote(JSONObject item, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
-        if (CollectionUtils.isNotEmpty(childItemList)) {
-            logger.error("handleQuote 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
-        }
         List<KnowledgeDocumentLineVo> resultList = new ArrayList<>();
         String blockId = item.getString("block_id");
         KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
@@ -606,6 +625,13 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         knowledgeDocumentLineVo.setContent(String.join("", list));
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
+        if (CollectionUtils.isNotEmpty(childItemList)) {
+//            logger.error("handleQuote 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
+            List<KnowledgeDocumentLineVo> lines = handleChildItemList(item, childItemList, unprocessedItems, allBlockIdList);
+            if (CollectionUtils.isNotEmpty(lines)) {
+                resultList.addAll(lines);
+            }
+        }
         return resultList;
     }
 
@@ -634,6 +660,13 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         knowledgeDocumentLineVo.setContent(String.join("", list));
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
+        if (CollectionUtils.isNotEmpty(childItemList)) {
+//            logger.error("handleQuoteContainer 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
+            List<KnowledgeDocumentLineVo> lines = handleChildItemList(item, childItemList, unprocessedItems, allBlockIdList);
+            if (CollectionUtils.isNotEmpty(lines)) {
+                resultList.addAll(lines);
+            }
+        }
         return resultList;
     }
 
@@ -689,13 +722,13 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         }
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
+        if (CollectionUtils.isNotEmpty(childItemList)) {
+            logger.error("handleView 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
+        }
         return resultList;
     }
 
     private List<KnowledgeDocumentLineVo> handleImage(JSONObject item, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
-        if (CollectionUtils.isNotEmpty(childItemList)) {
-            logger.error("handleImage 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
-        }
         List<KnowledgeDocumentLineVo> resultList = new ArrayList<>();
         String blockId = item.getString("block_id");
         Integer blockType = item.getInteger("block_type");
@@ -723,6 +756,13 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         }
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
+        if (CollectionUtils.isNotEmpty(childItemList)) {
+            logger.error("handleImage 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
+            List<KnowledgeDocumentLineVo> lines = handleChildItemList(item, childItemList, unprocessedItems, allBlockIdList);
+            if (CollectionUtils.isNotEmpty(lines)) {
+                resultList.addAll(lines);
+            }
+        }
         return resultList;
     }
 
@@ -801,6 +841,19 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
         return resultList;
+    }
+
+    private List<KnowledgeDocumentLineVo> handleChildItemList(JSONObject item, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
+        Map<String, JSONObject> childItemMap = new HashMap<>();
+        List<String> childBlockIdList = new ArrayList<>();
+        for (JSONObject childItem : childItemList) {
+            String childBlockId = childItem.getString("block_id");
+            childItemMap.put(childBlockId, childItem);
+            if (Objects.equals(item.getString("block_id"), childItem.getString("parent_id"))) {
+                childBlockIdList.add(childBlockId);
+            }
+        }
+        return handleItemList(childBlockIdList, childItemMap, unprocessedItems, allBlockIdList);
     }
 
     private List<KnowledgeDocumentLineVo> getFeiShuDocumentLines(FeiShuNodeVo node, String tenantAccessToken, JSONArray unprocessedItems, JSONObject blockResult2) {

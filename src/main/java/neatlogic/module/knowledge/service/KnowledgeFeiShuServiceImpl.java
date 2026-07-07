@@ -119,11 +119,10 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         String status = null;
         JSONObject config = new JSONObject();
         KnowledgeDocumentVo documentVo = null;
-        JSONObject blockResult = new JSONObject();
         try {
 //            knowledgeFeiShuMapper.updateFeiShuDocumentMappingStatusByNodeToken(node.getNodeToken(), Status.RUNNING.getValue());
             JSONArray unprocessedItems = new JSONArray();
-            List<KnowledgeDocumentLineVo> feishuDocumentLines = getFeiShuDocumentLines(node, tenantAccessToken, unprocessedItems, blockResult);
+            List<KnowledgeDocumentLineVo> feishuDocumentLines = getFeiShuDocumentLines(node, tenantAccessToken, unprocessedItems);
             KnowledgeFeiShuDocumentMappingVo mapping = knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(node.getNodeToken());
             if (mapping != null && mapping.getKnowledgeDocumentId() != null) {
                 documentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(mapping.getKnowledgeDocumentId());
@@ -171,7 +170,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
             config.put("error", ExceptionUtils.getStackFrames(e));
             status = Status.FAILED.getValue();
         }
-        upsertMapping(appCredentialsVo, node, documentVo, status, config, blockResult);
+        upsertMapping(appCredentialsVo, node, documentVo, status, config);
         IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getHandler(KnowledgeFullTextIndexType.KNOW_DOCUMENT_VERSION);
         if (handler != null && documentVo != null) {
             handler.createIndex(documentVo.getKnowledgeDocumentVersionId());
@@ -189,7 +188,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         return false;
     }
 
-    private void upsertMapping(FeiShuAppCredentialsVo appCredentialsVo, FeiShuNodeVo node, KnowledgeDocumentVo documentVo, String status, JSONObject config, JSONObject blockResult) {
+    private void upsertMapping(FeiShuAppCredentialsVo appCredentialsVo, FeiShuNodeVo node, KnowledgeDocumentVo documentVo, String status, JSONObject config) {
         KnowledgeFeiShuDocumentMappingVo vo = new KnowledgeFeiShuDocumentMappingVo();
         vo.setAppId(appCredentialsVo.getAppId());
         vo.setSpaceId(node.getSpaceId());
@@ -209,7 +208,6 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
             vo.setConfig(config);
         }
         vo.setLcu(UserContext.get().getUserUuid());
-        vo.setContent(blockResult.toJSONString());
         knowledgeFeiShuMapper.insertFeiShuDocumentMapping(vo);
 //        if (knowledgeFeiShuMapper.getFeiShuDocumentMappingByNodeToken(node.getNodeToken()) == null) {
 //            knowledgeFeiShuMapper.insertFeiShuDocumentMapping(vo);
@@ -296,6 +294,17 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
             }
         }
         return list;
+    }
+
+    private List<String> handleText(JSONObject item) {
+        Integer blockType = item.getInteger("block_type");
+        FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+        JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+        if (MapUtils.isNotEmpty(jsonObj)) {
+            JSONArray elements = jsonObj.getJSONArray("elements");
+            return getContentListFromElements(elements);
+        }
+        return new ArrayList<>();
     }
 
     private List<KnowledgeDocumentLineVo> handleText(JSONObject item, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
@@ -658,12 +667,33 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
             allBlockIdList.remove(childItem.getString("block_id"));
             Integer blockType = childItem.getInteger("block_type");
             FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
-            JSONObject jsonObj = childItem.getJSONObject(feiShuBlockType.getText());
-            if (MapUtils.isNotEmpty(jsonObj)) {
-                JSONArray elements = jsonObj.getJSONArray("elements");
-                List<String> contentList = getContentListFromElements(elements);
-                for (String content : contentList) {
-                    list.add("<p>" + content + "</p>");
+            if (feiShuBlockType == FeiShuBlockType.TEXT) {
+                List<String> contentList = handleText(childItem);
+                if (CollectionUtils.isNotEmpty(contentList)) {
+                    list.add("<p>" + String.join("", contentList) + "</p>");
+                }
+            } else if (feiShuBlockType == FeiShuBlockType.IMAGE) {
+                JSONObject jsonObj = handleImage(childItem);
+                if (MapUtils.isNotEmpty(jsonObj)) {
+                    String url = jsonObj.getString("url");
+                    Integer width = jsonObj.getInteger("width");
+                    Integer height = jsonObj.getInteger("height");
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append("<img src='");
+                    stringBuilder.append(url);
+                    stringBuilder.append("' ");
+                    if (width != null) {
+                        stringBuilder.append("width='");
+                        stringBuilder.append(width);
+                        stringBuilder.append("' ");
+                    }
+                    if (height != null) {
+                        stringBuilder.append("height='");
+                        stringBuilder.append(height);
+                        stringBuilder.append("' ");
+                    }
+                    stringBuilder.append("/>");
+                    list.add("<p>" + stringBuilder + "</p>");
                 }
             }
         }
@@ -671,13 +701,6 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
         allBlockIdList.remove(blockId);
-        if (CollectionUtils.isNotEmpty(childItemList)) {
-//            logger.error("handleQuoteContainer 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
-            List<KnowledgeDocumentLineVo> lines = handleChildItemList(item, childItemList, unprocessedItems, allBlockIdList);
-            if (CollectionUtils.isNotEmpty(lines)) {
-                resultList.addAll(lines);
-            }
-        }
         return resultList;
     }
 
@@ -741,6 +764,24 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         return resultList;
     }
 
+    private JSONObject handleImage(JSONObject item) {
+        JSONObject configObj = new JSONObject();
+        Integer blockType = item.getInteger("block_type");
+        FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+        JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+        if (MapUtils.isNotEmpty(jsonObj)) {
+            configObj.putAll(jsonObj);
+            Integer align = jsonObj.getInteger("align");
+            configObj.put("align", FeiShuAlignType.getFeiShuAlignText(align));
+            String token = jsonObj.getString("token");
+            FileVo fileVo = downloadMedias(token);
+            if (fileVo != null) {
+                configObj.put("url", "api/binary/file/download?id=" + fileVo.getId());
+            }
+        }
+        return configObj;
+    }
+
     private List<KnowledgeDocumentLineVo> handleImage(JSONObject item, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
         List<KnowledgeDocumentLineVo> resultList = new ArrayList<>();
         String blockId = item.getString("block_id");
@@ -771,7 +812,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         resultList.add(knowledgeDocumentLineVo);
         allBlockIdList.remove(blockId);
         if (CollectionUtils.isNotEmpty(childItemList)) {
-            logger.error("handleImage 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
+//            logger.error("handleImage 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
             List<KnowledgeDocumentLineVo> lines = handleChildItemList(item, childItemList, unprocessedItems, allBlockIdList);
             if (CollectionUtils.isNotEmpty(lines)) {
                 resultList.addAll(lines);
@@ -873,10 +914,9 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         return handleItemList(childBlockIdList, childItemMap, unprocessedItems, allBlockIdList);
     }
 
-    private List<KnowledgeDocumentLineVo> getFeiShuDocumentLines(FeiShuNodeVo node, String tenantAccessToken, JSONArray unprocessedItems, JSONObject blockResult2) {
+    private List<KnowledgeDocumentLineVo> getFeiShuDocumentLines(FeiShuNodeVo node, String tenantAccessToken, JSONArray unprocessedItems) {
         List<KnowledgeDocumentLineVo> lineList = new ArrayList<>();
         JSONObject blockResult = FeiShuOpenApiUtil.getDocumentBlocks(node.getObjToken(), tenantAccessToken);
-        blockResult2.putAll(JSONObject.parseObject(blockResult.toJSONString()));
         JSONArray items = blockResult.getJSONObject("data") == null ? null : blockResult.getJSONObject("data").getJSONArray("items");
         if (CollectionUtils.isNotEmpty(items)) {
             JSONObject pageItem = null;

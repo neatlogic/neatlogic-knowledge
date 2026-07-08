@@ -409,29 +409,13 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         configObj.put("className", "decimal");
         configObj.put("feiShuBlockList", orderedList);
         if (CollectionUtils.isNotEmpty(orderedList)) {
-            Integer start = null;
             List<String> blockIdList = new ArrayList<>();
             List<String> contentList = new ArrayList<>();
             for (JSONObject item : orderedList) {
                 String blockId = item.getString("block_id");
                 blockIdList.add(blockId);
-                Integer blockType = item.getInteger("block_type");
-                FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
-                JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
-                if (MapUtils.isNotEmpty(jsonObj)) {
-                    contentList.add(getOrderedListItemContent(item, childItemList, unprocessedItems, allBlockIdList));
-                    if (start == null) {
-                        JSONObject style = jsonObj.getJSONObject("style");
-                        if (MapUtils.isNotEmpty(style)) {
-                            String sequence = style.getString("sequence");
-                            if (StringUtils.isNumeric(sequence)) {
-                                start = Integer.parseInt(sequence);
-                            }
-                        }
-                    }
-                }
+                contentList.add(getOrderedListItemContent(item, childItemList, unprocessedItems, allBlockIdList));
             }
-            configObj.put("start", start != null ? start : 1);
             knowledgeDocumentLineVo.setContent(String.join("", contentList));
             configObj.put("content", String.join("", contentList));
             configObj.put("blockUuid", String.join(",", blockIdList));

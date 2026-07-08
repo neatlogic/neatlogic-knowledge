@@ -414,15 +414,12 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
             List<String> contentList = new ArrayList<>();
             for (JSONObject item : orderedList) {
                 String blockId = item.getString("block_id");
-                allBlockIdList.remove(blockId);
                 blockIdList.add(blockId);
                 Integer blockType = item.getInteger("block_type");
                 FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
                 JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
                 if (MapUtils.isNotEmpty(jsonObj)) {
-                    JSONArray elements = jsonObj.getJSONArray("elements");
-                    String content = getContentFromElements(elements);
-                    contentList.add("<li>" + content + "</li>");
+                    contentList.add(getOrderedListItemContent(item, childItemList, unprocessedItems, allBlockIdList));
                     if (start == null) {
                         JSONObject style = jsonObj.getJSONObject("style");
                         if (MapUtils.isNotEmpty(style)) {
@@ -442,13 +439,101 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());
         resultList.add(knowledgeDocumentLineVo);
         if (CollectionUtils.isNotEmpty(childItemList)) {
-            logger.error("handleOrderedList 方法中childItemList入参未处理,{}", JSONObject.toJSONString(childItemList));
-//            List<KnowledgeDocumentLineVo> lines = handleChildItemList(item, childItemList, unprocessedItems, allBlockIdList);
-//            if (CollectionUtils.isNotEmpty(lines)) {
-//                resultList.addAll(lines);
-//            }
+            for (JSONObject childItem : childItemList) {
+                allBlockIdList.remove(childItem.getString("block_id"));
+            }
         }
         return resultList;
+    }
+
+    private String getOrderedListItemContent(JSONObject item, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
+        String blockId = item.getString("block_id");
+        allBlockIdList.remove(blockId);
+        Integer blockType = item.getInteger("block_type");
+        FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+        String content = "";
+        if (feiShuBlockType != null) {
+            JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
+            if (MapUtils.isNotEmpty(jsonObj)) {
+                JSONArray elements = jsonObj.getJSONArray("elements");
+                content = getContentFromElements(elements);
+            }
+        }
+        return "<li>" + content + getOrderedListChildContent(item, childItemList, unprocessedItems, allBlockIdList) + "</li>";
+    }
+
+    private String getOrderedListChildContent(JSONObject item, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
+        if (CollectionUtils.isEmpty(childItemList)) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        List<JSONObject> directChildItemList = new ArrayList<>();
+        String blockId = item.getString("block_id");
+        for (JSONObject childItem : childItemList) {
+            if (Objects.equals(blockId, childItem.getString("parent_id"))) {
+                directChildItemList.add(childItem);
+            }
+        }
+        for (int i = 0; i < directChildItemList.size(); i++) {
+            JSONObject childItem = directChildItemList.get(i);
+            Integer blockType = childItem.getInteger("block_type");
+            FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+            if (feiShuBlockType == FeiShuBlockType.ORDERED) {
+                List<JSONObject> orderedList = new ArrayList<>();
+                for (; i < directChildItemList.size(); i++) {
+                    JSONObject orderedItem = directChildItemList.get(i);
+                    if (!Objects.equals(orderedItem.getInteger("block_type"), FeiShuBlockType.ORDERED.getValue())) {
+                        i--;
+                        break;
+                    }
+                    orderedList.add(orderedItem);
+                }
+                builder.append(getOrderedListContent(orderedList, childItemList, unprocessedItems, allBlockIdList));
+            } else if (feiShuBlockType == FeiShuBlockType.IMAGE) {
+                builder.append(getImageHtml(childItem));
+                allBlockIdList.remove(childItem.getString("block_id"));
+            } else if (feiShuBlockType == FeiShuBlockType.TEXT) {
+                JSONObject textObj = childItem.getJSONObject(FeiShuBlockType.TEXT.getText());
+                if (MapUtils.isNotEmpty(textObj)) {
+                    builder.append("<p>").append(getContentFromElements(textObj.getJSONArray("elements"))).append("</p>");
+                }
+                allBlockIdList.remove(childItem.getString("block_id"));
+            } else {
+                unprocessedItems.add(childItem);
+                allBlockIdList.remove(childItem.getString("block_id"));
+            }
+        }
+        return builder.toString();
+    }
+
+    private String getOrderedListContent(List<JSONObject> orderedList, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
+        StringBuilder builder = new StringBuilder("<ol>");
+        for (JSONObject item : orderedList) {
+            builder.append(getOrderedListItemContent(item, childItemList, unprocessedItems, allBlockIdList));
+        }
+        builder.append("</ol>");
+        return builder.toString();
+    }
+
+    private String getImageHtml(JSONObject item) {
+        JSONObject imageObj = handleImage(item);
+        String url = imageObj.getString("url");
+        if (StringUtils.isBlank(url)) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder("<p><img src=\"");
+        builder.append(url);
+        builder.append("\"");
+        Integer width = imageObj.getInteger("width");
+        if (width != null) {
+            builder.append(" width=\"").append(width).append("\"");
+        }
+        Integer height = imageObj.getInteger("height");
+        if (height != null) {
+            builder.append(" height=\"").append(height).append("\"");
+        }
+        builder.append("></p>");
+        return builder.toString();
     }
 
     private List<KnowledgeDocumentLineVo> handleBulletList(List<JSONObject> bulletList, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {

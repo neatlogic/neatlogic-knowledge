@@ -962,16 +962,20 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
             JSONObject item = itemMap.get(blockId);
             String parentId = item.getString("parent_id");
             Integer blockType = item.getInteger("block_type");
-            FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
             if (handledBlockIdList.contains(blockId)) {
                 continue;
             }
             handledBlockIdList.add(blockId);
+            FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
             if (feiShuBlockType == null) {
                 unprocessedItems.add(item);
                 List<JSONObject> childItemList = collectChildItemList(item, itemMap);
                 handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
                 unprocessedItems.addAll(childItemList);
+                allBlockIdList.remove(blockId);
+                for (JSONObject childItem : childItemList) {
+                    allBlockIdList.remove(childItem.getString("block_id"));
+                }
                 continue;
             }
             item.put("block_type_text", feiShuBlockType.getText());
@@ -1144,6 +1148,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                 line.setConfig(configObj.toJSONString());
                 line.setHandler("divider");
                 lineList.add(line);
+                allBlockIdList.remove(blockId);
             } else if (feiShuBlockType == FeiShuBlockType.VIEW) {
                 List<JSONObject> childItemList = collectChildItemList(item, itemMap);
                 handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
@@ -1164,6 +1169,10 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                 List<JSONObject> childItemList = collectChildItemList(item, itemMap);
                 handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
                 unprocessedItems.addAll(childItemList);
+                allBlockIdList.remove(blockId);
+                for (JSONObject childItem : childItemList) {
+                    allBlockIdList.remove(childItem.getString("block_id"));
+                }
             }
         }
         return lineList;

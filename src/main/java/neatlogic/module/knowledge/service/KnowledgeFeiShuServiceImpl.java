@@ -1234,9 +1234,10 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                 List<JSONObject> allChildItemList = new ArrayList<>();
                 List<JSONObject> bulletList = new ArrayList<>();
                 boolean isStart = false;
-                for (Map.Entry<String, JSONObject> entry : itemMap.entrySet()) {
-                    JSONObject value = entry.getValue();
-                    String key = entry.getKey();
+                int index = blockIdList.indexOf(blockId);
+                for (int i = index; i < blockIdList.size(); i++) {
+                    String key = blockIdList.get(i);
+                    JSONObject value = itemMap.get(key);
                     if (!isStart && Objects.equals(key, blockId)) {
                         bulletList.add(value);
                         isStart = true;
@@ -1256,6 +1257,28 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                         }
                     }
                 }
+//                for (Map.Entry<String, JSONObject> entry : itemMap.entrySet()) {
+//                    JSONObject value = entry.getValue();
+//                    String key = entry.getKey();
+//                    if (!isStart && Objects.equals(key, blockId)) {
+//                        bulletList.add(value);
+//                        isStart = true;
+//                        List<JSONObject> childItemList = collectChildItemList(value, itemMap);
+//                        handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
+//                        allChildItemList.addAll(childItemList);
+//                    } else if (isStart) {
+//                        if (Objects.equals(value.getInteger("block_type"), feiShuBlockType.getValue())
+//                                && Objects.equals(value.getString("parent_id"), parentId)) {
+//                            bulletList.add(value);
+//                            handledBlockIdList.add(value.getString("block_id"));
+//                            List<JSONObject> childItemList = collectChildItemList(value, itemMap);
+//                            handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
+//                            allChildItemList.addAll(childItemList);
+//                        } else {
+//                            break;
+//                        }
+//                    }
+//                }
                 if (CollectionUtils.isNotEmpty(bulletList)) {
                     List<KnowledgeDocumentLineVo> lines = handleBulletList(bulletList, allChildItemList, unprocessedItems, allBlockIdList);
                     lineList.addAll(lines);
@@ -1264,9 +1287,10 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                 List<JSONObject> allChildItemList = new ArrayList<>();
                 List<JSONObject> orderedList = new ArrayList<>();
                 boolean isStart = false;
-                for (Map.Entry<String, JSONObject> entry : itemMap.entrySet()) {
-                    JSONObject value = entry.getValue();
-                    String key = entry.getKey();
+                int index = blockIdList.indexOf(blockId);
+                for (int i = index; i < blockIdList.size(); i++) {
+                    String key = blockIdList.get(i);
+                    JSONObject value = itemMap.get(key);
                     if (!isStart && Objects.equals(key, blockId)) {
                         orderedList.add(value);
                         isStart = true;
@@ -1286,6 +1310,28 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                         }
                     }
                 }
+//                for (Map.Entry<String, JSONObject> entry : itemMap.entrySet()) {
+//                    JSONObject value = entry.getValue();
+//                    String key = entry.getKey();
+//                    if (!isStart && Objects.equals(key, blockId)) {
+//                        orderedList.add(value);
+//                        isStart = true;
+//                        List<JSONObject> childItemList = collectChildItemList(value, itemMap);
+//                        handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
+//                        allChildItemList.addAll(childItemList);
+//                    } else if (isStart) {
+//                        if (Objects.equals(value.getInteger("block_type"), feiShuBlockType.getValue())
+//                                && Objects.equals(value.getString("parent_id"), parentId)) {
+//                            orderedList.add(value);
+//                            handledBlockIdList.add(value.getString("block_id"));
+//                            List<JSONObject> childItemList = collectChildItemList(value, itemMap);
+//                            handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
+//                            allChildItemList.addAll(childItemList);
+//                        } else {
+//                            break;
+//                        }
+//                    }
+//                }
                 if (CollectionUtils.isNotEmpty(orderedList)) {
                     List<KnowledgeDocumentLineVo> lines = handleOrderedList(orderedList, allChildItemList, unprocessedItems, allBlockIdList);
                     lineList.addAll(lines);
@@ -1309,9 +1355,10 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                 List<JSONObject> allChildItemList = new ArrayList<>();
                 List<JSONObject> todoList = new ArrayList<>();
                 boolean isStart = false;
-                for (Map.Entry<String, JSONObject> entry : itemMap.entrySet()) {
-                    JSONObject value = entry.getValue();
-                    String key = entry.getKey();
+                int index = blockIdList.indexOf(blockId);
+                for (int i = index; i < blockIdList.size(); i++) {
+                    String key = blockIdList.get(i);
+                    JSONObject value = itemMap.get(key);
                     if (!isStart && Objects.equals(key, blockId)) {
                         todoList.add(value);
                         isStart = true;
@@ -1331,6 +1378,28 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                         }
                     }
                 }
+//                for (Map.Entry<String, JSONObject> entry : itemMap.entrySet()) {
+//                    JSONObject value = entry.getValue();
+//                    String key = entry.getKey();
+//                    if (!isStart && Objects.equals(key, blockId)) {
+//                        todoList.add(value);
+//                        isStart = true;
+//                        List<JSONObject> childItemList = collectChildItemList(value, itemMap);
+//                        handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
+//                        allChildItemList.addAll(childItemList);
+//                    } else if (isStart) {
+//                        if (Objects.equals(value.getInteger("block_type"), feiShuBlockType.getValue())
+//                                && Objects.equals(value.getString("parent_id"), parentId)) {
+//                            todoList.add(value);
+//                            handledBlockIdList.add(value.getString("block_id"));
+//                            List<JSONObject> childItemList = collectChildItemList(value, itemMap);
+//                            handledBlockIdList.addAll(collectChildItemBlockIdList(childItemList));
+//                            allChildItemList.addAll(childItemList);
+//                        } else {
+//                            break;
+//                        }
+//                    }
+//                }
                 if (CollectionUtils.isNotEmpty(todoList)) {
                     List<KnowledgeDocumentLineVo> lines = handleTodoList(todoList, allChildItemList, unprocessedItems, allBlockIdList);
                     lineList.addAll(lines);

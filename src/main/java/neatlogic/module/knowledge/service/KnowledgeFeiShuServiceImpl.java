@@ -862,53 +862,55 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
 
     private List<KnowledgeDocumentLineVo> handleView(JSONObject item, List<JSONObject> childItemList, JSONArray unprocessedItems, List<String> allBlockIdList) {
         List<KnowledgeDocumentLineVo> resultList = new ArrayList<>();
-        String handler = "paragraph";
+        Integer viewType = null;
+        String childBlockId = null;
         String blockId = item.getString("block_id");
         {
             Integer blockType = item.getInteger("block_type");
+            JSONArray children = item.getJSONArray("children");
+            if (CollectionUtils.isNotEmpty(children)) {
+                childBlockId = children.getString(0);
+            }
             FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
-            Integer viewType = null;
             JSONObject jsonObj = item.getJSONObject(feiShuBlockType.getText());
             if (MapUtils.isNotEmpty(jsonObj)) {
                 viewType = jsonObj.getInteger("view_type");
-                if (Objects.equals(viewType, 1)) {
-                    handler = "file";
-                } else if (Objects.equals(viewType, 2)) {
-                    handler = "video";
-                } else if (Objects.equals(viewType, 3)) {
-//                    handler = "image";
-                }
             }
         }
         KnowledgeDocumentLineVo knowledgeDocumentLineVo = new KnowledgeDocumentLineVo();
-        knowledgeDocumentLineVo.setHandler(handler);
         JSONObject configObj = new JSONObject();
-        configObj.put("blockType", handler);
         configObj.put("blockUuid", blockId);
         configObj.put("feiShuBlockList", new JSONArray().fluentAdd(item).fluentAddAll(childItemList));
         for (JSONObject childItem : childItemList) {
-            allBlockIdList.remove(childItem.getString("block_id"));
-            Integer blockType = childItem.getInteger("block_type");
-            FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
-            JSONObject jsonObj = childItem.getJSONObject(feiShuBlockType.getText());
-            if (MapUtils.isNotEmpty(jsonObj)) {
-                String name = jsonObj.getString("name");
-                String token = jsonObj.getString("token");
-                FileVo fileVo = downloadMedias(token);
-                if (fileVo != null) {
-                    if (Objects.equals(handler, "video")) {
-                        configObj.put("src", "api/binary/file/download?id=" + fileVo.getId());
-                    } else if (Objects.equals(handler, "file")) {
+            if (Objects.equals(childItem.getString("block_id"), childBlockId)) {
+                allBlockIdList.remove(childItem.getString("block_id"));
+                Integer blockType = childItem.getInteger("block_type");
+                FeiShuBlockType feiShuBlockType = FeiShuBlockType.getFeiShuBlockType(blockType);
+                JSONObject jsonObj = childItem.getJSONObject(feiShuBlockType.getText());
+                if (MapUtils.isNotEmpty(jsonObj)) {
+                    String name = jsonObj.getString("name");
+                    String token = jsonObj.getString("token");
+                    FileVo fileVo = downloadMedias(token);
+                    if (fileVo != null) {
+                        String handler = "paragraph";
+                        if (Objects.equals(viewType, 2) && fileVo.getName().endsWith(".mp4")) {
+                            handler = "video";
+                        } else {
+                            handler = "file";
+                        }
+                        knowledgeDocumentLineVo.setHandler(handler);
+                        configObj.put("blockType", handler);
                         configObj.put("name", fileVo.getName());
                         configObj.put("size", fileVo.getSize());
-                    }
-                    configObj.put("url", "api/binary/file/download?id=" + fileVo.getId());
+                        configObj.put("url", "api/binary/file/download?id=" + fileVo.getId());
 //                    configObj.put("uploading", false);
-                    configObj.put("align", "left");
+                        configObj.put("align", "left");
+                    }
                 }
+                break;
             }
         }
-        if (Objects.equals(handler, "paragraph")) {
+        if (Objects.equals(knowledgeDocumentLineVo.getHandler(), "paragraph")) {
             knowledgeDocumentLineVo.setContent(configObj.toJSONString());
         }
         knowledgeDocumentLineVo.setConfig(configObj.toJSONString());

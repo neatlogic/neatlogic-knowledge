@@ -482,7 +482,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                 List<String> contentList = getOrderedListItemContent(orderedList, childItemList, unprocessedItems, allBlockIdList);
                 builder.append(String.join("", contentList));
             } else if (feiShuBlockType == FeiShuBlockType.IMAGE) {
-                builder.append("<li>" + getImageHtml(childItem) + "</li>");
+                builder.append("<li>如图所示" + getImageHtml(childItem) + "</li>");
                 allBlockIdList.remove(childItem.getString("block_id"));
             } else if (feiShuBlockType == FeiShuBlockType.TEXT) {
                 List<String> contentList = handleText(childItem);

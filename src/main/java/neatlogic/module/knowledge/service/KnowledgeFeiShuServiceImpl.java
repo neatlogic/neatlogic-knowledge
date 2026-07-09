@@ -245,6 +245,7 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
             for (int i = 0; i < elements.size(); i++) {
                 JSONObject element = elements.getJSONObject(i);
                 if (MapUtils.isNotEmpty(element)) {
+                    JSONObject equation = element.getJSONObject("equation");
                     JSONObject textRun = element.getJSONObject("text_run");
                     if (MapUtils.isNotEmpty(textRun)) {
                         String content = textRun.getString("content");
@@ -259,6 +260,11 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                                     }
                                 }
                             }
+                            builder.append(HtmlUtil.encodeHtml(content));
+                        }
+                    } else if (MapUtils.isNotEmpty(equation)) {
+                        String content = equation.getString("content");
+                        if (StringUtils.isNotBlank(content)) {
                             builder.append(HtmlUtil.encodeHtml(content));
                         }
                     }

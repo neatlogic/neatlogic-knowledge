@@ -478,7 +478,8 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                 List<JSONObject> childItemList2 = collectChildItemList(item, itemMap);
                 if (CollectionUtils.isNotEmpty(childItemList2)) {
                     String orderedListChildContent = getOrderedListChildContent(item, childItemList2, unprocessedItems, allBlockIdList);
-                    content = content + "<ol>" + orderedListChildContent + "</ol>";
+//                    content = content + "<ol>" + orderedListChildContent + "</ol>";
+                    content = content + orderedListChildContent;
                 }
                 contentList.add("<li>" + content + "</li>");
             }
@@ -513,13 +514,25 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                     orderedList.add(orderedItem);
                 }
                 List<String> contentList = getOrderedListItemContent(orderedList, childItemList, unprocessedItems, allBlockIdList);
-                builder.append(String.join("", contentList));
+                builder.append("<ol>" + String.join("", contentList) + "</ol>");
+            } else if (feiShuBlockType == FeiShuBlockType.BULLET) {
+                List<JSONObject> bulletList = new ArrayList<>();
+                for (; i < directChildItemList.size(); i++) {
+                    JSONObject bulletItem = directChildItemList.get(i);
+                    if (!Objects.equals(bulletItem.getInteger("block_type"), FeiShuBlockType.BULLET.getValue())) {
+                        i--;
+                        break;
+                    }
+                    bulletList.add(bulletItem);
+                }
+                List<String> contentList = getBulletListItemContent(bulletList, childItemList, unprocessedItems, allBlockIdList);
+                builder.append("<ul>" + String.join("", contentList) + "</ul>");
             } else if (feiShuBlockType == FeiShuBlockType.IMAGE) {
-                builder.append("<li>如图所示" + getImageHtml(childItem) + "</li>");
+                builder.append("<ol><li>如图所示" + getImageHtml(childItem) + "</li></ol>");
                 allBlockIdList.remove(childItem.getString("block_id"));
             } else if (feiShuBlockType == FeiShuBlockType.TEXT) {
                 List<String> contentList = handleText(childItem, new ArrayList<>());
-                builder.append("<li><p>").append(String.join("", contentList)).append("</p></li>");
+                builder.append("<ol><li><p>").append(String.join("", contentList)).append("</p></li></ol>");
                 allBlockIdList.remove(childItem.getString("block_id"));
             } else {
                 unprocessedItems.add(childItem);
@@ -603,7 +616,8 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                 List<JSONObject> childItemList2 = collectChildItemList(item, itemMap);
                 if (CollectionUtils.isNotEmpty(childItemList2)) {
                     String bulletListChildContent = getBulletListChildContent(item, childItemList2, unprocessedItems, allBlockIdList);
-                    content = content + "<ul>" + bulletListChildContent + "</ul>";
+                    content = content + bulletListChildContent;
+//                    content = content + "<ul>" + bulletListChildContent + "</ul>";
                 }
                 contentList.add("<li>" + content + "</li>");
             }
@@ -638,13 +652,13 @@ public class KnowledgeFeiShuServiceImpl implements KnowledgeFeiShuService {
                     bulletList.add(bulletItem);
                 }
                 List<String> contentList = getBulletListItemContent(bulletList, childItemList, unprocessedItems, allBlockIdList);
-                builder.append(String.join("", contentList));
+                builder.append("<ul>" + String.join("", contentList) + "</ul>");
             } else if (feiShuBlockType == FeiShuBlockType.IMAGE) {
-                builder.append("<li>如图所示" + getImageHtml(childItem) + "</li>");
+                builder.append("<ul><li>如图所示" + getImageHtml(childItem) + "</li></ul>");
                 allBlockIdList.remove(childItem.getString("block_id"));
             } else if (feiShuBlockType == FeiShuBlockType.TEXT) {
                 List<String> contentList = handleText(childItem, new ArrayList<>());
-                builder.append("<li><p>").append(String.join("", contentList)).append("</p></li>");
+                builder.append("<ul><li><p>").append(String.join("", contentList)).append("</p></li></ul>");
                 allBlockIdList.remove(childItem.getString("block_id"));
             } else {
                 unprocessedItems.add(childItem);

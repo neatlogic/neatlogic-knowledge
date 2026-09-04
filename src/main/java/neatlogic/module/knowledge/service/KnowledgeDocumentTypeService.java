@@ -8,4 +8,9 @@ public interface KnowledgeDocumentTypeService {
 
 	public KnowledgeDocumentTypeVo buildRootType(Long knowledgeCircleId);
 
+	/**
+	 * 构建指定知识圈的完整分类树，返回不对外展示的虚拟分类根节点。
+	 */
+	KnowledgeDocumentTypeVo buildTypeTree(Long knowledgeCircleId);
+
 }

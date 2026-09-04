@@ -14,13 +14,10 @@ import neatlogic.framework.knowledge.dto.KnowledgeCircleVo;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentTypeVo;
 import neatlogic.module.knowledge.service.KnowledgeDocumentTypeService;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @AuthAction(action = KNOWLEDGE_BASE.class)
@@ -67,27 +64,22 @@ public class KnowledgeCircleGetApi extends PrivateApiComponentBase{
 		List<KnowledgeCircleUserVo> circleUserList = knowledgeCircleMapper.getKnowledgeCircleUserList(id);
 		circle.setAuthList(circleUserList);
 		/** 查询知识类型 */
-		KnowledgeDocumentTypeVo root = knowledgeDocumentTypeService.buildRootType(id);
-		List<KnowledgeDocumentTypeVo> typeList = knowledgeDocumentTypeMapper.getTypeForTree(root.getLft(), root.getRht(),id);
-		if(CollectionUtils.isNotEmpty(typeList)){
-			Map<String, KnowledgeDocumentTypeVo> idMap = new HashMap<>();
-			typeList.add(root);
-			for(KnowledgeDocumentTypeVo vo : typeList){
-				idMap.put(vo.getUuid(),vo);
-				/** 计算当前分类下的知识数(包括子类的) */
-				vo.setDocumentCount(knowledgeDocumentTypeMapper.getDocumentCountByLftRht(vo.getLft(),vo.getRht(),id));
-			}
-			for(KnowledgeDocumentTypeVo vo : typeList){
-				String parentUuid = vo.getParentUuid();
-				KnowledgeDocumentTypeVo parent = idMap.get(parentUuid);
-				if(parent != null){
-					vo.setParent(parent);
-				}
-			}
-		}
+		KnowledgeDocumentTypeVo root = knowledgeDocumentTypeService.buildTypeTree(id);
+		fillDocumentCount(root.getChildren(), id);
 		circle.setDocumentTypeList(root.getChildren());
 		result.put("knowledgeCircle",circle);
 		return result;
+	}
+
+	/**
+	 * 补充知识圈详情特有的分类子树文档统计，不参与通用树关系组装。
+	 */
+	private void fillDocumentCount(List<KnowledgeDocumentTypeVo> typeList, Long knowledgeCircleId) {
+		for (KnowledgeDocumentTypeVo typeVo : typeList) {
+			typeVo.setDocumentCount(knowledgeDocumentTypeMapper.getDocumentCountByLftRht(
+					typeVo.getLft(), typeVo.getRht(), knowledgeCircleId));
+			fillDocumentCount(typeVo.getChildren(), knowledgeCircleId);
+		}
 	}
 
 }

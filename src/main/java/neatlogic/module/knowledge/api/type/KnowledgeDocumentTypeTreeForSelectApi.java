@@ -128,22 +128,7 @@ public class KnowledgeDocumentTypeTreeForSelectApi extends PrivateApiComponentBa
 
                 } else {
                     /** 非搜索模式下获取所有文档类型 */
-                    KnowledgeDocumentTypeVo root = knowledgeDocumentTypeService.buildRootType(id);
-                    List<KnowledgeDocumentTypeVo> typeList = knowledgeDocumentTypeMapper.getTypeForTree(root.getLft(), root.getRht(), id);
-                    if (CollectionUtils.isNotEmpty(typeList)) {
-                        Map<String, KnowledgeDocumentTypeVo> idMap = new HashMap<>();
-                        typeList.add(root);
-                        for (KnowledgeDocumentTypeVo vo : typeList) {
-                            idMap.put(vo.getUuid(), vo);
-                        }
-                        for (KnowledgeDocumentTypeVo vo : typeList) {
-                            String parentUuid = vo.getParentUuid();
-                            KnowledgeDocumentTypeVo parent = idMap.get(parentUuid);
-                            if (parent != null) {
-                                vo.setParent(parent);
-                            }
-                        }
-                    }
+                    KnowledgeDocumentTypeVo root = knowledgeDocumentTypeService.buildTypeTree(id);
                     JSONObject circle = new JSONObject();
                     circle.put("id", id);
                     circle.put("uuid", id);

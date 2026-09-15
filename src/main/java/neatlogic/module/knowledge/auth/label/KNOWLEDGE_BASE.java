@@ -6,16 +6,17 @@ import neatlogic.framework.knowledge.auth.label.KNOWLEDGE;
 import java.util.Arrays;
 import java.util.List;
 
+/** 权限名称与说明使用国际化键，权限标识及校验规则保持不变。 */
 public class KNOWLEDGE_BASE extends AuthBase {
 
 	@Override
 	public String getAuthDisplayName() {
-		return "知识基础权限";
+		return "auth.knowledge_base.name";
 	}
 
 	@Override
 	public String getAuthIntroduction() {
-		return "查看知识";
+		return "auth.knowledge_base.description";
 	}
 
 	@Override

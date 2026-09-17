@@ -1,7 +1,6 @@
 package neatlogic.module.knowledge.auth.label;
 
 import neatlogic.framework.auth.core.AuthBase;
-
 import java.util.Collections;
 import java.util.List;
 

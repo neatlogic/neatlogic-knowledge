@@ -1,0 +1,30 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_feishu_medias_mapping",
+  "label": "knowledge_base_feshe_medias_mapping Table",
+  "description": "The feishu_medias_mapping table, belonging to the knowledge base module, is used for related queries and report queries related to knowledge base.",
+  "fields": [
+    {
+      "name": "file_token",
+      "type": "varchar(255)",
+      "description": "Unique identifier, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "file_id",
+      "type": "bigint",
+      "description": "Attachment_id."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "file_token"
+      ],
+      "description": "Primary key index covering the file_token field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

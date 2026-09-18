@@ -1,0 +1,37 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document_file",
+  "label": "Knowledge Document Attachment",
+  "description": "The knowledge document attachment can be used for related queries in the knowledge base and report queries.",
+  "fields": [
+    {
+      "name": "knowledge_document_id",
+      "type": "bigint",
+      "description": "Document ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "knowledge_document_version_id",
+      "type": "bigint",
+      "description": "Document_version_id, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "file_id",
+      "type": "bigint",
+      "description": "Attachment_id, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "knowledge_document_id",
+        "knowledge_document_version_id",
+        "file_id"
+      ],
+      "description": "Primary key index covering the knowledge_document_id, knowledge_document_version_id, file_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document_line",
+  "label": "Knowledge Document Row",
+  "description": "The knowledge document row is used for related queries in the knowledge base and report queries.",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "The unique identifier (UUID) for the row, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "handler",
+      "type": "varchar(100)",
+      "description": "Component."
+    },
+    {
+      "name": "knowledge_document_id",
+      "type": "bigint",
+      "description": "Document ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "knowledge_document_version_id",
+      "type": "bigint",
+      "description": "Document_version_id. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "content_hash",
+      "type": "char(32)",
+      "description": "Content hash."
+    },
+    {
+      "name": "config_hash",
+      "type": "char(32)",
+      "description": "Configuration hash."
+    },
+    {
+      "name": "line_number",
+      "type": "int",
+      "description": "Line number. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "uuid"
+      ],
+      "description": "Primary key index covering the UUID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_document_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "knowledge_document_id"
+      ],
+      "description": "Standard index covering the knowledge_document_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_document_linenum",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "line_number"
+      ],
+      "description": "Standard index covering the line_number field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_document_version_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "knowledge_document_version_id"
+      ],
+      "description": "Standard index covering the knowledge_document_version_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

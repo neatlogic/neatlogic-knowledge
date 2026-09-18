@@ -1,0 +1,95 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_feishu_document_mapping",
+  "label": "Mapping of FlyBird Cloud Document to Knowledge Document",
+  "description": "Mapping of FlyBook cloud documents to knowledge documents for use in reporting scenarios related to status tracking, time dimension statistics, and query association for knowledge bases.",
+  "fields": [
+    {
+      "name": "app_id",
+      "type": "varchar(255)",
+      "description": "Fly ID."
+    },
+    {
+      "name": "space_id",
+      "type": "bigint",
+      "description": "Knowledge base space ID."
+    },
+    {
+      "name": "title",
+      "type": "varchar(255)",
+      "description": "Title."
+    },
+    {
+      "name": "parent_node_token",
+      "type": "varchar(100)",
+      "description": "Parent node token."
+    },
+    {
+      "name": "node_token",
+      "type": "varchar(100)",
+      "description": "Wiki node token, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "obj_token",
+      "type": "varchar(100)",
+      "description": "Cloud document token."
+    },
+    {
+      "name": "obj_type",
+      "type": "varchar(50)",
+      "description": "Cloud document type."
+    },
+    {
+      "name": "update_time",
+      "type": "timestamp(3)",
+      "description": "Update time in flei."
+    },
+    {
+      "name": "knowledge_document_type_uuid",
+      "type": "char(32)",
+      "description": "Knowledge classification UUID."
+    },
+    {
+      "name": "knowledge_document_id",
+      "type": "bigint",
+      "description": "Knowledge document ID."
+    },
+    {
+      "name": "knowledge_document_version_id",
+      "type": "bigint",
+      "description": "Knowledge document version ID."
+    },
+    {
+      "name": "status",
+      "type": "varchar(255)",
+      "description": "Status."
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "Information."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Updated by."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Update the timestamp."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "node_token"
+      ],
+      "description": "Primary key index covering the node_token field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document_collect",
+  "label": "Knowledge Document Collection",
+  "description": "Knowledge documents are collected for use in reporting scenarios such as time dimension statistics and query associations in the knowledge base.",
+  "fields": [
+    {
+      "name": "knowledge_document_id",
+      "type": "bigint",
+      "description": "The document's primary key, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "user_uuid",
+      "type": "char(32)",
+      "description": "User UUID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "Collection time."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "knowledge_document_id",
+        "user_uuid"
+      ],
+      "description": "Primary key index covering the knowledge_document_id, user_uuid fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

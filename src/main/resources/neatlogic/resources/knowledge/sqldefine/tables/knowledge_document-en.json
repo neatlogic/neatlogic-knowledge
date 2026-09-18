@@ -1,0 +1,80 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document",
+  "label": "Knowledge Document",
+  "description": "Knowledge documents can be used for time dimension statistical queries and association queries in the knowledge base.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "The primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "title",
+      "type": "varchar(255)",
+      "description": "Title."
+    },
+    {
+      "name": "knowledge_document_version_id",
+      "type": "bigint",
+      "description": "Activate version ID."
+    },
+    {
+      "name": "knowledge_document_type_uuid",
+      "type": "char(32)",
+      "description": "ID."
+    },
+    {
+      "name": "knowledge_circle_id",
+      "type": "bigint",
+      "description": "Knowledge circle ID."
+    },
+    {
+      "name": "is_delete",
+      "type": "tinyint(1)",
+      "description": "DELETE."
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "description": "Activate version number."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "Creator."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "Creation time."
+    },
+    {
+      "name": "source",
+      "type": "varchar(50)",
+      "description": "Document source. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "source_idx",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "source"
+      ],
+      "description": "Standard index covering the source field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

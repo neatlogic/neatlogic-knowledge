@@ -1,0 +1,30 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document_view_count",
+  "label": "View Knowledge Frequency",
+  "description": "Viewing knowledge counts are used for related queries in knowledge bases and other reporting scenarios.",
+  "fields": [
+    {
+      "name": "knowledge_document_id",
+      "type": "bigint",
+      "description": "The document's primary key, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "count",
+      "type": "int",
+      "description": "Views."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "knowledge_document_id"
+      ],
+      "description": "Primary key index covering the knowledge_document_id field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

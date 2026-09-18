@@ -1,0 +1,95 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document_version",
+  "label": "Knowledge Base Version Table",
+  "description": "The knowledge base version table is used for tracking knowledge base states, time dimension statistics, and association queries, which are scenario-specific for reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Document version primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "title",
+      "type": "varchar(255)",
+      "description": "Title."
+    },
+    {
+      "name": "knowledge_document_type_uuid",
+      "type": "char(32)",
+      "description": "Document type UUID."
+    },
+    {
+      "name": "knowledge_document_id",
+      "type": "bigint",
+      "description": "Document ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "from_version",
+      "type": "int",
+      "description": "Original version."
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "description": "Version."
+    },
+    {
+      "name": "status",
+      "type": "enum('draft','submitted','rejected','passed','expired')",
+      "description": "Status, (draft, pending review, approved)."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Last modified by."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Last modified time."
+    },
+    {
+      "name": "size",
+      "type": "int",
+      "description": "Document size, in bytes."
+    },
+    {
+      "name": "reviewer",
+      "type": "char(32)",
+      "description": "Approver."
+    },
+    {
+      "name": "review_time",
+      "type": "timestamp(3)",
+      "description": "Approval time."
+    },
+    {
+      "name": "is_delete",
+      "type": "tinyint(1)",
+      "description": "Is it deleted."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_knowledge_document_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "knowledge_document_id"
+      ],
+      "description": "Standard index covering the knowledge_document_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

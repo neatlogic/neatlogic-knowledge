@@ -1,0 +1,45 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document_invoke",
+  "label": "Knowledge Document Call",
+  "description": "The knowledge document call can be used for related queries in knowledge bases, such as reporting scenarios.",
+  "fields": [
+    {
+      "name": "knowledge_document_id",
+      "type": "bigint",
+      "description": "Knowledge document ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "invoke_id",
+      "type": "bigint",
+      "description": "The call identifier. This value must be unique in the database and is suitable for exact-match queries and duplicate detection."
+    },
+    {
+      "name": "source",
+      "type": "varchar(50)",
+      "description": "SOURCE."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "knowledge_document_id"
+      ],
+      "description": "Primary key index covering the knowledge_document_id field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_invoke_id",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "invoke_id"
+      ],
+      "description": "Unique index covering the invoke_id field, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

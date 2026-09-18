@@ -1,0 +1,55 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_document_type",
+  "label": "Knowledge Type Table",
+  "description": "Knowledge type table used for related queries in knowledge base and report scenarios.",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "Primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "Name."
+    },
+    {
+      "name": "knowledge_circle_id",
+      "type": "bigint",
+      "description": "Knowledge circle ID."
+    },
+    {
+      "name": "parent_uuid",
+      "type": "char(32)",
+      "description": "Parent type ID."
+    },
+    {
+      "name": "lft",
+      "type": "int",
+      "description": "Left encoding."
+    },
+    {
+      "name": "rht",
+      "type": "int",
+      "description": "Right encoding."
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "Sort (relative to peer nodes)."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "uuid"
+      ],
+      "description": "Primary key index covering the UUID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

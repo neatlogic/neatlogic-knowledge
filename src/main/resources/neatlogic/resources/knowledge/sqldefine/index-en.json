@@ -1,0 +1,105 @@
+{
+  "moduleId": "knowledge",
+  "tables": [
+    {
+      "name": "knowledge_circle",
+      "label": "Knowledge Graph Table",
+      "description": "The knowledge circle table is used for querying, filtering, and reporting on data related to the knowledge base."
+    },
+    {
+      "name": "knowledge_circle_user",
+      "label": "Knowledge Circle User Table",
+      "description": "The knowledge circle user table is used for related queries and report queries related to the knowledge base."
+    },
+    {
+      "name": "knowledge_document",
+      "label": "Knowledge Document",
+      "description": "Knowledge documents can be used for time dimension statistical queries and association queries in the knowledge base."
+    },
+    {
+      "name": "knowledge_document_audit",
+      "label": "Knowledge Base Operation Log Table",
+      "description": "The knowledge base operation records table is used for time dimension statistical queries and association queries related to the knowledge base."
+    },
+    {
+      "name": "knowledge_document_audit_detail",
+      "label": "Knowledge Base Operation Record Details Table",
+      "description": "The knowledge base operation record details table is used for querying, filtering, and presenting data related to the knowledge base."
+    },
+    {
+      "name": "knowledge_document_collect",
+      "label": "Knowledge Document Collection",
+      "description": "Knowledge documents are collected for use in reporting scenarios such as time dimension statistics and query associations in the knowledge base."
+    },
+    {
+      "name": "knowledge_document_favor",
+      "label": "Knowledge Document Collection",
+      "description": "Knowledge documents can be used for time dimension statistical queries and association queries in knowledge bases."
+    },
+    {
+      "name": "knowledge_document_file",
+      "label": "Knowledge Document Attachment",
+      "description": "The knowledge document attachment can be used for related queries in the knowledge base and report queries."
+    },
+    {
+      "name": "knowledge_document_invoke",
+      "label": "Knowledge Document Call",
+      "description": "The knowledge document call can be used for related queries in knowledge bases, such as reporting scenarios."
+    },
+    {
+      "name": "knowledge_document_line",
+      "label": "Knowledge Document Row",
+      "description": "The knowledge document row is used for related queries in the knowledge base and report queries."
+    },
+    {
+      "name": "knowledge_document_line_config",
+      "label": "Knowledge Document Row Configuration",
+      "description": "The knowledge document row configuration is used for querying, filtering, and reporting on data related to the knowledge base."
+    },
+    {
+      "name": "knowledge_document_line_content",
+      "label": "Knowledge Document Row Content",
+      "description": "The knowledge document entries can be used for querying, filtering, and reporting on data related to the knowledge base."
+    },
+    {
+      "name": "knowledge_document_tag",
+      "label": "Knowledge Document Tag",
+      "description": "The knowledge document tags can be used for related queries in knowledge bases, such as reporting scenarios."
+    },
+    {
+      "name": "knowledge_document_type",
+      "label": "Knowledge Type Table",
+      "description": "Knowledge type table used for related queries in knowledge base and report scenarios."
+    },
+    {
+      "name": "knowledge_document_version",
+      "label": "Knowledge Base Version Table",
+      "description": "The knowledge base version table is used for tracking knowledge base states, time dimension statistics, and association queries, which are scenario-specific for reporting scenarios."
+    },
+    {
+      "name": "knowledge_document_view_count",
+      "label": "View Knowledge Frequency",
+      "description": "Viewing knowledge counts are used for related queries in knowledge bases and other reporting scenarios."
+    },
+    {
+      "name": "knowledge_feishu_document_mapping",
+      "label": "Mapping of FlyBird Cloud Document to Knowledge Document",
+      "description": "Mapping of FlyBook cloud documents to knowledge documents for use in reporting scenarios related to status tracking, time dimension statistics, and query association for knowledge bases."
+    },
+    {
+      "name": "knowledge_feishu_medias_mapping",
+      "label": "knowledge_base_feshe_medias_mapping Table",
+      "description": "The feishu_medias_mapping table, belonging to the knowledge base module, is used for related queries and report queries related to knowledge base."
+    },
+    {
+      "name": "knowledge_tag",
+      "label": "Knowledge Base Tag Table",
+      "description": "Knowledge base tag table used for querying, filtering, and reporting of knowledge base data."
+    },
+    {
+      "name": "knowledge_template",
+      "label": "Knowledge Base Template",
+      "description": "Knowledge base template can be used for enabling status filtering and time dimension statistics in report queries related to the knowledge base."
+    }
+  ]
+}

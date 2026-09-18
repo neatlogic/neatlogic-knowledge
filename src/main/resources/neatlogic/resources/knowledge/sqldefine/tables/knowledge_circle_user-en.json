@@ -1,0 +1,43 @@
+{
+  "moduleId": "knowledge",
+  "name": "knowledge_circle_user",
+  "label": "Knowledge Circle User Table",
+  "description": "The knowledge circle user table is used for related queries and report queries related to the knowledge base.",
+  "fields": [
+    {
+      "name": "knowledge_circle_id",
+      "type": "bigint",
+      "description": "Knowledge circle ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "User/role/group UUID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "type",
+      "type": "enum('common','user','team','role')",
+      "description": "Type, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "auth_type",
+      "type": "enum('approver','member')",
+      "description": "Distinguish between the approver and member fields (approver: approver; member: member), used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "knowledge_circle_id",
+        "uuid",
+        "type",
+        "auth_type"
+      ],
+      "description": "Primary key index covering the knowledge_circle_id, UUID, type, auth_type fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

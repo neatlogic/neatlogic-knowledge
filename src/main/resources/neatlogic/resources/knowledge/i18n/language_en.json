@@ -1,0 +1,113 @@
+{
+  "auth": {
+    "knowledge_base": {
+      "description": "View knowledge articles.",
+      "name": "Knowledge Access Permission"
+    },
+    "knowledge_circle_modify": {
+      "description": "Add, modify, and delete knowledge circles.",
+      "name": "Knowledge Circle Management Permission"
+    },
+    "knowledge_feishu_sync_modify": {
+      "description": "Manage Feishu cloud document synchronization settings, manual synchronization, and synchronization records.",
+      "name": "Feishu Cloud Document Synchronization Management Permission"
+    },
+    "knowledge_template_modify": {
+      "description": "Add, modify, and delete knowledge templates.",
+      "name": "Knowledge Template Management Permission"
+    }
+  },
+  "nmkac": {
+    "knowledgecirclegetapi": {
+      "getname": "Obtaining a Single Knowledge Circle"
+    }
+  },
+  "nmkad": {
+    "knowledgedocumentgetapi": {
+      "getname": "Query Document Content",
+      "input": {
+        "param": {
+          "desc": {
+            "isreadonly": "Whether to increase browsing volume"
+          }
+        }
+      }
+    },
+    "knowledgedocumentlistapi": {
+      "getname": "Query Document List"
+    },
+    "knowledgedocumentsearchapi": {
+      "getname": "Search for Documents"
+    },
+    "knowledgedocumentversiondeleteapi": {
+      "getname": "Delete Document Version"
+    }
+  },
+  "nmkaf": {
+    "cancelsyncfeishuwikidocumentapi": {
+      "getname": "Cancel document synchronization"
+    },
+    "getfeishuappcredentialsapi": {
+      "getname": "Obtain Feishu application credentials"
+    },
+    "getfeishudocumentinfoapi": {
+      "getname": "Obtain Feishu document information",
+      "input": {
+        "param": {
+          "desc": {
+            "nodetoken": "Feishu Document nodeToken"
+          }
+        }
+      }
+    },
+    "listfeishuwikispaceapi": {
+      "getname": "Get the list of Feishu Wiki spaces"
+    },
+    "savefeishuappcredentialsapi": {
+      "getname": "Save Feishu application credentials",
+      "input": {
+        "param": {
+          "desc": {
+            "knowledgecircleid": "Knowledge Circle ID"
+          }
+        }
+      }
+    },
+    "searchfeishuwikinodeapi": {
+      "getname": "Get the node list of Feishu Wiki",
+      "input": {
+        "param": {
+          "desc": {
+            "parentnodetoken": "Parent node nodeToken",
+            "spaceid": "Wiki Space ID"
+          }
+        }
+      }
+    },
+    "syncfeishuwikidocumentapi": {
+      "getname": "Synchronize Feishu Wiki documents",
+      "input": {
+        "param": {
+          "desc": {
+            "nodetokenlist": "Node Token List",
+            "spaceidlist": "Space ID List"
+          }
+        }
+      }
+    }
+  },
+  "nmkat": {
+    "knowledgedocumenttypetreeapi": {
+      "getname": "Obtain a knowledge circle knowledge classification tree"
+    },
+    "knowledgedocumenttypetreeforselectapi": {
+      "getname": "Obtain a knowledge circle knowledge classification tree_ Dropdown box"
+    },
+    "knowledgetemplategetapi": {
+      "getname": "Obtain a single knowledge template"
+    },
+    "knowledgetypelistapi": {
+      "getname": "Query knowledge classification list"
+    }
+  }
+}

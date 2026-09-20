@@ -1,0 +1,113 @@
+{
+  "auth": {
+    "knowledge_base": {
+      "description": "查看知识",
+      "name": "知识基础权限"
+    },
+    "knowledge_circle_modify": {
+      "description": "对知识圈进行添加、修改和删除",
+      "name": "知识圈管理权限"
+    },
+    "knowledge_feishu_sync_modify": {
+      "description": "管理飞书云文档同步配置、手动同步和同步记录",
+      "name": "飞书云文档同步管理权限"
+    },
+    "knowledge_template_modify": {
+      "description": "对知识模版进行添加、修改和删除",
+      "name": "知识模版管理权限"
+    }
+  },
+  "nmkac": {
+    "knowledgecirclegetapi": {
+      "getname": "获取单个知识圈"
+    }
+  },
+  "nmkad": {
+    "knowledgedocumentgetapi": {
+      "getname": "查询文档内容",
+      "input": {
+        "param": {
+          "desc": {
+            "isreadonly": "是否增加浏览量"
+          }
+        }
+      }
+    },
+    "knowledgedocumentlistapi": {
+      "getname": "查询文档列表"
+    },
+    "knowledgedocumentsearchapi": {
+      "getname": "搜索文档"
+    },
+    "knowledgedocumentversiondeleteapi": {
+      "getname": "删除文档版本"
+    }
+  },
+  "nmkaf": {
+    "cancelsyncfeishuwikidocumentapi": {
+      "getname": "取消同步文档"
+    },
+    "getfeishuappcredentialsapi": {
+      "getname": "获取飞书应用凭证"
+    },
+    "getfeishudocumentinfoapi": {
+      "getname": "获取飞书文档信息",
+      "input": {
+        "param": {
+          "desc": {
+            "nodetoken": "飞书文档nodeToken"
+          }
+        }
+      }
+    },
+    "listfeishuwikispaceapi": {
+      "getname": "获取飞书 Wiki 空间列表"
+    },
+    "savefeishuappcredentialsapi": {
+      "getname": "保存飞书应用凭证",
+      "input": {
+        "param": {
+          "desc": {
+            "knowledgecircleid": "知识圈ID"
+          }
+        }
+      }
+    },
+    "searchfeishuwikinodeapi": {
+      "getname": "获取飞书Wiki节点列表",
+      "input": {
+        "param": {
+          "desc": {
+            "parentnodetoken": "父节点nodeToken",
+            "spaceid": "Wiki空间ID"
+          }
+        }
+      }
+    },
+    "syncfeishuwikidocumentapi": {
+      "getname": "同步飞书Wiki文档",
+      "input": {
+        "param": {
+          "desc": {
+            "nodetokenlist": "节点token列表",
+            "spaceidlist": "空间ID列表"
+          }
+        }
+      }
+    }
+  },
+  "nmkat": {
+    "knowledgedocumenttypetreeapi": {
+      "getname": "获取知识圈知识分类树"
+    },
+    "knowledgedocumenttypetreeforselectapi": {
+      "getname": "获取知识圈知识分类树_下拉框"
+    },
+    "knowledgetemplategetapi": {
+      "getname": "获取单个知识模版"
+    },
+    "knowledgetypelistapi": {
+      "getname": "查询知识分类列表"
+    }
+  }
+}

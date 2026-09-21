@@ -18,8 +18,31 @@
     }
   },
   "nmkac": {
+    "knowledgeconditionbuilder": {
+      "modifytime": "Edit Time",
+      "modifyuser": "Editor",
+      "source": "Source",
+      "submittime": "Submission Time",
+      "submitter": "Submitter",
+      "tag": "Tag"
+    },
     "knowledgecirclegetapi": {
       "getname": "Obtaining a Single Knowledge Circle"
+    },
+    "knowledgedocumentversionstatus": {
+      "all": "All",
+      "draft": "Unsubmitted",
+      "passed": "Approved",
+      "rejected": "Rejected",
+      "submitted": "Pending Approval"
+    }
+  },
+  "nmkd": {
+    "knowledgedocumenthistoricalversionvo": {
+      "versionname": "Version {0}"
+    },
+    "knowledgedocumentversionvo": {
+      "versionname": "Version {0}"
     }
   },
   "nmkad": {

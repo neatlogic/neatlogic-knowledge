@@ -18,8 +18,31 @@
     }
   },
   "nmkac": {
+    "knowledgeconditionbuilder": {
+      "modifytime": "修改时间",
+      "modifyuser": "修改人",
+      "source": "来源",
+      "submittime": "提交时间",
+      "submitter": "提交人",
+      "tag": "标签"
+    },
     "knowledgecirclegetapi": {
       "getname": "获取单个知识圈"
+    },
+    "knowledgedocumentversionstatus": {
+      "all": "全部",
+      "draft": "未提交",
+      "passed": "已通过",
+      "rejected": "不通过",
+      "submitted": "待审批"
+    }
+  },
+  "nmkd": {
+    "knowledgedocumenthistoricalversionvo": {
+      "versionname": "版本{0}"
+    },
+    "knowledgedocumentversionvo": {
+      "versionname": "版本{0}"
     }
   },
   "nmkad": {

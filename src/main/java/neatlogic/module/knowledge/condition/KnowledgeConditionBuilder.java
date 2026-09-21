@@ -12,6 +12,7 @@ import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import neatlogic.framework.knowledge.constvalue.KnowledgeSource;
 import neatlogic.framework.knowledge.constvalue.KnowledgeType;
+import neatlogic.framework.util.I18nUtils;
 
 public class KnowledgeConditionBuilder {
      
@@ -33,9 +34,9 @@ public class KnowledgeConditionBuilder {
         }
         JSONObject conditionJson = new JSONObject();
         conditionJson.put("handler", "lcuList");
-        conditionJson.put("handlerName", "修改人");
+        conditionJson.put("handlerName", I18nUtils.getMessage("nmkc.knowledgeconditionbuilder.modifyuser"));
         if(knowledgeType.equals(KnowledgeType.WAITINGFORREVIEW.getValue())) {
-            conditionJson.put("handlerName", "提交人");
+            conditionJson.put("handlerName", I18nUtils.getMessage("nmkc.knowledgeconditionbuilder.submitter"));
         }
         conditionJson.put("handlerType", FormHandlerType.USERSELECT.toString());
         
@@ -57,9 +58,9 @@ public class KnowledgeConditionBuilder {
      public KnowledgeConditionBuilder setLcd(String knowledgeType) {
          JSONObject conditionJson = new JSONObject();
          conditionJson.put("handler", "lcd");
-         conditionJson.put("handlerName", "修改时间");
+         conditionJson.put("handlerName", I18nUtils.getMessage("nmkc.knowledgeconditionbuilder.modifytime"));
          if(knowledgeType.equals(KnowledgeType.WAITINGFORREVIEW.getValue())) {
-             conditionJson.put("handlerName", "提交时间");
+             conditionJson.put("handlerName", I18nUtils.getMessage("nmkc.knowledgeconditionbuilder.submittime"));
          }
          conditionJson.put("handlerType", FormHandlerType.TIMESELECT.toString());
          
@@ -83,7 +84,7 @@ public class KnowledgeConditionBuilder {
       public KnowledgeConditionBuilder setTag() {
           JSONObject conditionJson = new JSONObject();
           conditionJson.put("handler", "tagList");
-          conditionJson.put("handlerName", "标签");
+          conditionJson.put("handlerName", I18nUtils.getMessage("nmkc.knowledgeconditionbuilder.tag"));
           conditionJson.put("handlerType", FormHandlerType.SELECT.toString());
           
           JSONObject config = new JSONObject();
@@ -112,7 +113,7 @@ public class KnowledgeConditionBuilder {
        public KnowledgeConditionBuilder setSource() {
            JSONObject conditionJson = new JSONObject();
            conditionJson.put("handler", "sourceList");
-           conditionJson.put("handlerName", "来源");
+           conditionJson.put("handlerName", I18nUtils.getMessage("nmkc.knowledgeconditionbuilder.source"));
            conditionJson.put("handlerType", FormHandlerType.SELECT.toString());
            
            JSONObject config = new JSONObject();

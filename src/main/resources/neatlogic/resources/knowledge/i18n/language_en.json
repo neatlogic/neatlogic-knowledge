@@ -30,13 +30,6 @@
   "nmkac": {
     "knowledgecirclegetapi": {
       "getname": "Obtaining a Single Knowledge Circle"
-    },
-    "knowledgedocumentversionstatus": {
-      "all": "All",
-      "draft": "Unsubmitted",
-      "passed": "Approved",
-      "rejected": "Rejected",
-      "submitted": "Pending Approval"
     }
   },
   "nmkd": {

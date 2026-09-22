@@ -30,13 +30,6 @@
   "nmkac": {
     "knowledgecirclegetapi": {
       "getname": "获取单个知识圈"
-    },
-    "knowledgedocumentversionstatus": {
-      "all": "全部",
-      "draft": "未提交",
-      "passed": "已通过",
-      "rejected": "不通过",
-      "submitted": "待审批"
     }
   },
   "nmkd": {

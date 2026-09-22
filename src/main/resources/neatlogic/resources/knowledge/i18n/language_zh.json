@@ -17,7 +17,7 @@
       "name": "知识模版管理权限"
     }
   },
-  "nmkac": {
+  "nmkc": {
     "knowledgeconditionbuilder": {
       "modifytime": "修改时间",
       "modifyuser": "修改人",
@@ -25,7 +25,9 @@
       "submittime": "提交时间",
       "submitter": "提交人",
       "tag": "标签"
-    },
+    }
+  },
+  "nmkac": {
     "knowledgecirclegetapi": {
       "getname": "获取单个知识圈"
     },

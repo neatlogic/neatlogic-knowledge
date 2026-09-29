@@ -18,6 +18,7 @@ import neatlogic.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import neatlogic.framework.knowledge.dto.KnowledgeCircleVo;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentTypeVo;
+import neatlogic.framework.util.$;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
@@ -49,13 +50,13 @@ public class KnowledgeTypeTreeSelectDataSource extends TreeSelectDataSourceBase 
     }
 
     /**
-     * 获取组件中文名
+     * 获取当前语言下的数据源名称。
      *
-     * @return 组件中文名
+     * @return 数据源名称
      */
     @Override
     public String getHandlerName() {
-        return "知识圈类型";
+        return $.t("nmkf.knowledgetypetreeselectdatasource.handlername");
     }
 
     /**

@@ -127,5 +127,10 @@
     "knowledgetypelistapi": {
       "getname": "查询知识分类列表"
     }
+  },
+  "nmkf": {
+    "knowledgetypetreeselectdatasource": {
+      "handlername": "知识圈类型"
+    }
   }
 }

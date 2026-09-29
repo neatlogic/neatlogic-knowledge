@@ -127,5 +127,10 @@
     "knowledgetypelistapi": {
       "getname": "Query knowledge classification list"
     }
+  },
+  "nmkf": {
+    "knowledgetypetreeselectdatasource": {
+      "handlername": "Knowledge Circle Type"
+    }
   }
 }

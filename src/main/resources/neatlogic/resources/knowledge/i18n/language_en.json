@@ -17,6 +17,13 @@
       "name": "Knowledge Template Management Permission"
     }
   },
+  "file": {
+    "handler": {
+      "knowledgefilehandler": {
+        "displayname": "Knowledge Base Attachment"
+      }
+    }
+  },
   "nmkc": {
     "knowledgeconditionbuilder": {
       "modifytime": "Edit Time",

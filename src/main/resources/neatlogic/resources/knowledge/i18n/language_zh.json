@@ -17,6 +17,13 @@
       "name": "知识模版管理权限"
     }
   },
+  "file": {
+    "handler": {
+      "knowledgefilehandler": {
+        "displayname": "知识库附件"
+      }
+    }
+  },
   "nmkc": {
     "knowledgeconditionbuilder": {
       "modifytime": "修改时间",

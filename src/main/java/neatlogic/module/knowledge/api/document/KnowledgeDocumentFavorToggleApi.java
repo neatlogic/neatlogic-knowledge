@@ -80,6 +80,7 @@ public class KnowledgeDocumentFavorToggleApi extends PrivateApiComponentBase {
         }
         int favorCount = knowledgeDocumentMapper.getDocumentFavorCount(documentId);
         result.put("count",favorCount);
+        result.put("userNameList",new ArrayList<>());
         if (favorCount > 0) {
             List<String> userUuidList = knowledgeDocumentMapper.getDocumentFavorUserUuidList(documentId);
             if (CollectionUtils.isNotEmpty(userUuidList)) {

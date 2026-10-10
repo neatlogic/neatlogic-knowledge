@@ -80,6 +80,7 @@ public class KnowledgeDocumentCollectToggleApi extends PrivateApiComponentBase {
         }
         int collectCount = knowledgeDocumentMapper.getDocumentCollectCount(documentId);
         result.put("count",collectCount);
+        result.put("userNameList",new ArrayList<>());
         if (collectCount > 0) {
             List<String> userUuidList = knowledgeDocumentMapper.getDocumentCollectUserUuidList(documentId);
             if (CollectionUtils.isNotEmpty(userUuidList)) {

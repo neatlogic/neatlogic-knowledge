@@ -473,6 +473,8 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             documentVersionVo = (KnowledgeDocumentVersionVo) documentObj;
             documentVersionVo.setTitle(title);
             documentVersionVo.setContent(content);
+            List<KnowledgeDocumentLineVo> lineList = knowledgeDocumentMapper.getKnowledgeDocumentLineListByKnowledgeDocumentVersionId(versionId);
+            documentVersionVo.setLineList(lineList);
         }
     }
 

@@ -24,27 +24,9 @@
       }
     }
   },
-  "nmkc": {
-    "knowledgeconditionbuilder": {
-      "modifytime": "修改时间",
-      "modifyuser": "修改人",
-      "source": "来源",
-      "submittime": "提交时间",
-      "submitter": "提交人",
-      "tag": "标签"
-    }
-  },
   "nmkac": {
     "knowledgecirclegetapi": {
       "getname": "获取单个知识圈"
-    }
-  },
-  "nmkd": {
-    "knowledgedocumenthistoricalversionvo": {
-      "versionname": "版本{0}"
-    },
-    "knowledgedocumentversionvo": {
-      "versionname": "版本{0}"
     }
   },
   "nmkad": {
@@ -133,6 +115,24 @@
     },
     "knowledgetypelistapi": {
       "getname": "查询知识分类列表"
+    }
+  },
+  "nmkc": {
+    "knowledgeconditionbuilder": {
+      "modifytime": "修改时间",
+      "modifyuser": "修改人",
+      "source": "来源",
+      "submitter": "提交人",
+      "submittime": "提交时间",
+      "tag": "标签"
+    }
+  },
+  "nmkd": {
+    "knowledgedocumenthistoricalversionvo": {
+      "versionname": "版本{0}"
+    },
+    "knowledgedocumentversionvo": {
+      "versionname": "版本{0}"
     }
   },
   "nmkf": {

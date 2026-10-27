@@ -24,27 +24,9 @@
       }
     }
   },
-  "nmkc": {
-    "knowledgeconditionbuilder": {
-      "modifytime": "Edit Time",
-      "modifyuser": "Editor",
-      "source": "Source",
-      "submittime": "Submission Time",
-      "submitter": "Submitter",
-      "tag": "Tag"
-    }
-  },
   "nmkac": {
     "knowledgecirclegetapi": {
       "getname": "Obtaining a Single Knowledge Circle"
-    }
-  },
-  "nmkd": {
-    "knowledgedocumenthistoricalversionvo": {
-      "versionname": "Version {0}"
-    },
-    "knowledgedocumentversionvo": {
-      "versionname": "Version {0}"
     }
   },
   "nmkad": {
@@ -133,6 +115,24 @@
     },
     "knowledgetypelistapi": {
       "getname": "Query knowledge classification list"
+    }
+  },
+  "nmkc": {
+    "knowledgeconditionbuilder": {
+      "modifytime": "Edit Time",
+      "modifyuser": "Editor",
+      "source": "Source",
+      "submitter": "Submitter",
+      "submittime": "Submission Time",
+      "tag": "Tag"
+    }
+  },
+  "nmkd": {
+    "knowledgedocumenthistoricalversionvo": {
+      "versionname": "Version {0}"
+    },
+    "knowledgedocumentversionvo": {
+      "versionname": "Version {0}"
     }
   },
   "nmkf": {

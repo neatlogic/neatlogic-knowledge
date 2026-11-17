@@ -1,45 +1,61 @@
 {
   "moduleId": "knowledge",
   "name": "knowledge_document_invoke",
-  "label": "知识文档调用",
-  "description": "知识文档调用 可用于知识库相关的关联查询等报表查询场景。",
+  "label": "知识版本创建来源",
+  "description": "记录知识版本首次创建时的来源类型和来源记录标识。历史关联未绑定版本时使用文档当前激活版本。",
   "fields": [
     {
       "name": "knowledge_document_id",
       "type": "bigint",
-      "description": "知识文档id，作为当前表记录的主键或唯一定位字段。"
+      "description": "关联的知识文档 ID。"
     },
     {
       "name": "invoke_id",
       "type": "bigint",
-      "description": "调用者id，数据库中要求唯一，适合用于精确查询和去重判断。"
+      "description": "创建来源的业务记录 ID。手动工单转知识取工单 ID，告警处理取工单步骤实例 ID。"
     },
     {
       "name": "source",
-      "type": "varchar(50)",
-      "description": "来源。"
+      "type": "varchar(64)",
+      "description": "创建该版本的业务来源类型。"
+    },
+    {
+      "name": "knowledge_document_version_id",
+      "type": "bigint",
+      "description": "创建时关联的版本 ID，每个版本最多一个来源，历史关联可为空。"
     }
   ],
   "indexes": [
     {
-      "name": "PRIMARY",
-      "type": "BTREE",
-      "unique": true,
-      "primary": true,
-      "columns": [
-        "knowledge_document_id"
-      ],
-      "description": "主键索引，覆盖 knowledge_document_id 字段，适合用于唯一定位记录和主表关联查询。"
-    },
-    {
-      "name": "idx_invoke_id",
+      "name": "uk_created_version",
       "type": "BTREE",
       "unique": true,
       "primary": false,
       "columns": [
+        "knowledge_document_version_id"
+      ],
+      "description": "确保每个已绑定版本只有一个创建来源。"
+    },
+    {
+      "name": "idx_source",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "source",
         "invoke_id"
       ],
-      "description": "唯一索引，覆盖 invoke_id 字段，适合用于精确检索、唯一性判断和去重查询。"
+      "description": "按业务来源类型和来源记录标识查询。"
+    },
+    {
+      "name": "idx_document",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "knowledge_document_id"
+      ],
+      "description": "按文档定位其来源关联。"
     }
   ]
 }

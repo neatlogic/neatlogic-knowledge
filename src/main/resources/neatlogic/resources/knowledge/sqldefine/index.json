@@ -43,8 +43,8 @@
     },
     {
       "name": "knowledge_document_invoke",
-      "label": "知识文档调用",
-      "description": "知识文档调用 可用于知识库相关的关联查询等报表查询场景。"
+      "label": "知识版本创建来源",
+      "description": "记录知识版本首次创建时的来源类型和来源记录标识。历史关联未绑定版本时使用文档当前激活版本。"
     },
     {
       "name": "knowledge_document_line",

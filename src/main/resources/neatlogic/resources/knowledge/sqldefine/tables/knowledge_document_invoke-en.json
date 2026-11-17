@@ -1,45 +1,61 @@
 {
   "moduleId": "knowledge",
   "name": "knowledge_document_invoke",
-  "label": "Knowledge Document Call",
-  "description": "The knowledge document call can be used for related queries in knowledge bases, such as reporting scenarios.",
+  "label": "Knowledge Version Creation Source",
+  "description": "Records the source type and record ID that created a knowledge version. Historical entries without a version ID resolve to the active document version.",
   "fields": [
     {
       "name": "knowledge_document_id",
       "type": "bigint",
-      "description": "Knowledge document ID, used as the primary key or unique identifier for records in this table."
+      "description": "ID of the associated knowledge document."
     },
     {
       "name": "invoke_id",
       "type": "bigint",
-      "description": "The call identifier. This value must be unique in the database and is suitable for exact-match queries and duplicate detection."
+      "description": "ID of the business record that created the version. Manual task conversion uses the process task ID. Alert handling uses the process task step instance ID."
     },
     {
       "name": "source",
-      "type": "varchar(50)",
-      "description": "SOURCE."
+      "type": "varchar(64)",
+      "description": "Business source type that created the version."
+    },
+    {
+      "name": "knowledge_document_version_id",
+      "type": "bigint",
+      "description": "Version ID recorded at creation. Each version has at most one source. Historical associations may omit this value."
     }
   ],
   "indexes": [
     {
-      "name": "PRIMARY",
-      "type": "BTREE",
-      "unique": true,
-      "primary": true,
-      "columns": [
-        "knowledge_document_id"
-      ],
-      "description": "Primary key index covering the knowledge_document_id field, suitable for uniquely identifying records and queries that join the primary table."
-    },
-    {
-      "name": "idx_invoke_id",
+      "name": "uk_created_version",
       "type": "BTREE",
       "unique": true,
       "primary": false,
       "columns": [
+        "knowledge_document_version_id"
+      ],
+      "description": "Ensures that each associated version has only one creation source."
+    },
+    {
+      "name": "idx_source",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "source",
         "invoke_id"
       ],
-      "description": "Unique index covering the invoke_id field, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+      "description": "Supports queries by business source type and source record identifier."
+    },
+    {
+      "name": "idx_document",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "knowledge_document_id"
+      ],
+      "description": "Locates source associations for a document."
     }
   ]
 }

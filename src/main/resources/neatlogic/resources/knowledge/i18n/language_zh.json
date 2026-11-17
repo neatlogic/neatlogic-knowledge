@@ -24,12 +24,23 @@
       }
     }
   },
+  "knowledgeorigin": {
+    "cantransfer": "可转为知识",
+    "list": "关联知识版本列表",
+    "versioninfo": "关联知识版本"
+  },
   "nmkac": {
     "knowledgecirclegetapi": {
       "getname": "获取单个知识圈"
     }
   },
   "nmkad": {
+    "knowledgedocumentdraftsaveapi": {
+      "getname": "保存文档草稿",
+      "invokeid": "调用方记录 ID",
+      "issubmit": "是否送审",
+      "linelist": "文档行列表"
+    },
     "knowledgedocumentgetapi": {
       "getname": "查询文档内容",
       "input": {
@@ -44,7 +55,12 @@
       "getname": "查询文档列表"
     },
     "knowledgedocumentsearchapi": {
-      "getname": "搜索文档"
+      "getname": "搜索文档",
+      "help": {
+        "daterange": "{timeRange: 6, timeUnit: 'month'} 或 {startTime: 1605196800000, endTime: 1607961600000}",
+        "statuscounts": "“待我审批”和“我提交的”知识分类中，全部、待审批、已通过和未通过的文档数量。",
+        "statusfilter": "审批状态可选 all、submitted、passed、rejected 或 draft。"
+      }
     },
     "knowledgedocumentversiondeleteapi": {
       "getname": "删除文档版本"

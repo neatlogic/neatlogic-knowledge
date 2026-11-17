@@ -24,12 +24,23 @@
       }
     }
   },
+  "knowledgeorigin": {
+    "cantransfer": "Can Convert to Knowledge",
+    "list": "Related Knowledge Versions",
+    "versioninfo": "Related Knowledge Version"
+  },
   "nmkac": {
     "knowledgecirclegetapi": {
       "getname": "Obtaining a Single Knowledge Circle"
     }
   },
   "nmkad": {
+    "knowledgedocumentdraftsaveapi": {
+      "getname": "Save Document Draft",
+      "invokeid": "Source Record ID",
+      "issubmit": "Submit for Review",
+      "linelist": "Document Lines"
+    },
     "knowledgedocumentgetapi": {
       "getname": "Query Document Content",
       "input": {
@@ -44,7 +55,12 @@
       "getname": "Query Document List"
     },
     "knowledgedocumentsearchapi": {
-      "getname": "Search for Documents"
+      "getname": "Search for Documents",
+      "help": {
+        "daterange": "{timeRange: 6, timeUnit: 'month'} or {startTime: 1605196800000, endTime: 1607961600000}",
+        "statuscounts": "Document counts by approval status for Pending My Approval and Submitted by Me, including all, pending, approved, and rejected documents.",
+        "statusfilter": "Approval status values are all, submitted, passed, rejected, and draft."
+      }
     },
     "knowledgedocumentversiondeleteapi": {
       "getname": "Delete Document Version"

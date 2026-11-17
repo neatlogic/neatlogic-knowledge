@@ -70,6 +70,7 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
         }
         KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         if(knowledgeDocumentVo == null){
+            knowledgeDocumentMapper.deleteOriginByVersionId(knowledgeDocumentVersionId);
             knowledgeDocumentMapper.deleteKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
             knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
@@ -97,6 +98,7 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
             if(!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
                 throw new KnowledgeDocumentCurrentUserNotOwnerException();
             }
+            knowledgeDocumentMapper.deleteOriginByVersionId(knowledgeDocumentVersionId);
             knowledgeDocumentMapper.deleteKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
             knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
@@ -118,6 +120,7 @@ public class KnowledgeDocumentVersionDeleteApi extends PrivateApiComponentBase {
             }
         } else {
             // 文档所有版本都已被删除时，删除文档数据
+            knowledgeDocumentMapper.deleteKnowledgeDocumentInvokeByKnowledgeDocumentId(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
             knowledgeDocumentMapper.deleteKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
         return null;

@@ -43,8 +43,8 @@
     },
     {
       "name": "knowledge_document_invoke",
-      "label": "Knowledge Document Call",
-      "description": "The knowledge document call can be used for related queries in knowledge bases, such as reporting scenarios."
+      "label": "Knowledge Version Creation Source",
+      "description": "Records the source type and record ID that created a knowledge version. Historical entries without a version ID resolve to the active document version."
     },
     {
       "name": "knowledge_document_line",

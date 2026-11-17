@@ -1,6 +1,14 @@
 package neatlogic.module.knowledge.api.document;
 
 import java.util.List;
+import java.util.Map;
+import neatlogic.framework.knowledge.generation.IKnowledgeGenerationSource;
+import neatlogic.framework.knowledge.generation.KnowledgeGenerationSources;
+import java.util.Objects;
+import neatlogic.framework.crossover.CrossoverServiceFactory;
+import neatlogic.framework.knowledge.crossover.IKnowledgeDocumentCrossoverService;
+import neatlogic.framework.knowledge.source.ISyncSource;
+import neatlogic.framework.knowledge.source.SyncSourceFactory;
 
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_BASE;
@@ -22,15 +30,13 @@ import neatlogic.framework.knowledge.dao.mapper.KnowledgeCircleMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import neatlogic.framework.knowledge.dto.KnowledgeCircleVo;
-import neatlogic.framework.knowledge.dto.KnowledgeDocumentInvokeVo;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentTypeVo;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentVersionVo;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentVo;
-import neatlogic.framework.knowledge.exception.KnowledgeDocumentNotFoundException;
-import neatlogic.framework.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 
 import javax.annotation.Resource;
 
+/** 查询可见的创建来源关联，并保留手动转换入口的权限和单文档响应。 */
 @Service
 @AuthAction(action = KNOWLEDGE_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -52,7 +58,7 @@ public class KnowledgeDocumentInvokeGetApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "根据调用者查询关联文档信息";
+        return "knowledgeorigin.list";
     }
 
     @Override
@@ -60,39 +66,46 @@ public class KnowledgeDocumentInvokeGetApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /** 工单按归属汇总各来源，其他旧入口仅展示各自的直接关联。 */
     @Input({
-        @Param(name = "invokeId", type = ApiParamType.LONG, isRequired = true, desc = "调用者id"),
-        @Param(name = "source", type = ApiParamType.STRING, isRequired = true, desc = "来源")
+        @Param(name = "invokeId", type = ApiParamType.LONG, isRequired = true, desc = "nmkad.knowledgedocumentdraftsaveapi.invokeid"),
+        @Param(name = "source", type = ApiParamType.STRING, isRequired = true, desc = "common.source")
     })
     @Output({
-        @Param(name = "isTransferKnowledge", type = ApiParamType.INTEGER, desc = "是否有权限"),
-        @Param(name = "knowledgeDocumentVersion", explode = KnowledgeDocumentVersionVo.class, desc = "知识文档版本信息")
+        @Param(name = "isTransferKnowledge", type = ApiParamType.INTEGER, desc = "knowledgeorigin.cantransfer"),
+        @Param(name = "versionList", type = ApiParamType.JSONARRAY, desc = "knowledgeorigin.list"),
+        @Param(name = "knowledgeDocumentVersion", explode = KnowledgeDocumentVersionVo.class, desc = "knowledgeorigin.versioninfo")
     })
-    @Description(desc = "根据调用者查询关联文档信息")
+    @Description(desc = "knowledgeorigin.list")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        Long invokeId = jsonObj.getLong("invokeId");
         String source = jsonObj.getString("source");
-        KnowledgeDocumentInvokeVo knowledgeDocumentInvokeVo = new KnowledgeDocumentInvokeVo(invokeId, source);
-        Long knowledgeDocumentId = knowledgeDocumentMapper.getKnowledgeDocumentIdByInvokeIdAndSource(knowledgeDocumentInvokeVo);
-        if(knowledgeDocumentId != null) {
+        Long invokeId = jsonObj.getLong("invokeId");
+        Map<String, List<Long>> origins;
+        ISyncSource syncSource = SyncSourceFactory.getProvider(source);
+        if (syncSource != null) {
+            origins = syncSource.listOrigins(source, invokeId);
+        } else {
+            IKnowledgeGenerationSource provider = KnowledgeGenerationSources.get(source);
+            if (provider != null) {
+                provider.checkOriginView(invokeId);
+            }
+            origins = Map.of(source, List.of(invokeId));
+        }
+        IKnowledgeDocumentCrossoverService documents = CrossoverServiceFactory.getApi(IKnowledgeDocumentCrossoverService.class);
+        List<JSONObject> versions = documents.listOrigins(origins);
+        resultObj.put("versionList", versions);
+        Long directId = knowledgeDocumentMapper.getDocumentIdByOrigin(source, invokeId);
+        if (directId != null) {
             resultObj.put("isTransferKnowledge", 0);
-            KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId);
-            if(knowledgeDocumentVo == null) {
-                throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
-            }
-            KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = null;
-            if(knowledgeDocumentVo.getKnowledgeDocumentVersionId() != null) {
-                knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVo.getKnowledgeDocumentVersionId());
-                if(knowledgeDocumentVersionVo == null) {
-                    throw new KnowledgeDocumentVersionNotFoundException(knowledgeDocumentVo.getKnowledgeDocumentVersionId());
-                }
-            }else {
-                knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionByknowledgeDocumentIdLimitOne(knowledgeDocumentId);
-            }
-            if(knowledgeDocumentVersionVo != null) {
-                knowledgeDocumentVersionVo.setTitle(knowledgeDocumentVo.getTitle());
+            // 只有可见的直接关联才填充旧版单条响应，不能以最新版本替换已绑定版本。
+            Long versionId = versions.stream().filter(row -> directId.equals(row.getLong("documentId"))
+                    && source.equals(row.getString("source")) && invokeId.equals(row.getLong("invokeId")))
+                    .map(row -> row.getLong("versionId")).filter(Objects::nonNull).findFirst().orElse(null);
+            KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = versionId == null ? null : knowledgeDocumentMapper.getKnowledgeDocumentVersionById(versionId);
+            if (knowledgeDocumentVersionVo != null) {
+                KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(directId);
                 KnowledgeCircleVo knowledgeCircleVo = knowledgeCircleMapper.getKnowledgeCircleById(knowledgeDocumentVo.getKnowledgeCircleId());
                 if(knowledgeCircleVo != null) {
                     knowledgeDocumentVersionVo.getPath().add(knowledgeCircleVo.getName());

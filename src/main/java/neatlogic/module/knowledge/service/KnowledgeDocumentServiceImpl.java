@@ -135,6 +135,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         return 0;
     }
 
+    /** 按指定版本组装标题、正文和附件，草稿详情保留版本自身的标题。 */
     @Override
     public KnowledgeDocumentVo getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(Long knowledgeDocumentVersionId) throws PermissionDeniedException {
         KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
@@ -214,6 +215,8 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             knowledgeDocumentVo.setIsCurrentVersion(0);
         }
+        // 指定版本详情使用该版本标题，保留草稿独立改名后的内容。
+        knowledgeDocumentVo.setTitle(knowledgeDocumentVersionVo.getTitle());
         knowledgeDocumentVo.setVersion(knowledgeDocumentVersionVo.getVersion() != null ? knowledgeDocumentVersionVo.getVersion() : knowledgeDocumentVersionVo.getFromVersion());
         knowledgeDocumentVo.setLcu(knowledgeDocumentVersionVo.getLcu());
         knowledgeDocumentVo.setLcd(knowledgeDocumentVersionVo.getLcd());

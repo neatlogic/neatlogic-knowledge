@@ -36,6 +36,7 @@ import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import neatlogic.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
 import neatlogic.framework.knowledge.crossover.IKnowledgeDocumentCrossoverService;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
+import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentTypeMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeTagMapper;
 import neatlogic.framework.knowledge.dto.*;
@@ -58,6 +59,8 @@ public class KnowledgeDocumentCrossoverService implements IKnowledgeDocumentCros
     private static final Logger logger = LoggerFactory.getLogger(KnowledgeDocumentCrossoverService.class);
     @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
+    @Resource
+    private KnowledgeDocumentAuditMapper knowledgeDocumentAuditMapper;
     @Resource
     private KnowledgeDocumentTypeMapper knowledgeDocumentTypeMapper;
     @Resource
@@ -184,6 +187,149 @@ public class KnowledgeDocumentCrossoverService implements IKnowledgeDocumentCros
         return resultJson;
     }
 
+    /** 统一版本检索、权限、分页、正文截取及高亮，内部草稿模式保留真实状态。 */
+    @Override
+    public JSONObject searchDocumentVersions(JSONObject filter, boolean editableDraftOnly) {
+        JSONObject resultJson = new JSONObject();
+        List<Long> documentVersionIdList = null;
+        Integer total = 0;
+        KnowledgeDocumentVersionVo documentVersionVoParam = new KnowledgeDocumentVersionVo((JSONObject) filter.clone());
+        if (editableDraftOnly) {
+            // 作者、状态及成员身份只从服务端产生，业务请求不能扩大候选范围。
+            KnowledgeDocumentVo scope = new KnowledgeDocumentVo();
+            getDocumentViewParam(scope);
+            String category = filter.getString("knowledgeDocumentTypeUuid");
+            if (StringUtils.isNotBlank(category)) {
+                KnowledgeDocumentTypeVo type = knowledgeDocumentTypeMapper.getTypeByUuid(category);
+                if (type == null) throw new KnowledgeDocumentTypeNotFoundException(category);
+                scope.setKnowledgeDocumentTypeUuidList(knowledgeDocumentTypeMapper
+                        .getChildAndSelfByLftRht(type.getLft(), type.getRht(), type.getKnowledgeCircleId())
+                        .stream().map(KnowledgeDocumentTypeVo::getUuid).collect(Collectors.toList()));
+            }
+            documentVersionVoParam.setEditableDraftScope(scope);
+            documentVersionVoParam.setStatusList(new ArrayList<>(List.of(KnowledgeDocumentVersionStatus.DRAFT.getValue())));
+            documentVersionVoParam.setLcuList(new ArrayList<>(List.of(scope.getCircleUserUuid())));
+            documentVersionVoParam.setReviewerList(null);
+            documentVersionVoParam.setCurrentPage(1);
+            documentVersionVoParam.setPageSize(Math.max(1, Math.min(100, filter.getIntValue("pageSize"))));
+        }
+        //拼装 “审批人”条件
+        knowledgeDocumentService.getReviewerParam(documentVersionVoParam);
+        //根据keyword等条件，查询符合条件的知识版本
+        List<String> statusList = documentVersionVoParam.getStatusList();
+        // 全部审批状态合并圈子中待审批版本与本人已审批版本。
+        if (statusList.contains(KnowledgeDocumentVersionStatus.ALL.getValue())) {
+            documentVersionIdList = knowledgeDocumentMapper.getMyAllReviewKnowledgeDocumentVersionIdList(documentVersionVoParam);
+            total = knowledgeDocumentMapper.getMyAllReviewKnowledgeDocumentVersionCount(documentVersionVoParam);
+        } else {
+            documentVersionIdList = knowledgeDocumentMapper.searchKnowledgeDocumentVersionId(documentVersionVoParam);
+            total = knowledgeDocumentMapper.searchKnowledgeDocumentVersionIdCount(documentVersionVoParam);
+        }
+        //根据keyword等条件，从数据库搜索符合条件的知识版本count
+        List<KnowledgeDocumentVersionVo> documentVersionList = new ArrayList<KnowledgeDocumentVersionVo>();
+        if (CollectionUtils.isNotEmpty(documentVersionIdList)) {
+            documentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionByIdList(documentVersionIdList);
+        }
+        //一次性查出所有分页版本id的不通过原因
+        List<Long> failVersionIdList = new ArrayList<>();
+        List<Long> versionIdList = new ArrayList<>();
+        List<KnowledgeDocumentAuditVo> failAuditList = null;
+        for (KnowledgeDocumentVersionVo versionVo : documentVersionList) {
+            versionIdList.add(versionVo.getId());
+            if (KnowledgeDocumentVersionStatus.REJECTED.getValue().equals(versionVo.getStatus())) {
+                failVersionIdList.add(versionVo.getId());
+            }
+        }
+        if (CollectionUtils.isNotEmpty(failVersionIdList)) {
+            failAuditList = knowledgeDocumentAuditMapper.getKnowledgeDocumentAuditListByDocumentVersionIdListAndOperate(failVersionIdList, KnowledgeDocumentOperate.REJECT.getValue());
+        }
+        //一次性获取知识搜索关键字最匹配下标信息,提供给后续循环截取内容和高亮关键字
+        Map<Long, FullTextIndexVo> versionIndexVoMap = new HashMap<>();
+        Map<Long, String> versionContentMap = new HashMap<>();
+        List<String> keywordList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(documentVersionVoParam.getKeywordList())) {
+            keywordList = new ArrayList<>(documentVersionVoParam.getKeywordList());
+        }
+        if (CollectionUtils.isNotEmpty(versionIdList)) {
+            knowledgeDocumentService.setVersionContentMap(keywordList, versionIdList, versionIndexVoMap, versionContentMap);
+        }
+        //循环知识版本，补充额外信息
+        for (KnowledgeDocumentVersionVo knowledgeDocumentVersionVo : documentVersionList) {
+            // 草稿作者可删除；编辑还需具有圈子权限，内部模式已在分页前校验。
+            if (documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.DRAFT.getValue()) && knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid())) {
+                //如果不在圈子内则不允许编辑
+                AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
+                if (editableDraftOnly || knowledgeDocumentMapper.checkUserIsMember(knowledgeDocumentVersionVo.getKnowledgeCircleId(), UserContext.get().getUserUuid(true), authenticationInfoVo.getTeamUuidList(), authenticationInfoVo.getRoleUuidList()) > 0) {
+                    knowledgeDocumentVersionVo.setIsEditable(1);
+                }
+                knowledgeDocumentVersionVo.setIsDeletable(1);
+            }
+            //如果审核不通过，则补充原因
+            if (CollectionUtils.isNotEmpty(failAuditList)) {
+                for (KnowledgeDocumentAuditVo failAudit : failAuditList) {
+                    if (failAudit.getKnowledgeDocumentVersionId().equals(knowledgeDocumentVersionVo.getId())) {
+                        knowledgeDocumentVersionVo.setRejectReason(failAudit.getConfig() == null ? StringUtils.EMPTY:failAudit.getConfig().getString("content"));
+                    }
+                }
+            }
+            //设置标题、截取内容，并高亮
+            knowledgeDocumentService.setTitleAndShortcutContentHighlight(keywordList, knowledgeDocumentVersionVo.getId(), knowledgeDocumentVersionVo, versionIndexVoMap, versionContentMap);
+        }
+        //补充状态
+        setVersionStatusCount(documentVersionVoParam, resultJson);
+
+        resultJson.put("dataList", documentVersionList);
+        resultJson.put("rowNum", total);
+        resultJson.put("pageSize", documentVersionVoParam.getPageSize());
+        resultJson.put("currentPage", documentVersionVoParam.getCurrentPage());
+        resultJson.put("pageCount", PageUtil.getPageCount(total, documentVersionVoParam.getPageSize()));
+        return resultJson;
+    }
+
+    /** 保留版本搜索原有的审批状态计数及查询分支。 */
+    private void setVersionStatusCount(KnowledgeDocumentVersionVo documentVersionVoParam, JSONObject resultJson) {
+        if (!documentVersionVoParam.getStatusList().contains(KnowledgeDocumentVersionStatus.DRAFT.getValue())) {
+            JSONArray statusArray = new JSONArray();
+            JSONObject jsonAll = new JSONObject();
+            List<String> statusTmpList = new ArrayList<>();
+            statusArray.add(jsonAll);
+            JSONObject jsonSubmit = new JSONObject();
+            statusArray.add(jsonSubmit);
+            //通过
+            JSONObject jsonPass = new JSONObject();
+            jsonPass.put("value", KnowledgeDocumentVersionStatus.PASSED.getValue());
+            jsonPass.put("text", KnowledgeDocumentVersionStatus.PASSED.getText());
+            statusTmpList.add(KnowledgeDocumentVersionStatus.PASSED.getValue());
+            documentVersionVoParam.setStatusList(statusTmpList);
+            documentVersionVoParam.setIsReviewer(1);
+            jsonPass.put("count", knowledgeDocumentMapper.searchKnowledgeDocumentVersionIdCount(documentVersionVoParam));
+            statusArray.add(jsonPass);
+            //不通过
+            JSONObject jsonReject = new JSONObject();
+            jsonReject.put("value", KnowledgeDocumentVersionStatus.REJECTED.getValue());
+            jsonReject.put("text", KnowledgeDocumentVersionStatus.REJECTED.getText());
+            statusTmpList.clear();
+            statusTmpList.add(KnowledgeDocumentVersionStatus.REJECTED.getValue());
+            documentVersionVoParam.setStatusList(statusTmpList);
+            documentVersionVoParam.setIsReviewer(1);
+            jsonReject.put("count", knowledgeDocumentMapper.searchKnowledgeDocumentVersionIdCount(documentVersionVoParam));
+            statusArray.add(jsonReject);
+            //待审批
+            jsonSubmit.put("value", KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
+            jsonSubmit.put("text", KnowledgeDocumentVersionStatus.SUBMITTED.getText());
+            statusTmpList.clear();
+            statusTmpList.add(KnowledgeDocumentVersionStatus.SUBMITTED.getValue());
+            documentVersionVoParam.setStatusList(statusTmpList);
+            knowledgeDocumentService.getReviewerParam(documentVersionVoParam);
+            jsonSubmit.put("count", knowledgeDocumentMapper.searchKnowledgeDocumentVersionIdCount(documentVersionVoParam));
+            jsonAll.put("value", KnowledgeDocumentVersionStatus.ALL.getValue());
+            jsonAll.put("text", KnowledgeDocumentVersionStatus.ALL.getText());
+            jsonAll.put("count", jsonSubmit.getLong("count") + jsonPass.getLong("count") + jsonReject.getLong("count"));
+            resultJson.put("statusList", statusArray);
+        }
+    }
+
+
     /** 列表使用与详情相同的作者、审核人或圈子成员可见规则。 */
     @Override
     public List<JSONObject> listOrigins(Map<String, List<Long>> origins) {
@@ -300,7 +446,17 @@ public class KnowledgeDocumentCrossoverService implements IKnowledgeDocumentCros
             resultObj.put("knowledgeDocumentId", documentVo.getId());
             KnowledgeDocumentVo before = knowledgeDocumentService.getKnowledgeDocumentDetailByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             oldKnowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
-            if (knowledgeDocumentVersionId.equals(oldDocumentVo.getKnowledgeDocumentVersionId())) {
+            // 锁内校验继续编辑的预期状态，防止已发布草稿被当作新的修订起点。
+            String expectedStatus = jsonObj.getString("expectedStatus");
+            if (expectedStatus != null && (!KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(expectedStatus)
+                    || !expectedStatus.equals(oldKnowledgeDocumentVersionVo.getStatus())
+                    || Objects.equals(oldKnowledgeDocumentVersionVo.getIsDelete(), 1))) {
+                throw new KnowledgeDocumentVersionStateChangedException(knowledgeDocumentVersionId, expectedStatus,
+                        oldKnowledgeDocumentVersionVo.getStatus(), oldKnowledgeDocumentVersionVo.getIsDelete());
+            }
+            // 首次发布前文档指针也可能指向草稿，仍须覆盖同一草稿。
+            if (knowledgeDocumentVersionId.equals(oldDocumentVo.getKnowledgeDocumentVersionId())
+                    && !KnowledgeDocumentVersionStatus.DRAFT.getValue().equals(oldKnowledgeDocumentVersionVo.getStatus())) {
                 if (!checkDocumentIsModify(before, documentVo)) {
                     throw new KnowledgeDocumentUnmodifiedCannotBeSavedException();
                 }

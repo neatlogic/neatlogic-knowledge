@@ -91,4 +91,6 @@ public interface KnowledgeDocumentService {
      * @Returns: void
      **/
     public void setVersionContentMap(List<String> keywordList,List<Long> activeVersionIdList,Map<Long, FullTextIndexVo> versionIndexVoMap,Map<Long, String> versionContentMap);
+    /** 按已有文档版本删除规则校验权限并清理正文引用。 */
+    void deleteVersion(Long versionId) throws Exception;
 }

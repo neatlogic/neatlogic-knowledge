@@ -12,6 +12,10 @@
 
 package neatlogic.module.knowledge.service;
 
+import neatlogic.framework.knowledge.exception.KnowledgeDocumentCurrentUserNotOwnerException;
+import neatlogic.framework.knowledge.exception.KnowledgeDocumentDraftSubmittedCannotBeDeletedException;
+import neatlogic.framework.knowledge.exception.KnowledgeDocumentCurrentUserNotReviewerException;
+import neatlogic.framework.knowledge.exception.KnowledgeDocumentCurrentVersionCannotBeDeletedException;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
@@ -499,6 +503,69 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             if ("content".equals(contentVo.getTargetField()) && !versionContentMap.containsKey(contentVo.getTargetId())) {
                 versionContentMap.put(contentVo.getTargetId(), contentVo.getContent());
             }
+        }
+    }
+    /** 复用知识版本删除流程；调用方事务覆盖版本资源与关联变更。 */
+    @Override
+    public void deleteVersion(Long knowledgeDocumentVersionId) throws Exception {
+        KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
+        if(knowledgeDocumentVersionVo == null) {
+            return;
+        }
+        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        if(knowledgeDocumentVo == null){
+            knowledgeDocumentMapper.deleteOriginByVersionId(knowledgeDocumentVersionId);
+            knowledgeDocumentMapper.deleteKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
+            knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+            knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
+            knowledgeDocumentMapper.deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
+            return;
+        }
+        if(Objects.equals(knowledgeDocumentVo.getKnowledgeDocumentVersionId(), knowledgeDocumentVersionId)) {
+            throw new KnowledgeDocumentCurrentVersionCannotBeDeletedException();
+        }
+        knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
+        if(knowledgeDocumentVersionVo == null) {
+            return;
+        }
+        if(knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.PASSED.getValue())) {
+            if(isReviewer(knowledgeDocumentVo.getKnowledgeCircleId()) == 0) {
+                throw new KnowledgeDocumentCurrentUserNotReviewerException();
+            }
+            knowledgeDocumentMapper.updateKnowledgeDocumentVersionToDeleteById(knowledgeDocumentVersionVo.getId());
+            JSONObject config = new JSONObject();
+            config.put("version", knowledgeDocumentVersionVo.getVersion());
+            audit(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId, KnowledgeDocumentOperate.DELETEVERSION, config);
+        }else if(knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.SUBMITTED.getValue())) {
+            throw new KnowledgeDocumentDraftSubmittedCannotBeDeletedException();
+        }else {
+            if(!knowledgeDocumentVersionVo.getLcu().equals(UserContext.get().getUserUuid(true))) {
+                throw new KnowledgeDocumentCurrentUserNotOwnerException();
+            }
+            knowledgeDocumentMapper.deleteOriginByVersionId(knowledgeDocumentVersionId);
+            knowledgeDocumentMapper.deleteKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
+            knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
+            knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
+            knowledgeDocumentMapper.deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
+        }
+
+        List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionListByKnowledgeDocumentId(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        if (CollectionUtils.isNotEmpty(knowledgeDocumentVersionList)) {
+            boolean allVersionIsDelete = true;
+            for (KnowledgeDocumentVersionVo knowledgeDocumentVersion : knowledgeDocumentVersionList) {
+                if (Objects.equals(knowledgeDocumentVersion.getIsDelete(), 0)) {
+                    allVersionIsDelete = false;
+                    break;
+                }
+            }
+            if (allVersionIsDelete) {
+                // 文档所有版本的is_delete都等于1时，将文档is_delete置1
+                knowledgeDocumentMapper.updateKnowledgeDocumentToDeleteById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+            }
+        } else {
+            // 文档所有版本都已被删除时，删除文档数据
+            knowledgeDocumentMapper.deleteKnowledgeDocumentInvokeByKnowledgeDocumentId(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+            knowledgeDocumentMapper.deleteKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
         }
     }
 }

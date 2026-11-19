@@ -34,6 +34,7 @@ import neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexVo;
 import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentOperate;
 import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import neatlogic.framework.knowledge.constvalue.KnowledgeFullTextIndexType;
+import neatlogic.framework.knowledge.constvalue.KnowledgeSource;
 import neatlogic.framework.knowledge.crossover.IKnowledgeDocumentCrossoverService;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentAuditMapper;
@@ -330,6 +331,71 @@ public class KnowledgeDocumentCrossoverService implements IKnowledgeDocumentCros
     }
 
 
+    /** 按文档聚合，同一知识存在修订草稿时，阅读仍指向激活正文。 */
+    @Override
+    public List<JSONObject> getReferenceDocuments(List<Long> documentIds) {
+        if (documentIds.isEmpty()) return Collections.emptyList();
+        String user = UserContext.get().getUserUuid(true);
+        Map<Long, Boolean> membership = new HashMap<>();
+        Map<Long, JSONObject> result = new LinkedHashMap<>();
+        for (JSONObject row : knowledgeDocumentMapper.listReferenceVersions(documentIds)) {
+            boolean own = user.equals(row.getString("lcu"));
+            boolean active = Objects.equals(row.getLong("activeId"), row.getLong("versionId")) && "passed".equals(row.getString("status"));
+            boolean member = membership.computeIfAbsent(row.getLong("circleId"), this::isCircleMember);
+            if (!own && !user.equals(row.getString("reviewer")) && !member) continue;
+            Long id = row.getLong("documentId");
+            JSONObject doc = result.computeIfAbsent(id, k -> new JSONObject().fluentPut("documentId", id));
+            if (row.getBooleanValue("hasPending")) doc.put("pending", true);
+            if ("submitted".equals(row.getString("status")) && !doc.containsKey("pendingId")) {
+                doc.put("pendingId", row.getLong("versionId"));
+                doc.put("pendingTitle", row.getString("title"));
+            }
+            if (own && "draft".equals(row.getString("status")) && !doc.containsKey("draftId")) {
+                doc.put("draftId", row.getLong("versionId"));
+                doc.put("draftTitle", row.getString("title"));
+            }
+            // 阅读优先指向激活版本；尚未发布时展示待审核稿或自己的草稿。
+            boolean preferred = active || !doc.containsKey("versionId");
+            if (!doc.getBooleanValue("published") && !"submitted".equals(doc.getString("status"))) {
+                preferred |= "submitted".equals(row.getString("status")) || Objects.equals(doc.getLong("draftId"), row.getLong("versionId"));
+            }
+            if (preferred) {
+                doc.put("member", member);
+                for (String key : Arrays.asList("versionId", "title", "status", "knowledgeDocumentTypeUuid", "documentTypePath", "fromVersion")) doc.put(key, row.get(key));
+                doc.put("published", active);
+            }
+        }
+        for (JSONObject doc : result.values()) {
+            // 引用展示阅读状态，补充文档优先展示待审核稿或本人草稿。两者沿用知识库的状态色。
+            String status = doc.getString("status");
+            String editStatus = doc.getBooleanValue("pending") ? KnowledgeDocumentVersionStatus.SUBMITTED.getValue()
+                    : doc.containsKey("draftId") ? KnowledgeDocumentVersionStatus.DRAFT.getValue() : status;
+            doc.put("statusColor", KnowledgeDocumentVersionStatus.getColor(status));
+            doc.put("editStatusColor", KnowledgeDocumentVersionStatus.getColor(editStatus));
+            doc.put("editable", doc.getBooleanValue("member") && !doc.getBooleanValue("pending")
+                    && (doc.getBooleanValue("published") || doc.get("draftId") != null));
+            doc.remove("member");
+        }
+        return new ArrayList<>(result.values());
+    }
+
+    /** 文档锁与知识版本保存及删除共用，避免检查引用后又有其他工单新增引用。 */
+    @Override
+    public void lockReferenceDocument(Long documentId) {
+        if (knowledgeDocumentMapper.getKnowledgeDocumentLockById(documentId) == null) throw new KnowledgeDocumentNotFoundException(documentId);
+    }
+
+    /** 通过既有版本删除服务再次校验作者；工单只能请求删除草稿。 */
+    @Override
+    public void deleteReferenceDraft(Long documentId, Long draftId) throws Exception {
+        lockReferenceDocument(documentId);
+        KnowledgeDocumentVersionVo version = getViewableVersion(draftId);
+        if (!documentId.equals(version.getKnowledgeDocumentId()) || !"draft".equals(version.getStatus())) {
+            throw new ParamIrregularException("draftId", String.valueOf(draftId));
+        }
+        knowledgeDocumentService.deleteVersion(draftId);
+    }
+
     /** 列表使用与详情相同的作者、审核人或圈子成员可见规则。 */
     @Override
     public List<JSONObject> listOrigins(Map<String, List<Long>> origins) {
@@ -368,19 +434,25 @@ public class KnowledgeDocumentCrossoverService implements IKnowledgeDocumentCros
             Long invokeId = jsonObj.getLong("invokeId");
             if (invokeId == null) throw new ParamNotExistsException("invokeId");
             String source = jsonObj.getString("source");
-            // 生成来源必须经其业务入口校验权限和修订号，普通直接来源可使用自己的标识。
-            if ("text".equals(source) || KnowledgeGenerationSources.get(source) != null) {
+            // 工单来源由业务入口校验权限并建立关联，即使未安装商业模块也禁止客户端自行指定。
+            if (KnowledgeSource.PROCESSTASK.getValue().equalsIgnoreCase(source.trim())
+                    || "text".equals(source) || KnowledgeGenerationSources.get(source) != null) {
                 throw new ParamIrregularException("source", source);
             }
             origin = new JSONObject().fluentPut("source", source).fluentPut("invokeId", invokeId);
         }
-        return saveDraft(jsonObj, origin);
+        return saveDraft(jsonObj, origin, true);
     }
 
     /** 来源由调用服务解析；版本及其创建来源必须同时提交或回滚。 */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public JSONObject saveDraft(JSONObject jsonObj, JSONObject origin) throws PermissionDeniedException {
+        return saveDraft(jsonObj, origin, false);
+    }
+
+    /** 直接保存的来源由客户端声明，需调用原来源转换校验；业务服务传入的来源已经在其事务内鉴权。 */
+    private JSONObject saveDraft(JSONObject jsonObj, JSONObject origin, boolean checkDirectConversion) throws PermissionDeniedException {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
         KnowledgeDocumentVo documentVo = JSON.toJavaObject(jsonObj, KnowledgeDocumentVo.class);
         KnowledgeDocumentTypeVo knowledgeDocumentTypeVo = knowledgeDocumentTypeMapper.getTypeByUuid(documentVo.getKnowledgeDocumentTypeUuid());
@@ -503,7 +575,7 @@ public class KnowledgeDocumentCrossoverService implements IKnowledgeDocumentCros
             record.put("documentId", documentVo.getId());
             record.put("versionId", documentVo.getKnowledgeDocumentVersionId());
             ISyncSource syncSource = SyncSourceFactory.getProvider(origin.getString("source"));
-            if (syncSource != null) {
+            if (checkDirectConversion && syncSource != null) {
                 syncSource.checkConversion(origin.getLong("invokeId"));
             }
             try {

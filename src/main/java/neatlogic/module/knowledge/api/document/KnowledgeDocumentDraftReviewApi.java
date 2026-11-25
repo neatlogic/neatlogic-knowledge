@@ -15,10 +15,12 @@ import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentVersionVo;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentVo;
+import neatlogic.framework.knowledge.event.KnowledgeDocumentChangedEvent;
 import neatlogic.framework.knowledge.exception.*;
 import neatlogic.module.knowledge.service.KnowledgeDocumentService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +37,8 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
 
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
+    @Resource
+    private ApplicationEventPublisher eventPublisher;
     
     @Override
     public String getToken() {
@@ -43,7 +47,7 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "审核文档草稿";
+        return "nmkad.knowledgedocumentdraftreviewapi.getname";
     }
 
     @Override
@@ -51,11 +55,12 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
         return null;
     }
     @Input({
-        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id"),
-        @Param(name = "action", type = ApiParamType.ENUM, rule = "pass,reject", isRequired = true, desc = "通过，退回"),
-        @Param(name = "content", type = ApiParamType.STRING, desc = "描述")
+        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "common.versionid"),
+        @Param(name = "action", type = ApiParamType.ENUM, rule = "pass,reject", isRequired = true, desc = "nmkad.knowledgedocumentdraftreviewapi.action", help = "nmkad.knowledgedocumentdraftreviewapi.actionhelp"),
+        @Param(name = "content", type = ApiParamType.STRING, desc = "common.description")
     })
-    @Description(desc = "审核文档草稿")
+    @Description(desc = "nmkad.knowledgedocumentdraftreviewapi.getname")
+    /** 完成审批写入和审计后，发布通过或退回事件。 */
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
@@ -118,6 +123,9 @@ public class KnowledgeDocumentDraftReviewApi extends PrivateApiComponentBase {
             config.put("content", content);
         }
         knowledgeDocumentService.audit(documentVo.getId(), knowledgeDocumentVersionId, operate, config);
+        KnowledgeDocumentChangedEvent.Type eventType = operate == KnowledgeDocumentOperate.PASS
+                ? KnowledgeDocumentChangedEvent.Type.APPROVED : KnowledgeDocumentChangedEvent.Type.REJECTED;
+        eventPublisher.publishEvent(new KnowledgeDocumentChangedEvent(eventType, documentVo.getId(), knowledgeDocumentVersionId));
         return null;
     }
 

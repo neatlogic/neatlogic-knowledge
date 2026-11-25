@@ -35,11 +35,24 @@
     }
   },
   "nmkad": {
+    "knowledgedocumentdeleteapi": {
+      "documentid": "文档 ID",
+      "getname": "删除文档"
+    },
+    "knowledgedocumentdraftreviewapi": {
+      "action": "审批操作",
+      "actionhelp": "使用 pass 通过审批，使用 reject 退回草稿。",
+      "getname": "审核文档草稿"
+    },
     "knowledgedocumentdraftsaveapi": {
       "getname": "保存文档草稿",
       "invokeid": "调用方记录 ID",
       "issubmit": "是否送审",
       "linelist": "文档行列表"
+    },
+    "knowledgedocumentdraftsubmitapi": {
+      "getname": "提交审核文档草稿",
+      "isreviewable": "当前用户是否有审批权限"
     },
     "knowledgedocumentgetapi": {
       "getname": "查询文档内容",
@@ -64,6 +77,9 @@
     },
     "knowledgedocumentversiondeleteapi": {
       "getname": "删除文档版本"
+    },
+    "knowledgedocumentversionswitchapi": {
+      "getname": "切换文档版本"
     }
   },
   "nmkaf": {

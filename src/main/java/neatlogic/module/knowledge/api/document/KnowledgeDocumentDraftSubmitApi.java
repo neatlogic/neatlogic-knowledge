@@ -39,7 +39,7 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "提交审核文档草稿";
+        return "nmkad.knowledgedocumentdraftsubmitapi.getname";
     }
 
     @Override
@@ -48,12 +48,13 @@ public class KnowledgeDocumentDraftSubmitApi extends PrivateApiComponentBase {
     }
 
     @Input({
-        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id")
+        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "common.versionid")
     })
     @Output({
-        @Param(name = "isReviewable", type = ApiParamType.ENUM, rule = "0,1", desc = "返回1代表当前用户有审核权限，0代表当前用户没有审核权限")
+        @Param(name = "isReviewable", type = ApiParamType.ENUM, rule = "0,1", desc = "nmkad.knowledgedocumentdraftsubmitapi.isreviewable")
     })
-    @Description(desc = "提交审核文档草稿")
+    @Description(desc = "nmkad.knowledgedocumentdraftsubmitapi.getname")
+    /** 将文档草稿提交审核并记录送审操作。 */
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");

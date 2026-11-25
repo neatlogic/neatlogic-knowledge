@@ -11,16 +11,19 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.knowledge.auth.label.KNOWLEDGE_BASE;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentVo;
+import neatlogic.framework.knowledge.event.KnowledgeDocumentChangedEvent;
 import neatlogic.framework.knowledge.exception.KnowledgeDocumentCurrentUserNotReviewerException;
 import neatlogic.framework.knowledge.exception.KnowledgeDocumentNotFoundException;
 import neatlogic.module.knowledge.service.KnowledgeDocumentService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @AuthAction(action = KNOWLEDGE_BASE.class)
@@ -32,6 +35,8 @@ public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
+    @Resource
+    private ApplicationEventPublisher eventPublisher;
     @Override
     public String getToken() {
         return "knowledge/document/delete";
@@ -39,7 +44,7 @@ public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除文档";
+        return "nmkad.knowledgedocumentdeleteapi.getname";
     }
 
     @Override
@@ -48,19 +53,22 @@ public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
     }
     
     @Input({
-        @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, isRequired = true, desc = "文档id")
+        @Param(name = "knowledgeDocumentId", type = ApiParamType.LONG, isRequired = true, desc = "nmkad.knowledgedocumentdeleteapi.documentid")
     })
-    @Description(desc = "删除文档")
+    @Description(desc = "nmkad.knowledgedocumentdeleteapi.getname")
+    /** 删除整篇文档及关联信息后，为首次删除发布事件。 */
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentId = jsonObj.getLong("knowledgeDocumentId");
-        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentById(knowledgeDocumentId);
+        // 与审批及回退共用文档锁，串行判断删除状态。
+        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentId);
         if(knowledgeDocumentVo == null) {
             throw new KnowledgeDocumentNotFoundException(knowledgeDocumentId);
         }
         if(knowledgeDocumentService.isReviewer(knowledgeDocumentVo.getKnowledgeCircleId()) == 0) {
             throw new KnowledgeDocumentCurrentUserNotReviewerException();
         }
+        boolean documentChanged = !Objects.equals(knowledgeDocumentVo.getIsDelete(), 1);
         knowledgeDocumentMapper.updateKnowledgeDocumentToDeleteById(knowledgeDocumentId);
         knowledgeDocumentMapper.deleteKnowledgeDocumentInvokeByKnowledgeDocumentId(knowledgeDocumentId);
         knowledgeDocumentMapper.deleteKnowledgeDocumentCollectByDocumentId(knowledgeDocumentId);
@@ -72,8 +80,11 @@ public class KnowledgeDocumentDeleteApi extends PrivateApiComponentBase {
             knowledgeDocumentMapper.updateKnowledgeDocumentVersionToDeleteByKnowledgeDocumentId(knowledgeDocumentId);
             knowledgeDocumentMapper.deleteKnowledgeDocumentAuditByKnowledgeDocumentVersionIdList(knowledgeDocumentVersionIdList);
         }
-        //** 删除es对应知识 **//
-        //ElasticSearchHandlerFactory.getHandler(ESHandler.KNOWLEDGE.getValue()).delete(knowledgeDocumentId.toString());
+        if (documentChanged) {
+            eventPublisher.publishEvent(new KnowledgeDocumentChangedEvent(
+                    KnowledgeDocumentChangedEvent.Type.DOCUMENT_DELETED, knowledgeDocumentId,
+                    knowledgeDocumentVo.getKnowledgeDocumentVersionId()));
+        }
         return null;
     }
 

@@ -35,11 +35,24 @@
     }
   },
   "nmkad": {
+    "knowledgedocumentdeleteapi": {
+      "documentid": "Document ID",
+      "getname": "Delete Document"
+    },
+    "knowledgedocumentdraftreviewapi": {
+      "action": "Review Action",
+      "actionhelp": "Use pass to approve the draft or reject to return it.",
+      "getname": "Review Document Draft"
+    },
     "knowledgedocumentdraftsaveapi": {
       "getname": "Save Document Draft",
       "invokeid": "Source Record ID",
       "issubmit": "Submit for Review",
       "linelist": "Document Lines"
+    },
+    "knowledgedocumentdraftsubmitapi": {
+      "getname": "Submit Document Draft for Review",
+      "isreviewable": "Current User Can Review"
     },
     "knowledgedocumentgetapi": {
       "getname": "Query Document Content",
@@ -64,6 +77,9 @@
     },
     "knowledgedocumentversiondeleteapi": {
       "getname": "Delete Document Version"
+    },
+    "knowledgedocumentversionswitchapi": {
+      "getname": "Switch Document Version"
     }
   },
   "nmkaf": {

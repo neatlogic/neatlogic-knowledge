@@ -14,9 +14,11 @@ import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import neatlogic.framework.knowledge.dao.mapper.KnowledgeDocumentMapper;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentVersionVo;
 import neatlogic.framework.knowledge.dto.KnowledgeDocumentVo;
+import neatlogic.framework.knowledge.event.KnowledgeDocumentChangedEvent;
 import neatlogic.framework.knowledge.exception.*;
 import neatlogic.module.knowledge.service.KnowledgeDocumentService;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,8 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
 
     @Resource
     private KnowledgeDocumentService knowledgeDocumentService;
+    @Resource
+    private ApplicationEventPublisher eventPublisher;
     
     @Override
     public String getToken() {
@@ -42,7 +46,7 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "切换文档版本";
+        return "nmkad.knowledgedocumentversionswitchapi.getname";
     }
 
     @Override
@@ -51,9 +55,10 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
     }
 
     @Input({
-        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "版本id")
+        @Param(name = "knowledgeDocumentVersionId", type = ApiParamType.LONG, isRequired = true, desc = "common.versionid")
     })
-    @Description(desc = "切换文档版本")
+    @Description(desc = "nmkad.knowledgedocumentversionswitchapi.getname")
+    /** 切换到历史发布版本，并在当前版本指针发生变化时发布事件。 */
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long knowledgeDocumentVersionId = jsonObj.getLong("knowledgeDocumentVersionId");
@@ -82,6 +87,7 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
             throw new KnowledgeDocumentCurrentUserNotReviewerException();
         }
 
+        boolean versionChanged = !Objects.equals(knowledgeDocumentVo.getKnowledgeDocumentVersionId(), knowledgeDocumentVersionId);
         knowledgeDocumentVo.setKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
         knowledgeDocumentVo.setVersion(knowledgeDocumentVersionVo.getVersion());
         knowledgeDocumentVo.setTitle(knowledgeDocumentVersionVo.getTitle());
@@ -91,6 +97,10 @@ public class KnowledgeDocumentVersionSwitchApi extends PrivateApiComponentBase {
         config.put("oldVersion", oldVersion);
         config.put("newVersion", knowledgeDocumentVersionVo.getVersion());
         knowledgeDocumentService.audit(knowledgeDocumentVo.getId(), knowledgeDocumentVersionId, KnowledgeDocumentOperate.SWITCHVERSION, config);
+        if (versionChanged) {
+            eventPublisher.publishEvent(new KnowledgeDocumentChangedEvent(
+                    KnowledgeDocumentChangedEvent.Type.VERSION_SWITCHED, knowledgeDocumentVo.getId(), knowledgeDocumentVersionId));
+        }
         return null;
     }
 

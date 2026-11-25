@@ -36,6 +36,7 @@ import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentOperate;
 import neatlogic.framework.knowledge.constvalue.KnowledgeDocumentVersionStatus;
 import neatlogic.framework.knowledge.dao.mapper.*;
 import neatlogic.framework.knowledge.dto.*;
+import neatlogic.framework.knowledge.event.KnowledgeDocumentChangedEvent;
 import neatlogic.framework.knowledge.exception.KnowledgeDocumentNotFoundException;
 import neatlogic.framework.knowledge.exception.KnowledgeDocumentVersionNotFoundException;
 import neatlogic.framework.service.AuthenticationInfoService;
@@ -43,13 +44,18 @@ import neatlogic.framework.util.HtmlUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
 
 @Service
 public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
+
+    @Resource
+    private ApplicationEventPublisher eventPublisher;
 
     @Resource
     private KnowledgeDocumentMapper knowledgeDocumentMapper;
@@ -505,20 +511,26 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             }
         }
     }
-    /** 复用知识版本删除流程；调用方事务覆盖版本资源与关联变更。 */
+    /** 在同一事务中删除版本及关联数据，并通知版本或整篇文档被删除。 */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteVersion(Long knowledgeDocumentVersionId) throws Exception {
         KnowledgeDocumentVersionVo knowledgeDocumentVersionVo = knowledgeDocumentMapper.getKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
         if(knowledgeDocumentVersionVo == null) {
             return;
         }
-        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        Long documentId = knowledgeDocumentVersionVo.getKnowledgeDocumentId();
+        KnowledgeDocumentVo knowledgeDocumentVo = knowledgeDocumentMapper.getKnowledgeDocumentLockById(documentId);
         if(knowledgeDocumentVo == null){
             knowledgeDocumentMapper.deleteOriginByVersionId(knowledgeDocumentVersionId);
-            knowledgeDocumentMapper.deleteKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
+            int deleted = knowledgeDocumentMapper.deleteKnowledgeDocumentVersionById(knowledgeDocumentVersionId);
             knowledgeDocumentMapper.deleteKnowledgeDocumentLineByKnowledgeDocumentVersionId(knowledgeDocumentVersionId);
             knowledgeDocumentMapper.deleteKnowledgeDocumentFileByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentFileVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
             knowledgeDocumentMapper.deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
+            if (deleted > 0) {
+                eventPublisher.publishEvent(new KnowledgeDocumentChangedEvent(
+                        KnowledgeDocumentChangedEvent.Type.VERSION_DELETED, documentId, knowledgeDocumentVersionId));
+            }
             return;
         }
         if(Objects.equals(knowledgeDocumentVo.getKnowledgeDocumentVersionId(), knowledgeDocumentVersionId)) {
@@ -531,6 +543,9 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
         if(knowledgeDocumentVersionVo.getStatus().equals(KnowledgeDocumentVersionStatus.PASSED.getValue())) {
             if(isReviewer(knowledgeDocumentVo.getKnowledgeCircleId()) == 0) {
                 throw new KnowledgeDocumentCurrentUserNotReviewerException();
+            }
+            if (Objects.equals(knowledgeDocumentVersionVo.getIsDelete(), 1)) {
+                return;
             }
             knowledgeDocumentMapper.updateKnowledgeDocumentVersionToDeleteById(knowledgeDocumentVersionVo.getId());
             JSONObject config = new JSONObject();
@@ -549,7 +564,8 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             knowledgeDocumentMapper.deleteKnowledgeDocumentTagByKnowledgeDocumentIdAndVersionId(new KnowledgeDocumentTagVo(knowledgeDocumentVersionVo.getKnowledgeDocumentId(), knowledgeDocumentVersionId));
         }
 
-        List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionListByKnowledgeDocumentId(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+        boolean documentRemoved = false;
+        List<KnowledgeDocumentVersionVo> knowledgeDocumentVersionList = knowledgeDocumentMapper.getKnowledgeDocumentVersionListByKnowledgeDocumentId(documentId);
         if (CollectionUtils.isNotEmpty(knowledgeDocumentVersionList)) {
             boolean allVersionIsDelete = true;
             for (KnowledgeDocumentVersionVo knowledgeDocumentVersion : knowledgeDocumentVersionList) {
@@ -560,12 +576,18 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             }
             if (allVersionIsDelete) {
                 // 文档所有版本的is_delete都等于1时，将文档is_delete置1
-                knowledgeDocumentMapper.updateKnowledgeDocumentToDeleteById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+                documentRemoved = knowledgeDocumentMapper.updateKnowledgeDocumentToDeleteById(documentId) > 0;
             }
         } else {
             // 文档所有版本都已被删除时，删除文档数据
             knowledgeDocumentMapper.deleteKnowledgeDocumentInvokeByKnowledgeDocumentId(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
-            knowledgeDocumentMapper.deleteKnowledgeDocumentById(knowledgeDocumentVersionVo.getKnowledgeDocumentId());
+            documentRemoved = knowledgeDocumentMapper.deleteKnowledgeDocumentById(documentId) > 0;
+        }
+        eventPublisher.publishEvent(new KnowledgeDocumentChangedEvent(
+                KnowledgeDocumentChangedEvent.Type.VERSION_DELETED, documentId, knowledgeDocumentVersionId));
+        if (documentRemoved && !Objects.equals(knowledgeDocumentVo.getIsDelete(), 1)) {
+            eventPublisher.publishEvent(new KnowledgeDocumentChangedEvent(
+                    KnowledgeDocumentChangedEvent.Type.DOCUMENT_DELETED, documentId, knowledgeDocumentVersionId));
         }
     }
 }
